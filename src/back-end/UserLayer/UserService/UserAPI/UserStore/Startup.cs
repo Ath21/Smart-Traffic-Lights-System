@@ -8,6 +8,7 @@ using UserData;
 using UserStore.Business.PasswordHasher;
 using UserStore.Business.Token;
 using UserStore.Business.Usr;
+using UserStore.Middleware;
 using UserStore.Repository.Audit;
 using UserStore.Repository.Ses;
 using UserStore.Repository.Usr;
@@ -134,6 +135,8 @@ public class Startup
         }
 
         app.UseHttpsRedirection();
+
+        app.UseMiddleware<ExceptionMiddleware>();
 
         app.UseAuthentication();
         app.UseAuthorization();

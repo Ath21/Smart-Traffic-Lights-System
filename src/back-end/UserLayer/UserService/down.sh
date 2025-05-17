@@ -1,8 +1,8 @@
 #!/bin/bash
 
 NETWORK="user_network"
-API="UserAPI"
-MSSQL="MSSQL"
+API="./UserLayer/UserService/UserAPI"
+MSSQL="./UserLayer/UserService/MSSQL"
 COMPOSE_FILE="docker-compose.yaml"
 COMPOSE_FILE_OVERRIDE="docker-compose.override.yaml"
 
