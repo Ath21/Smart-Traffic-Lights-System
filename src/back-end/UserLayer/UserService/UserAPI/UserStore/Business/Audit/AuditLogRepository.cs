@@ -1,6 +1,6 @@
 using System;
 
-namespace UserStore.Business.AuditLog;
+namespace UserStore.Business.Audit;
 
 public class AuditLogRepository : IAuditLogRepository
 {

@@ -1,8 +1,8 @@
 using System;
 using Microsoft.OpenApi.Models;
 using UserData;
-using UserStore.Business.AuditLog;
-using UserStore.Business.Session;
+using UserStore.Business.Audit;
+using UserStore.Business.Ses;
 using UserStore.Business.Usr;
 
 namespace UserStore;
