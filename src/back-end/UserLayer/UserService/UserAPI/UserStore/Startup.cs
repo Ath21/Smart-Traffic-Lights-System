@@ -1,5 +1,6 @@
 using System;
 using Microsoft.OpenApi.Models;
+using UserData;
 
 namespace UserStore;
 
@@ -16,7 +17,7 @@ public class Startup
     {
         /******* [1] ORM ********/
 
-        // services.AddDbContext<UserDbContext>();
+        services.AddDbContext<UserDbContext>();
 
         /******* [2] Repositories ********/
 
