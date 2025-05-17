@@ -2,7 +2,7 @@ using System;
 using UserData;
 using UserData.Entities;
 
-namespace UserStore.Business.Ses;
+namespace UserStore.Repository.Ses;
 
 public class SessionRepository : ISessionRepository
 {

@@ -1,7 +1,7 @@
 using System;
 using UserData.Entities;
 
-namespace UserStore.Business.Ses;
+namespace UserStore.Repository.Ses;
 
 public interface ISessionRepository
 {

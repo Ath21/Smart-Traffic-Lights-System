@@ -1,7 +1,7 @@
 using System;
 using UserData.Entities;
 
-namespace UserStore.Business.Usr;
+namespace UserStore.Repository.Usr;
 
 public interface IUserRepository
 {

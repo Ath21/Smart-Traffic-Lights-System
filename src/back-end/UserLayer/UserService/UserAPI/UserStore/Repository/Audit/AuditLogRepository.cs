@@ -2,7 +2,7 @@ using System;
 using UserData;
 using UserData.Entities;
 
-namespace UserStore.Business.Audit;
+namespace UserStore.Repository.Audit;
 
 public class AuditLogRepository : IAuditLogRepository
 {

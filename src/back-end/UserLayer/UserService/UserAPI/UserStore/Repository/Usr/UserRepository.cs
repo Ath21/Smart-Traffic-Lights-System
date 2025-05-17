@@ -2,7 +2,7 @@ using System;
 using UserData;
 using UserData.Entities;
 
-namespace UserStore.Business.Usr;
+namespace UserStore.Repository.Usr;
 
 public class UserRepository : IUserRepository
 {

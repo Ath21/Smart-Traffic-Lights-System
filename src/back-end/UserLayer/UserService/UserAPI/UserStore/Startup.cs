@@ -1,9 +1,10 @@
 using System;
 using Microsoft.OpenApi.Models;
 using UserData;
-using UserStore.Business.Audit;
-using UserStore.Business.Ses;
-using UserStore.Business.Usr;
+using UserStore.Repository.Audit;
+using UserStore.Repository.Ses;
+using UserStore.Repository.Usr;
+
 
 namespace UserStore;
 

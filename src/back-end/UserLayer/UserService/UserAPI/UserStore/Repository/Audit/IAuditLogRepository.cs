@@ -1,7 +1,7 @@
 using System;
 using UserData.Entities;
 
-namespace UserStore.Business.Audit;
+namespace UserStore.Repository.Audit;
 
 public interface IAuditLogRepository
 {
