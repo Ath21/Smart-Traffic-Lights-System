@@ -1,8 +1,10 @@
 using System;
+using UserData.Entities;
 
 namespace UserStore.Business.Audit;
 
 public interface IAuditLogRepository
 {
-
+    Task LogActionSync(AuditLog auditLog);
+    Task<IEnumerable<AuditLog>> GetAuditLogsByUserIdAsync(Guid userId);
 }
