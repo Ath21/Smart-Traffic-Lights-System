@@ -1,0 +1,16 @@
+services:
+  api:
+    ports:
+      - '5026:8080'
+    environment:
+      ConnectionStrings__UserDb: Server=mssql,1433;Database=UserDb;User Id=sa;Password=MyPass@word;TrustServerCertificate=True
+      Jwt__Issuer: http://localhost:5055
+      Jwt__Audience: http://localhost:5055
+      Jwt__Key: STLSKey
+      ASPNETCORE_ENVIRONMENT: Development
+    depends_on:
+      mssql:
+        condition: service_started
+    networks:
+      - user_network
+    restart: always

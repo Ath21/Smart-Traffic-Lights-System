@@ -1,0 +1,14 @@
+services:
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: user_api
+    container_name: user_api_container
+
+networks:
+  user_network:
+    name: user_network
+    driver: bridge
+    external: true
