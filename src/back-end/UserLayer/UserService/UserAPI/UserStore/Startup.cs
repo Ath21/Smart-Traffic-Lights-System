@@ -30,7 +30,7 @@ public class Startup
 
         /******* [3] AutoMapper ********/
 
-        // services.AddAutoMapper(typeof(UserStoreProfile));
+        services.AddAutoMapper(typeof(UserStoreProfile));
 
         /******* [4] Jwt Config ********/
 
