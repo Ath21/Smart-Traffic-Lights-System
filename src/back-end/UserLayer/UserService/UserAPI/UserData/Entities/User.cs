@@ -17,8 +17,8 @@ public class User
     [MaxLength(100)]
     public string Email { get; set; }
     [Required]
-    public string Role { get; set; }
-    public string Status { get; set; }
+    public string Role { get; set; } = "User";
+    public string Status { get; set; } = "Active";
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
     public ICollection<Session> Sessions { get; set; }

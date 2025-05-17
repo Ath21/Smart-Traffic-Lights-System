@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace UserStore.Models;
 
-public class RestPasswordDto
+public class ResetPasswordRequestDto
 {
     [Required]
     public string UsernameOrEmail { get; set; }

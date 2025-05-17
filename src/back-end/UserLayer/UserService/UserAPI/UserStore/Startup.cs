@@ -4,6 +4,7 @@ using Microsoft.OpenApi.Models;
 using UserData;
 using UserStore.Business.PasswordHasher;
 using UserStore.Business.Token;
+using UserStore.Business.Usr;
 using UserStore.Repository.Audit;
 using UserStore.Repository.Ses;
 using UserStore.Repository.Usr;
@@ -36,7 +37,8 @@ public class Startup
         
         services.AddScoped(typeof(IPasswordHasher), typeof(PasswordHasher));
         services.AddScoped(typeof(ITokenService), typeof(TokenService));
-        
+        services.AddScoped(typeof(IUsrService), typeof(UsrService));
+
         /******* [4] AutoMapper ********/
 
         services.AddAutoMapper(typeof(UserStoreProfile));
