@@ -9,6 +9,7 @@ using UserData;
 using UserStore.Business.PasswordHasher;
 using UserStore.Business.Token;
 using UserStore.Business.Usr;
+using UserStore.Messages;
 using UserStore.Middleware;
 using UserStore.Repository.Audit;
 using UserStore.Repository.Ses;
@@ -81,6 +82,11 @@ public class Startup
                     h.Username("admin");
                     h.Password("admin123");
                 });
+
+                cfg.Message<NotificationRequest>(e => e.SetEntityName("user.notification.request"));
+                cfg.Message<LogInfo>(e => e.SetEntityName("user.logs.info"));
+                cfg.Message<LogError>(e => e.SetEntityName("user.logs.error"));
+                cfg.Message<LogAudit>(e => e.SetEntityName("user.logs.audit"));
             });
         });
         
