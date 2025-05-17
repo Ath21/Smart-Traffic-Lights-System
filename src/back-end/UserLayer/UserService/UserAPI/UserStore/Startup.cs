@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
@@ -70,19 +71,19 @@ public class Startup
 
         /******* [6] MassTransit ********/
 
-        /*
-                    services.AddMassTransit(x =>
+        
+        services.AddMassTransit(x =>
+        {
+            x.UsingRabbitMq((context, cfg) =>
             {
-                x.UsingRabbitMq((context, cfg) =>
+                cfg.Host("rabbitmq", "/", h =>
                 {
-                    cfg.Host("rabbitmq", "/", h =>
-                    {
-                        h.Username("admin");
-                        h.Password("admin123");
-                    });
+                    h.Username("admin");
+                    h.Password("admin123");
                 });
             });
-        */
+        });
+        
 
         /******* [7] Controllers ********/
 
