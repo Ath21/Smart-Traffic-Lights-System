@@ -3,7 +3,7 @@ using Microsoft.OpenApi.Models;
 using UserData;
 using UserStore.Business.AuditLog;
 using UserStore.Business.Session;
-using UserStore.Business.User;
+using UserStore.Business.Usr;
 
 namespace UserStore;
 
