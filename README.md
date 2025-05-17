@@ -70,6 +70,12 @@ Interfaces for system operators and city authorities to monitor and receive upda
 
 ### 🗄️ Database Schemas
 
+- **Overall Database Schema**  
+  ![OverallDb Schema](diagrams/Databases/Schema.png)  
+  [View full-size](diagrams/Databases/Schema.png)  
+
+  > High-level view showing relationships among all system databases: User, Log, Notification, Traffic Data, and Traffic Light DBs. Useful for understanding how microservices interact with data stores.
+
 - **User Database Schema**  
   ![UserDb Schema](diagrams/Databases/UserDb.png)  
   [View full-size](diagrams/Databases/UserDb.png)  
