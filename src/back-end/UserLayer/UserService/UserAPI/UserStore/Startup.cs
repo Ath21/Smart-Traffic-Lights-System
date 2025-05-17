@@ -1,6 +1,9 @@
 using System;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.OpenApi.Models;
 using UserData;
+using UserStore.Business.PasswordHasher;
+using UserStore.Business.Token;
 using UserStore.Repository.Audit;
 using UserStore.Repository.Ses;
 using UserStore.Repository.Usr;
@@ -29,11 +32,16 @@ public class Startup
         services.AddScoped(typeof(IUserRepository), typeof(UserRepository));
         services.AddScoped(typeof(ISessionRepository), typeof(SessionRepository));
 
-        /******* [3] AutoMapper ********/
+        /******* [3] Services ********/
+        
+        services.AddScoped(typeof(IPasswordHasher), typeof(PasswordHasher));
+        services.AddScoped(typeof(ITokenService), typeof(TokenService));
+        
+        /******* [4] AutoMapper ********/
 
         services.AddAutoMapper(typeof(UserStoreProfile));
 
-        /******* [4] Jwt Config ********/
+        /******* [5] Jwt Config ********/
 
         /*
             var jwtSettings = _config.GetSection("Jwt");
@@ -56,7 +64,7 @@ public class Startup
                 });
         */
 
-        /******* [5] MassTransit ********/
+        /******* [6] MassTransit ********/
 
         /*
                     services.AddMassTransit(x =>
@@ -72,14 +80,14 @@ public class Startup
             });
         */
 
-        /******* [6] Controllers ********/
+        /******* [7] Controllers ********/
 
         services.AddControllers()
             .AddJsonOptions(
                 options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
         services.AddEndpointsApiExplorer();
 
-        /******* [7] Swagger ********/
+        /******* [8] Swagger ********/
 
         services.AddSwaggerGen(c =>
             {
