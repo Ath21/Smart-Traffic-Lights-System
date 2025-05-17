@@ -7,7 +7,7 @@ using UserStore.Models;
 
 namespace UserStore.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("API/[controller]")]
     [ApiController]
     public class UserController : ControllerBase
     {
@@ -18,24 +18,24 @@ namespace UserStore.Controllers
             _userService = userService;
         }
 
-        // POST: api/user/register
-        [HttpPost("register")]
+        // POST: API/User/Register
+        [HttpPost("Register")]
         public async Task<ActionResult<RegisterResponseDto>> Register([FromBody] RegisterRequestDto request)
         {
             var result = await _userService.RegisterAsync(request);
             return CreatedAtAction(nameof(GetProfile), new { }, result);
         }
 
-        // POST: api/user/login
-        [HttpPost("login")]
+        // POST: API/User/Login
+        [HttpPost("Login")]
         public async Task<ActionResult<LoginResponseDto>> Login([FromBody] LoginRequestDto request)
         {
             var result = await _userService.LoginAsync(request);
             return Ok(result);
         }
 
-        // POST: api/user/logout
-        [HttpPost("logout")]
+        // POST: API/User/Logout
+        [HttpPost("Logout")]
         [Authorize]
         public async Task<IActionResult> Logout()
         {
@@ -49,8 +49,8 @@ namespace UserStore.Controllers
             return NoContent();
         }
 
-        // GET: api/user/profile
-        [HttpGet("profile")]
+        // GET: API/User/Profile
+        [HttpGet("Profile")]
         [Authorize]
         public async Task<ActionResult<UserProfileDto>> GetProfile()
         {
@@ -59,8 +59,8 @@ namespace UserStore.Controllers
             return Ok(profile);
         }
 
-        // PUT: api/user/update
-        [HttpPut("update")]
+        // PUT: API/User/Update
+        [HttpPut("Update")]
         [Authorize]
         public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequestDto updateUserProfileDto)
         {
@@ -69,8 +69,8 @@ namespace UserStore.Controllers
             return NoContent();
         }
 
-        // POST: api/user/reset-password
-        [HttpPost("reset-password")]
+        // POST: API/User/Reset-Password
+        [HttpPost("Reset-Password")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestDto resetPasswordRequestDto)
         {
             await _userService.ResetPasswordAsync(resetPasswordRequestDto);

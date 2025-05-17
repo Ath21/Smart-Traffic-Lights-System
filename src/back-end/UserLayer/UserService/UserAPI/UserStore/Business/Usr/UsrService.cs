@@ -86,7 +86,7 @@ public class UsrService : IUsrService
     public async Task LogoutAsync(string token)
     {
         var session = await _sessionRepository.GetSessionByTokenAsync(token);
-        if (session == null)
+        if (session != null)
         {
             await _sessionRepository.DeleteSessionAsync(token);
 
@@ -96,7 +96,7 @@ public class UsrService : IUsrService
                 UserId = session.UserId,
                 Action = "User Logged Out",
                 Timestamp = DateTime.UtcNow,
-                Details = $"User {session.UserId} logged out successfully."
+                Details = $"User {session.User.Username} logged out successfully."
             });
         }
     }

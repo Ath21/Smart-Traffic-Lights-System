@@ -21,6 +21,7 @@ public class UserDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
         // User entity configuration
         modelBuilder.Entity<User>()
             .Property(u => u.Role)
