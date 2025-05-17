@@ -10,20 +10,19 @@ public class ExceptionMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionMiddleware> _logger;
-    private readonly IPublishEndpoint _publishEndpoint;
 
     public ExceptionMiddleware(
         RequestDelegate next,
-        ILogger<ExceptionMiddleware> logger,
-        IPublishEndpoint publishEndpoint)
+        ILogger<ExceptionMiddleware> logger)
     {
         _next = next;
         _logger = logger;
-        _publishEndpoint = publishEndpoint;
     }
 
     public async Task InvokeAsync(HttpContext context)
     {
+        var _publishEndpoint = context.RequestServices.GetRequiredService<IPublishEndpoint>();
+
         try
         {
             await _next(context);
@@ -31,6 +30,7 @@ public class ExceptionMiddleware
         catch (UnauthorizedAccessException ex)
         {
             _logger.LogWarning(ex, "Unauthorized access");
+            await PublishError(ex, _publishEndpoint);
             context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
             context.Response.ContentType = "application/json";
             await context.Response.WriteAsJsonAsync(new { error = ex.Message });
@@ -38,6 +38,7 @@ public class ExceptionMiddleware
         catch (KeyNotFoundException ex)
         {
             _logger.LogWarning(ex, "Resource not found");
+            await PublishError(ex, _publishEndpoint);
             context.Response.StatusCode = (int)HttpStatusCode.NotFound;
             context.Response.ContentType = "application/json";
             await context.Response.WriteAsJsonAsync(new { error = ex.Message });
@@ -45,6 +46,7 @@ public class ExceptionMiddleware
         catch (InvalidOperationException ex)
         {
             _logger.LogWarning(ex, "Invalid operation");
+            await PublishError(ex, _publishEndpoint);
             context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
             context.Response.ContentType = "application/json";
             await context.Response.WriteAsJsonAsync(new { error = ex.Message });
@@ -52,13 +54,14 @@ public class ExceptionMiddleware
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unhandled exception occured");
+            await PublishError(ex, _publishEndpoint);
             context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
             context.Response.ContentType = "application/json";
             await context.Response.WriteAsJsonAsync(new { error = "An unexpected error occurred" });
         }
     }
 
-    private async Task PublishError(Exception ex)
+    private async Task PublishError(Exception ex, IPublishEndpoint _publishEndpoint)
     {
         try
         {

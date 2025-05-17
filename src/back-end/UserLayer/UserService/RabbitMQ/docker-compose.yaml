@@ -1,0 +1,11 @@
+services:
+
+  rabbitmq:
+    image: rabbitmq:3.8-management
+    container_name: rabbitmq_container
+  
+networks:
+  rabbitmq_network:
+    name: rabbitmq_network
+    driver: bridge
+    external: true

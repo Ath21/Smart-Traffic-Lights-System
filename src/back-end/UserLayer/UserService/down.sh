@@ -1,8 +1,10 @@
 #!/bin/bash
 
 NETWORK="user_network"
+RABBITMQ_NETWORK="rabbitmq_network"
 API="./UserLayer/UserService/UserAPI"
 MSSQL="./UserLayer/UserService/MSSQL"
+RABBITMQ="./UserLayer/UserService/RabbitMQ"
 COMPOSE_FILE="docker-compose.yaml"
 COMPOSE_FILE_OVERRIDE="docker-compose.override.yaml"
 
@@ -14,6 +16,8 @@ stop_containers() {
         -f "$API/$COMPOSE_FILE_OVERRIDE" \
         -f "$MSSQL/$COMPOSE_FILE" \
         -f "$MSSQL/$COMPOSE_FILE_OVERRIDE" \
+        -f "$RABBITMQ/$COMPOSE_FILE" \
+        -f "$RABBITMQ/$COMPOSE_FILE_OVERRIDE" \
         -p user_service \
         down
 
@@ -26,6 +30,13 @@ remove_network() {
         docker network rm "$NETWORK"
     else
         echo "⚠️  Docker network '$NETWORK' does not exist. Skipping removal."
+    fi
+
+    if docker network ls | grep -q "$RABBITMQ_NETWORK"; then
+        echo "🔌  Removing Docker network '$RABBITMQ_NETWORK'..."
+        docker network rm "$RABBITMQ_NETWORK"
+    else
+        echo "⚠️  Docker network '$RABBITMQ_NETWORK' does not exist. Skipping removal."
     fi
 }
 

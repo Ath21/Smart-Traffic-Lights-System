@@ -40,7 +40,7 @@ public class Startup
         services.AddScoped(typeof(ISessionRepository), typeof(SessionRepository));
 
         /******* [3] Services ********/
-        
+
         services.AddScoped(typeof(IPasswordHasher), typeof(PasswordHasher));
         services.AddScoped(typeof(ITokenService), typeof(TokenService));
         services.AddScoped(typeof(IUsrService), typeof(UsrService));
@@ -72,7 +72,7 @@ public class Startup
 
         /******* [6] MassTransit ********/
 
-        
+
         services.AddMassTransit(x =>
         {
             x.UsingRabbitMq((context, cfg) =>
@@ -89,7 +89,7 @@ public class Startup
                 cfg.Message<LogAudit>(e => e.SetEntityName("user.logs.audit"));
             });
         });
-        
+
 
         /******* [7] Controllers ********/
 
@@ -127,7 +127,6 @@ public class Startup
                     }
                 });
             });
-
     }
 
     public void Configure(WebApplication app, IWebHostEnvironment env)

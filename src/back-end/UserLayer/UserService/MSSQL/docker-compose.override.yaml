@@ -11,6 +11,7 @@ services:
       - user_data:/var/opt/mssql
     networks:
       - user_network
+      - rabbitmq_network
     restart: always
 
 volumes:

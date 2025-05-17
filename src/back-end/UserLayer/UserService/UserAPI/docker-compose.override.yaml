@@ -9,8 +9,11 @@ services:
       Jwt__Key: Nn7kLa8Rzv1XHt9UwMqP4YbFdJxVt2Km
       ASPNETCORE_ENVIRONMENT: Development
     depends_on:
+      rabbitmq:
+        condition: service_healthy
       mssql:
         condition: service_started
     networks:
       - user_network
+      - rabbitmq_network
     restart: always
