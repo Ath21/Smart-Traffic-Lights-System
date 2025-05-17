@@ -1,8 +1,3 @@
 namespace UserStore.Messages;
 
-public record class LogError
-{
-    string ErrorMessage { get; init; }
-    string StackTrace { get; init; }
-    DateTime Timestamp { get; init; }
-}
+public record class LogError(string ErrorMessage, DateTime utcNow, string StackTrace, DateTime Timestamp);

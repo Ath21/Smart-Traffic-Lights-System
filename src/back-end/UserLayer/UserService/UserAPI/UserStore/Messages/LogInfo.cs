@@ -1,7 +1,3 @@
 namespace UserStore.Messages;
 
-public record class LogInfo
-{
-    string Message { get; init; }
-    DateTime Timestamp { get; init; }
-}
+public record class LogInfo(string Message, DateTime Timestamp);

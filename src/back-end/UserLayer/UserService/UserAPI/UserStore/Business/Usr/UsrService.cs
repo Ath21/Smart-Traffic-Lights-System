@@ -1,9 +1,11 @@
 using System;
 using AutoMapper;
+using MassTransit;
 using Microsoft.AspNetCore.Identity;
 using UserData.Entities;
 using UserStore.Business.PasswordHasher;
 using UserStore.Business.Token;
+using UserStore.Messages;
 using UserStore.Models;
 using UserStore.Repository.Audit;
 using UserStore.Repository.Ses;
@@ -19,6 +21,7 @@ public class UsrService : IUsrService
     private readonly ITokenService _tokenService;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IMapper _mapper;
+    private readonly IPublishEndpoint _publishEndpoint;
 
     public UsrService(
         IUserRepository userRepository,
@@ -26,7 +29,8 @@ public class UsrService : IUsrService
         ISessionRepository sessionRepository,
         ITokenService tokenService,
         IPasswordHasher passwordHasher,
-        IMapper mapper)
+        IMapper mapper,
+        IPublishEndpoint publishEndpoint)
     {
         _userRepository = userRepository;
         _auditLogRepository = auditLogRepository;
@@ -34,6 +38,7 @@ public class UsrService : IUsrService
         _tokenService = tokenService;
         _passwordHasher = passwordHasher;
         _mapper = mapper;
+        _publishEndpoint = publishEndpoint;
     }
 
     public async Task<UserProfileDto> GetProfileAsync(Guid userId)
@@ -76,6 +81,20 @@ public class UsrService : IUsrService
             Details = $"User {user.Username} logged in successfully."
         });
 
+        await _publishEndpoint.Publish(new LogInfo(
+            $"User {user.Username} logged in.",
+            DateTime.UtcNow));
+
+        await _publishEndpoint.Publish(new LogAudit(
+            user.UserId,
+            "User Logged In",
+            $"User {user.Username} logged in successfully.",
+            DateTime.UtcNow));
+
+        await _publishEndpoint.Publish(new NotificationRequest(
+            user.UserId,
+            "You have successfully logged in."));
+        
         return new LoginResponseDto
         {
             Token = token,
@@ -98,6 +117,20 @@ public class UsrService : IUsrService
                 Timestamp = DateTime.UtcNow,
                 Details = $"User {session.User.Username} logged out successfully."
             });
+
+            await _publishEndpoint.Publish(new LogInfo(
+                $"User {session.User.Username} logged out.",
+                DateTime.UtcNow));
+
+            await _publishEndpoint.Publish(new LogAudit(
+                session.UserId,
+                "User Logged Out",
+                $"User {session.User.Username} logged out successfully.",
+                DateTime.UtcNow));
+            
+            await _publishEndpoint.Publish(new NotificationRequest(
+                session.User.UserId,
+                "You have successfully logged out."));
         }
     }
 
@@ -121,6 +154,20 @@ public class UsrService : IUsrService
             Timestamp = DateTime.UtcNow,
             Details = $"User {user.Username} registered successfully."
         });
+
+        await _publishEndpoint.Publish(new LogInfo(
+            $"User {user.Username} registered.",
+            DateTime.UtcNow));
+
+        await _publishEndpoint.Publish(new LogAudit(
+            user.UserId,
+            "User Registered",
+            $"User {user.Username} registered successfully.",
+            DateTime.UtcNow));
+        
+        await _publishEndpoint.Publish(new NotificationRequest(
+            user.UserId,
+            $"Welcome {user.Username} to PADA Smart Traffic Lights System! Your account has been created successfully."));
 
         return new RegisterResponseDto
         {
@@ -153,6 +200,17 @@ public class UsrService : IUsrService
             Timestamp = DateTime.UtcNow,
             Details = $"User {user.Username} reset their password successfully."
         });
+
+        await _publishEndpoint.Publish(new LogAudit(
+            user.UserId,
+            "User Password Reset",
+            $"User {user.Username} reset their password successfully.",
+            DateTime.UtcNow));
+        
+        await _publishEndpoint.Publish(new NotificationRequest(
+            user.UserId,
+            "Your password was successfully reset."));
+
     }
 
     public async Task UpdateProfileAsync(Guid userId, UpdateProfileRequestDto updateUserProfileDto)
@@ -177,5 +235,15 @@ public class UsrService : IUsrService
             Timestamp = DateTime.UtcNow,
             Details = $"User {user.Username} updated their profile successfully."
         });
+
+        await _publishEndpoint.Publish(new LogAudit(
+            user.UserId,
+            "User Profile Updated",
+            $"User {user.Username} updated their profile successfully.",
+            DateTime.UtcNow));
+        
+        await _publishEndpoint.Publish(new NotificationRequest(
+            user.UserId,
+            "Your profile has been updated."));
     }
 }
