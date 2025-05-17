@@ -1,6 +1,9 @@
 using System;
 using Microsoft.OpenApi.Models;
 using UserData;
+using UserStore.Business.AuditLog;
+using UserStore.Business.Session;
+using UserStore.Business.User;
 
 namespace UserStore;
 
@@ -21,9 +24,9 @@ public class Startup
 
         /******* [2] Repositories ********/
 
-        // services.AddScoped<IAuthRepository, AuthRepository>();
-        // services.AddScoped<IJwtHandler, JwtHandler>();
-        // services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped(typeof(IAuditLogRepository), typeof(AuditLogRepository));
+        services.AddScoped(typeof(IUserRepository), typeof(UserRepository));
+        services.AddScoped(typeof(ISessionRepository), typeof(SessionRepository));
 
         /******* [3] AutoMapper ********/
 
