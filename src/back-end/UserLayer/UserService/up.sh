@@ -35,7 +35,7 @@ up_containers() {
         -f "$RABBITMQ/$COMPOSE_FILE" \
         -f "$RABBITMQ/$COMPOSE_FILE_OVERRIDE" \
         -p user_service \
-        up --build -d
+        up -d
 
     echo "✅  User Service containers are running!"
 }
