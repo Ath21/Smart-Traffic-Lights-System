@@ -1,4 +1,17 @@
-using System;
+/*
+ * UserStore.Repository.Audit.AuditLogRepository
+ *
+ * This class implements the IAuditLogRepository interface and provides methods for logging user actions
+ * and retrieving audit logs.
+ * It uses Entity Framework Core to interact with the database.
+ * The methods include:
+ * - LogActionSync: Logs a user action synchronously.
+ * - GetAuditLogsByUserIdAsync: Retrieves audit logs for a specific user by their unique identifier (UserId).
+ * The class uses the UserDbContext to interact with the database and perform the necessary operations.
+ * The AuditLogRepository class is typically used in the UserService layer of the application.
+ * It is part of the UserStore project, which is responsible for managing user-related operations
+ * and services.
+ */
 using UserData;
 using UserData.Entities;
 

@@ -1,4 +1,20 @@
-using System;
+/*
+ * UserStore.Repository.Usr.UserRepository
+ *
+ * This class implements the IUserRepository interface and provides methods for performing CRUD operations on User entities.
+ * It uses Entity Framework Core to interact with the database.
+ * The methods include:
+ * - CreateAsync: Adds a new User entity to the database.
+ * - GetAllAsync: Retrieves all User entities from the database.
+ * - GetUserByIdAsync: Retrieves a User entity by its unique identifier (UserId).
+ * - GetUserByUsernameOrEmailAsync: Retrieves a User entity by its username or email address.
+ * - UpdateAsync: Updates an existing User entity in the database.
+ * - UserExistsAsync: Checks if a User entity exists in the database by its username or email address.
+ * The class uses the UserDbContext to interact with the database and perform the necessary operations.
+ * The UserRepository class is typically used in the UserService layer of the application.
+ * It is part of the UserStore project, which is responsible for managing user-related operations
+ * and services.
+ */
 using UserData;
 using UserData.Entities;
 

@@ -1,4 +1,18 @@
-using System;
+/*
+ * UserStore.Repository.Ses.SessionRepository
+ *
+ * This class implements the ISessionRepository interface and provides methods for managing Session entities.
+ * It uses Entity Framework Core to interact with the database.
+ * The methods include:
+ * - CreateSessionAsync: Creates a new Session entity in the database.
+ * - GetSessionByTokenAsync: Retrieves a Session entity by its unique token.
+ * - DeleteSessionAsync: Deletes a Session entity by its unique token.
+ * - DeleteSessionsByUserIdAsync: Deletes all Session entities associated with a specific UserId.
+ * The class uses the UserDbContext to interact with the database and perform the necessary operations.
+ * The SessionRepository class is typically used in the UserService layer of the application.
+ * It is part of the UserStore project, which is responsible for managing user-related operations
+ * and services.
+ */
 using UserData;
 using UserData.Entities;
 

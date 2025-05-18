@@ -1,7 +1,30 @@
-using System;
+/*
+ * UserStore.Middleware.ExceptionMiddleware
+ *
+ * This class is part of the UserStore project, which is responsible for managing user-related operations
+ * and services. The ExceptionMiddleware class is a custom middleware component that handles exceptions
+ * that occur during the processing of HTTP requests in the UserStore application. It is designed to
+ * catch specific exceptions, log them, and return appropriate HTTP responses to the client.
+ * The middleware uses MassTransit to publish error logs to a message broker for further processing.
+ * The middleware is typically registered in the ASP.NET Core pipeline to ensure that it is executed
+ * for every incoming HTTP request.
+ * The ExceptionMiddleware class contains the following key components:
+ * - Constructor: Initializes the middleware with a request delegate and a logger.
+ * - InvokeAsync: The main method that processes the HTTP request and handles exceptions.
+ * - PublishError: A private method that publishes error logs to a message broker using MassTransit.
+ * The middleware handles the following exceptions:
+ * - UnauthorizedAccessException: Catches unauthorized access exceptions and returns a 401 Unauthorized response.
+ * - KeyNotFoundException: Catches key not found exceptions and returns a 404 Not Found response.
+ * - InvalidOperationException: Catches invalid operation exceptions and returns a 400 Bad Request response.
+ * - Exception: Catches all other unhandled exceptions and returns a 500 Internal Server Error response.
+ * The middleware also logs the exceptions using the provided logger and publishes error logs to a message broker
+ * for further processing.
+ * The ExceptionMiddleware class is typically used in the UserService layer of the application.
+ * It is part of the UserStore project, which is responsible for managing user-related operations
+ * and services.
+ */
 using System.Net;
 using MassTransit;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using UserStore.Messages;
 
 namespace UserStore.Middleware;

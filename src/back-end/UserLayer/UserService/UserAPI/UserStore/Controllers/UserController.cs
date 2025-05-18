@@ -1,6 +1,23 @@
+/*
+ * UserStore.Controllers.UserController
+ *
+ * This class represents the controller for user-related operations in the UserStore application.
+ * It contains methods for user registration, login, logout, profile retrieval, profile update,
+ * and password reset.
+ * The UserController class is typically used in the UserService layer of the application.
+ * It is part of the UserStore project, which is responsible for managing user-related operations
+ * and services.
+ *
+ * API Endpoints:
+ *   POST   API/User/Register       - Register a new user
+ *   POST   API/User/Login          - Login a user
+ *   POST   API/User/Logout         - Logout the current user (requires authorization)
+ *   GET    API/User/Profile        - Get the current user's profile (requires authorization)
+ *   PUT    API/User/Update         - Update the current user's profile (requires authorization)
+ *   POST   API/User/Reset-Password - Reset a user's password
+ */
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using UserStore.Business.Usr;
 using UserStore.Models;
@@ -60,7 +77,7 @@ namespace UserStore.Controllers
         }
 
         // PUT: API/User/Update
-        [HttpPut("Update")]
+        [HttpPut("UpdateProfile")]
         [Authorize]
         public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequestDto updateUserProfileDto)
         {
@@ -70,7 +87,7 @@ namespace UserStore.Controllers
         }
 
         // POST: API/User/Reset-Password
-        [HttpPost("Reset-Password")]
+        [HttpPost("ResetPassword")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestDto resetPasswordRequestDto)
         {
             await _userService.ResetPasswordAsync(resetPasswordRequestDto);

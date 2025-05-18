@@ -1,5 +1,12 @@
-using System;
-
+/*
+ * UserStore.Models.UserProfileDto
+ *
+ * This class represents the data transfer object (DTO) for user profiles in the UserStore application.
+ * It contains properties for the user ID, username, email, role, status, and timestamps for creation and updates.
+ * The UserProfileDto class is typically used in the UserService layer of the application.
+ * It is part of the UserStore project, which is responsible for managing user-related operations
+ * and services.
+ */
 namespace UserStore.Models;
 
 public class UserProfileDto

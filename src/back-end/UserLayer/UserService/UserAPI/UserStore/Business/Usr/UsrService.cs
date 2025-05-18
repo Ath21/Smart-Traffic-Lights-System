@@ -1,9 +1,33 @@
-using System;
+/*
+ * UserStore.Business.Usr.UsrService
+ *
+ * This class implements the IUsrService interface and provides methods for user-related operations
+ * such as registration, login, profile management, password reset, and logout.
+ * The UsrService class is typically used in the UserService layer of the application.
+ * It is part of the UserStore project, which is responsible for managing user-related operations
+ * and services.
+ *
+ * Dependencies:
+ *   - IUserRepository: Interface for user data access operations.
+ *   - IAuditLogRepository: Interface for audit log data access operations.
+ *   - ISessionRepository: Interface for session data access operations.
+ *   - ITokenService: Interface for generating JWT tokens.
+ *   - IPasswordHasher: Interface for hashing and verifying passwords.
+ *   - IMapper: Interface for object mapping (e.g., AutoMapper).
+ *   - IPublishEndpoint: Interface for publishing messages to a message broker (e.g., MassTransit).
+ *
+ * Methods:
+ *   - Task<UserProfileDto> GetProfileAsync(Guid userId): Retrieves the user's profile information.
+ *   - Task<LoginResponseDto> LoginAsync(LoginRequestDto request): Authenticates the user and generates a JWT token.
+ *   - Task LogoutAsync(string token): Logs out the user by invalidating the session.
+ *   - Task<RegisterResponseDto> RegisterAsync(RegisterRequestDto request): Registers a new user.
+ *   - Task ResetPasswordAsync(ResetPasswordRequestDto resetPasswordRequestDto): Resets the user's password.
+ *   - Task UpdateProfileAsync(Guid userId, UpdateProfileRequestDto updateUserProfileDto): Updates the user's profile information.
+ */
 using AutoMapper;
 using MassTransit;
-using Microsoft.AspNetCore.Identity;
 using UserData.Entities;
-using UserStore.Business.PasswordHasher;
+using UserStore.Business.Password;
 using UserStore.Business.Token;
 using UserStore.Messages;
 using UserStore.Models;
@@ -41,6 +65,7 @@ public class UsrService : IUsrService
         _publishEndpoint = publishEndpoint;
     }
 
+    // GET: /API/User/Profile
     public async Task<UserProfileDto> GetProfileAsync(Guid userId)
     {
         var user = await _userRepository.GetUserByIdAsync(userId);
@@ -52,6 +77,7 @@ public class UsrService : IUsrService
         return _mapper.Map<UserProfileDto>(user);
     }
 
+    // POST: /API/User/Login
     public async Task<LoginResponseDto> LoginAsync(LoginRequestDto request)
     {
         var user = await _userRepository.GetUserByUsernameOrEmailAsync(request.Username);
@@ -94,7 +120,7 @@ public class UsrService : IUsrService
         await _publishEndpoint.Publish(new NotificationRequest(
             user.UserId,
             "You have successfully logged in."));
-        
+
         return new LoginResponseDto
         {
             Token = token,
@@ -102,6 +128,7 @@ public class UsrService : IUsrService
         };
     }
 
+    // POST: /API/User/Logout
     public async Task LogoutAsync(string token)
     {
         var session = await _sessionRepository.GetSessionByTokenAsync(token);
@@ -127,13 +154,14 @@ public class UsrService : IUsrService
                 "User Logged Out",
                 $"User {session.User.Username} logged out successfully.",
                 DateTime.UtcNow));
-            
+
             await _publishEndpoint.Publish(new NotificationRequest(
                 session.User.UserId,
                 "You have successfully logged out."));
         }
     }
 
+    // POST: /API/User/Register
     public async Task<RegisterResponseDto> RegisterAsync(RegisterRequestDto request)
     {
         if (await _userRepository.UserExistsAsync(request.Username, request.Email))
@@ -164,7 +192,7 @@ public class UsrService : IUsrService
             "User Registered",
             $"User {user.Username} registered successfully.",
             DateTime.UtcNow));
-        
+
         await _publishEndpoint.Publish(new NotificationRequest(
             user.UserId,
             $"Welcome {user.Username} to PADA Smart Traffic Lights System! Your account has been created successfully."));
@@ -179,6 +207,7 @@ public class UsrService : IUsrService
         };
     }
 
+    // POST: /API/User/ResetPassword
     public async Task ResetPasswordAsync(ResetPasswordRequestDto resetPasswordRequestDto)
     {
         var user = await _userRepository.GetUserByUsernameOrEmailAsync(resetPasswordRequestDto.UsernameOrEmail);
@@ -206,13 +235,14 @@ public class UsrService : IUsrService
             "User Password Reset",
             $"User {user.Username} reset their password successfully.",
             DateTime.UtcNow));
-        
+
         await _publishEndpoint.Publish(new NotificationRequest(
             user.UserId,
             "Your password was successfully reset."));
 
     }
 
+    // PUT: /API/User/UpdateProfile
     public async Task UpdateProfileAsync(Guid userId, UpdateProfileRequestDto updateUserProfileDto)
     {
         var user = await _userRepository.GetUserByIdAsync(userId);
@@ -241,7 +271,7 @@ public class UsrService : IUsrService
             "User Profile Updated",
             $"User {user.Username} updated their profile successfully.",
             DateTime.UtcNow));
-        
+
         await _publishEndpoint.Publish(new NotificationRequest(
             user.UserId,
             "Your profile has been updated."));
