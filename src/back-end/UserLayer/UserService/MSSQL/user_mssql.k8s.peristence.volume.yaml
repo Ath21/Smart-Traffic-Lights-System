@@ -1,0 +1,10 @@
+apiVersion: apps/v1
+kind: PersistentVolumeClaim
+metadata:
+  name: user_data
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi

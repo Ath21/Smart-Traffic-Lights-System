@@ -6,14 +6,14 @@ spec:
   replicas: 2
   selector:
     matchLabels:
-      app: user_api_container
+      app: user_api
   template:
     metadata:
       labels:
-        app: user_api_container
+        app: user_api
     spec:
       containers:
-      - name: user_api_container
+      - name: user_api
         image: ath21/stls:user_api
         ports:
         - containerPort: 8080
@@ -21,8 +21,8 @@ spec:
         - name: ConnectionStrings__DefaultConnection
           valueFrom:
             secretKeyRef:
-              name: user-service-secret
-              key: connection-string
+              name: user_service_secret
+              key: connection_string
         - name: Jwt__Issuer
           value: http://localhost:5055/API/User
         - name: Jwt__Audience
@@ -30,8 +30,8 @@ spec:
         - name: Jwt__Key
           valueFrom:
             secretKeyRef:
-              name: user-service-secret
-              key: jwt-key
+              name: user_service_secret
+              key: jwt_key
         - name: ASPNETCORE_ENVIRONMENT
           value: Development
         - name: RabbitMQ__Host
@@ -41,19 +41,19 @@ spec:
         - name: RabbitMQ__UserName
           valueFrom:
             secretKeyRef:
-              name: user-service-secret
-              key: rabbimq-username
+              name: user_service_secret
+              key: rabbimq_username
         - name: RabbitMQ__Password
           valueFrom:
             secretKeyRef:
-              name: user-service-secret
-              key: rabbitmq-password
-            resources:
-    requests:
-      memory: "128Mi"
-      cpu: "100m"
-    limits:
-      memory: "256Mi"
-      cpu: "250m"
+              name: user_service_secret
+              key: rabbitmq_password
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "500m"
+          limits:
+            memory: "4Gi"
+            cpu: "1000m" 
             
             

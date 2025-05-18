@@ -1,0 +1,11 @@
+apiVersion: apps/v1
+kind: Service
+metadata:
+  name: user_mssql
+spec:
+  selector:
+    app: user_mssql
+  ports:
+    - protocol: TCP
+      port: 1433
+      targetPort: 1433

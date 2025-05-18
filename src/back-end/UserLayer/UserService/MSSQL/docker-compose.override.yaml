@@ -1,6 +1,6 @@
 services:
   
-  mssql:
+  user_mssql:
     environment:
       - ACCEPT_EULA=Y
       - MSSQL_SA_PASSWORD=MyPass@word

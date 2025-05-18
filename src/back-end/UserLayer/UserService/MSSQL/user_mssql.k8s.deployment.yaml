@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user_mssql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user_mssql
+  template:
+    metadata:
+      labels:
+        app: user_mssql
+    spec:
+      containers:
+        - name: user_mssql
+          image: mcr.microsoft.com/mssql/server:2022-latest
+          ports:
+            - containerPort: 1433
+          env:
+            - name: ACCEPT_EULA
+              value: "Y"
+            - name: SA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: user_mssql_secret
+                  key: sa_password
+          volumeMounts:
+            - name: user_data
+              mountPath: /var/opt/mssql
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "500m"
+            limits:
+              memory: "4Gi"
+              cpu: "1000m"
+      volumes:
+        - name: user_data
+          persistentVolumeClaim:
+            claimName: user_data
