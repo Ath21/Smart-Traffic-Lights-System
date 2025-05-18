@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user_api_container
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: user_api_container
+  template:
+    metadata:
+      labels:
+        app: user_api_container
+    spec:
+      containers:
+      - name: user_api_container
+        image: ath21/stls:user_api
+        ports:
+        - containerPort: 8080
+        env:
+        - name: ConnectionStrings__DefaultConnection
+          valueFrom:
+            secretKeyRef:
+              name: user-service-secret
+              key: connection-string
+        - name: Jwt__Issuer
+          value: http://localhost:5055/API/User
+        - name: Jwt__Audience
+          value: http://localhost:5055/API/User
+        - name: Jwt__Key
+          valueFrom:
+            secretKeyRef:
+              name: user-service-secret
+              key: jwt-key
+        - name: ASPNETCORE_ENVIRONMENT
+          value: Development
+        - name: RabbitMQ__Host
+          value: rabbitmq
+        - name: RabbitMQ__Port
+          value: "5672"
+        - name: RabbitMQ__UserName
+          valueFrom:
+            secretKeyRef:
+              name: user-service-secret
+              key: rabbimq-username
+        - name: RabbitMQ__Password
+          valueFrom:
+            secretKeyRef:
+              name: user-service-secret
+              key: rabbitmq-password
+            resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "250m"
+            
+            
