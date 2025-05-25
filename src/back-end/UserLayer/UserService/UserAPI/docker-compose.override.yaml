@@ -11,7 +11,7 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
-      mssql:
+      user_mssql:
         condition: service_started
     networks:
       - user_network

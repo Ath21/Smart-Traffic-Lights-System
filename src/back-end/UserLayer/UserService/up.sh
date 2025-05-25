@@ -4,7 +4,7 @@ NETWORK="user_network"
 RABBITMQ_NETWORK="rabbitmq_network"
 API="./UserLayer/UserService/UserAPI"
 MSSQL="./UserLayer/UserService/MSSQL"
-RABBITMQ="./UserLayer/UserService/RabbitMQ"
+RABBITMQ="../back-end/RabbitMQ"
 COMPOSE_FILE="docker-compose.yaml"
 COMPOSE_FILE_OVERRIDE="docker-compose.override.yaml"
 
