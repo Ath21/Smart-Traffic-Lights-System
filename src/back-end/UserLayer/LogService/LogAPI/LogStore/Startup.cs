@@ -1,5 +1,6 @@
 using System;
 using LogData;
+using LogStore.Business;
 using LogStore.Repository;
 using MassTransit;
 using Microsoft.OpenApi.Models;
@@ -29,13 +30,11 @@ public class Startup
 
         /******* [3] Services ********/
 
-        /*services.AddScoped(typeof(IPasswordHasher), typeof(PasswordHasher));
-        services.AddScoped(typeof(ITokenService), typeof(TokenService));
-        services.AddScoped(typeof(IUsrService), typeof(UsrService));*/
+        services.AddScoped(typeof(ILogService), typeof(LogService));
 
         /******* [4] AutoMapper ********/
 
-        //services.AddAutoMapper(typeof(UserStoreProfile));
+        services.AddAutoMapper(typeof(LogStoreProfile));
 
         /******* [5] MassTransit ********/
 
