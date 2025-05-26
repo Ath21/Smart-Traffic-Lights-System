@@ -33,6 +33,16 @@
             "related": ".pdb;.xml"
           }
         }
+      },
+      "LogData/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "compile": {
+          "bin/placeholder/LogData.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/LogData.dll": {}
+        }
       }
     }
   },
@@ -67,10 +77,16 @@
         "microsoft.openapi.1.6.17.nupkg.sha512",
         "microsoft.openapi.nuspec"
       ]
+    },
+    "LogData/1.0.0": {
+      "type": "project",
+      "path": "../LogData/LogData.csproj",
+      "msbuildProject": "../LogData/LogData.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net9.0": [
+      "LogData >= 1.0.0",
       "Microsoft.AspNetCore.OpenApi >= 9.0.5"
     ]
   },
@@ -98,7 +114,11 @@
       "frameworks": {
         "net9.0": {
           "targetAlias": "net9.0",
-          "projectReferences": {}
+          "projectReferences": {
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/LogService/LogAPI/LogData/LogData.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/LogService/LogAPI/LogData/LogData.csproj"
+            }
+          }
         }
       },
       "warningProperties": {
