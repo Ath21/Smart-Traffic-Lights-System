@@ -1,6 +1,7 @@
 using System;
 using LogData;
 using LogStore.Business;
+using LogStore.Middleware;
 using LogStore.Repository;
 using MassTransit;
 using Microsoft.OpenApi.Models;
@@ -102,7 +103,7 @@ public class Startup
 
         app.UseHttpsRedirection();
 
-        //app.UseMiddleware<ExceptionMiddleware>();
+        app.UseMiddleware<ExceptionMiddleware>();
 
         app.UseAuthentication();
         app.UseAuthorization();
