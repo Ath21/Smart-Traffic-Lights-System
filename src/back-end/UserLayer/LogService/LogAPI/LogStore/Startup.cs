@@ -1,5 +1,6 @@
 using System;
 using LogData;
+using LogStore.Repository;
 using MassTransit;
 using Microsoft.OpenApi.Models;
 
@@ -22,13 +23,9 @@ public class Startup
             _configuration.GetSection("LogDb")
         );
 
-        services.AddSingleton<LogDbContext>();
-
         /******* [2] Repositories ********/
 
-        /*services.AddScoped(typeof(IAuditLogRepository), typeof(AuditLogRepository));
-        services.AddScoped(typeof(IUserRepository), typeof(UserRepository));
-        services.AddScoped(typeof(ISessionRepository), typeof(SessionRepository));*/
+        services.AddScoped(typeof(ILogRepository), typeof(LogRepository));
 
         /******* [3] Services ********/
 
