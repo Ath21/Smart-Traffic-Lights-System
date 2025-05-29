@@ -4,6 +4,7 @@ using LogStore.Business;
 using LogStore.Middleware;
 using LogStore.Repository;
 using MassTransit;
+using MassTransit.RabbitMqTransport.Topology;
 using Microsoft.OpenApi.Models;
 
 namespace LogStore;
@@ -41,6 +42,10 @@ public class Startup
 
         services.AddMassTransit(x =>
         {
+            x.AddConsumer<UserLogConsumer>();
+            x.AddConsumer<TrafficAnalyticsLogConsumer>();
+            x.AddConsumer<TrafficLightControlLogConsumer>();
+
             x.UsingRabbitMq((context, cfg) =>
             {
                 cfg.Host("rabbitmq", "/", h =>
@@ -48,18 +53,42 @@ public class Startup
                     h.Username("admin");
                     h.Password("admin123");
                 });
+
+                cfg.ReceiveEndpoint("user.logs.*", e =>
+                {
+                    e.ConfigureConsumer<UserLogConsumer>(context);
+                    e.Bind("user.logs.info");
+                    e.Bind("user.logs.error");
+                    e.Bind("user.logs.audit");
+                });
+
+                cfg.ReceiveEndpoint("traffic.analytics.*", e =>
+                {
+                    e.ConfigureConsumer<TrafficAnalyticsLogConsumer>(context);
+                    e.Bind("traffic.analytics.daily_summary");
+                    e.Bind("traffic.analytics.congestion_alert");
+                });
+
+                cfg.ReceiveEndpoint("traffic.light.control.*", e =>
+                {
+                    e.ConfigureConsumer<TrafficLightControlLogConsumer>(context);
+                    e.Bind("traffic.light.control", x =>
+                    {
+                        x.ExchangeType = ExchangeType.Topic;
+                        x.RoutingKey = "traffic.light.control.*"; // Bind to all routing keys under this topic
+                    });
+                });
             });
         });
 
-
-        /******* [7] Controllers ********/
+        /******* [6] Controllers ********/
 
         services.AddControllers()
             .AddJsonOptions(
                 options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
         services.AddEndpointsApiExplorer();
 
-        /******* [8] Swagger ********/
+        /******* [7] Swagger ********/
 
         services.AddSwaggerGen(c =>
             {
