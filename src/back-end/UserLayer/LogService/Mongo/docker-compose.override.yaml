@@ -1,0 +1,16 @@
+services:
+  
+  log_mongo:
+    ports:
+      - '27017:27017'
+    volumes:
+      - log_data:/data/db
+    networks:
+      - log_network
+      - rabbitmq_network
+    restart: always
+
+volumes:
+  log_data:
+    name: log_data
+    driver: local

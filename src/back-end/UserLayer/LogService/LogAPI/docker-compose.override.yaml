@@ -1,0 +1,16 @@
+services:
+  log_api:
+    ports:
+      - '5005:8080'
+    environment:
+      ConnectionStrings__DefaultConnection: mongodb://log_mongo:27017/LogDb
+      ASPNETCORE_ENVIRONMENT: Development
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      log_mongo:
+        condition: service_started
+    networks:
+      - log_network
+      - rabbitmq_network
+    restart: always

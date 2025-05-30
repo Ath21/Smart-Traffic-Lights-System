@@ -1,0 +1,15 @@
+services:
+  
+  log_mongo:
+    image: mongo:6.0
+    container_name: log_mongo_container
+
+networks:
+  log_network:
+    name: log_network
+    driver: bridge
+    external: true
+  rabbitmq_network:
+    name: rabbitmq_network
+    driver: bridge
+    external: true

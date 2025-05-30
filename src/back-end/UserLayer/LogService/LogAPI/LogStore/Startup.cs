@@ -25,7 +25,7 @@ public class Startup
         /******* [1] MongoDb Config ********/
 
         services.Configure<LogDbSettings>(
-            _configuration.GetSection("LogDb")
+            _configuration.GetSection("DefaultConnection")
         );
         services.AddSingleton<LogDbContext>();
         
