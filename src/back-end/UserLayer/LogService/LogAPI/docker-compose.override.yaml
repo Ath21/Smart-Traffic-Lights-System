@@ -3,7 +3,9 @@ services:
     ports:
       - '5005:8080'
     environment:
-      ConnectionStrings__DefaultConnection: mongodb://log_mongo:27017/LogDb
+      DefaultConnection__ConnectionString: mongodb://mongo:27017
+      DefaultConnection__DatabaseName: LogDb
+      DefaultConnection__UserLogsCollectionName: Log
       ASPNETCORE_ENVIRONMENT: Development
     depends_on:
       rabbitmq:
