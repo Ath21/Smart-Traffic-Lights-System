@@ -23,7 +23,6 @@ public class TrafficLightControlLogConsumer : IConsumer<TrafficLogMessage>
             LogLevel = "Info",
             Service = "Traffic Light Control Service",
             Message = message.Message,
-            TraceId = context.MessageId?.ToString() ?? Guid.NewGuid().ToString(),
             Timestamp = message.Timestamp
         };
 

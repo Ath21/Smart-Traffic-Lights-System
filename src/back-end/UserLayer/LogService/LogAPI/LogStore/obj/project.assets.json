@@ -1925,6 +1925,7 @@
       "MassTransit.RabbitMQ >= 8.4.1",
       "Microsoft.AspNetCore.OpenApi >= 9.0.5",
       "MongoDB.Driver >= 3.4.0",
+      "RabbitMQ.Client >= 7.1.2",
       "Swashbuckle.AspNetCore >= 8.1.2"
     ]
   },
@@ -1994,6 +1995,10 @@
           "MongoDB.Driver": {
             "target": "Package",
             "version": "[3.4.0, )"
+          },
+          "RabbitMQ.Client": {
+            "target": "Package",
+            "version": "[7.1.2, )"
           },
           "Swashbuckle.AspNetCore": {
             "target": "Package",

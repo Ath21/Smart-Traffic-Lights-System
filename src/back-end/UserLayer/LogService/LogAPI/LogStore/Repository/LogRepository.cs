@@ -7,32 +7,25 @@ namespace LogStore.Repository;
 
 public class LogRepository : ILogRepository
 {
-    private readonly IMongoCollection<Log> _logsCollection;
+    private readonly LogDbContext _context;
 
-    public LogRepository(IOptions<LogDbSettings> userLogsDatabaseSettings)
+    public LogRepository(LogDbContext context)
     {
-        var mongoClient = new MongoClient(
-            userLogsDatabaseSettings.Value.ConnectionString);
-
-        var mongoDatabase = mongoClient.GetDatabase(
-            userLogsDatabaseSettings.Value.DatabaseName);
-
-        _logsCollection = mongoDatabase.GetCollection<Log>(
-            userLogsDatabaseSettings.Value.LogsCollectionName);
+        _context = context; 
     }
 
     public async Task CreateAsync(Log newLog)
     {
-        await _logsCollection.InsertOneAsync(newLog);
+        await _context.LogsCollection.InsertOneAsync(newLog);
     }
 
     public async Task<List<Log>> GetAllAsync()
     {
-        return await _logsCollection.Find(_ => true).ToListAsync();
+        return await _context.LogsCollection.Find(_ => true).ToListAsync();
     }
 
     public async Task<List<Log?>> GetAsync(string Id)
     {
-        return await _logsCollection.Find(x => x.Id == Id).ToListAsync();
+        return await _context.LogsCollection.Find(x => x.Id == Id).ToListAsync();
     }
 }

@@ -1,11 +1,13 @@
 using System;
 using LogData;
 using LogStore.Business;
+using LogStore.Consumers;
 using LogStore.Middleware;
 using LogStore.Repository;
 using MassTransit;
-using MassTransit.RabbitMqTransport.Topology;
+
 using Microsoft.OpenApi.Models;
+using RabbitMQ.Client;
 
 namespace LogStore;
 
@@ -25,7 +27,8 @@ public class Startup
         services.Configure<LogDbSettings>(
             _configuration.GetSection("LogDb")
         );
-
+        services.AddSingleton<LogDbContext>();
+        
         /******* [2] Repositories ********/
 
         services.AddScoped(typeof(ILogRepository), typeof(LogRepository));

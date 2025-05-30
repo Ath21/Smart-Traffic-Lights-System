@@ -23,7 +23,6 @@ public TrafficAnalyticsLogConsumer(ILogService logService)
             LogLevel = message.LogLevel,
             Service = message.Service,
             Message = message.Message,
-            TraceId = context.MessageId?.ToString() ?? Guid.NewGuid().ToString(),
             Timestamp = message.Timestamp
         };
 

@@ -17,6 +17,4 @@ public class Log
     public string Message { get; set; }
     [BsonElement("timestamp")]
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
-    [BsonElement("trace_id")]
-    public string? TraceId { get; set; }
 }
