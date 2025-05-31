@@ -3,14 +3,24 @@ services:
     ports:
       - '5055:8080'
     environment:
-      ConnectionStrings__DefaultConnection: Server=mssql,1433;Database=UserDb;User Id=sa;Password=MyPass@word;TrustServerCertificate=True
+      ConnectionStrings__DefaultConnection: Server=user_mssql,1433;Database=UserDb;User Id=sa;Password=MyPass@word;TrustServerCertificate=True
       Jwt__Issuer: http://localhost:5055/API/User
       Jwt__Audience: http://localhost:5055/API/User
       Jwt__Key: Nn7kLa8Rzv1XHt9UwMqP4YbFdJxVt2Km
       ASPNETCORE_ENVIRONMENT: Development
+
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Port: 5672
+      RabbitMQ__Username: admin
+      RabbitMQ__Password: admin123
+      RabbitMQ__Exchange: user.exchange
+
+      RabbitMQ__RoutingKeys__Error: user.logs.error
+      RabbitMQ__RoutingKeys__Audit: user.logs.audit
+      RabbitMQ__RoutingKeys__Info: user.logs.info
+      RabbitMQ__RoutingKeys__NotificationRequest: user.notification.request
+
     depends_on:
-      rabbitmq:
-        condition: service_healthy
       user_mssql:
         condition: service_started
     networks:

@@ -97,18 +97,28 @@ public class Startup
         {
             x.UsingRabbitMq((context, cfg) =>
             {
-                cfg.Host("rabbitmq", "/", h =>
+                var rabbitmqSettings = _configuration.GetSection("RabbitMQ");
+
+                cfg.Host(rabbitmqSettings["Host"], "/", h =>
                 {
-                    h.Username("admin");
-                    h.Password("admin123");
+                    h.Username(rabbitmqSettings["Username"]);
+                    h.Password(rabbitmqSettings["Password"]);
                 });
 
-                cfg.Message<NotificationRequest>(e => e.SetEntityName("user.notification.request"));
-                cfg.Message<LogInfo>(e => e.SetEntityName("user.logs.info"));
-                cfg.Message<LogError>(e => e.SetEntityName("user.logs.error"));
-                cfg.Message<LogAudit>(e => e.SetEntityName("user.logs.audit"));
+                cfg.Message<NotificationRequest>(e => 
+                    e.SetEntityName(rabbitmqSettings["RoutingKeys:NotificationRequest"]));
+                
+                cfg.Message<LogInfo>(e => 
+                    e.SetEntityName(rabbitmqSettings["RoutingKeys:Info"]));
+                
+                cfg.Message<LogError>(e => 
+                    e.SetEntityName(rabbitmqSettings["RoutingKeys:Error"]));
+                
+                cfg.Message<LogAudit>(e => 
+                    e.SetEntityName(rabbitmqSettings["RoutingKeys:Audit"]));
             });
         });
+
 
 
         /******* [7] Controllers ********/

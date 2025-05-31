@@ -7,7 +7,6 @@ services:
       - log_data:/data/db
     networks:
       - log_network
-      - rabbitmq_network
     restart: always
 
 volumes:
