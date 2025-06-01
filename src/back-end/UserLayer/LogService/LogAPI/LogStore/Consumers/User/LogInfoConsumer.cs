@@ -4,23 +4,23 @@ using LogStore.Models;
 using MassTransit;
 using UserMessages;
 
-namespace LogStore.Consumers;
+namespace LogStore.Consumers.User;
 
-public class LogErrorConsumer : IConsumer<LogError>
+public class LogInfoConsumer : IConsumer<LogInfo>
 {
     private readonly ILogService _logService;
 
-    public LogErrorConsumer(ILogService logService)
+    public LogInfoConsumer(ILogService logService)
     {
         _logService = logService;
     }
 
-    public async Task Consume(ConsumeContext<LogError> context)
+    public async Task Consume(ConsumeContext<LogInfo> context)
     {
         var dto = new LogDto
         {
-            LogLevel = "ERROR",
-            Message = $"[{context.Message.ErrorMessage}]\n{context.Message.StackTrace}",
+            LogLevel = "INFO",
+            Message = context.Message.Message,
             Timestamp = context.Message.Timestamp,
             Service = "User Service"
         };

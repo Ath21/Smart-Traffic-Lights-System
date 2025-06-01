@@ -4,7 +4,7 @@ using LogStore.Models;
 using MassTransit;
 using UserMessages;
 
-namespace LogStore.Consumers;
+namespace LogStore.Consumers.User;
 
 public class LogAuditConsumer : IConsumer<LogAudit>
 {

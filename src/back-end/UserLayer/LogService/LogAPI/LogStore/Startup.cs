@@ -1,7 +1,8 @@
 using System;
 using LogData;
 using LogStore.Business;
-using LogStore.Consumers;
+using LogStore.Consumers.User;
+using LogStore.Consumers.Traffic;
 using LogStore.Middleware;
 using LogStore.Repository;
 using MassTransit;
