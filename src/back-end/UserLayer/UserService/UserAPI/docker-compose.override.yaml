@@ -13,11 +13,13 @@ services:
       RabbitMQ__Port: 5672
       RabbitMQ__Username: admin
       RabbitMQ__Password: admin123
-      RabbitMQ__Exchange: user.exchange
 
+      RabbitMQ__UserLogsExchange: user.logs.exchange
       RabbitMQ__RoutingKeys__Error: user.logs.error
       RabbitMQ__RoutingKeys__Audit: user.logs.audit
       RabbitMQ__RoutingKeys__Info: user.logs.info
+
+      RabbitMQ__UserNotificationsExchange: user.notifications.exchange
       RabbitMQ__RoutingKeys__NotificationRequest: user.notification.request
 
     depends_on:

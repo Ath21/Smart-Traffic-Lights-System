@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserStore", "UserStore\User
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserData", "UserData\UserData.csproj", "{95D2D894-A6AE-4F9F-9DF0-5821252BD5AC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserMessages", "..\..\UserMessages\UserMessages.csproj", "{C6730859-258E-41AF-987C-8C4DE1DF063B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,6 +43,18 @@ Global
 		{95D2D894-A6AE-4F9F-9DF0-5821252BD5AC}.Release|x64.Build.0 = Release|Any CPU
 		{95D2D894-A6AE-4F9F-9DF0-5821252BD5AC}.Release|x86.ActiveCfg = Release|Any CPU
 		{95D2D894-A6AE-4F9F-9DF0-5821252BD5AC}.Release|x86.Build.0 = Release|Any CPU
+		{C6730859-258E-41AF-987C-8C4DE1DF063B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C6730859-258E-41AF-987C-8C4DE1DF063B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C6730859-258E-41AF-987C-8C4DE1DF063B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C6730859-258E-41AF-987C-8C4DE1DF063B}.Debug|x64.Build.0 = Debug|Any CPU
+		{C6730859-258E-41AF-987C-8C4DE1DF063B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C6730859-258E-41AF-987C-8C4DE1DF063B}.Debug|x86.Build.0 = Debug|Any CPU
+		{C6730859-258E-41AF-987C-8C4DE1DF063B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C6730859-258E-41AF-987C-8C4DE1DF063B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C6730859-258E-41AF-987C-8C4DE1DF063B}.Release|x64.ActiveCfg = Release|Any CPU
+		{C6730859-258E-41AF-987C-8C4DE1DF063B}.Release|x64.Build.0 = Release|Any CPU
+		{C6730859-258E-41AF-987C-8C4DE1DF063B}.Release|x86.ActiveCfg = Release|Any CPU
+		{C6730859-258E-41AF-987C-8C4DE1DF063B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -2003,6 +2003,16 @@
         "runtime": {
           "bin/placeholder/UserData.dll": {}
         }
+      },
+      "UserMessages/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "compile": {
+          "bin/placeholder/UserMessages.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/UserMessages.dll": {}
+        }
       }
     }
   },
@@ -5659,6 +5669,11 @@
       "type": "project",
       "path": "../UserData/UserData.csproj",
       "msbuildProject": "../UserData/UserData.csproj"
+    },
+    "UserMessages/1.0.0": {
+      "type": "project",
+      "path": "../../../UserMessages/UserMessages.csproj",
+      "msbuildProject": "../../../UserMessages/UserMessages.csproj"
     }
   },
   "projectFileDependencyGroups": {
@@ -5672,7 +5687,8 @@
       "Microsoft.EntityFrameworkCore.SqlServer >= 9.0.4",
       "Microsoft.EntityFrameworkCore.Tools >= 9.0.4",
       "Swashbuckle.AspNetCore >= 8.0.0",
-      "UserData >= 1.0.0"
+      "UserData >= 1.0.0",
+      "UserMessages >= 1.0.0"
     ]
   },
   "packageFolders": {
@@ -5700,6 +5716,9 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserMessages/UserMessages.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserMessages/UserMessages.csproj"
+            },
             "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserService/UserAPI/UserData/UserData.csproj": {
               "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserService/UserAPI/UserData/UserData.csproj"
             }

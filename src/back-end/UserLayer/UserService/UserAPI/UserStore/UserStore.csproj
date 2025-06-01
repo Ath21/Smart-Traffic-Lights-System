@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\UserData\UserData.csproj" />
+    <ProjectReference Include="..\..\..\UserMessages\UserMessages.csproj" />
   </ItemGroup>
 
 </Project>

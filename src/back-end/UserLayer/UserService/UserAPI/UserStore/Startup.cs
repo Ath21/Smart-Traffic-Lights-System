@@ -99,27 +99,45 @@ public class Startup
             {
                 var rabbitmqSettings = _configuration.GetSection("RabbitMQ");
 
-                cfg.Host(rabbitmqSettings["Host"], "/", h =>
+                var host = rabbitmqSettings["Host"];
+                var username = rabbitmqSettings["Username"];
+                var password = rabbitmqSettings["Password"];
+                var userLogsExchange = rabbitmqSettings["UserLogsExchange"];
+                var userNotificationsExchange = rabbitmqSettings["UserNotificationsExchange"];
+
+                cfg.Host(host, "/", h =>
                 {
-                    h.Username(rabbitmqSettings["Username"]);
-                    h.Password(rabbitmqSettings["Password"]);
+                    h.Username(username);
+                    h.Password(password);
                 });
 
-                cfg.Message<NotificationRequest>(e => 
-                    e.SetEntityName(rabbitmqSettings["RoutingKeys:NotificationRequest"]));
-                
-                cfg.Message<LogInfo>(e => 
-                    e.SetEntityName(rabbitmqSettings["RoutingKeys:Info"]));
-                
-                cfg.Message<LogError>(e => 
-                    e.SetEntityName(rabbitmqSettings["RoutingKeys:Error"]));
-                
-                cfg.Message<LogAudit>(e => 
-                    e.SetEntityName(rabbitmqSettings["RoutingKeys:Audit"]));
+                // Configure LOG messages
+                cfg.Message<LogInfo>(e =>
+                {
+                    e.SetEntityName(userLogsExchange);
+                    e.SetExchangeType(ExchangeType.Direct);
+                });
+
+                cfg.Message<LogError>(e =>
+                {
+                    e.SetEntityName(userLogsExchange);
+                    e.SetExchangeType(ExchangeType.Direct);
+                });
+
+                cfg.Message<LogAudit>(e =>
+                {
+                    e.SetEntityName(userLogsExchange);
+                    e.SetExchangeType(ExchangeType.Direct);
+                });
+
+                // Configure NOTIFICATION messages
+                cfg.Message<NotificationRequest>(e =>
+                {
+                    e.SetEntityName(userNotificationsExchange);
+                    e.SetExchangeType(ExchangeType.Direct);
+                });
             });
         });
-
-
 
         /******* [7] Controllers ********/
 

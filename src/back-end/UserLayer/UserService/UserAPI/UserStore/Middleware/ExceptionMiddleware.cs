@@ -95,11 +95,15 @@ public class ExceptionMiddleware
                 DateTime.UtcNow
             );
 
-            await _publishEndpoint.Publish(log);
+            await _publishEndpoint.Publish(log, context =>
+            {
+                context.SetRoutingKey("user.logs.error");
+            });
         }
         catch (Exception publishEx)
         {
             _logger.LogError(publishEx, "Failed to publish error log to user.logs.error");
         }
     }
+
 }
