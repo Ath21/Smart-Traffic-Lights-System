@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\LogData\LogData.csproj" />
+    <ProjectReference Include="..\..\..\Messages\Messages.csproj" />
   </ItemGroup>
 
 </Project>

@@ -56,7 +56,10 @@ public class Startup
                 var host = rabbitmqSettings["Host"];
                 var username = rabbitmqSettings["Username"];
                 var password = rabbitmqSettings["Password"];
-                var exchange = rabbitmqSettings["Exchange"];
+
+                var userLogsExchange = rabbitmqSettings["UserLogsExchange"];
+                var trafficAnalyticsExchange = rabbitmqSettings["TrafficAnalyticsExchange"];
+                var trafficLightControlExchange = rabbitmqSettings["TrafficLightControlExchange"];
 
                 cfg.Host(host, "/", h =>
                 {
@@ -64,51 +67,51 @@ public class Startup
                     h.Password(password);
                 });
 
-                // USER LOGS CONSUMER
+                // USER LOGS
                 cfg.ReceiveEndpoint("user.logs", e =>
                 {
                     e.ConfigureConsumer<UserLogConsumer>(context);
 
-                    e.Bind(exchange, x =>
+                    e.Bind(userLogsExchange, x =>
                     {
                         x.RoutingKey = rabbitmqSettings["RoutingKeys:UserLogs:Info"];
-                        x.ExchangeType = ExchangeType.Topic;
+                        x.ExchangeType = ExchangeType.Direct;
                     });
-                    e.Bind(exchange, x =>
+                    e.Bind(userLogsExchange, x =>
                     {
                         x.RoutingKey = rabbitmqSettings["RoutingKeys:UserLogs:Error"];
-                        x.ExchangeType = ExchangeType.Topic;
+                        x.ExchangeType = ExchangeType.Direct;
                     });
-                    e.Bind(exchange, x =>
+                    e.Bind(userLogsExchange, x =>
                     {
                         x.RoutingKey = rabbitmqSettings["RoutingKeys:UserLogs:Audit"];
-                        x.ExchangeType = ExchangeType.Topic;
+                        x.ExchangeType = ExchangeType.Direct;
                     });
                 });
 
-                // TRAFFIC ANALYTICS CONSUMER
+                // TRAFFIC ANALYTICS
                 cfg.ReceiveEndpoint("traffic.analytics", e =>
                 {
                     e.ConfigureConsumer<TrafficAnalyticsLogConsumer>(context);
 
-                    e.Bind(exchange, x =>
+                    e.Bind(trafficAnalyticsExchange, x =>
                     {
                         x.RoutingKey = rabbitmqSettings["RoutingKeys:Traffic:DailySummary"];
-                        x.ExchangeType = ExchangeType.Topic;
+                        x.ExchangeType = ExchangeType.Direct;
                     });
-                    e.Bind(exchange, x =>
+                    e.Bind(trafficAnalyticsExchange, x =>
                     {
                         x.RoutingKey = rabbitmqSettings["RoutingKeys:Traffic:CongestionAlert"];
-                        x.ExchangeType = ExchangeType.Topic;
+                        x.ExchangeType = ExchangeType.Direct;
                     });
                 });
 
-                // TRAFFIC LIGHT CONTROL CONSUMER
+                // TRAFFIC LIGHT CONTROL
                 cfg.ReceiveEndpoint("traffic.light.control", e =>
                 {
                     e.ConfigureConsumer<TrafficLightControlLogConsumer>(context);
 
-                    e.Bind(exchange, x =>
+                    e.Bind(trafficLightControlExchange, x =>
                     {
                         x.RoutingKey = rabbitmqSettings["RoutingKeys:Traffic:LightControlPattern"];
                         x.ExchangeType = ExchangeType.Topic;
@@ -116,7 +119,6 @@ public class Startup
                 });
             });
         });
-
 
         /******* [6] Controllers ********/
 
