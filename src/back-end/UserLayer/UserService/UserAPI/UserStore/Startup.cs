@@ -26,11 +26,12 @@ using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using RabbitMQ.Client;
 using UserData;
+using UserMessages;
 using UserStore.Business.Password;
 using UserStore.Business.Token;
 using UserStore.Business.Usr;
-using UserStore.Messages;
 using UserStore.Middleware;
 using UserStore.Repository.Audit;
 using UserStore.Repository.Ses;
@@ -100,8 +101,10 @@ public class Startup
                 var rabbitmqSettings = _configuration.GetSection("RabbitMQ");
 
                 var host = rabbitmqSettings["Host"];
+
                 var username = rabbitmqSettings["Username"];
                 var password = rabbitmqSettings["Password"];
+
                 var userLogsExchange = rabbitmqSettings["UserLogsExchange"];
                 var userNotificationsExchange = rabbitmqSettings["UserNotificationsExchange"];
 
@@ -115,26 +118,22 @@ public class Startup
                 cfg.Message<LogInfo>(e =>
                 {
                     e.SetEntityName(userLogsExchange);
-                    e.SetExchangeType(ExchangeType.Direct);
                 });
 
                 cfg.Message<LogError>(e =>
                 {
                     e.SetEntityName(userLogsExchange);
-                    e.SetExchangeType(ExchangeType.Direct);
                 });
 
                 cfg.Message<LogAudit>(e =>
                 {
                     e.SetEntityName(userLogsExchange);
-                    e.SetExchangeType(ExchangeType.Direct);
                 });
 
                 // Configure NOTIFICATION messages
                 cfg.Message<NotificationRequest>(e =>
                 {
                     e.SetEntityName(userNotificationsExchange);
-                    e.SetExchangeType(ExchangeType.Direct);
                 });
             });
         });

@@ -8,6 +8,7 @@ WORKDIR /src
 
 COPY ["UserStore/UserStore.csproj", "UserStore/"]
 COPY ["UserData/UserData.csproj", "UserData/"]
+COPY ["../../UserMessages/UserMessages.csproj", "UserMessages/"]
 
 RUN dotnet restore "UserStore/UserStore.csproj"
 

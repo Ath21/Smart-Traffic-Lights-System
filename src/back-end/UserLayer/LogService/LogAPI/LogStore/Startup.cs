@@ -45,19 +45,22 @@ public class Startup
 
         services.AddMassTransit(x =>
         {
-            x.AddConsumer<UserLogConsumer>();
-            x.AddConsumer<TrafficAnalyticsLogConsumer>();
-            x.AddConsumer<TrafficLightControlLogConsumer>();
+            x.AddConsumer<LogInfoConsumer>();
+            x.AddConsumer<LogAuditConsumer>();
+            x.AddConsumer<LogErrorConsumer>();
+            
 
             x.UsingRabbitMq((context, cfg) =>
             {
                 var rabbitmqSettings = _configuration.GetSection("RabbitMQ");
 
                 var host = rabbitmqSettings["Host"];
+
                 var username = rabbitmqSettings["Username"];
                 var password = rabbitmqSettings["Password"];
 
                 var userLogsExchange = rabbitmqSettings["UserLogsExchange"];
+
                 var trafficAnalyticsExchange = rabbitmqSettings["TrafficAnalyticsExchange"];
                 var trafficLightControlExchange = rabbitmqSettings["TrafficLightControlExchange"];
 
@@ -67,10 +70,12 @@ public class Startup
                     h.Password(password);
                 });
 
-                // USER LOGS
+                // 🔹 USER LOGS
                 cfg.ReceiveEndpoint("user.logs", e =>
                 {
-                    e.ConfigureConsumer<UserLogConsumer>(context);
+                    e.ConfigureConsumer<LogInfoConsumer>(context);
+                    e.ConfigureConsumer<LogAuditConsumer>(context);
+                    e.ConfigureConsumer<LogErrorConsumer>(context);
 
                     e.Bind(userLogsExchange, x =>
                     {
@@ -79,17 +84,18 @@ public class Startup
                     });
                     e.Bind(userLogsExchange, x =>
                     {
-                        x.RoutingKey = rabbitmqSettings["RoutingKeys:UserLogs:Error"];
+                        x.RoutingKey = rabbitmqSettings["RoutingKeys:UserLogs:Audit"];
                         x.ExchangeType = ExchangeType.Direct;
                     });
                     e.Bind(userLogsExchange, x =>
                     {
-                        x.RoutingKey = rabbitmqSettings["RoutingKeys:UserLogs:Audit"];
+                        x.RoutingKey = rabbitmqSettings["RoutingKeys:UserLogs:Error"];
                         x.ExchangeType = ExchangeType.Direct;
                     });
                 });
 
-                // TRAFFIC ANALYTICS
+                	                  
+                // 🔹 TRAFFIC ANALYTICS
                 cfg.ReceiveEndpoint("traffic.analytics", e =>
                 {
                     e.ConfigureConsumer<TrafficAnalyticsLogConsumer>(context);
@@ -105,8 +111,10 @@ public class Startup
                         x.ExchangeType = ExchangeType.Direct;
                     });
                 });
+                
 
-                // TRAFFIC LIGHT CONTROL
+                
+                // 🔹 TRAFFIC LIGHT CONTROL
                 cfg.ReceiveEndpoint("traffic.light.control", e =>
                 {
                     e.ConfigureConsumer<TrafficLightControlLogConsumer>(context);
@@ -117,8 +125,10 @@ public class Startup
                         x.ExchangeType = ExchangeType.Topic;
                     });
                 });
+                
             });
         });
+
 
         /******* [6] Controllers ********/
 

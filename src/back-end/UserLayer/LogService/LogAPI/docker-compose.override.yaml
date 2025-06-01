@@ -13,13 +13,17 @@ services:
       RabbitMQ__Port: 5672
       RabbitMQ__Username: admin
       RabbitMQ__Password: admin123
-      RabbitMQ__Exchange: notification.exchange
 
+      RabbitMQ__UserLogsExchange: user.logs.exchange
+      RabbitMQ__RoutingKeys__UserLogs__Info: user.logs.info
       RabbitMQ__RoutingKeys__UserLogs__Error: user.logs.error
       RabbitMQ__RoutingKeys__UserLogs__Audit: user.logs.audit
-      RabbitMQ__RoutingKeys__UserLogs__Info: user.logs.info
+
+      RabbitMQ__TrafficAnalyticsExchange: traffic.analytics.exchange
       RabbitMQ__RoutingKeys__Traffic__DailySummary: traffic.analytics.daily_summary
       RabbitMQ__RoutingKeys__Traffic__CongestionAlert: traffic.analytics.congestion_alert
+
+      RabbitMQ__TrafficLightControlExchange: traffic.light.control.exchange
       RabbitMQ__RoutingKeys__Traffic__LightControlPattern: traffic.light.control.*
 
     depends_on:

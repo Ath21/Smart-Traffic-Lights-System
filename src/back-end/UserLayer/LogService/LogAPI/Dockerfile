@@ -8,6 +8,7 @@ WORKDIR /src
 
 COPY ["LogStore/LogStore.csproj", "LogStore/"]
 COPY ["LogData/LogData.csproj", "LogData/"]
+COPY ["../../UserMessages/UserMessages.csproj", "UserMessages/"]
 
 RUN dotnet restore "LogStore/LogStore.csproj"
 
