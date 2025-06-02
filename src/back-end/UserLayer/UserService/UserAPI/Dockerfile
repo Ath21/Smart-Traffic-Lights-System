@@ -6,14 +6,17 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
+# 🔹 Copy project files (από root project context!)
 COPY ["UserStore/UserStore.csproj", "UserStore/"]
 COPY ["UserData/UserData.csproj", "UserData/"]
-COPY ["../../UserMessages/UserMessages.csproj", "UserMessages/"]
 
+# 🔹 Restore dependencies
 RUN dotnet restore "UserStore/UserStore.csproj"
 
+# 🔹 Copy all files (must come AFTER restore)
 COPY . .
 
+# 🔹 Build project
 RUN dotnet build "UserStore/UserStore.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish

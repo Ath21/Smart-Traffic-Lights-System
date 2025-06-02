@@ -49,19 +49,19 @@ public class Startup
             x.AddConsumer<LogInfoConsumer>();
             x.AddConsumer<LogAuditConsumer>();
             x.AddConsumer<LogErrorConsumer>();
-            
+            x.AddConsumer<TrafficAnalyticsLogConsumer>();
+            x.AddConsumer<TrafficLightControlLogConsumer>();
+            x.AddConsumer<TrafficCongestionAlertConsumer>();
 
             x.UsingRabbitMq((context, cfg) =>
             {
                 var rabbitmqSettings = _configuration.GetSection("RabbitMQ");
 
                 var host = rabbitmqSettings["Host"];
-
                 var username = rabbitmqSettings["Username"];
                 var password = rabbitmqSettings["Password"];
 
                 var userLogsExchange = rabbitmqSettings["UserLogsExchange"];
-
                 var trafficAnalyticsExchange = rabbitmqSettings["TrafficAnalyticsExchange"];
                 var trafficLightControlExchange = rabbitmqSettings["TrafficLightControlExchange"];
 
@@ -95,11 +95,11 @@ public class Startup
                     });
                 });
 
-                	                  
                 // 🔹 TRAFFIC ANALYTICS
                 cfg.ReceiveEndpoint("traffic.analytics", e =>
                 {
                     e.ConfigureConsumer<TrafficAnalyticsLogConsumer>(context);
+                    e.ConfigureConsumer<TrafficCongestionAlertConsumer>(context);
 
                     e.Bind(trafficAnalyticsExchange, x =>
                     {
@@ -112,9 +112,7 @@ public class Startup
                         x.ExchangeType = ExchangeType.Direct;
                     });
                 });
-                
 
-                
                 // 🔹 TRAFFIC LIGHT CONTROL
                 cfg.ReceiveEndpoint("traffic.light.control", e =>
                 {
@@ -126,7 +124,6 @@ public class Startup
                         x.ExchangeType = ExchangeType.Topic;
                     });
                 });
-                
             });
         });
 

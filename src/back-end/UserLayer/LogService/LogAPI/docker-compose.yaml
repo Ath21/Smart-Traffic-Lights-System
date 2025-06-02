@@ -7,6 +7,7 @@ services:
     image: ath21/stls:log_api
     container_name: log_api_container
 
+
 networks:
   log_network:
     name: log_network

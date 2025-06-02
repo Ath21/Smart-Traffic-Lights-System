@@ -26,9 +26,8 @@ using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using RabbitMQ.Client;
 using UserData;
-using UserMessages;
+using UserStore.Messages;
 using UserStore.Business.Password;
 using UserStore.Business.Token;
 using UserStore.Business.Usr;
@@ -114,7 +113,6 @@ public class Startup
                     h.Password(password);
                 });
 
-                // Configure LOG messages
                 cfg.Message<LogInfo>(e =>
                 {
                     e.SetEntityName(userLogsExchange);
@@ -130,11 +128,12 @@ public class Startup
                     e.SetEntityName(userLogsExchange);
                 });
 
-                // Configure NOTIFICATION messages
+
                 cfg.Message<NotificationRequest>(e =>
                 {
                     e.SetEntityName(userNotificationsExchange);
                 });
+
             });
         });
 

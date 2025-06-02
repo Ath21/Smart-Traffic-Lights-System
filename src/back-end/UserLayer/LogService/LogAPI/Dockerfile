@@ -6,14 +6,17 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
+# 🔹 Copy project files
 COPY ["LogStore/LogStore.csproj", "LogStore/"]
 COPY ["LogData/LogData.csproj", "LogData/"]
-COPY ["../../UserMessages/UserMessages.csproj", "UserMessages/"]
 
+# 🔹 Restore dependencies
 RUN dotnet restore "LogStore/LogStore.csproj"
 
+# 🔹 Copy all source code
 COPY . .
 
+# 🔹 Build project
 RUN dotnet build "LogStore/LogStore.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish

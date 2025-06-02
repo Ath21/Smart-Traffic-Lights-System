@@ -29,7 +29,7 @@ using MassTransit;
 using UserData.Entities;
 using UserStore.Business.Password;
 using UserStore.Business.Token;
-using UserMessages;
+using UserStore.Messages;
 using UserStore.Models;
 using UserStore.Repository.Audit;
 using UserStore.Repository.Ses;

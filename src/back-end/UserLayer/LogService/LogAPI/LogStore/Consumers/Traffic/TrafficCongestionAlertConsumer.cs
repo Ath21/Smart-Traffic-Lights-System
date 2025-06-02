@@ -1,8 +1,8 @@
 using System;
 using LogStore.Business;
+using LogStore.Messages.Traffic;
 using LogStore.Models;
 using MassTransit;
-using TrafficMessages;
 
 namespace LogStore.Consumers.Traffic;
 

@@ -1,8 +1,8 @@
 using System;
 using LogStore.Business;
+using LogStore.Messages.User;
 using LogStore.Models;
 using MassTransit;
-using UserMessages;
 
 namespace LogStore.Consumers.User;
 

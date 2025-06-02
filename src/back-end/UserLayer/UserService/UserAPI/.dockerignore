@@ -2,6 +2,8 @@
 **/obj/
 **/.vs/
 **/.vscode/
+**/.cache/
+.git/
 *.user
 *.suo
 *.csproj.user

@@ -2,7 +2,7 @@ services:
 
   user_api:
     build:
-      context: .
+      context: .    
       dockerfile: Dockerfile
     image: ath21/stls:user_api
     container_name: user_api_container

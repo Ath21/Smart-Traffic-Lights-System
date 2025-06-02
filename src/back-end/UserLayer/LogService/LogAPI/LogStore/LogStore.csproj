@@ -18,8 +18,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\LogData\LogData.csproj" />
-    <ProjectReference Include="..\..\..\UserMessages\UserMessages.csproj" />
-    <ProjectReference Include="..\..\..\..\TrafficLayer\TrafficMessages\TrafficMessages.csproj" />
   </ItemGroup>
 
 </Project>

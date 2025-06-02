@@ -1,5 +1,5 @@
 /*
- * UserMessages.LogInfo
+ * UserStore.Messages.LogInfo
  *
  * This class represents a message for logging informational messages in the UserStore application.
  * It contains properties for the message and the timestamp of the log entry.
@@ -7,6 +7,6 @@
  * It is part of the UserStore project, which is responsible for managing user-related operations
  * and services.
  */
-namespace UserMessages;
+namespace UserStore.Messages;
 
 public record class LogInfo(string Message, DateTime Timestamp);
