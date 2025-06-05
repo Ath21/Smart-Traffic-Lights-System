@@ -5671,7 +5671,6 @@
       "Microsoft.AspNetCore.OpenApi >= 9.0.4",
       "Microsoft.EntityFrameworkCore.SqlServer >= 9.0.4",
       "Microsoft.EntityFrameworkCore.Tools >= 9.0.4",
-      "RabbitMQ.Client >= 7.1.2",
       "Swashbuckle.AspNetCore >= 8.0.0",
       "UserData >= 1.0.0"
     ]
@@ -5756,10 +5755,6 @@
             "suppressParent": "All",
             "target": "Package",
             "version": "[9.0.4, )"
-          },
-          "RabbitMQ.Client": {
-            "target": "Package",
-            "version": "[7.1.2, )"
           },
           "Swashbuckle.AspNetCore": {
             "target": "Package",

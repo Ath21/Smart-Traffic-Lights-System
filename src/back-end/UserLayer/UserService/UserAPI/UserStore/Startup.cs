@@ -35,6 +35,7 @@ using UserStore.Middleware;
 using UserStore.Repository.Audit;
 using UserStore.Repository.Ses;
 using UserStore.Repository.Usr;
+using RabbitMQ.Client;
 
 
 namespace UserStore;
@@ -99,43 +100,26 @@ public class Startup
             {
                 var rabbitmqSettings = _configuration.GetSection("RabbitMQ");
 
-                var host = rabbitmqSettings["Host"];
-
-                var username = rabbitmqSettings["Username"];
-                var password = rabbitmqSettings["Password"];
-
-                var userLogsExchange = rabbitmqSettings["UserLogsExchange"];
-                var userNotificationsExchange = rabbitmqSettings["UserNotificationsExchange"];
-
-                cfg.Host(host, "/", h =>
+                cfg.Host(rabbitmqSettings["Host"], "/", h =>
                 {
-                    h.Username(username);
-                    h.Password(password);
+                    h.Username(rabbitmqSettings["Username"]);
+                    h.Password(rabbitmqSettings["Password"]);
                 });
 
-                cfg.Message<LogInfo>(e =>
-                {
-                    e.SetEntityName(userLogsExchange);
-                });
+                // Configure message types to use the appropriate exchanges
+                cfg.Message<LogInfo>(e => e.SetEntityName(rabbitmqSettings["UserLogsExchange"]));
+                cfg.Message<LogAudit>(e => e.SetEntityName(rabbitmqSettings["UserLogsExchange"]));
+                cfg.Message<LogError>(e => e.SetEntityName(rabbitmqSettings["UserLogsExchange"]));
+                cfg.Message<NotificationRequest>(e => e.SetEntityName(rabbitmqSettings["UserNotificationsExchange"]));
 
-                cfg.Message<LogError>(e =>
-                {
-                    e.SetEntityName(userLogsExchange);
-                });
-
-                cfg.Message<LogAudit>(e =>
-                {
-                    e.SetEntityName(userLogsExchange);
-                });
-
-
-                cfg.Message<NotificationRequest>(e =>
-                {
-                    e.SetEntityName(userNotificationsExchange);
-                });
-
+                cfg.Publish<LogInfo>(e => e.ExchangeType = ExchangeType.Direct);
+                cfg.Publish<LogAudit>(e => e.ExchangeType = ExchangeType.Direct);
+                cfg.Publish<LogError>(e => e.ExchangeType = ExchangeType.Direct);
+                cfg.Publish<NotificationRequest>(e => e.ExchangeType = ExchangeType.Direct);
             });
         });
+
+
 
         /******* [7] Controllers ********/
 

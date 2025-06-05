@@ -9,6 +9,8 @@ using MassTransit;
 
 using Microsoft.OpenApi.Models;
 using RabbitMQ.Client;
+using LogStore.Messages.User;
+using LogStore.Messages.Traffic;
 
 namespace LogStore;
 
@@ -50,75 +52,69 @@ public class Startup
             x.AddConsumer<LogAuditConsumer>();
             x.AddConsumer<LogErrorConsumer>();
             x.AddConsumer<TrafficAnalyticsLogConsumer>();
-            x.AddConsumer<TrafficLightControlLogConsumer>();
             x.AddConsumer<TrafficCongestionAlertConsumer>();
+            x.AddConsumer<TrafficLightControlLogConsumer>();
 
             x.UsingRabbitMq((context, cfg) =>
             {
                 var rabbitmqSettings = _configuration.GetSection("RabbitMQ");
 
-                var host = rabbitmqSettings["Host"];
-                var username = rabbitmqSettings["Username"];
-                var password = rabbitmqSettings["Password"];
-
-                var userLogsExchange = rabbitmqSettings["UserLogsExchange"];
-                var trafficAnalyticsExchange = rabbitmqSettings["TrafficAnalyticsExchange"];
-                var trafficLightControlExchange = rabbitmqSettings["TrafficLightControlExchange"];
-
-                cfg.Host(host, "/", h =>
+                cfg.Host(rabbitmqSettings["Host"], "/", h =>
                 {
-                    h.Username(username);
-                    h.Password(password);
+                    h.Username(rabbitmqSettings["Username"]);
+                    h.Password(rabbitmqSettings["Password"]);
                 });
 
-                // 🔹 USER LOGS
+                // USER LOGS - Separate endpoints for each log type
                 cfg.ReceiveEndpoint("user.logs", e =>
                 {
                     e.ConfigureConsumer<LogInfoConsumer>(context);
-                    e.ConfigureConsumer<LogAuditConsumer>(context);
-                    e.ConfigureConsumer<LogErrorConsumer>(context);
-
-                    e.Bind(userLogsExchange, x =>
+                    e.Bind(rabbitmqSettings["UserLogsExchange"], x =>
                     {
                         x.RoutingKey = rabbitmqSettings["RoutingKeys:UserLogs:Info"];
                         x.ExchangeType = ExchangeType.Direct;
                     });
-                    e.Bind(userLogsExchange, x =>
+
+                    e.ConfigureConsumer<LogAuditConsumer>(context);
+                    e.Bind(rabbitmqSettings["UserLogsExchange"], x =>
                     {
                         x.RoutingKey = rabbitmqSettings["RoutingKeys:UserLogs:Audit"];
                         x.ExchangeType = ExchangeType.Direct;
                     });
-                    e.Bind(userLogsExchange, x =>
+
+                    e.ConfigureConsumer<LogErrorConsumer>(context);
+                    e.Bind(rabbitmqSettings["UserLogsExchange"], x =>
                     {
                         x.RoutingKey = rabbitmqSettings["RoutingKeys:UserLogs:Error"];
                         x.ExchangeType = ExchangeType.Direct;
                     });
                 });
 
-                // 🔹 TRAFFIC ANALYTICS
+                // TRAFFIC ANALYTICS
                 cfg.ReceiveEndpoint("traffic.analytics", e =>
                 {
                     e.ConfigureConsumer<TrafficAnalyticsLogConsumer>(context);
                     e.ConfigureConsumer<TrafficCongestionAlertConsumer>(context);
 
-                    e.Bind(trafficAnalyticsExchange, x =>
+                    e.Bind(rabbitmqSettings["TrafficAnalyticsExchange"], x =>
                     {
                         x.RoutingKey = rabbitmqSettings["RoutingKeys:Traffic:DailySummary"];
                         x.ExchangeType = ExchangeType.Direct;
                     });
-                    e.Bind(trafficAnalyticsExchange, x =>
+
+                    e.Bind(rabbitmqSettings["TrafficAnalyticsExchange"], x =>
                     {
                         x.RoutingKey = rabbitmqSettings["RoutingKeys:Traffic:CongestionAlert"];
                         x.ExchangeType = ExchangeType.Direct;
                     });
                 });
 
-                // 🔹 TRAFFIC LIGHT CONTROL
+                // TRAFFIC LIGHT CONTROL
                 cfg.ReceiveEndpoint("traffic.light.control", e =>
                 {
                     e.ConfigureConsumer<TrafficLightControlLogConsumer>(context);
 
-                    e.Bind(trafficLightControlExchange, x =>
+                    e.Bind(rabbitmqSettings["TrafficLightControlExchange"], x =>
                     {
                         x.RoutingKey = rabbitmqSettings["RoutingKeys:Traffic:LightControlPattern"];
                         x.ExchangeType = ExchangeType.Topic;
@@ -126,7 +122,6 @@ public class Startup
                 });
             });
         });
-
 
         /******* [6] Controllers ********/
 

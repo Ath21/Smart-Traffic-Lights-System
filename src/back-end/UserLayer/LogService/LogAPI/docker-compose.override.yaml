@@ -3,6 +3,7 @@ services:
     ports:
       - '5005:8080'
     environment:
+      
       DefaultConnection__ConnectionString: mongodb://log_mongo:27017
       DefaultConnection__DatabaseName: LogDb
       DefaultConnection__LogsCollectionName: Logs
