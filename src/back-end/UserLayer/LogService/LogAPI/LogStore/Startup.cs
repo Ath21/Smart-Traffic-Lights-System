@@ -50,11 +50,11 @@ public class Startup
         {
             // Register consumers
             x.AddConsumer<LogInfoConsumer>();
-            x.AddConsumer<LogAuditConsumer>();
-            x.AddConsumer<LogErrorConsumer>();
-            x.AddConsumer<TrafficAnalyticsLogConsumer>();
-            x.AddConsumer<TrafficCongestionAlertConsumer>();
-            x.AddConsumer<TrafficLightControlLogConsumer>();
+            //x.AddConsumer<LogAuditConsumer>();
+            //x.AddConsumer<LogErrorConsumer>();
+            //x.AddConsumer<TrafficAnalyticsLogConsumer>();
+            //x.AddConsumer<TrafficCongestionAlertConsumer>();
+            //x.AddConsumer<TrafficLightControlLogConsumer>();
 
             x.UsingRabbitMq((context, cfg) =>
             {
@@ -66,9 +66,13 @@ public class Startup
                     h.Password(rabbitmqSettings["Password"]);
                 });
 
+
+                // Removed invalid cfg.Message<T>(x => x.Exclude = true); lines as 'Exclude' does not exist.
+                // Removed invalid DisableTopology usage as it is not supported by MassTransit.
                 //
                 // USER LOGS
                 //
+                cfg.Message<LogInfo>(e => e.SetEntityName(rabbitmqSettings["UserLogsExchange"]));
 
                 cfg.ReceiveEndpoint("user.logs.info.queue", e =>
                 {
@@ -78,11 +82,11 @@ public class Startup
 
                     e.Bind(rabbitmqSettings["UserLogsExchange"], x =>
                     {
-                        x.RoutingKey = rabbitmqSettings["RoutingKeys:UserLogs:Info"];
                         x.ExchangeType = ExchangeType.Direct;
+                        x.RoutingKey = rabbitmqSettings["RoutingKeys:UserLogs:Info"];
                     });
                 });
-
+/*
                 cfg.ReceiveEndpoint("user.logs.audit.queue", e =>
                 {
                     e.ConfigureConsumer<LogAuditConsumer>(context);
@@ -91,8 +95,8 @@ public class Startup
 
                     e.Bind(rabbitmqSettings["UserLogsExchange"], x =>
                     {
-                        x.RoutingKey = rabbitmqSettings["RoutingKeys:UserLogs:Audit"];
                         x.ExchangeType = ExchangeType.Direct;
+                        x.RoutingKey = rabbitmqSettings["RoutingKeys:UserLogs:Audit"];
                     });
                 });
 
@@ -104,16 +108,16 @@ public class Startup
 
                     e.Bind(rabbitmqSettings["UserLogsExchange"], x =>
                     {
-                        x.RoutingKey = rabbitmqSettings["RoutingKeys:UserLogs:Error"];
                         x.ExchangeType = ExchangeType.Direct;
+                        x.RoutingKey = rabbitmqSettings["RoutingKeys:UserLogs:Error"];
                     });
-                });
+                });*/
 
                 //
                 // TRAFFIC ANALYTICS
                 //
 
-                cfg.ReceiveEndpoint("traffic.analytics.queue", e =>
+                /*cfg.ReceiveEndpoint("traffic.analytics.queue", e =>
                 {
                     e.ConfigureConsumer<TrafficAnalyticsLogConsumer>(context);
                     e.ConfigureConsumer<TrafficCongestionAlertConsumer>(context);
@@ -149,6 +153,7 @@ public class Startup
                         x.ExchangeType = ExchangeType.Topic;
                     });
                 });
+                */
             });
         });
 

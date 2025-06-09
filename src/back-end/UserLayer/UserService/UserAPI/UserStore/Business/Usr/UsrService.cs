@@ -31,6 +31,7 @@ using UserStore.Business.Password;
 using UserStore.Business.Token;
 using UserStore.Messages;
 using UserStore.Models;
+using UserStore.Publishers;
 using UserStore.Repository.Audit;
 using UserStore.Repository.Ses;
 using UserStore.Repository.Usr;
@@ -45,7 +46,7 @@ public class UsrService : IUsrService
     private readonly ITokenService _tokenService;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IMapper _mapper;
-    private readonly IPublishEndpoint _publishEndpoint;
+    private readonly IUserLogPublisher _userLogPublisher;
 
     public UsrService(
         IUserRepository userRepository,
@@ -54,7 +55,7 @@ public class UsrService : IUsrService
         ITokenService tokenService,
         IPasswordHasher passwordHasher,
         IMapper mapper,
-        IPublishEndpoint publishEndpoint)
+        IUserLogPublisher userLogPublisher)
     {
         _userRepository = userRepository;
         _auditLogRepository = auditLogRepository;
@@ -62,7 +63,7 @@ public class UsrService : IUsrService
         _tokenService = tokenService;
         _passwordHasher = passwordHasher;
         _mapper = mapper;
-        _publishEndpoint = publishEndpoint;
+        _userLogPublisher = userLogPublisher;
     }
 
     // GET: /API/User/Profile
@@ -110,29 +111,8 @@ public class UsrService : IUsrService
             Details = $"User {user.Username} logged in successfully."
         });
 
-        // Publish events for logging and notifications
-        await _publishEndpoint.Publish(new LogInfo(
-            $"User {user.Username} logged in.",
-            DateTime.UtcNow), context =>
-        {
-            context.SetRoutingKey("user.logs.info");
-        });
-
-        await _publishEndpoint.Publish(new LogAudit(
-            user.UserId,
-            "User Logged In",
-            $"User {user.Username} logged in successfully.",
-            DateTime.UtcNow), context =>
-        {
-            context.SetRoutingKey("user.logs.audit");
-        });
-
-        await _publishEndpoint.Publish(new NotificationRequest(
-            user.UserId,
-            "You have successfully logged in."), context =>
-        {
-            context.SetRoutingKey("user.notification.request");
-        });
+        //await _userLogPublisher.PublishAuditAsync(user.UserId, "User Logged In", $"User {user.Username} logged in successfully.");
+        await _userLogPublisher.PublishInfoAsync($"User {user.Username} logged in successfully.");
 
         return new LoginResponseDto
         {
@@ -158,30 +138,8 @@ public class UsrService : IUsrService
                 Details = $"User {session.User.Username} logged out successfully."
             });
 
-            // Publish events for logging and notifications
-            await _publishEndpoint.Publish(new LogInfo(
-                $"User {session.User.Username} logged out.",
-                DateTime.UtcNow), context =>
-            {
-                context.SetRoutingKey("user.logs.info");
-            });
-
-            await _publishEndpoint.Publish(new LogAudit(
-                session.UserId,
-                "User Logged Out",
-                $"User {session.User.Username} logged out successfully.",
-                DateTime.UtcNow), context =>
-            {
-                context.SetRoutingKey("user.logs.audit");
-            });
-
-            await _publishEndpoint.Publish(new NotificationRequest(
-                session.User.UserId,
-                "You have successfully logged out."), context =>
-            {
-                context.SetRoutingKey("user.notification.request");
-            });
-
+            //await _userLogPublisher.PublishAuditAsync(session.UserId, "User Logged Out", $"User {session.User.Username} logged out successfully.");
+            await _userLogPublisher.PublishInfoAsync($"User {session.User.Username} logged out successfully.");
         }
     }
 
@@ -207,29 +165,8 @@ public class UsrService : IUsrService
             Details = $"User {user.Username} registered successfully."
         });
 
-        // Publish events for logging and notifications
-        await _publishEndpoint.Publish(new LogInfo(
-            $"User {user.Username} registered.",
-            DateTime.UtcNow), context =>
-        {
-            context.SetRoutingKey("user.logs.info");
-        });
-
-        await _publishEndpoint.Publish(new LogAudit(
-            user.UserId,
-            "User Registered",
-            $"User {user.Username} registered successfully.",
-            DateTime.UtcNow), context =>
-        {
-            context.SetRoutingKey("user.logs.audit");
-        });
-
-        await _publishEndpoint.Publish(new NotificationRequest(
-            user.UserId,
-            $"Welcome {user.Username} to PADA Smart Traffic Lights System! Your account has been created successfully."), context =>
-        {
-            context.SetRoutingKey("user.notification.request");
-        });
+        //await _userLogPublisher.PublishAuditAsync(user.UserId, "User Registered", $"User {user.Username} registered successfully.");
+        await _userLogPublisher.PublishInfoAsync($"User {user.Username} registered successfully.");
 
         return new RegisterResponseDto
         {
@@ -264,22 +201,8 @@ public class UsrService : IUsrService
             Details = $"User {user.Username} reset their password successfully."
         });
 
-        // Publish events for logging and notifications
-        await _publishEndpoint.Publish(new LogAudit(
-            user.UserId,
-            "User Password Reset",
-            $"User {user.Username} reset their password successfully.",
-            DateTime.UtcNow), context =>
-        {
-            context.SetRoutingKey("user.logs.audit");
-        });
-
-        await _publishEndpoint.Publish(new NotificationRequest(
-            user.UserId,
-            "Your password was successfully reset."), context =>
-        {
-            context.SetRoutingKey("user.notification.request");
-        });
+        //await _userLogPublisher.PublishAuditAsync(user.UserId, "User Password Reset", $"User {user.Username} reset their password successfully.");
+        await _userLogPublisher.PublishInfoAsync($"User {user.Username} reset their password successfully.");
     }
 
     // PUT: /API/User/UpdateProfile
@@ -306,21 +229,7 @@ public class UsrService : IUsrService
             Details = $"User {user.Username} updated their profile successfully."
         });
 
-        // Publish events for logging and notifications
-        await _publishEndpoint.Publish(new LogAudit(
-            user.UserId,
-            "User Profile Updated",
-            $"User {user.Username} updated their profile successfully.",
-            DateTime.UtcNow), context =>
-        {
-            context.SetRoutingKey("user.logs.audit");
-        });
-
-        await _publishEndpoint.Publish(new NotificationRequest(
-            user.UserId,
-            "Your profile has been updated."), context =>
-        {
-            context.SetRoutingKey("user.notification.request");
-        });
+        //await _userLogPublisher.PublishAuditAsync(user.UserId, "User Profile Updated", $"User {user.Username} updated their profile successfully.");
+        await _userLogPublisher.PublishInfoAsync($"User {user.Username} updated their profile successfully.");
     }
 }

@@ -24,8 +24,8 @@
  * and services.
  */
 using System.Net;
-using MassTransit;
 using UserStore.Messages;
+using UserStore.Publishers;
 
 namespace UserStore.Middleware;
 
@@ -44,8 +44,6 @@ public class ExceptionMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        var _publishEndpoint = context.RequestServices.GetRequiredService<IPublishEndpoint>();
-
         try
         {
             await _next(context);
@@ -53,7 +51,10 @@ public class ExceptionMiddleware
         catch (UnauthorizedAccessException ex)
         {
             _logger.LogWarning(ex, "Unauthorized access");
-            await PublishError(ex, _publishEndpoint);
+
+            var logPublisher = context.RequestServices.GetRequiredService<IUserLogPublisher>();
+            //await logPublisher.PublishErrorAsync("Unauthorized access", ex);
+
             context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
             context.Response.ContentType = "application/json";
             await context.Response.WriteAsJsonAsync(new { error = ex.Message });
@@ -61,7 +62,10 @@ public class ExceptionMiddleware
         catch (KeyNotFoundException ex)
         {
             _logger.LogWarning(ex, "Resource not found");
-            await PublishError(ex, _publishEndpoint);
+
+            var logPublisher = context.RequestServices.GetRequiredService<IUserLogPublisher>();
+            //await logPublisher.PublishErrorAsync("Resource not found", ex);
+
             context.Response.StatusCode = (int)HttpStatusCode.NotFound;
             context.Response.ContentType = "application/json";
             await context.Response.WriteAsJsonAsync(new { error = ex.Message });
@@ -69,41 +73,24 @@ public class ExceptionMiddleware
         catch (InvalidOperationException ex)
         {
             _logger.LogWarning(ex, "Invalid operation");
-            await PublishError(ex, _publishEndpoint);
+
+            var logPublisher = context.RequestServices.GetRequiredService<IUserLogPublisher>();
+            //await logPublisher.PublishErrorAsync("Invalid operation", ex);
+
             context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
             context.Response.ContentType = "application/json";
             await context.Response.WriteAsJsonAsync(new { error = ex.Message });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unhandled exception occured");
-            await PublishError(ex, _publishEndpoint);
+            _logger.LogError(ex, "Unhandled exception occurred");
+
+            var logPublisher = context.RequestServices.GetRequiredService<IUserLogPublisher>();
+            //await logPublisher.PublishErrorAsync("Unhandled exception", ex);
+
             context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
             context.Response.ContentType = "application/json";
             await context.Response.WriteAsJsonAsync(new { error = "An unexpected error occurred" });
         }
     }
-
-    private async Task PublishError(Exception ex, IPublishEndpoint _publishEndpoint)
-    {
-        try
-        {
-            var log = new LogError(
-                ex.Message,
-                DateTime.UtcNow,
-                ex.StackTrace,
-                DateTime.UtcNow
-            );
-
-            await _publishEndpoint.Publish(log, context =>
-            {
-                context.SetRoutingKey("user.logs.error");
-            });
-        }
-        catch (Exception publishEx)
-        {
-            _logger.LogError(publishEx, "Failed to publish error log to user.logs.error");
-        }
-    }
-
 }

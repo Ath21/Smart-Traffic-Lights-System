@@ -36,6 +36,7 @@ using UserStore.Repository.Audit;
 using UserStore.Repository.Ses;
 using UserStore.Repository.Usr;
 using RabbitMQ.Client;
+using UserStore.Publishers;
 
 
 namespace UserStore;
@@ -94,6 +95,8 @@ public class Startup
 
         /******* [6] MassTransit ********/
 
+        services.AddScoped(typeof(IUserLogPublisher), typeof(UserLogPublisher));
+
         services.AddMassTransit(x =>
         {
             x.UsingRabbitMq((context, cfg) =>
@@ -107,15 +110,14 @@ public class Startup
                 });
 
                 // Configure message types to use the appropriate exchanges
-                cfg.Message<LogInfo>(e => e.SetEntityName(rabbitmqSettings["UserLogsExchange"]));
-                cfg.Message<LogAudit>(e => e.SetEntityName(rabbitmqSettings["UserLogsExchange"]));
-                cfg.Message<LogError>(e => e.SetEntityName(rabbitmqSettings["UserLogsExchange"]));
-                cfg.Message<NotificationRequest>(e => e.SetEntityName(rabbitmqSettings["UserNotificationsExchange"]));
-
+                /*cfg.Message<LogInfo>(e => e.SetEntityName(rabbitmqSettings["UserLogsExchange"]));
                 cfg.Publish<LogInfo>(e => e.ExchangeType = ExchangeType.Direct);
+                cfg.Message<LogAudit>(e => e.SetEntityName(rabbitmqSettings["UserLogsExchange"]));
                 cfg.Publish<LogAudit>(e => e.ExchangeType = ExchangeType.Direct);
-                cfg.Publish<LogError>(e => e.ExchangeType = ExchangeType.Direct);
-                cfg.Publish<NotificationRequest>(e => e.ExchangeType = ExchangeType.Direct);
+                cfg.Message<LogError>(e => e.SetEntityName(rabbitmqSettings["UserLogsExchange"]));
+                cfg.Publish<LogError>(e => e.ExchangeType = ExchangeType.Direct);*/
+                //cfg.Message<NotificationRequest>(e => e.SetEntityName(rabbitmqSettings["UserNotificationsExchange"]));
+                //cfg.Publish<NotificationRequest>(e => e.ExchangeType = ExchangeType.Direct);
             });
         });
 
