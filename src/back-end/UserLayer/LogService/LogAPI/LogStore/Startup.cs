@@ -48,6 +48,7 @@ public class Startup
 
         services.AddMassTransit(x =>
         {
+            // Register consumers
             x.AddConsumer<LogInfoConsumer>();
             x.AddConsumer<LogAuditConsumer>();
             x.AddConsumer<LogErrorConsumer>();
@@ -65,24 +66,42 @@ public class Startup
                     h.Password(rabbitmqSettings["Password"]);
                 });
 
-                // USER LOGS - Separate endpoints for each log type
-                cfg.ReceiveEndpoint("user.logs", e =>
+                //
+                // USER LOGS
+                //
+
+                cfg.ReceiveEndpoint("user.logs.info.queue", e =>
                 {
                     e.ConfigureConsumer<LogInfoConsumer>(context);
+                    e.PrefetchCount = 16;
+                    e.UseConcurrencyLimit(4);
+
                     e.Bind(rabbitmqSettings["UserLogsExchange"], x =>
                     {
                         x.RoutingKey = rabbitmqSettings["RoutingKeys:UserLogs:Info"];
                         x.ExchangeType = ExchangeType.Direct;
                     });
+                });
 
+                cfg.ReceiveEndpoint("user.logs.audit.queue", e =>
+                {
                     e.ConfigureConsumer<LogAuditConsumer>(context);
+                    e.PrefetchCount = 8;
+                    e.UseConcurrencyLimit(2);
+
                     e.Bind(rabbitmqSettings["UserLogsExchange"], x =>
                     {
                         x.RoutingKey = rabbitmqSettings["RoutingKeys:UserLogs:Audit"];
                         x.ExchangeType = ExchangeType.Direct;
                     });
+                });
 
+                cfg.ReceiveEndpoint("user.logs.error.queue", e =>
+                {
                     e.ConfigureConsumer<LogErrorConsumer>(context);
+                    e.PrefetchCount = 16;
+                    e.UseConcurrencyLimit(4);
+
                     e.Bind(rabbitmqSettings["UserLogsExchange"], x =>
                     {
                         x.RoutingKey = rabbitmqSettings["RoutingKeys:UserLogs:Error"];
@@ -90,11 +109,16 @@ public class Startup
                     });
                 });
 
+                //
                 // TRAFFIC ANALYTICS
-                cfg.ReceiveEndpoint("traffic.analytics", e =>
+                //
+
+                cfg.ReceiveEndpoint("traffic.analytics.queue", e =>
                 {
                     e.ConfigureConsumer<TrafficAnalyticsLogConsumer>(context);
                     e.ConfigureConsumer<TrafficCongestionAlertConsumer>(context);
+                    e.PrefetchCount = 16;
+                    e.UseConcurrencyLimit(4);
 
                     e.Bind(rabbitmqSettings["TrafficAnalyticsExchange"], x =>
                     {
@@ -109,10 +133,15 @@ public class Startup
                     });
                 });
 
+                //
                 // TRAFFIC LIGHT CONTROL
-                cfg.ReceiveEndpoint("traffic.light.control", e =>
+                //
+
+                cfg.ReceiveEndpoint("traffic.light.control.queue", e =>
                 {
                     e.ConfigureConsumer<TrafficLightControlLogConsumer>(context);
+                    e.PrefetchCount = 8;
+                    e.UseConcurrencyLimit(2);
 
                     e.Bind(rabbitmqSettings["TrafficLightControlExchange"], x =>
                     {
@@ -122,6 +151,7 @@ public class Startup
                 });
             });
         });
+
 
         /******* [6] Controllers ********/
 

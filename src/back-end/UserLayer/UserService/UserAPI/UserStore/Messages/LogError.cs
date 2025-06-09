@@ -9,4 +9,7 @@
  */
 namespace UserStore.Messages;
 
-public record class LogError(string ErrorMessage, DateTime utcNow, string StackTrace, DateTime Timestamp);
+public record class LogError(
+    string ErrorMessage,
+    string StackTrace,
+    DateTime Timestamp);

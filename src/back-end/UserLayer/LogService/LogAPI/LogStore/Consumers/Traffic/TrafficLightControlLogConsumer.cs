@@ -27,6 +27,8 @@ public class TrafficLightControlLogConsumer : IConsumer<TrafficLightControlLog>
             Timestamp = msg.Timestamp
         };
 
+        Console.WriteLine($"TrafficLightControlLogConsumer: {log.Message} at {log.Timestamp}");
+
         await _logService.StoreLogAsync(log);
     }
 }

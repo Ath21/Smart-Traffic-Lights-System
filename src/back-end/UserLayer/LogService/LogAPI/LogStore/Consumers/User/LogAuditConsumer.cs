@@ -25,6 +25,8 @@ public class LogAuditConsumer : IConsumer<LogAudit>
             Service = "User Service"
         };
 
+        Console.WriteLine($"LogAuditConsumer: {dto.Message} at {dto.Timestamp}");
+
         await _logService.StoreLogAsync(dto);
     }
 }

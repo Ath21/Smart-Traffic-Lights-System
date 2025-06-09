@@ -27,6 +27,8 @@ public class TrafficCongestionAlertConsumer : IConsumer<TrafficCongestionAlert>
             Timestamp = msg.Timestamp
         };
 
+        Console.WriteLine($"TrafficCongestionAlertConsumer: {log.Message} at {log.Timestamp}");
+
         await _logService.StoreLogAsync(log);
     }
 }

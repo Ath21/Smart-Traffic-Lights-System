@@ -25,6 +25,8 @@ public class LogErrorConsumer : IConsumer<LogError>
             Service = "User Service"
         };
 
+        Console.WriteLine($"LogErrorConsumer: {dto.Message} at {dto.Timestamp}");
+
         await _logService.StoreLogAsync(dto);
     }
 }

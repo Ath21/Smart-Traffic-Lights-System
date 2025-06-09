@@ -9,4 +9,6 @@
  */
 namespace UserStore.Messages;
 
-public record class LogInfo(string Message, DateTime Timestamp);
+public record class LogInfo(
+    string Message,
+    DateTime Timestamp);

@@ -27,6 +27,8 @@ public class TrafficAnalyticsLogConsumer : IConsumer<TrafficDailySummary>
             Timestamp = msg.Timestamp
         };
 
+        Console.WriteLine($"TrafficAnalyticsLogConsumer: {log.Message} at {log.Timestamp}");
+
         await _logService.StoreLogAsync(log);
     }
 }
