@@ -1,8 +1,8 @@
 #!/bin/bash
 
 NETWORK="log_network"
-API="./UserLayer/LogService/LogAPI"
-MONGO="./UserLayer/LogService/Mongo"
+API="./LogLayer/LogService/LogAPI"
+MONGO="./LogLayer/LogService/Mongo"
 COMPOSE_FILE="docker-compose.yaml"
 COMPOSE_FILE_OVERRIDE="docker-compose.override.yaml"
 

@@ -5,8 +5,6 @@ services:
       - '27017:27017'
     volumes:
       - log_data:/data/db
-    networks:
-      - log_network
     restart: always
 
 volumes:

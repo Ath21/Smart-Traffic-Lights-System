@@ -51,6 +51,9 @@ up_rabbitmq()
 
 up_layers() 
 {
+    echo "🚀  +++++++ Starting Log Layer... +++++++"
+    bash ./LogLayer/up.sh
+    
     echo "🚀  +++++++ Starting User Layer... +++++++"
     bash ./UserLayer/up.sh
 }

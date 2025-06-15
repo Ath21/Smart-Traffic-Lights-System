@@ -8,8 +8,6 @@ services:
       - RABBITMQ_DEFAULT_PASS=admin123
     volumes:
       - topics_data:/var/lib/rabbitmq
-    networks:
-      - rabbitmq_network
     restart: always
     healthcheck:
       test: ["CMD", "rabbitmqctl", "status"]

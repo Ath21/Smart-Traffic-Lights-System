@@ -1928,8 +1928,8 @@
     },
     "UserMessages/1.0.0": {
       "type": "project",
-      "path": "../../../UserMessages/UserMessages.csproj",
-      "msbuildProject": "../../../UserMessages/UserMessages.csproj"
+      "path": "../../../../UserLayer/UserMessages/UserMessages.csproj",
+      "msbuildProject": "../../../../UserLayer/UserMessages/UserMessages.csproj"
     }
   },
   "projectFileDependencyGroups": {
@@ -1951,11 +1951,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/LogService/LogAPI/LogStore/LogStore.csproj",
+      "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogService/LogAPI/LogStore/LogStore.csproj",
       "projectName": "LogStore",
-      "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/LogService/LogAPI/LogStore/LogStore.csproj",
+      "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogService/LogAPI/LogStore/LogStore.csproj",
       "packagesPath": "/home/ath/.nuget/packages/",
-      "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/LogService/LogAPI/LogStore/obj/",
+      "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogService/LogAPI/LogStore/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/home/ath/.nuget/NuGet/NuGet.Config"
@@ -1970,8 +1970,8 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
-            "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/LogService/LogAPI/LogData/LogData.csproj": {
-              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/LogService/LogAPI/LogData/LogData.csproj"
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogService/LogAPI/LogData/LogData.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogService/LogAPI/LogData/LogData.csproj"
             },
             "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserMessages/UserMessages.csproj": {
               "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserMessages/UserMessages.csproj"
@@ -2043,7 +2043,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/9.0.300/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/9.0.301/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

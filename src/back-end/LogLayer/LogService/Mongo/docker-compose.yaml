@@ -3,6 +3,8 @@ services:
   log_mongo:
     image: mongo:6.0
     container_name: log_mongo_container
+    networks:
+      - log_network
 
 networks:
   log_network:

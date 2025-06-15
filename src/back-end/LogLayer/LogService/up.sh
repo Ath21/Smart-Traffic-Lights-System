@@ -1,8 +1,9 @@
 #!/bin/bash
 
 NETWORK="log_network"
-API="./UserLayer/LogService/LogAPI"
-MONGO="./UserLayer/LogService/Mongo"
+API="./LogLayer/LogService/LogAPI"
+MONGO="./LogLayer/LogService/Mongo"
+BUILD_CONTEXT="./LogLayer"
 COMPOSE_FILE="docker-compose.yaml"
 COMPOSE_FILE_OVERRIDE="docker-compose.override.yaml"
 
@@ -24,7 +25,7 @@ create_network()
 build_and_push_image()
 {
     echo "🔨  Building Docker image: $IMAGE_NAME ..."
-    docker build -t "$IMAGE_NAME" "$API"
+    docker build -t "$IMAGE_NAME" -f "$API/Dockerfile" "$BUILD_CONTEXT"
 
     echo "🚀  Pushing image to Docker Hub..."
     docker push "$IMAGE_NAME"

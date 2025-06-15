@@ -25,7 +25,4 @@ services:
     depends_on:
       user_mssql:
         condition: service_started
-    networks:
-      - user_network
-      - rabbitmq_network
     restart: always

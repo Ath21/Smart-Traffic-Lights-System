@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("LogStore")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+160a4ff7a9fa5d7b58e473e8d3507d668f98dd90")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d9cf105ae977cea2ee184ae6fc050ef4feb0d52d")]
 [assembly: System.Reflection.AssemblyProductAttribute("LogStore")]
 [assembly: System.Reflection.AssemblyTitleAttribute("LogStore")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -6,24 +6,25 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
-# 🔹 Copy project files (LogStore, LogData, UserMessages)
-COPY ["LogStore/LogStore.csproj", "LogStore/"]
-COPY ["LogData/LogData.csproj", "LogData/"]
-COPY ["../../../UserLayer/UserMessages/UserMessages.csproj", "../UserMessages/"]
+# 🔹 Copy project files
+COPY LogService/LogAPI/LogStore/LogStore.csproj LogStore/
+COPY LogService/LogAPI/LogData/LogData.csproj LogData/
+COPY ../UserLayer/UserMessages/UserMessages.csproj UserMessages/
 
-# 🔹 Restore dependencies
-RUN dotnet restore "LogStore/LogStore.csproj"
+# 🔹 Restore
+RUN dotnet restore LogStore/LogStore.csproj
 
-# 🔹 Copy all source code (AFTER restore)
-COPY . .
-COPY ../../../UserLayer/UserMessages ../UserMessages
+# 🔹 Copy all source files
+COPY LogService/LogAPI/LogStore LogStore/
+COPY LogService/LogAPI/LogData LogData/
+COPY ../UserLayer/UserMessages UserMessages/
 
 # 🔹 Build
-RUN dotnet build "LogStore/LogStore.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build LogStore/LogStore.csproj -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "LogStore/LogStore.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish LogStore/LogStore.csproj -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app

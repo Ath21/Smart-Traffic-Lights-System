@@ -30,7 +30,4 @@ services:
     depends_on:
       log_mongo:
         condition: service_started
-    networks:
-      - log_network
-      - rabbitmq_network
     restart: always

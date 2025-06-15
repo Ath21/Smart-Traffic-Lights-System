@@ -7,6 +7,9 @@ COMPOSE_FILE_OVERRIDE="docker-compose.override.yaml"
 
 down_layers() 
 {
+    echo "🛑  ------- Stopping Log Layer... -------"
+    bash ./LogLayer/down.sh
+
     echo "🛑  ------- Stopping User Layer... -------"
     bash ./UserLayer/down.sh
 }
@@ -34,8 +37,16 @@ remove_network()
     fi
 }
 
+prune_volumes()
+{
+    echo "🧹  Pruning anonymous Docker volumes..."
+    docker volume prune -f
+    echo "✅  Anonymous volumes removed."
+}
+
 down_layers
 stop_rabbitmq
 remove_network
+prune_volumes
 
 exit 0
