@@ -1,6 +1,6 @@
 namespace LogStore.Messages.Traffic;
 
-public record class TrafficDailySummary(
+public record TrafficDailySummary(
     string IntersectionId,     // Target intersection or "ALL"
     int VehicleCount,          // Total vehicles recorded
     double AverageSpeed,       // Average speed in km/h

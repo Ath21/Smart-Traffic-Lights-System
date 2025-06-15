@@ -6,21 +6,22 @@ using LogStore.Consumers.Traffic;
 using LogStore.Middleware;
 using LogStore.Repository;
 using MassTransit;
+using UserMessages;
 
 using Microsoft.OpenApi.Models;
 using RabbitMQ.Client;
-using LogStore.Messages.User;
-using LogStore.Messages.Traffic;
 
 namespace LogStore;
 
 public class Startup
 {
     private readonly IConfiguration _configuration;
+    private readonly ILogger<Startup> _logger;
 
-    public Startup(IConfiguration configuration)
+    public Startup(IConfiguration configuration, ILogger<Startup> logger)
     {
         _configuration = configuration;
+        _logger = logger;
     }
 
     public void ConfigureServices(IServiceCollection services)
@@ -46,116 +47,61 @@ public class Startup
 
         /******* [5] MassTransit ********/
 
-        services.AddMassTransit(x =>
+services.AddMassTransit(x =>
+{
+    x.AddConsumer<LogInfoConsumer>();
+
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        var rabbitmqSettings = _configuration.GetSection("RabbitMQ");
+
+        _logger.LogInformation("Log Service: Configuring RabbitMQ consumer");
+        _logger.LogInformation("Exchange: {Exchange}", rabbitmqSettings["UserLogsExchange"]);
+
+        cfg.Host(rabbitmqSettings["Host"], "/", h =>
         {
-            // Register consumers
-            x.AddConsumer<LogInfoConsumer>();
-            //x.AddConsumer<LogAuditConsumer>();
-            //x.AddConsumer<LogErrorConsumer>();
-            //x.AddConsumer<TrafficAnalyticsLogConsumer>();
-            //x.AddConsumer<TrafficCongestionAlertConsumer>();
-            //x.AddConsumer<TrafficLightControlLogConsumer>();
-
-            x.UsingRabbitMq((context, cfg) =>
-            {
-                var rabbitmqSettings = _configuration.GetSection("RabbitMQ");
-
-                cfg.Host(rabbitmqSettings["Host"], "/", h =>
-                {
-                    h.Username(rabbitmqSettings["Username"]);
-                    h.Password(rabbitmqSettings["Password"]);
-                });
-
-
-                // Removed invalid cfg.Message<T>(x => x.Exclude = true); lines as 'Exclude' does not exist.
-                // Removed invalid DisableTopology usage as it is not supported by MassTransit.
-                //
-                // USER LOGS
-                //
-                cfg.Message<LogInfo>(e => e.SetEntityName(rabbitmqSettings["UserLogsExchange"]));
-
-                cfg.ReceiveEndpoint("user.logs.info.queue", e =>
-                {
-                    e.ConfigureConsumer<LogInfoConsumer>(context);
-                    e.PrefetchCount = 16;
-                    e.UseConcurrencyLimit(4);
-
-                    e.Bind(rabbitmqSettings["UserLogsExchange"], x =>
-                    {
-                        x.ExchangeType = ExchangeType.Direct;
-                        x.RoutingKey = rabbitmqSettings["RoutingKeys:UserLogs:Info"];
-                    });
-                });
-/*
-                cfg.ReceiveEndpoint("user.logs.audit.queue", e =>
-                {
-                    e.ConfigureConsumer<LogAuditConsumer>(context);
-                    e.PrefetchCount = 8;
-                    e.UseConcurrencyLimit(2);
-
-                    e.Bind(rabbitmqSettings["UserLogsExchange"], x =>
-                    {
-                        x.ExchangeType = ExchangeType.Direct;
-                        x.RoutingKey = rabbitmqSettings["RoutingKeys:UserLogs:Audit"];
-                    });
-                });
-
-                cfg.ReceiveEndpoint("user.logs.error.queue", e =>
-                {
-                    e.ConfigureConsumer<LogErrorConsumer>(context);
-                    e.PrefetchCount = 16;
-                    e.UseConcurrencyLimit(4);
-
-                    e.Bind(rabbitmqSettings["UserLogsExchange"], x =>
-                    {
-                        x.ExchangeType = ExchangeType.Direct;
-                        x.RoutingKey = rabbitmqSettings["RoutingKeys:UserLogs:Error"];
-                    });
-                });*/
-
-                //
-                // TRAFFIC ANALYTICS
-                //
-
-                /*cfg.ReceiveEndpoint("traffic.analytics.queue", e =>
-                {
-                    e.ConfigureConsumer<TrafficAnalyticsLogConsumer>(context);
-                    e.ConfigureConsumer<TrafficCongestionAlertConsumer>(context);
-                    e.PrefetchCount = 16;
-                    e.UseConcurrencyLimit(4);
-
-                    e.Bind(rabbitmqSettings["TrafficAnalyticsExchange"], x =>
-                    {
-                        x.RoutingKey = rabbitmqSettings["RoutingKeys:Traffic:DailySummary"];
-                        x.ExchangeType = ExchangeType.Direct;
-                    });
-
-                    e.Bind(rabbitmqSettings["TrafficAnalyticsExchange"], x =>
-                    {
-                        x.RoutingKey = rabbitmqSettings["RoutingKeys:Traffic:CongestionAlert"];
-                        x.ExchangeType = ExchangeType.Direct;
-                    });
-                });
-
-                //
-                // TRAFFIC LIGHT CONTROL
-                //
-
-                cfg.ReceiveEndpoint("traffic.light.control.queue", e =>
-                {
-                    e.ConfigureConsumer<TrafficLightControlLogConsumer>(context);
-                    e.PrefetchCount = 8;
-                    e.UseConcurrencyLimit(2);
-
-                    e.Bind(rabbitmqSettings["TrafficLightControlExchange"], x =>
-                    {
-                        x.RoutingKey = rabbitmqSettings["RoutingKeys:Traffic:LightControlPattern"];
-                        x.ExchangeType = ExchangeType.Topic;
-                    });
-                });
-                */
-            });
+            h.Username(rabbitmqSettings["Username"]);
+            h.Password(rabbitmqSettings["Password"]);
+            _logger.LogInformation("Connected to RabbitMQ host: {Host}", rabbitmqSettings["Host"]);
         });
+
+        cfg.Message<LogInfo>(e =>
+        {
+            e.SetEntityName(rabbitmqSettings["UserLogsExchange"]);
+            _logger.LogInformation("SetEntityName for LogInfo → {Exchange}", rabbitmqSettings["UserLogsExchange"]);
+        });
+
+        cfg.Publish<LogInfo>(e =>
+        {
+            e.ExchangeType = ExchangeType.Topic;
+            _logger.LogInformation("Set exchange type of LogInfo to Topic");
+        });
+
+        cfg.ReceiveEndpoint("user.logs.info.queue", e =>
+        {
+            _logger.LogInformation("Creating receive endpoint: user.logs.info.queue");
+
+            e.ConfigureConsumer<LogInfoConsumer>(context);
+            e.PrefetchCount = 16;
+            e.UseConcurrencyLimit(4);
+
+            _logger.LogInformation("Binding to exchange: {Exchange} with routing key: {Key}",
+                rabbitmqSettings["UserLogsExchange"],
+                rabbitmqSettings["RoutingKeys:UserLogs:Info"]);
+
+            e.Bind(rabbitmqSettings["UserLogsExchange"], x =>
+            {
+                x.ExchangeType = ExchangeType.Topic;
+                x.RoutingKey = rabbitmqSettings["RoutingKeys:UserLogs:Info"];
+            });
+
+        });
+
+        cfg.ConfigureEndpoints(context);
+        _logger.LogInformation("RabbitMQ consumer setup complete");
+    });
+});
+
 
 
         /******* [6] Controllers ********/

@@ -641,6 +641,16 @@
         "runtime": {
           "bin/placeholder/LogData.dll": {}
         }
+      },
+      "UserMessages/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "compile": {
+          "bin/placeholder/UserMessages.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/UserMessages.dll": {}
+        }
       }
     }
   },
@@ -1915,6 +1925,11 @@
       "type": "project",
       "path": "../LogData/LogData.csproj",
       "msbuildProject": "../LogData/LogData.csproj"
+    },
+    "UserMessages/1.0.0": {
+      "type": "project",
+      "path": "../../../UserMessages/UserMessages.csproj",
+      "msbuildProject": "../../../UserMessages/UserMessages.csproj"
     }
   },
   "projectFileDependencyGroups": {
@@ -1926,7 +1941,8 @@
       "Microsoft.AspNetCore.OpenApi >= 9.0.5",
       "MongoDB.Driver >= 3.4.0",
       "RabbitMQ.Client >= 7.1.2",
-      "Swashbuckle.AspNetCore >= 8.1.2"
+      "Swashbuckle.AspNetCore >= 8.1.2",
+      "UserMessages >= 1.0.0"
     ]
   },
   "packageFolders": {
@@ -1956,6 +1972,9 @@
           "projectReferences": {
             "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/LogService/LogAPI/LogData/LogData.csproj": {
               "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/LogService/LogAPI/LogData/LogData.csproj"
+            },
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserMessages/UserMessages.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserMessages/UserMessages.csproj"
             }
           }
         }

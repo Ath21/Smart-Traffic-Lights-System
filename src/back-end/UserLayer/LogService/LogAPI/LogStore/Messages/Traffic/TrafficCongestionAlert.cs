@@ -1,6 +1,6 @@
 namespace LogStore.Messages.Traffic;
 
-public record class TrafficCongestionAlert(
+public record TrafficCongestionAlert(
     string IntersectionId,
     double CongestionLevel,
     string Severity,

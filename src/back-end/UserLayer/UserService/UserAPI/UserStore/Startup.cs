@@ -27,7 +27,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using UserData;
-using UserStore.Messages;
 using UserStore.Business.Password;
 using UserStore.Business.Token;
 using UserStore.Business.Usr;
@@ -37,6 +36,7 @@ using UserStore.Repository.Ses;
 using UserStore.Repository.Usr;
 using RabbitMQ.Client;
 using UserStore.Publishers;
+using UserMessages;
 
 
 namespace UserStore;
@@ -44,10 +44,12 @@ namespace UserStore;
 public class Startup
 {
     private readonly IConfiguration _configuration;
+    private readonly ILogger<Startup> _logger;
 
-    public Startup(IConfiguration configuration)
+    public Startup(IConfiguration configuration, ILogger<Startup> logger)
     {
         _configuration = configuration;
+        _logger = logger;
     }
 
     public void ConfigureServices(IServiceCollection services)
@@ -97,29 +99,39 @@ public class Startup
 
         services.AddScoped(typeof(IUserLogPublisher), typeof(UserLogPublisher));
 
-        services.AddMassTransit(x =>
+services.AddMassTransit(x =>
+{
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        var rabbitmqSettings = _configuration.GetSection("RabbitMQ");
+
+        _logger.LogInformation("User Service: Configuring RabbitMQ producer");
+        _logger.LogInformation("Exchange: {Exchange}", rabbitmqSettings["UserLogsExchange"]);
+
+        cfg.Host(rabbitmqSettings["Host"], "/", h =>
         {
-            x.UsingRabbitMq((context, cfg) =>
-            {
-                var rabbitmqSettings = _configuration.GetSection("RabbitMQ");
-
-                cfg.Host(rabbitmqSettings["Host"], "/", h =>
-                {
-                    h.Username(rabbitmqSettings["Username"]);
-                    h.Password(rabbitmqSettings["Password"]);
-                });
-
-                // Configure message types to use the appropriate exchanges
-                /*cfg.Message<LogInfo>(e => e.SetEntityName(rabbitmqSettings["UserLogsExchange"]));
-                cfg.Publish<LogInfo>(e => e.ExchangeType = ExchangeType.Direct);
-                cfg.Message<LogAudit>(e => e.SetEntityName(rabbitmqSettings["UserLogsExchange"]));
-                cfg.Publish<LogAudit>(e => e.ExchangeType = ExchangeType.Direct);
-                cfg.Message<LogError>(e => e.SetEntityName(rabbitmqSettings["UserLogsExchange"]));
-                cfg.Publish<LogError>(e => e.ExchangeType = ExchangeType.Direct);*/
-                //cfg.Message<NotificationRequest>(e => e.SetEntityName(rabbitmqSettings["UserNotificationsExchange"]));
-                //cfg.Publish<NotificationRequest>(e => e.ExchangeType = ExchangeType.Direct);
-            });
+            h.Username(rabbitmqSettings["Username"]);
+            h.Password(rabbitmqSettings["Password"]);
+            _logger.LogInformation("Connected to RabbitMQ host: {Host}", rabbitmqSettings["Host"]);
         });
+
+        // Publisher for LogInfo
+        cfg.Message<LogInfo>(e =>
+        {
+            e.SetEntityName(rabbitmqSettings["UserLogsExchange"]);
+            _logger.LogInformation("Configured entity name for LogInfo → {Exchange}", rabbitmqSettings["UserLogsExchange"]);
+        });
+
+        cfg.Publish<LogInfo>(e =>
+        {
+            e.ExchangeType = ExchangeType.Topic;
+            _logger.LogInformation("Configured LogInfo exchange type as Topic");
+        });
+
+        cfg.ConfigureEndpoints(context);
+        _logger.LogInformation("RabbitMQ producer setup complete");
+    });
+});
 
 
 
