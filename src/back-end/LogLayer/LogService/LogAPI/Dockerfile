@@ -9,14 +9,14 @@ WORKDIR /src
 # 🔹 Copy project files (LogStore, LogData, UserMessages)
 COPY ["LogStore/LogStore.csproj", "LogStore/"]
 COPY ["LogData/LogData.csproj", "LogData/"]
-COPY ["../../UserMessages/UserMessages.csproj", "../UserMessages/"]
+COPY ["../../../UserLayer/UserMessages/UserMessages.csproj", "../UserMessages/"]
 
 # 🔹 Restore dependencies
 RUN dotnet restore "LogStore/LogStore.csproj"
 
 # 🔹 Copy all source code (AFTER restore)
 COPY . .
-COPY ../../UserMessages ../UserMessages
+COPY ../../../UserLayer/UserMessages ../UserMessages
 
 # 🔹 Build
 RUN dotnet build "LogStore/LogStore.csproj" -c $BUILD_CONFIGURATION -o /app/build

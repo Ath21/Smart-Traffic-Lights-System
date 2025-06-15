@@ -9,7 +9,7 @@ WORKDIR /src
 # 🔹 Copy project files
 COPY ["UserStore/UserStore.csproj", "UserStore/"]
 COPY ["UserData/UserData.csproj", "UserData/"]
-COPY ["../../UserMessages/UserMessages.csproj", "../UserMessages/"]
+COPY ["../../UserMessages/UserMessages.csproj", "UserMessages/"]
 
 # 🔹 Restore dependencies
 RUN dotnet restore "UserStore/UserStore.csproj"
