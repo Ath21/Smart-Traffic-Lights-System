@@ -24,7 +24,6 @@
  * and services.
  */
 using System.Net;
-using UserStore.Messages;
 using UserStore.Publishers;
 
 namespace UserStore.Middleware;

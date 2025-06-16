@@ -44,12 +44,10 @@ namespace UserStore;
 public class Startup
 {
     private readonly IConfiguration _configuration;
-    private readonly ILogger<Startup> _logger;
 
-    public Startup(IConfiguration configuration, ILogger<Startup> logger)
+    public Startup(IConfiguration configuration)
     {
         _configuration = configuration;
-        _logger = logger;
     }
 
     public void ConfigureServices(IServiceCollection services)
@@ -99,37 +97,35 @@ public class Startup
 
         services.AddScoped(typeof(IUserLogPublisher), typeof(UserLogPublisher));
 
+        
+
 services.AddMassTransit(x =>
 {
     x.UsingRabbitMq((context, cfg) =>
     {
         var rabbitmqSettings = _configuration.GetSection("RabbitMQ");
 
-        _logger.LogInformation("User Service: Configuring RabbitMQ producer");
-        _logger.LogInformation("Exchange: {Exchange}", rabbitmqSettings["UserLogsExchange"]);
 
         cfg.Host(rabbitmqSettings["Host"], "/", h =>
         {
             h.Username(rabbitmqSettings["Username"]);
             h.Password(rabbitmqSettings["Password"]);
-            _logger.LogInformation("Connected to RabbitMQ host: {Host}", rabbitmqSettings["Host"]);
         });
 
         // Publisher for LogInfo
         cfg.Message<LogInfo>(e =>
         {
             e.SetEntityName(rabbitmqSettings["UserLogsExchange"]);
-            _logger.LogInformation("Configured entity name for LogInfo → {Exchange}", rabbitmqSettings["UserLogsExchange"]);
+
         });
 
         cfg.Publish<LogInfo>(e =>
         {
             e.ExchangeType = ExchangeType.Topic;
-            _logger.LogInformation("Configured LogInfo exchange type as Topic");
+
         });
 
         cfg.ConfigureEndpoints(context);
-        _logger.LogInformation("RabbitMQ producer setup complete");
     });
 });
 

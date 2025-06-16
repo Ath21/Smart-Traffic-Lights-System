@@ -16,12 +16,10 @@ namespace LogStore;
 public class Startup
 {
     private readonly IConfiguration _configuration;
-    private readonly ILogger<Startup> _logger;
 
-    public Startup(IConfiguration configuration, ILogger<Startup> logger)
+    public Startup(IConfiguration configuration)
     {
         _configuration = configuration;
-        _logger = logger;
     }
 
     public void ConfigureServices(IServiceCollection services)
@@ -55,39 +53,32 @@ services.AddMassTransit(x =>
     {
         var rabbitmqSettings = _configuration.GetSection("RabbitMQ");
 
-        _logger.LogInformation("Log Service: Configuring RabbitMQ consumer");
-        _logger.LogInformation("Exchange: {Exchange}", rabbitmqSettings["UserLogsExchange"]);
 
         cfg.Host(rabbitmqSettings["Host"], "/", h =>
         {
             h.Username(rabbitmqSettings["Username"]);
             h.Password(rabbitmqSettings["Password"]);
-            _logger.LogInformation("Connected to RabbitMQ host: {Host}", rabbitmqSettings["Host"]);
+     
         });
 
         cfg.Message<LogInfo>(e =>
         {
             e.SetEntityName(rabbitmqSettings["UserLogsExchange"]);
-            _logger.LogInformation("SetEntityName for LogInfo → {Exchange}", rabbitmqSettings["UserLogsExchange"]);
+
         });
 
         cfg.Publish<LogInfo>(e =>
         {
             e.ExchangeType = ExchangeType.Topic;
-            _logger.LogInformation("Set exchange type of LogInfo to Topic");
         });
 
         cfg.ReceiveEndpoint("user.logs.info.queue", e =>
         {
-            _logger.LogInformation("Creating receive endpoint: user.logs.info.queue");
 
             e.ConfigureConsumer<LogInfoConsumer>(context);
             e.PrefetchCount = 16;
             e.UseConcurrencyLimit(4);
 
-            _logger.LogInformation("Binding to exchange: {Exchange} with routing key: {Key}",
-                rabbitmqSettings["UserLogsExchange"],
-                rabbitmqSettings["RoutingKeys:UserLogs:Info"]);
 
             e.Bind(rabbitmqSettings["UserLogsExchange"], x =>
             {
@@ -98,7 +89,7 @@ services.AddMassTransit(x =>
         });
 
         cfg.ConfigureEndpoints(context);
-        _logger.LogInformation("RabbitMQ consumer setup complete");
+
     });
 });
 

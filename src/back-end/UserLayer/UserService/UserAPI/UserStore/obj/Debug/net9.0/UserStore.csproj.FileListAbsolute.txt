@@ -175,3 +175,9 @@
 /home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserService/UserAPI/UserStore/obj/Debug/net9.0/UserStore.genruntimeconfig.cache
 /home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserService/UserAPI/UserStore/obj/Debug/net9.0/ref/UserStore.dll
 /home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserService/UserAPI/UserStore/bin/Debug/net9.0/Microsoft.Extensions.Configuration.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserService/UserAPI/UserStore/obj/Debug/net9.0/rpswa.dswa.cache.json
+/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserService/UserAPI/UserStore/bin/Debug/net9.0/UserMessages.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserService/UserAPI/UserStore/bin/Debug/net9.0/UserMessages.pdb
+/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserService/UserAPI/UserStore/obj/Debug/net9.0/rjimswa.dswa.cache.json
+/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserService/UserAPI/UserStore/obj/Debug/net9.0/rjsmrazor.dswa.cache.json
+/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserService/UserAPI/UserStore/obj/Debug/net9.0/rjsmcshtml.dswa.cache.json

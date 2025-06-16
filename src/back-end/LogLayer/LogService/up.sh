@@ -1,9 +1,13 @@
 #!/bin/bash
 
 NETWORK="log_network"
+
 API="./LogLayer/LogService/LogAPI"
 MONGO="./LogLayer/LogService/Mongo"
+
+# 🔧 Εδώ το context πάει από ./LogLayer ➝ ./ (το root), για να "βλέπει" το UserMessages
 BUILD_CONTEXT="./LogLayer"
+
 COMPOSE_FILE="docker-compose.yaml"
 COMPOSE_FILE_OVERRIDE="docker-compose.override.yaml"
 
@@ -49,7 +53,7 @@ up_containers()
 }
 
 create_network
-build_and_push_image
+#build_and_push_image
 up_containers
 
 exit 0

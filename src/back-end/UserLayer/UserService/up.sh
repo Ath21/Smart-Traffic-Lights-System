@@ -4,7 +4,10 @@ NETWORK="user_network"
 
 API="./UserLayer/UserService/UserAPI"
 MSSQL="./UserLayer/UserService/MSSQL"
+
+# 🔧 Context πάει ένα επίπεδο πάνω για να περιλαμβάνει και το UserMessages
 BUILD_CONTEXT="./UserLayer"
+
 COMPOSE_FILE="docker-compose.yaml"
 COMPOSE_FILE_OVERRIDE="docker-compose.override.yaml"
 
@@ -50,7 +53,7 @@ up_containers()
 }
 
 create_network
-build_and_push_image
+#build_and_push_image
 up_containers
 
 exit 0

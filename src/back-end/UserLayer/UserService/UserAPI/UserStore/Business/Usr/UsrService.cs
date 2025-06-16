@@ -29,7 +29,6 @@ using MassTransit;
 using UserData.Entities;
 using UserStore.Business.Password;
 using UserStore.Business.Token;
-using UserStore.Messages;
 using UserStore.Models;
 using UserStore.Publishers;
 using UserStore.Repository.Audit;

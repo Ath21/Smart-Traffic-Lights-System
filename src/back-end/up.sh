@@ -5,6 +5,22 @@ RABBITMQ="./RabbitMQ"
 COMPOSE_FILE="docker-compose.yaml"
 COMPOSE_FILE_OVERRIDE="docker-compose.override.yaml"
 
+
+# 🔧 Context πάει ένα επίπεδο πάνω για να περιλαμβάνει και το UserMessages
+API1="./UserLayer/UserService/UserAPI"
+API2="./LogLayer/LogService/LogAPI"
+
+BUILD_CONTEXT1="."
+BUILD_CONTEXT2="."
+
+
+DOCKER_USERNAME="ath21"
+REPO="stls"
+TAG1="user_api"
+TAG2="log_api"
+IMAGE_NAME1="$DOCKER_USERNAME/$REPO:$TAG1"
+IMAGE_NAME2="$DOCKER_USERNAME/$REPO:$TAG2"
+
 # Waits until RabbitMQ is ready on port 5672
 wait_for_rabbitmq() 
 {
@@ -58,9 +74,30 @@ up_layers()
     bash ./UserLayer/up.sh
 }
 
+build_and_push_image()
+{
+    echo "🔨  Building Docker image: $IMAGE_NAME1 ..."
+    docker build -t "$IMAGE_NAME1" -f "$API1/Dockerfile" "$BUILD_CONTEXT1"
+
+    echo "🚀  Pushing image to Docker Hub..."
+    docker push "$IMAGE_NAME1"
+    echo "✅  Image pushed: $IMAGE_NAME1"
+
+    
+    
+    echo "🔨  Building Docker image: $IMAGE_NAME2 ..."
+    docker build -t "$IMAGE_NAME2" -f "$API2/Dockerfile" "$BUILD_CONTEXT2"
+
+    echo "🚀  Pushing image to Docker Hub..."
+    docker push "$IMAGE_NAME2"
+    echo "✅  Image pushed: $IMAGE_NAME2"
+}
+
+
 # Run everything
 create_network
 up_rabbitmq
+build_and_push_image
 up_layers
 
 exit 0
