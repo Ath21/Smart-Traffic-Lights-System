@@ -110,7 +110,7 @@ public class UsrService : IUsrService
             Details = $"User {user.Username} logged in successfully."
         });
 
-        //await _userLogPublisher.PublishAuditAsync(user.UserId, "User Logged In", $"User {user.Username} logged in successfully.");
+        await _userLogPublisher.PublishAuditAsync(user.UserId, "User Logged In", $"User {user.Username} logged in successfully.");
         await _userLogPublisher.PublishInfoAsync($"User {user.Username} logged in successfully.");
 
         return new LoginResponseDto
@@ -137,7 +137,7 @@ public class UsrService : IUsrService
                 Details = $"User {session.User.Username} logged out successfully."
             });
 
-            //await _userLogPublisher.PublishAuditAsync(session.UserId, "User Logged Out", $"User {session.User.Username} logged out successfully.");
+            await _userLogPublisher.PublishAuditAsync(session.UserId, "User Logged Out", $"User {session.User.Username} logged out successfully.");
             await _userLogPublisher.PublishInfoAsync($"User {session.User.Username} logged out successfully.");
         }
     }
@@ -164,7 +164,7 @@ public class UsrService : IUsrService
             Details = $"User {user.Username} registered successfully."
         });
 
-        //await _userLogPublisher.PublishAuditAsync(user.UserId, "User Registered", $"User {user.Username} registered successfully.");
+        await _userLogPublisher.PublishAuditAsync(user.UserId, "User Registered", $"User {user.Username} registered successfully.");
         await _userLogPublisher.PublishInfoAsync($"User {user.Username} registered successfully.");
 
         return new RegisterResponseDto
@@ -200,7 +200,7 @@ public class UsrService : IUsrService
             Details = $"User {user.Username} reset their password successfully."
         });
 
-        //await _userLogPublisher.PublishAuditAsync(user.UserId, "User Password Reset", $"User {user.Username} reset their password successfully.");
+        await _userLogPublisher.PublishAuditAsync(user.UserId, "User Password Reset", $"User {user.Username} reset their password successfully.");
         await _userLogPublisher.PublishInfoAsync($"User {user.Username} reset their password successfully.");
     }
 
@@ -228,7 +228,7 @@ public class UsrService : IUsrService
             Details = $"User {user.Username} updated their profile successfully."
         });
 
-        //await _userLogPublisher.PublishAuditAsync(user.UserId, "User Profile Updated", $"User {user.Username} updated their profile successfully.");
+        await _userLogPublisher.PublishAuditAsync(user.UserId, "User Profile Updated", $"User {user.Username} updated their profile successfully.");
         await _userLogPublisher.PublishInfoAsync($"User {user.Username} updated their profile successfully.");
     }
 }

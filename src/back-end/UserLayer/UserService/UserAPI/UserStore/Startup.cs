@@ -99,35 +99,55 @@ public class Startup
 
         
 
-services.AddMassTransit(x =>
-{
-    x.UsingRabbitMq((context, cfg) =>
-    {
-        var rabbitmqSettings = _configuration.GetSection("RabbitMQ");
-
-
-        cfg.Host(rabbitmqSettings["Host"], "/", h =>
+        services.AddMassTransit(x =>
         {
-            h.Username(rabbitmqSettings["Username"]);
-            h.Password(rabbitmqSettings["Password"]);
+            x.UsingRabbitMq((context, cfg) =>
+            {
+                var rabbitmqSettings = _configuration.GetSection("RabbitMQ");
+
+
+                cfg.Host(rabbitmqSettings["Host"], "/", h =>
+                {
+                    h.Username(rabbitmqSettings["Username"]);
+                    h.Password(rabbitmqSettings["Password"]);
+                });
+
+                // Publisher for LogInfo
+                cfg.Message<LogInfo>(e =>
+                {
+                    e.SetEntityName(rabbitmqSettings["UserLogsExchange"]);
+
+                });
+
+                cfg.Publish<LogInfo>(e =>
+                {
+                    e.ExchangeType = ExchangeType.Direct;
+
+                });
+
+                cfg.Message<LogAudit>(e =>
+                {
+                    e.SetEntityName(rabbitmqSettings["UserLogsExchange"]);
+                });
+
+                cfg.Publish<LogAudit>(e =>
+                {
+                    e.ExchangeType = ExchangeType.Direct;
+                });
+
+                cfg.Message<LogError>(e =>
+                {
+                    e.SetEntityName(rabbitmqSettings["UserLogsExchange"]);
+                });
+
+                cfg.Publish<LogError>(e =>
+                {
+                    e.ExchangeType = ExchangeType.Direct;
+                });
+
+                cfg.ConfigureEndpoints(context);
+            });
         });
-
-        // Publisher for LogInfo
-        cfg.Message<LogInfo>(e =>
-        {
-            e.SetEntityName(rabbitmqSettings["UserLogsExchange"]);
-
-        });
-
-        cfg.Publish<LogInfo>(e =>
-        {
-            e.ExchangeType = ExchangeType.Topic;
-
-        });
-
-        cfg.ConfigureEndpoints(context);
-    });
-});
 
 
 

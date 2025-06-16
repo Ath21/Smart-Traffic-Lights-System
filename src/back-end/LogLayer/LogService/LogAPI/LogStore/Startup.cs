@@ -48,6 +48,8 @@ public class Startup
 services.AddMassTransit(x =>
 {
     x.AddConsumer<LogInfoConsumer>();
+    x.AddConsumer<LogAuditConsumer>();
+    x.AddConsumer<LogErrorConsumer>();
 
     x.UsingRabbitMq((context, cfg) =>
     {
@@ -69,7 +71,7 @@ services.AddMassTransit(x =>
 
         cfg.Publish<LogInfo>(e =>
         {
-            e.ExchangeType = ExchangeType.Topic;
+            e.ExchangeType = ExchangeType.Direct;
         });
 
         cfg.ReceiveEndpoint("user.logs.info.queue", e =>
@@ -82,8 +84,52 @@ services.AddMassTransit(x =>
 
             e.Bind(rabbitmqSettings["UserLogsExchange"], x =>
             {
-                x.ExchangeType = ExchangeType.Topic;
+                x.ExchangeType = ExchangeType.Direct;
                 x.RoutingKey = rabbitmqSettings["RoutingKeys:UserLogs:Info"];
+            });
+
+        });
+
+        cfg.Message<LogAudit>(e =>
+        {
+            e.SetEntityName(rabbitmqSettings["UserLogsExchange"]);
+        });
+        cfg.Publish<LogAudit>(e =>
+        {
+            e.ExchangeType = ExchangeType.Direct;
+        });
+        cfg.ReceiveEndpoint("user.logs.audit.queue", e =>
+        {
+            e.ConfigureConsumer<LogAuditConsumer>(context);
+            e.PrefetchCount = 16;
+            e.UseConcurrencyLimit(4);
+
+            e.Bind(rabbitmqSettings["UserLogsExchange"], x =>
+            {
+                x.ExchangeType = ExchangeType.Direct;
+                x.RoutingKey = rabbitmqSettings["RoutingKeys:UserLogs:Audit"];
+            });
+
+        });
+
+        cfg.Message<LogError>(e =>
+        {
+            e.SetEntityName(rabbitmqSettings["UserLogsExchange"]);
+        });
+        cfg.Publish<LogError>(e =>
+        {
+            e.ExchangeType = ExchangeType.Direct;
+        });
+        cfg.ReceiveEndpoint("user.logs.error.queue", e =>
+        {
+            e.ConfigureConsumer<LogErrorConsumer>(context);
+            e.PrefetchCount = 16;
+            e.UseConcurrencyLimit(4);
+
+            e.Bind(rabbitmqSettings["UserLogsExchange"], x =>
+            {
+                x.ExchangeType = ExchangeType.Direct;
+                x.RoutingKey = rabbitmqSettings["RoutingKeys:UserLogs:Error"];
             });
 
         });

@@ -52,7 +52,7 @@ public class ExceptionMiddleware
             _logger.LogWarning(ex, "Unauthorized access");
 
             var logPublisher = context.RequestServices.GetRequiredService<IUserLogPublisher>();
-            //await logPublisher.PublishErrorAsync("Unauthorized access", ex);
+            await logPublisher.PublishErrorAsync("Unauthorized access", ex);
 
             context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
             context.Response.ContentType = "application/json";
@@ -63,7 +63,7 @@ public class ExceptionMiddleware
             _logger.LogWarning(ex, "Resource not found");
 
             var logPublisher = context.RequestServices.GetRequiredService<IUserLogPublisher>();
-            //await logPublisher.PublishErrorAsync("Resource not found", ex);
+            await logPublisher.PublishErrorAsync("Resource not found", ex);
 
             context.Response.StatusCode = (int)HttpStatusCode.NotFound;
             context.Response.ContentType = "application/json";
@@ -74,7 +74,7 @@ public class ExceptionMiddleware
             _logger.LogWarning(ex, "Invalid operation");
 
             var logPublisher = context.RequestServices.GetRequiredService<IUserLogPublisher>();
-            //await logPublisher.PublishErrorAsync("Invalid operation", ex);
+            await logPublisher.PublishErrorAsync("Invalid operation", ex);
 
             context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
             context.Response.ContentType = "application/json";
@@ -85,7 +85,7 @@ public class ExceptionMiddleware
             _logger.LogError(ex, "Unhandled exception occurred");
 
             var logPublisher = context.RequestServices.GetRequiredService<IUserLogPublisher>();
-            //await logPublisher.PublishErrorAsync("Unhandled exception", ex);
+            await logPublisher.PublishErrorAsync("Unhandled exception", ex);
 
             context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
             context.Response.ContentType = "application/json";
