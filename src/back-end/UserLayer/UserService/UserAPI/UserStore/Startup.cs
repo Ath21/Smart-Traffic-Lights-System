@@ -97,14 +97,11 @@ public class Startup
 
         services.AddScoped(typeof(IUserLogPublisher), typeof(UserLogPublisher));
 
-        
-
         services.AddMassTransit(x =>
         {
             x.UsingRabbitMq((context, cfg) =>
             {
                 var rabbitmqSettings = _configuration.GetSection("RabbitMQ");
-
 
                 cfg.Host(rabbitmqSettings["Host"], "/", h =>
                 {
@@ -113,43 +110,18 @@ public class Startup
                 });
 
                 // Publisher for LogInfo
-                cfg.Message<LogInfo>(e =>
-                {
-                    e.SetEntityName(rabbitmqSettings["UserLogsExchange"]);
+                cfg.Message<LogInfo>(e => { e.SetEntityName(rabbitmqSettings["UserLogsExchange"]); }); 
+                cfg.Publish<LogInfo>(e => { e.ExchangeType = ExchangeType.Direct; });
 
-                });
+                cfg.Message<LogAudit>(e => { e.SetEntityName(rabbitmqSettings["UserLogsExchange"]); });
+                cfg.Publish<LogAudit>(e => { e.ExchangeType = ExchangeType.Direct;});
 
-                cfg.Publish<LogInfo>(e =>
-                {
-                    e.ExchangeType = ExchangeType.Direct;
-
-                });
-
-                cfg.Message<LogAudit>(e =>
-                {
-                    e.SetEntityName(rabbitmqSettings["UserLogsExchange"]);
-                });
-
-                cfg.Publish<LogAudit>(e =>
-                {
-                    e.ExchangeType = ExchangeType.Direct;
-                });
-
-                cfg.Message<LogError>(e =>
-                {
-                    e.SetEntityName(rabbitmqSettings["UserLogsExchange"]);
-                });
-
-                cfg.Publish<LogError>(e =>
-                {
-                    e.ExchangeType = ExchangeType.Direct;
-                });
+                cfg.Message<LogError>(e => { e.SetEntityName(rabbitmqSettings["UserLogsExchange"]); });
+                cfg.Publish<LogError>(e => { e.ExchangeType = ExchangeType.Direct; });
 
                 cfg.ConfigureEndpoints(context);
             });
         });
-
-
 
         /******* [7] Controllers ********/
 

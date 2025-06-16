@@ -51,6 +51,7 @@ public class ExceptionMiddleware
         {
             _logger.LogWarning(ex, "Unauthorized access");
 
+            // Publish the error log using IUserLogPublisher
             var logPublisher = context.RequestServices.GetRequiredService<IUserLogPublisher>();
             await logPublisher.PublishErrorAsync("Unauthorized access", ex);
 
@@ -62,6 +63,7 @@ public class ExceptionMiddleware
         {
             _logger.LogWarning(ex, "Resource not found");
 
+            // Publish the error log using IUserLogPublisher
             var logPublisher = context.RequestServices.GetRequiredService<IUserLogPublisher>();
             await logPublisher.PublishErrorAsync("Resource not found", ex);
 
@@ -73,6 +75,7 @@ public class ExceptionMiddleware
         {
             _logger.LogWarning(ex, "Invalid operation");
 
+            // Publish the error log using IUserLogPublisher
             var logPublisher = context.RequestServices.GetRequiredService<IUserLogPublisher>();
             await logPublisher.PublishErrorAsync("Invalid operation", ex);
 
@@ -84,6 +87,7 @@ public class ExceptionMiddleware
         {
             _logger.LogError(ex, "Unhandled exception occurred");
 
+            // Publish the error log using IUserLogPublisher
             var logPublisher = context.RequestServices.GetRequiredService<IUserLogPublisher>();
             await logPublisher.PublishErrorAsync("Unhandled exception", ex);
 

@@ -1,4 +1,24 @@
-using System;
+/* 
+ * UserStore.Publishers.UserLogPublisher
+ * 
+ * This class implements the IUserLogPublisher interface to publish user-related logs
+ * such as informational logs, audit logs, and error logs to a message broker (e.g., RabbitMQ).
+ * It uses MassTransit for message publishing and is typically used in the UserService layer of the application.
+ * It is part of the UserStore project, which is responsible for managing user-related operations
+ * and services.
+ * 
+ * Dependencies:
+ *   - ISendEndpointProvider: Interface for sending messages to a specific endpoint.
+ *   - IConfiguration: Interface for accessing application configuration settings.
+ *   - ILogger<UserLogPublisher>: Interface for logging messages.
+ *   - IBus: Interface for interacting with the message bus.
+ * Methods:
+ *   - Task PublishInfoAsync(string message): Publishes an informational log message.
+ *   - Task PublishAuditAsync(Guid userId, string action, string details): Publishes an audit log message
+ *     for a specific user action.
+ *   - Task PublishErrorAsync(string message, Exception exception): Publishes an error log message
+ *     along with an exception.
+ */
 using MassTransit;
 using UserMessages;
 
