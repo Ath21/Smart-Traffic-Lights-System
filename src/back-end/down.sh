@@ -1,52 +1,72 @@
 #!/bin/bash
 
+# ================================
+# 🔧 Configuration
+# ================================
 RABBITMQ_NETWORK="rabbitmq_network"
-RABBITMQ="../back-end/RabbitMQ"
-COMPOSE_FILE="docker-compose.yaml"
-COMPOSE_FILE_OVERRIDE="docker-compose.override.yaml"
+RABBITMQ_DIR="../back-end/RabbitMQ"
+DOCKER_COMPOSE_FILE="docker-compose.yaml"
+DOCKER_COMPOSE_OVERRIDE_FILE="docker-compose.override.yaml"
 
-down_layers() 
+# ================================
+# ⛔ Stop Application Layers
+# ================================
+stop_application_layers() 
 {
-    echo "🛑  ------- Stopping Log Layer... -------"
-    bash ./LogLayer/down.sh
+    echo "🛑 Stopping Log Layer..."
+    bash ./LogLayer/downLogLayer.sh
 
-    echo "🛑  ------- Stopping User Layer... -------"
-    bash ./UserLayer/down.sh
+    echo "🛑 Stopping User Layer..."
+    bash ./UserLayer/downUserLayer.sh
 }
 
+# ================================
+# 🐇 Stop RabbitMQ Service
+# ================================
 stop_rabbitmq() 
 {
-    echo "🐇  Shutting down RabbitMQ..."
+    echo "📦 Shutting down RabbitMQ service..."
 
     docker compose \
-        -f "$RABBITMQ/$COMPOSE_FILE" \
-        -f "$RABBITMQ/$COMPOSE_FILE_OVERRIDE" \
+        -f "$RABBITMQ_DIR/$DOCKER_COMPOSE_FILE" \
+        -f "$RABBITMQ_DIR/$DOCKER_COMPOSE_OVERRIDE_FILE" \
         -p rabbitmq \
         down
 
-    echo "✅  RabbitMQ has been stopped."
+    echo "✅ RabbitMQ service stopped."
 }
 
-remove_network() 
+# ================================
+# 🔌 Remove Docker Network
+# ================================
+remove_docker_network() 
 {
     if docker network ls | grep -q "$RABBITMQ_NETWORK"; then
-        echo "🔌  Removing Docker network '$RABBITMQ_NETWORK'..."
+        echo "🔌 Removing Docker network '$RABBITMQ_NETWORK'..."
         docker network rm "$RABBITMQ_NETWORK"
+        echo "✅ Network removed."
     else
-        echo "⚠️  Docker network '$RABBITMQ_NETWORK' does not exist. Skipping removal."
+        echo "⚠️ Docker network '$RABBITMQ_NETWORK' not found. Skipping."
     fi
 }
 
-prune_volumes()
+# ================================
+# 🧹 Prune Anonymous Volumes
+# ================================
+prune_docker_volumes() 
 {
-    echo "🧹  Pruning anonymous Docker volumes..."
+    echo "🧹 Pruning anonymous Docker volumes..."
     docker volume prune -f
-    echo "✅  Anonymous volumes removed."
+    echo "✅ Anonymous volumes removed."
 }
 
-down_layers
+# ================================
+# 🧩 Main Script Execution
+# ================================
+stop_application_layers
 stop_rabbitmq
-remove_network
-prune_volumes
+remove_docker_network
+prune_docker_volumes
 
+echo "🏁 All services and resources have been stopped and cleaned."
 exit 0
