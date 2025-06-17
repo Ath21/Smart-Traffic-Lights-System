@@ -1,6 +1,13 @@
-using System;
+/*
+ *  LogStore.Consumers.User.LogAuditConsumer
+ *
+ *  This class implements the IConsumer interface for handling LogAudit messages.
+ *  It consumes messages related to user actions and logs audit information.
+ *  The consumer uses the ILogService to store logs in the database.
+ *  The message contains information about the action performed, details, and timestamp.
+ *  The log message is formatted and stored in the database for later retrieval and analysis.
+ */
 using LogStore.Business;
-
 using LogStore.Models;
 using MassTransit;
 using UserMessages;

@@ -1,4 +1,4 @@
-namespace LogStore.Messages.Traffic;
+namespace TrafficMessages;
 
 public record TrafficDailySummary(
     string IntersectionId,     // Target intersection or "ALL"

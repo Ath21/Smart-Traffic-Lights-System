@@ -1,4 +1,12 @@
-using System;
+/*
+ *  LogStore.Consumers.User.LogErrorConsumer
+ *
+ *  This class implements the IConsumer interface for handling LogInfo messages.
+ *  It consumes messages related to informational logging and stores the log details in the log service.
+ *  The consumer uses the ILogService to store logs in the database.
+ *  The message contains information about the log message, timestamp, and service name.
+ *  The log message is formatted and stored in the database for later retrieval and analysis.
+ */
 using LogStore.Business;
 using LogStore.Models;
 using MassTransit;

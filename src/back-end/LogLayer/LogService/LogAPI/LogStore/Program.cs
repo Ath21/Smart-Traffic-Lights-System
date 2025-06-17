@@ -1,3 +1,9 @@
+/*
+ *  LogStore.Program
+ *
+ *  This class is the entry point for the LogStore application.
+ *  It sets up the web application using ASP.NET Core, configuring services and middleware.
+ */
 namespace LogStore
 {
     public class Program

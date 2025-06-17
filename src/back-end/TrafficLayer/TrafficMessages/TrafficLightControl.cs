@@ -1,6 +1,6 @@
-namespace LogStore.Messages.Traffic;
+namespace TrafficMessages;
 
-public record TrafficLightControlLog(
+public record TrafficLightControl(
     string IntersectionId,     // e.g., "INT-004"
     string ControlPattern,     // e.g., "RED-GREEN-RED", "YELLOW-BLINK", etc.
     int DurationSeconds,       // How long the pattern is active
