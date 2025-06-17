@@ -11,6 +11,7 @@ WORKDIR /src
 # 🔹 Αντιγραφή ολόκληρων layers ώστε να τηρούνται τα relative paths
 COPY LogLayer LogLayer/
 COPY UserLayer UserLayer/
+COPY TrafficLayer TrafficLayer/
 
 # 🔹 Restore
 RUN dotnet restore LogLayer/LogService/LogAPI/LogStore/LogStore.csproj
