@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "Mfq8w/QmmhM=",
+  "success": true,
+  "projectFilePath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/NotificationService/NotificationStore/NotificationStore.csproj",
+  "expectedPackageFiles": [
+    "/home/ath/.nuget/packages/microsoft.aspnetcore.openapi/9.0.6/microsoft.aspnetcore.openapi.9.0.6.nupkg.sha512",
+    "/home/ath/.nuget/packages/microsoft.openapi/1.6.17/microsoft.openapi.1.6.17.nupkg.sha512"
+  ],
+  "logs": []
+}
