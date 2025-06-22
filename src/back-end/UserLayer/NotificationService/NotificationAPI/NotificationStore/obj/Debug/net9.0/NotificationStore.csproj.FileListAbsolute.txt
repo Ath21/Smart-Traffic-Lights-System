@@ -45,3 +45,5 @@
 /home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/NotificationService/NotificationAPI/NotificationStore/obj/Debug/net9.0/NotificationStore.pdb
 /home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/NotificationService/NotificationAPI/NotificationStore/obj/Debug/net9.0/NotificationStore.genruntimeconfig.cache
 /home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/NotificationService/NotificationAPI/NotificationStore/obj/Debug/net9.0/ref/NotificationStore.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/NotificationService/NotificationAPI/NotificationStore/bin/Debug/net9.0/AutoMapper.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/NotificationService/NotificationAPI/NotificationStore/bin/Debug/net9.0/AutoMapper.Extensions.Microsoft.DependencyInjection.dll
