@@ -3,6 +3,7 @@ using Microsoft.OpenApi.Models;
 using NotificationData;
 using NotificationStore.Business.Email;
 using NotificationStore.Business.Notify;
+using NotificationStore.Middleware;
 using NotificationStore.Models;
 using NotificationStore.Repository;
 
@@ -199,7 +200,7 @@ public class Startup
 
         app.UseHttpsRedirection();
 
-        //app.UseMiddleware<ExceptionMiddleware>();
+        app.UseMiddleware<ExceptionMiddleware>();
 
         app.UseAuthentication();
         app.UseAuthorization();
