@@ -50,3 +50,9 @@
 /home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/NotificationService/NotificationAPI/NotificationStore/bin/Debug/net9.0/BouncyCastle.Cryptography.dll
 /home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/NotificationService/NotificationAPI/NotificationStore/bin/Debug/net9.0/MailKit.dll
 /home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/NotificationService/NotificationAPI/NotificationStore/bin/Debug/net9.0/MimeKit.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/NotificationService/NotificationAPI/NotificationStore/bin/Debug/net9.0/MassTransit.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/NotificationService/NotificationAPI/NotificationStore/bin/Debug/net9.0/MassTransit.Abstractions.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/NotificationService/NotificationAPI/NotificationStore/bin/Debug/net9.0/MassTransit.RabbitMqTransport.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/NotificationService/NotificationAPI/NotificationStore/bin/Debug/net9.0/RabbitMQ.Client.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/NotificationService/NotificationAPI/NotificationStore/bin/Debug/net9.0/UserMessages.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/NotificationService/NotificationAPI/NotificationStore/bin/Debug/net9.0/UserMessages.pdb

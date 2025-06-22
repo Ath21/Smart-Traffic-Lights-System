@@ -1,7 +1,7 @@
 using System;
 using Microsoft.OpenApi.Models;
 using NotificationData;
-using NotificationStore.Business;
+using NotificationStore.Business.Email;
 using NotificationStore.Models;
 using NotificationStore.Repository;
 

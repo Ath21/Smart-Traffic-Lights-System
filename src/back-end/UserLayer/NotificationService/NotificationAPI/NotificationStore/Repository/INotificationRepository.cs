@@ -7,5 +7,5 @@ public interface INotificationRepository
 {
     Task CreateAsync(Notification newNotification);
     Task<List<Notification>> GetAllAsync();
-    Task<List<Notification?>> GetAsync(string Id);
+    Task<List<Notification?>> GetAsync(Guid Id);
 }
