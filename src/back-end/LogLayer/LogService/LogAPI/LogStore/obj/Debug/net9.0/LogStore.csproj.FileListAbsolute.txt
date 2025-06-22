@@ -53,3 +53,5 @@
 /home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogService/LogAPI/LogStore/obj/Debug/net9.0/LogStore.pdb
 /home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogService/LogAPI/LogStore/obj/Debug/net9.0/LogStore.genruntimeconfig.cache
 /home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogService/LogAPI/LogStore/obj/Debug/net9.0/ref/LogStore.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogService/LogAPI/LogStore/bin/Debug/net9.0/TrafficMessages.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogService/LogAPI/LogStore/bin/Debug/net9.0/TrafficMessages.pdb

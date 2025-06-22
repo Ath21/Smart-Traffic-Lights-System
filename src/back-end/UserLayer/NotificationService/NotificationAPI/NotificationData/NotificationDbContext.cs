@@ -21,5 +21,5 @@ public class NotificationDbContext
             notificationDbSettings.Value.NotificationsCollectionName);
     }
 
-    public IMongoCollection<Notification> LogsCollection => _notificationsCollection;
+    public IMongoCollection<Notification> NotificationsCollection => _notificationsCollection;
 }

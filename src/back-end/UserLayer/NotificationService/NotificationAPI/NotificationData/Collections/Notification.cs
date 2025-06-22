@@ -14,7 +14,9 @@ public class Notification
     public string Type { get; set; }
 
     [BsonElement("recipientId")]
-    public string RecipientId { get; set; }
+    public Guid RecipientId { get; set; }
+    [BsonElement("recipientEmail")]
+    public string? RecipientEmail { get; set; }
 
     [BsonElement("message")]
     public string Message { get; set; }
