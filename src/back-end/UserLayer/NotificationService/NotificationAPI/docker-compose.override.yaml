@@ -1,0 +1,36 @@
+services:
+  log_api:
+    ports:
+      - '5087:8080'
+    environment:
+      
+      ASPNETCORE_ENVIRONMENT: Development
+
+      # MongoDB
+      DefaultConnection__ConnectionString: mongodb://notification_mongo:27017
+      DefaultConnection__DatabaseName: NotificationDb
+      DefaultConnection__NotificationsCollectionName: Notifications
+
+      # RabbitMQ
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Port: 5672
+      RabbitMQ__Username: admin
+      RabbitMQ__Password: admin123
+      
+      RabbitMQ__UserNotificationExchange: user.notification.exchange
+      RabbitMQ__RoutingKeys__UserNotification__Request: user.notification.request
+
+      # Email settings
+      EmailSettings__SmtpServer: smtp.gmail.com
+      EmailSettings__Port: 587
+      EmailSettings__SenderName: Smart Traffic System
+      EmailSettings__SenderEmail: your_email@gmail.com
+      EmailSettings__Username: your_email@gmail.com
+      EmailSettings__Password: your_app_specific_password
+
+
+
+    depends_on:
+      notification_mongo:
+        condition: service_started
+    restart: always

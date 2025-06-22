@@ -1,0 +1,13 @@
+services:
+  
+  notification_mongo:
+    ports:
+      - '27018:27017'
+    volumes:
+      - notification_data:/data/db
+    restart: always
+
+volumes:
+  notification_data:
+    name: notification_data
+    driver: local
