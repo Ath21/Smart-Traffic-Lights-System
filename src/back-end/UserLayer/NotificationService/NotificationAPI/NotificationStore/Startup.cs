@@ -1,11 +1,15 @@
 using System;
+using MassTransit;
 using Microsoft.OpenApi.Models;
 using NotificationData;
 using NotificationStore.Business.Email;
 using NotificationStore.Business.Notify;
+using NotificationStore.Consumers;
 using NotificationStore.Middleware;
 using NotificationStore.Models;
 using NotificationStore.Repository;
+using RabbitMQ.Client;
+using UserMessages;
 
 namespace NotificationStore;
 
@@ -46,12 +50,9 @@ public class Startup
 
         /******* [5] MassTransit ********/
 
-        /*
         services.AddMassTransit(x =>
         {
-            x.AddConsumer<LogInfoConsumer>();
-            x.AddConsumer<LogAuditConsumer>();
-            x.AddConsumer<LogErrorConsumer>();
+            x.AddConsumer<NotificationRequestConsumer>();
 
             x.UsingRabbitMq((context, cfg) =>
             {
@@ -65,80 +66,26 @@ public class Startup
             
                 });
 
-                // user.logs.info 
-                cfg.Message<LogInfo>(e =>
+                // user.notification.request
+                cfg.Message<NotificationRequest>(e =>
                 {
-                    e.SetEntityName(rabbitmqSettings["UserLogsExchange"]);
-
+                    e.SetEntityName(rabbitmqSettings["UserNotificationExchange"]);
                 });
-
-                cfg.Publish<LogInfo>(e =>
+                cfg.Publish<NotificationRequest>(e =>
                 {
                     e.ExchangeType = ExchangeType.Direct;
                 });
-
-                cfg.ReceiveEndpoint("user.logs.info.queue", e =>
+            
+                cfg.ReceiveEndpoint("user.notification.request.queue", e =>
                 {
-
-                    e.ConfigureConsumer<LogInfoConsumer>(context);
+                    e.ConfigureConsumer<NotificationRequestConsumer>(context);
                     e.PrefetchCount = 16;
                     e.UseConcurrencyLimit(4);
 
-
-                    e.Bind(rabbitmqSettings["UserLogsExchange"], x =>
+                    e.Bind(rabbitmqSettings["UserNotificationExchange"], x =>
                     {
                         x.ExchangeType = ExchangeType.Direct;
-                        x.RoutingKey = rabbitmqSettings["RoutingKeys:UserLogs:Info"];
-                    });
-
-                });
-
-                // user.logs.audit
-                cfg.Message<LogAudit>(e =>
-                {
-                    e.SetEntityName(rabbitmqSettings["UserLogsExchange"]);
-                });
-
-                cfg.Publish<LogAudit>(e =>
-                {
-                    e.ExchangeType = ExchangeType.Direct;
-                });
-
-                cfg.ReceiveEndpoint("user.logs.audit.queue", e =>
-                {
-                    e.ConfigureConsumer<LogAuditConsumer>(context);
-                    e.PrefetchCount = 16;
-                    e.UseConcurrencyLimit(4);
-
-                    e.Bind(rabbitmqSettings["UserLogsExchange"], x =>
-                    {
-                        x.ExchangeType = ExchangeType.Direct;
-                        x.RoutingKey = rabbitmqSettings["RoutingKeys:UserLogs:Audit"];
-                    });
-
-                });
-
-                // user.logs.error  
-                cfg.Message<LogError>(e =>
-                {
-                    e.SetEntityName(rabbitmqSettings["UserLogsExchange"]);
-                });
-
-                cfg.Publish<LogError>(e =>
-                {
-                    e.ExchangeType = ExchangeType.Direct;
-                });
-
-                cfg.ReceiveEndpoint("user.logs.error.queue", e =>
-                {
-                    e.ConfigureConsumer<LogErrorConsumer>(context);
-                    e.PrefetchCount = 16;
-                    e.UseConcurrencyLimit(4);
-
-                    e.Bind(rabbitmqSettings["UserLogsExchange"], x =>
-                    {
-                        x.ExchangeType = ExchangeType.Direct;
-                        x.RoutingKey = rabbitmqSettings["RoutingKeys:UserLogs:Error"];
+                        x.RoutingKey = rabbitmqSettings["RoutingKeys:UserNotification:Request"];
                     });
 
                 });
@@ -147,7 +94,6 @@ public class Startup
 
             });
         });
-        */
 
         /******* [6] Controllers ********/
 

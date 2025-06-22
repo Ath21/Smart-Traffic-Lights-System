@@ -6,7 +6,7 @@ using UserMessages;
 
 namespace NotificationStore.Consumers;
 
-public class NotificationRequestConsumer
+public class NotificationRequestConsumer : IConsumer<NotificationRequest>
 {
     private readonly ILogger<NotificationRequestConsumer> _logger;
     private readonly INotificationService _notificationService;
