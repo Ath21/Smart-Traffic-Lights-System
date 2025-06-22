@@ -7,6 +7,9 @@ stop_user_layer()
 {
     echo "🛑 Stopping User Service..."
     bash ./UserLayer/UserService/downUserService.sh
+
+    echo "🛑 Stopping Notification Service..."
+    bash ./UserLayer/NotificationService/downNotificationService.sh
 }
 
 # ================================

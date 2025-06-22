@@ -11,16 +11,20 @@ DOCKER_COMPOSE_OVERRIDE_FILE="docker-compose.override.yaml"
 # Build Contexts
 USER_API_DIR="./UserLayer/UserService/UserAPI"
 LOG_API_DIR="./LogLayer/LogService/LogAPI"
+NOTIFICATION_API_DIR="./UserLayer/NotificationService/NotificationAPI"
 BUILD_CONTEXT_USER="."
 BUILD_CONTEXT_LOG="."
+BUILD_CONTEXT_NOTIFICATION="."
 
 # Docker Hub Details
 DOCKER_USERNAME="ath21"
 DOCKER_REPO="stls"
 USER_API_TAG="user_api"
 LOG_API_TAG="log_api"
+NOTIFICATION_API_TAG="notification_api"
 USER_API_IMAGE="$DOCKER_USERNAME/$DOCKER_REPO:$USER_API_TAG"
 LOG_API_IMAGE="$DOCKER_USERNAME/$DOCKER_REPO:$LOG_API_TAG"
+NOTIFICATION_API_IMAGE="$DOCKER_USERNAME/$DOCKER_REPO:$NOTIFICATION_API_TAG"
 
 # ================================
 # 🕓 Wait for RabbitMQ to be Ready
@@ -92,6 +96,13 @@ build_and_push_images()
     echo "🚀 Pushing image to Docker Hub: $LOG_API_IMAGE"
     docker push "$LOG_API_IMAGE"
     echo "✅ Successfully pushed: $LOG_API_IMAGE"
+
+    echo "🔨 Building Docker image: $NOTIFICATION_API_IMAGE"
+    docker build -t "$NOTIFICATION_API_IMAGE" -f "$NOTIFICATION_API_DIR/Dockerfile" "$BUILD_CONTEXT_NOTIFICATION"
+
+    echo "🚀 Pushing image to Docker Hub: $NOTIFICATION_API_IMAGE"
+    docker push "$NOTIFICATION_API_IMAGE"
+    echo "✅ Successfully pushed: $NOTIFICATION_API_IMAGE"
 }
 
 # ================================

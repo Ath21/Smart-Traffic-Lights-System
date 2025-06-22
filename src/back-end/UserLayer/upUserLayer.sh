@@ -7,6 +7,9 @@ start_user_layer()
 {
     echo "🚀 Starting User Service..."
     bash ./UserLayer/UserService/upUserService.sh
+
+    echo "🚀 Starting Notification Service..."
+    bash ./UserLayer/NotificationService/upNotificationService.sh
 }
 
 # ================================
