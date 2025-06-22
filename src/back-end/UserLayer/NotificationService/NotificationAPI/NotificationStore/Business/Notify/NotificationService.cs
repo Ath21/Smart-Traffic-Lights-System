@@ -1,6 +1,7 @@
 using System;
 using AutoMapper;
 using NotificationData.Collections;
+using NotificationStore.Business.Email;
 using NotificationStore.Models;
 using NotificationStore.Repository;
 
@@ -9,12 +10,14 @@ namespace NotificationStore.Business.Notify;
 public class NotificationService : INotificationService
 {
     private readonly INotificationRepository _repository;
+    private readonly IEmailService _emailService;
     private readonly IMapper _mapper;
 
-    public NotificationService(INotificationRepository repository, IMapper mapper)
+    public NotificationService(INotificationRepository repository, IMapper mapper, IEmailService emailService)
     {
         _repository = repository;
         _mapper = mapper;
+        _emailService = emailService;
     }
 
     // GET: /API/Notification/GetByRecipient?recipientId=Guid
@@ -28,6 +31,12 @@ public class NotificationService : INotificationService
     public async Task CreateAsync(NotificationDto notification)
     {
         var notificationModel = _mapper.Map<Notification>(notification);
+
         await _repository.CreateAsync(notificationModel);
+
+        await _emailService.SendEmailAsync(
+            notification.RecipientEmail,
+            $"[{notification.Type}] Notification",
+            notification.Message);
     }
 }

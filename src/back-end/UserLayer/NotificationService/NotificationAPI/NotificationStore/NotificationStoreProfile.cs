@@ -9,9 +9,7 @@ public class NotificationStoreProfile : Profile
 {
     public NotificationStoreProfile()
     {
-        CreateMap<NotificationDto, Notification>()
-            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => "sent"));
-
+        CreateMap<NotificationDto, Notification>();
         CreateMap<Notification, NotificationDto>();
     }
 }
