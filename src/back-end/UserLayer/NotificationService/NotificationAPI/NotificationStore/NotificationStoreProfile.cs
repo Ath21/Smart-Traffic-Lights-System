@@ -11,5 +11,7 @@ public class NotificationStoreProfile : Profile
     {
         CreateMap<NotificationDto, Notification>()
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => "sent"));
+
+        CreateMap<Notification, NotificationDto>();
     }
 }

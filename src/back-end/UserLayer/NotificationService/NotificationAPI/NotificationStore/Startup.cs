@@ -2,6 +2,7 @@ using System;
 using Microsoft.OpenApi.Models;
 using NotificationData;
 using NotificationStore.Business.Email;
+using NotificationStore.Business.Notify;
 using NotificationStore.Models;
 using NotificationStore.Repository;
 
@@ -36,11 +37,11 @@ public class Startup
         );
         services.AddScoped(typeof(IEmailService), typeof(EmailService));
 
-        //services.AddScoped(typeof(INotificationService), typeof(NotificationService));
+        services.AddScoped(typeof(INotificationService), typeof(NotificationService));
 
         /******* [4] AutoMapper ********/
 
-        //services.AddAutoMapper(typeof(NotificationStoreProfile));
+        services.AddAutoMapper(typeof(NotificationStoreProfile));
 
         /******* [5] MassTransit ********/
 
