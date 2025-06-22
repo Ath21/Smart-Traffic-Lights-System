@@ -9,6 +9,7 @@
       "NotificationStore/1.0.0": {
         "dependencies": {
           "Microsoft.AspNetCore.OpenApi": "9.0.6",
+          "MongoDB.Driver": "3.4.0",
           "NotificationData": "1.0.0",
           "Swashbuckle.AspNetCore": "9.0.1"
         },

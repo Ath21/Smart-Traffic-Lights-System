@@ -1,6 +1,7 @@
 using System;
 using Microsoft.OpenApi.Models;
 using NotificationData;
+using NotificationStore.Repository;
 
 namespace NotificationStore;
 
@@ -24,7 +25,7 @@ public class Startup
 
         /******* [2] Repositories ********/
 
-        //services.AddScoped(typeof(INotificationRepository), typeof(NotificationRepository));
+        services.AddScoped(typeof(INotificationRepository), typeof(NotificationRepository));
 
         /******* [3] Services ********/
 
