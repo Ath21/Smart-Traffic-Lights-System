@@ -1,6 +1,8 @@
 using System;
 using Microsoft.OpenApi.Models;
 using NotificationData;
+using NotificationStore.Business;
+using NotificationStore.Models;
 using NotificationStore.Repository;
 
 namespace NotificationStore;
@@ -28,6 +30,11 @@ public class Startup
         services.AddScoped(typeof(INotificationRepository), typeof(NotificationRepository));
 
         /******* [3] Services ********/
+       
+        services.Configure<EmailSettings>(
+            _configuration.GetSection("EmailSettings")
+        );
+        services.AddScoped(typeof(IEmailService), typeof(EmailService));
 
         //services.AddScoped(typeof(INotificationService), typeof(NotificationService));
 
