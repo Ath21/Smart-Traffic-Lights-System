@@ -21,9 +21,9 @@ public class NotificationRequestConsumer : IConsumer<NotificationRequest>
     {
         var dto = new NotificationDto
         {
-            Type = "User Notification Request",
-            RecipientId = context.Message.UserId,
-            RecipientEmail = context.Message.Email,
+            Type = context.Message.Type,
+            RecipientId = context.Message.RecipientId,
+            RecipientEmail = context.Message.RecipientEmail,
             Message = context.Message.Message,
             Timestamp = DateTime.UtcNow
         };
