@@ -13,6 +13,8 @@
  *   - Task PublishErrorAsync(string message, Exception exception): Publishes an error log message
  *     along with an exception.      
  */
+using UserMessages;
+
 namespace UserStore.Publishers;
 
 public interface IUserLogPublisher
@@ -20,4 +22,5 @@ public interface IUserLogPublisher
     Task PublishInfoAsync(string message);
     Task PublishAuditAsync(Guid userId, string action, string details);
     Task PublishErrorAsync(string message, Exception exception);
+    Task PublishNotificationAsync(Guid recipientId, string recipientEmail, string message, string type);
 }

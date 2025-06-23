@@ -119,6 +119,9 @@ public class Startup
                 cfg.Message<LogError>(e => { e.SetEntityName(rabbitmqSettings["UserLogsExchange"]); });
                 cfg.Publish<LogError>(e => { e.ExchangeType = ExchangeType.Direct; });
 
+                cfg.Message<NotificationRequest>(e => { e.SetEntityName(rabbitmqSettings["UserNotificationsExchange"]); });
+                cfg.Publish<NotificationRequest>(e => { e.ExchangeType = ExchangeType.Direct; });
+
                 cfg.ConfigureEndpoints(context);
             });
         });
