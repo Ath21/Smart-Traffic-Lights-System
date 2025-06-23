@@ -24,8 +24,8 @@ public class NotificationRepository : INotificationRepository
         return await _context.NotificationsCollection.Find(_ => true).ToListAsync();
     }
 
-    public async Task<List<Notification?>> GetAsync(Guid RecipientId)
+    public async Task<IEnumerable<Notification>> GetByRecipientEmailAsync(string recipientEmail)
     {
-        return await _context.NotificationsCollection.Find(x => x.RecipientId == RecipientId).ToListAsync();
+        return await _context.NotificationsCollection.Find(n => n.RecipientEmail == recipientEmail).ToListAsync();
     }
 }

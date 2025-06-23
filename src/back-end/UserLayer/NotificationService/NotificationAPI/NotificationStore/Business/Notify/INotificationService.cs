@@ -5,6 +5,7 @@ namespace NotificationStore.Business.Notify;
 
 public interface INotificationService
 {
-    Task<List<NotificationDto?>> GetByRecipientAsync(Guid recipientId);
     Task CreateAsync(NotificationDto notification);
+    Task<IEnumerable<NotificationDto>> GetAllAsync();
+    Task<IEnumerable<NotificationDto>> GetByRecipientEmailAsync(string recipientEmail);
 }

@@ -16,18 +16,6 @@ namespace NotificationStore.Controllers
             _notificationService = notificationService;
         }
 
-        // GET: API/Notification/GetByRecipient?recipientId=Guid
-        [HttpGet("GetByRecipient/{recipientId:guid}")]
-        public async Task<IActionResult> GetByRecipient(Guid recipientId)
-        {
-            var notifications = await _notificationService.GetByRecipientAsync(recipientId);
-            if (notifications == null || notifications.Count == 0)
-            {
-                return NotFound($"No notifications found for recipient: {recipientId}");
-            }
-            return Ok(notifications);
-        }
-
         // POST: API/Notification/Send
         [HttpPost("Send")]
         public async Task<IActionResult> Send([FromBody] NotificationDto notification)
@@ -40,8 +28,29 @@ namespace NotificationStore.Controllers
             }
 
             await _notificationService.CreateAsync(notification);
-            
+
             return Ok(new { status = "sent", recipient = notification.RecipientEmail });
+        }
+
+        // GET: API/Notification/GetAll
+        [HttpGet("GetAll")]
+        public async Task<IActionResult> GetAll()
+        {
+            var notifications = await _notificationService.GetAllAsync();
+            return Ok(notifications);
+        }
+
+        // GET: API/Notification/GetByRecipientEmail
+        [HttpGet("GetByRecipientEmail")]
+        public async Task<IActionResult> GetByRecipientEmail([FromQuery] string recipientEmail)
+        {
+            if (string.IsNullOrWhiteSpace(recipientEmail))
+            {
+                return BadRequest("RecipientEmail is required.");
+            }
+
+            var notifications = await _notificationService.GetByRecipientEmailAsync(recipientEmail);
+            return Ok(notifications);
         }
         
     }

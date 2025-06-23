@@ -1,6 +1,8 @@
 namespace UserMessages;
 
 public record NotificationRequest(
-    Guid UserId,
-    string Email,
-    string Message);
+    Guid RecipientId,
+    string RecipientEmail,
+    string Message,
+    string Type,
+    DateTime Timestamp);

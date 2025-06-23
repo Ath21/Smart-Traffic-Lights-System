@@ -11,7 +11,8 @@
  *   - Task PublishAuditAsync(Guid userId, string action, string details): Publishes an audit log message
  *     for a specific user action.
  *   - Task PublishErrorAsync(string message, Exception exception): Publishes an error log message
- *     along with an exception.      
+ *     along with an exception.   
+ *   - Task PublishNotificationAsync(Guid recipientId, string recipientEmail, string message, string type):   
  */
 using UserMessages;
 

@@ -23,6 +23,7 @@
  *   - Task<RegisterResponseDto> RegisterAsync(RegisterRequestDto request): Registers a new user.
  *   - Task ResetPasswordAsync(ResetPasswordRequestDto resetPasswordRequestDto): Resets the user's password.
  *   - Task UpdateProfileAsync(Guid userId, UpdateProfileRequestDto updateUserProfileDto): Updates the user's profile information.
+ *   - Task SendNotificationRequestAsync(Guid userId, string message, string type): Sends a notification request to the user.
  */
 using AutoMapper;
 using UserData.Entities;

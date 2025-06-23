@@ -20,12 +20,7 @@ public class NotificationService : INotificationService
         _emailService = emailService;
     }
 
-    // GET: /API/Notification/GetByRecipient?recipientId=Guid
-    public Task<List<NotificationDto?>> GetByRecipientAsync(Guid recipientId)
-    {
-        var notifications = _repository.GetAsync(recipientId);
-        return notifications.ContinueWith(task => _mapper.Map<List<NotificationDto?>>(task.Result));
-    }
+
 
     // POST: /API/Notification/Create
     public async Task CreateAsync(NotificationDto notification)
@@ -39,4 +34,17 @@ public class NotificationService : INotificationService
             $"[{notification.Type}] Notification",
             notification.Message);
     }
+
+    public async Task<IEnumerable<NotificationDto>> GetAllAsync()
+    {
+        var notifications = await _repository.GetAllAsync();
+        return _mapper.Map<IEnumerable<NotificationDto>>(notifications);
+    }
+
+    public async Task<IEnumerable<NotificationDto>> GetByRecipientEmailAsync(string recipientEmail)
+    {
+        var notifications = await _repository.GetByRecipientEmailAsync(recipientEmail);
+        return _mapper.Map<IEnumerable<NotificationDto>>(notifications);
+    }
+
 }

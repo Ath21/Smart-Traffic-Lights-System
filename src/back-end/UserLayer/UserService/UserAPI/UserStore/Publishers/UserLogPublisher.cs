@@ -18,6 +18,7 @@
  *     for a specific user action.
  *   - Task PublishErrorAsync(string message, Exception exception): Publishes an error log message
  *     along with an exception.
+ *   - Task PublishNotificationAsync(Guid recipientId, string recipientEmail, string message, string type):
  */
 using MassTransit;
 using UserMessages;

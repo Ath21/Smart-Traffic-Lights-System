@@ -140,7 +140,7 @@ public class Startup
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Log Service API");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Notification Service API");
             });
         }
 

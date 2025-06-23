@@ -3,7 +3,7 @@
 # ================================
 # 🔧 Configuration
 # ================================
-NETWORK_NAME="user_network"
+NETWORK_NAME="notification_network"
 
 NOTIFICATION_API_DIR="./UserLayer/NotificationService/NotificationAPI"
 NOTIFICATION_DB_DIR="./UserLayer/NotificationService/Mongo"

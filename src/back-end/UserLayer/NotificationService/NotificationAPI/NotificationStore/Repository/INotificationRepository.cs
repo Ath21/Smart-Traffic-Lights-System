@@ -7,5 +7,7 @@ public interface INotificationRepository
 {
     Task CreateAsync(Notification newNotification);
     Task<List<Notification>> GetAllAsync();
-    Task<List<Notification?>> GetAsync(Guid Id);
+    Task<IEnumerable<Notification>> GetByRecipientEmailAsync(string recipientEmail);
+
+
 }

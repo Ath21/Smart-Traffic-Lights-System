@@ -15,6 +15,7 @@
  *   GET    API/User/Profile        - Get the current user's profile (requires authorization)
  *   PUT    API/User/Update         - Update the current user's profile (requires authorization)
  *   POST   API/User/Reset-Password - Reset a user's password
+ *   POST   API/User/SendNotificationRequest - Send a notification request (requires authorization)
  */
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
