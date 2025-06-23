@@ -1,5 +1,6 @@
 using System;
 using MailKit.Net.Smtp;
+using MailKit.Security;
 using Microsoft.Extensions.Options;
 using MimeKit;
 using NotificationStore.Models;
@@ -28,10 +29,13 @@ public class EmailService : IEmailService
         };
         message.Body = builder.ToMessageBody();
 
-        using var client = new SmtpClient();
-        await client.ConnectAsync(_emailSettings.SmtpServer, _emailSettings.Port, true);
-        await client.AuthenticateAsync(_emailSettings.Username, _emailSettings.Password);
-        await client.SendAsync(message);
-        await client.DisconnectAsync(true);
+        using (var client = new SmtpClient())
+        {
+            await client.ConnectAsync(_emailSettings.SmtpServer, _emailSettings.Port, SecureSocketOptions.StartTls);
+
+            await client.AuthenticateAsync(_emailSettings.Username, _emailSettings.Password);
+            await client.SendAsync(message);
+            await client.DisconnectAsync(true);
+        }
     }
 }

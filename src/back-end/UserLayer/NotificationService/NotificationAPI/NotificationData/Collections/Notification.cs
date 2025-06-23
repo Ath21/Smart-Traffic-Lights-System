@@ -14,6 +14,7 @@ public class Notification
     public string Type { get; set; }
 
     [BsonElement("recipientId")]
+    [BsonGuidRepresentation(GuidRepresentation.Standard)]
     public Guid RecipientId { get; set; }
     [BsonElement("recipientEmail")]
     public string? RecipientEmail { get; set; }

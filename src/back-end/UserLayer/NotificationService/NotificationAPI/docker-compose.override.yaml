@@ -23,11 +23,10 @@ services:
       # Email settings
       EmailSettings__SmtpServer: smtp.gmail.com
       EmailSettings__Port: 587
-      EmailSettings__SenderName: Smart Traffic System
-      EmailSettings__SenderEmail: your_email@gmail.com
-      EmailSettings__Username: your_email@gmail.com
-      EmailSettings__Password: your_app_specific_password
-
+      EmailSettings__SenderName: Smart Traffic Lights System
+      EmailSettings__SenderEmail: ice19390005@gmail.com
+      EmailSettings__Username: ice19390005@gmail.com
+      EmailSettings__Password: ezqz txge ayyf smzv
     depends_on:
       notification_mongo:
         condition: service_started
