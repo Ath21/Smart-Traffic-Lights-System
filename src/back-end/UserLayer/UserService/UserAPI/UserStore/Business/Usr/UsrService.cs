@@ -207,6 +207,22 @@ public class UsrService : IUsrService
         await _userLogPublisher.PublishInfoAsync($"User {user.Username} reset their password successfully.");
     }
 
+    // POST: /API/User/SendNotificationRequest
+    public async Task SendNotificationRequestAsync(Guid userId, string message, string type)
+    {
+        var user = await _userRepository.GetUserByIdAsync(userId);
+        if (user == null)
+        {
+            throw new KeyNotFoundException("User not found");
+        }
+
+        await _userLogPublisher.PublishNotificationAsync(
+            user.UserId,
+            user.Email,
+            message,
+            type);
+    }
+
     // PUT: /API/User/UpdateProfile
     public async Task UpdateProfileAsync(Guid userId, UpdateProfileRequestDto updateUserProfileDto)
     {

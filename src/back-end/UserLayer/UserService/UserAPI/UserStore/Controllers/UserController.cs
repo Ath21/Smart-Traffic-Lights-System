@@ -94,6 +94,16 @@ namespace UserStore.Controllers
             return NoContent();
         }
 
+        // POST: API/User/SendNotificationRequest
+        [HttpPost("SendNotificationRequest")]
+        [Authorize]
+        public async Task<IActionResult> SendNotificationRequest([FromBody] NotificationRequestDto notificationRequestDto)
+        {
+            var userId = GetUserId();
+            await _userService.SendNotificationRequestAsync(userId, notificationRequestDto.Message, notificationRequestDto.Type);
+            return NoContent();
+        }
+
         private Guid GetUserId()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)

@@ -19,4 +19,5 @@ public interface IUsrService
     Task UpdateProfileAsync(Guid userId, UpdateProfileRequestDto updateUserProfileDto);
     Task ResetPasswordAsync(ResetPasswordRequestDto resetPasswordRequestDto);
     Task LogoutAsync(string token);
+    Task SendNotificationRequestAsync(Guid userId, string message, string type);
 }
