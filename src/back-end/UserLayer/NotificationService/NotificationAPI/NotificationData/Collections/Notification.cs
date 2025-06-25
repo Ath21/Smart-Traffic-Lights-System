@@ -1,4 +1,11 @@
-using System;
+/*
+ * NotificationData.Collections.Notification
+ *
+ * This class represents a notification entry in the Mongo DB database of the Notification Service.
+ * It contains properties for the notification ID, type, recipient ID, recipient email, message,
+ * status, and timestamp.
+ *
+ */
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
@@ -16,6 +23,7 @@ public class Notification
     [BsonElement("recipientId")]
     [BsonGuidRepresentation(GuidRepresentation.Standard)]
     public Guid RecipientId { get; set; }
+
     [BsonElement("recipientEmail")]
     public string? RecipientEmail { get; set; }
 
@@ -27,5 +35,4 @@ public class Notification
 
     [BsonElement("timestamp")]
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
-
 }

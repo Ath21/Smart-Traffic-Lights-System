@@ -23,7 +23,7 @@ services:
       # Email settings
       EmailSettings__SmtpServer: smtp.gmail.com
       EmailSettings__Port: 587
-      EmailSettings__SenderName: Smart Traffic Lights System
+      EmailSettings__SenderName: PADA Smart Traffic Lights System
       EmailSettings__SenderEmail: ice19390005@gmail.com
       EmailSettings__Username: ice19390005@gmail.com
       EmailSettings__Password: ezqz txge ayyf smzv

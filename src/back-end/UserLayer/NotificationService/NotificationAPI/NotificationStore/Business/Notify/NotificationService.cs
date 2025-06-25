@@ -41,12 +41,14 @@ public class NotificationService : INotificationService
     {
         var notificationModel = _mapper.Map<Notification>(notification);
 
-        await _repository.CreateAsync(notificationModel);
-
         await _emailService.SendEmailAsync(
             notification.RecipientEmail,
             $"[{notification.Type}] Welcome to PADA Smart Traffic Lights System!",
             $"We received your message : {notification.Message}");
+
+        notificationModel.Status = "Sent";
+
+        await _repository.CreateAsync(notificationModel);
     }
 
     // GET: /API/Notification/GetAllNotifications

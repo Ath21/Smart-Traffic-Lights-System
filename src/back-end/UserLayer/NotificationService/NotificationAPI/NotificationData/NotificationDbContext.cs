@@ -1,4 +1,10 @@
-using System;
+/*
+ * NotificationData.NotificationDbContext
+ *
+ * This class provides the context for accessing the MongoDB database used by the Notification Service.
+ * It initializes the connection to the database and provides access to the notifications collection.
+ * It uses the MongoDB.Driver package to interact with the database.
+ */
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using NotificationData.Collections;
