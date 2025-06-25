@@ -1,5 +1,11 @@
-using System;
-
+/*
+ * NotificationStore.Middleware.ExceptionMiddleware
+ *
+ * This file is part of the NotificationStore project, which defines the ExceptionMiddleware class.
+ * The ExceptionMiddleware class is a custom middleware for handling exceptions in the NotificationStore API.
+ * It intercepts HTTP requests and catches various types of exceptions, logging them and returning appropriate HTTP status codes and messages.
+ * The middleware is designed to provide a consistent error handling mechanism across the API.
+ */
 namespace NotificationStore.Middleware;
 
 public class ExceptionMiddleware
