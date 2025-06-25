@@ -20,7 +20,7 @@ services:
       RabbitMQ__RoutingKeys__Info: user.logs.info
 
       RabbitMQ__UserNotificationsExchange: user.notifications.exchange
-      RabbitMQ__RoutingKeys__NotificationRequest: user.notification.request
+      RabbitMQ__RoutingKeys__NotificationsRequest: user.notifications.request
 
     depends_on:
       user_mssql:

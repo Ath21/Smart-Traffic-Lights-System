@@ -28,7 +28,7 @@ public class NotificationRequestConsumer : IConsumer<NotificationRequest>
             Timestamp = DateTime.UtcNow
         };
 
-        _logger.LogInformation("NotificationRequestConsumer: Sending notification to user {UserId} with message: {Message}",
+        _logger.LogInformation("NotificationsRequestConsumer: Sending notification to user {UserId} with message: {Message}",
             dto.RecipientId, dto.Message);
         
         await _notificationService.CreateAsync(dto);

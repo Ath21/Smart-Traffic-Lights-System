@@ -17,8 +17,8 @@ services:
       RabbitMQ__Username: admin
       RabbitMQ__Password: admin123
       
-      RabbitMQ__UserNotificationExchange: user.notification.exchange
-      RabbitMQ__RoutingKeys__UserNotification__Request: user.notification.request
+      RabbitMQ__UserNotificationsExchange: user.notifications.exchange
+      RabbitMQ__RoutingKeys__UserNotifications__Request: user.notifications.request
 
       # Email settings
       EmailSettings__SmtpServer: smtp.gmail.com

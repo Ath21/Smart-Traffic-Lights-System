@@ -58,7 +58,7 @@ public class UserLogPublisher : IUserLogPublisher
         _errorKey = section["RoutingKeys:Error"];
 
         _notificationsExchangeName = section["UserNotificationsExchange"];
-        _notificationKey = section["RoutingKeys:NotificationRequest"];
+        _notificationKey = section["RoutingKeys:NotificationsRequest"];
     }
 
     public async Task PublishAuditAsync(Guid userId, string action, string details)

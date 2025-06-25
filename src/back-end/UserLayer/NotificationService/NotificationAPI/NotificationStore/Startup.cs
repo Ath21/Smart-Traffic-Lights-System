@@ -69,23 +69,23 @@ public class Startup
                 // user.notification.request
                 cfg.Message<NotificationRequest>(e =>
                 {
-                    e.SetEntityName(rabbitmqSettings["UserNotificationExchange"]);
+                    e.SetEntityName(rabbitmqSettings["UserNotificationsExchange"]);
                 });
                 cfg.Publish<NotificationRequest>(e =>
                 {
                     e.ExchangeType = ExchangeType.Direct;
                 });
             
-                cfg.ReceiveEndpoint("user.notification.request.queue", e =>
+                cfg.ReceiveEndpoint("user.notifications.request.queue", e =>
                 {
                     e.ConfigureConsumer<NotificationRequestConsumer>(context);
                     e.PrefetchCount = 16;
                     e.UseConcurrencyLimit(4);
 
-                    e.Bind(rabbitmqSettings["UserNotificationExchange"], x =>
+                    e.Bind(rabbitmqSettings["UserNotificationsExchange"], x =>
                     {
                         x.ExchangeType = ExchangeType.Direct;
-                        x.RoutingKey = rabbitmqSettings["RoutingKeys:UserNotification:Request"];
+                        x.RoutingKey = rabbitmqSettings["RoutingKeys:UserNotifications:Request"];
                     });
 
                 });
