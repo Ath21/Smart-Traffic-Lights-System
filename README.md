@@ -84,7 +84,7 @@ Tracks all system activity and ensures auditability:
 ![Microservices Architecture](diagrams/Microservices/Architecture.jpg)  
 [View full-size](diagrams/Microservices/Architecture.jpg)  
 
-> Overview of the complete microservices ecosystem showing how Sensor, Traffic, and User layers interact via services and databases.
+> Overview of the complete microservices ecosystem showing how Sensor, Traffic, User and Log layers interact via services and databases.
 
 #### 🧠 Sensor Layer Diagram  
 ![Sensor Layer](diagrams/Microservices/SensorLayer.jpg)  
@@ -104,7 +104,7 @@ Tracks all system activity and ensures auditability:
 
 > Highlights components that handle notifications, user interaction, activity logging, and system oversight.
 
-#### Log Layer Diagram
+#### 🏴󠁡󠁦󠁬󠁯󠁧󠁿 Log Layer Diagram
 ![Log Layer](diagrams/Microservices/LogLayer.jpg)
 [View full-size](diagrams/Microservices/LogLayer.jpg)
 
