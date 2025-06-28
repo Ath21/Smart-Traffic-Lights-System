@@ -33,6 +33,26 @@
             "related": ".pdb;.xml"
           }
         }
+      },
+      "TrafficDataAnalyticsData/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "compile": {
+          "bin/placeholder/TrafficDataAnalyticsData.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/TrafficDataAnalyticsData.dll": {}
+        }
+      },
+      "TrafficMessages/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "compile": {
+          "bin/placeholder/TrafficMessages.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/TrafficMessages.dll": {}
+        }
       }
     }
   },
@@ -67,11 +87,23 @@
         "microsoft.openapi.1.6.17.nupkg.sha512",
         "microsoft.openapi.nuspec"
       ]
+    },
+    "TrafficDataAnalyticsData/1.0.0": {
+      "type": "project",
+      "path": "../TrafficDataAnalyticsData/TrafficDataAnalyticsData.csproj",
+      "msbuildProject": "../TrafficDataAnalyticsData/TrafficDataAnalyticsData.csproj"
+    },
+    "TrafficMessages/1.0.0": {
+      "type": "project",
+      "path": "../../../TrafficMessages/TrafficMessages.csproj",
+      "msbuildProject": "../../../TrafficMessages/TrafficMessages.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net9.0": [
-      "Microsoft.AspNetCore.OpenApi >= 9.0.6"
+      "Microsoft.AspNetCore.OpenApi >= 9.0.6",
+      "TrafficDataAnalyticsData >= 1.0.0",
+      "TrafficMessages >= 1.0.0"
     ]
   },
   "packageFolders": {
@@ -80,11 +112,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficDataAnalyticsService/TrafficDataAPI/TrafficDataAnalyticsStore/TrafficDataAnalyticsStore.csproj",
+      "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficDataAnalyticsService/TrafficDataAnalyticsAPI/TrafficDataAnalyticsStore/TrafficDataAnalyticsStore.csproj",
       "projectName": "TrafficDataAnalyticsStore",
-      "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficDataAnalyticsService/TrafficDataAPI/TrafficDataAnalyticsStore/TrafficDataAnalyticsStore.csproj",
+      "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficDataAnalyticsService/TrafficDataAnalyticsAPI/TrafficDataAnalyticsStore/TrafficDataAnalyticsStore.csproj",
       "packagesPath": "/home/ath/.nuget/packages/",
-      "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficDataAnalyticsService/TrafficDataAPI/TrafficDataAnalyticsStore/obj/",
+      "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficDataAnalyticsService/TrafficDataAnalyticsAPI/TrafficDataAnalyticsStore/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/home/ath/.nuget/NuGet/NuGet.Config"
@@ -98,7 +130,14 @@
       "frameworks": {
         "net9.0": {
           "targetAlias": "net9.0",
-          "projectReferences": {}
+          "projectReferences": {
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficDataAnalyticsService/TrafficDataAnalyticsAPI/TrafficDataAnalyticsData/TrafficDataAnalyticsData.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficDataAnalyticsService/TrafficDataAnalyticsAPI/TrafficDataAnalyticsData/TrafficDataAnalyticsData.csproj"
+            },
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficMessages/TrafficMessages.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficMessages/TrafficMessages.csproj"
+            }
+          }
         }
       },
       "warningProperties": {
