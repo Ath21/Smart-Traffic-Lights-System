@@ -4,31 +4,69 @@ A microservices-based, containerized Smart Traffic Lights System that enhances u
 
 ## 🚦 Overview
 
-The system is composed of three main layers:
+STLS is organized into four distinct architectural layers:
 
 ### 1. Sensor Layer (Επίπεδο Αισθητήρων)
-Responsible for collecting raw data from different sensor types at intersections:
-- **Vehicle Sensors**: Detect vehicle count.
-- **Emergency Vehicle Sensors**: Identify emergency vehicle presence.
-- **Public Transport Sensors**: Detect buses/trams.
-- **Pedestrian Sensors**: Detect pedestrian crossing requests.
-- **Cyclist Sensors**: Detect cyclists.
 
-Each sensor feeds its data to a corresponding Detection Service.
+Captures raw real-time data from various sensors deployed at intersections:
+
+- **Vehicle Sensors** – Detect number of vehicles.
+- **Emergency Vehicle Sensors** – Identify presence of emergency responders.
+- **Public Transport Sensors** – Detect buses, trams, and priority vehicles.
+- **Pedestrian Sensors** – Register pedestrian crossing requests.
+- **Cyclist Sensors** – Monitor cyclist presence.
+
+Each sensor transmits data to a corresponding Detection Service, which triggers priority events (`priority.<type>.<intersection_id>`) to downstream services.
+
+---
 
 ### 2. Traffic Layer (Επίπεδο Κυκλοφορίας)
-Processes and analyzes sensor data, then applies logic to optimize traffic flow:
-- **Detection Services** feed data to:
-  - **Traffic Data Analytics Service**: Generates summaries and congestion alerts.
-  - **Traffic Light Control Service**: Manages light cycles based on inputs.
-- Databases used: `TrafficDataDb`, `TrafficLightDb`.
+
+Analyzes data and dynamically regulates traffic behavior:
+
+- **Detection Services** forward data to:
+  - **Traffic Data Analytics Service**
+    - Emits daily summaries and congestion alerts.
+    - Topics: `traffic.analytics.daily_summary`, `traffic.analytics.congestion.alert`
+  - **Traffic Light Control Service**
+    - Adjusts signal timings per intersection.
+    - Topics: `traffic.light.control.<intersection_id>`
+- Databases:
+  - `TrafficDataDb`: Traffic stats & analytics.
+  - `TrafficLightDb`: Traffic light configs and status.
+
+---
 
 ### 3. User Layer (Επίπεδο Χρήστη)
-Interfaces for system operators and city authorities to monitor and receive updates:
-- **Notification Service**: Sends alerts and notices.
-- **Log Service**: Logs user activities, system events, and errors.
-- **User Service**: Manages user info and access.
-- Databases used: `NotificationDb`, `LogDb`, `UserDb`.
+
+Provides interaction and feedback mechanisms for city operators:
+
+- **User Service**
+  - Manages operator accounts and access.
+  - Consumes `user.notification.request`.
+- **Notification Service**
+  - Sends targeted alerts (`notification.event.operator_alert`) and public notices (`notification.event.public_notice`).
+- **Dashboard UI**
+  - Front-end visualization and management interface.
+- Databases:
+  - `UserDb`: Operator credentials and metadata.
+  - `NotificationDb`: Active alerts and public messages.
+
+---
+
+### 4. Log Layer (Επίπεδο Καταγραφής)
+
+Tracks all system activity and ensures auditability:
+
+- **Log Service**
+  - Captures logs via:
+    - `user.logs.error`
+    - `user.logs.audit`
+    - `user.logs.info`
+- **LogDb** stores:
+  - Errors, user actions, and event logs for compliance and troubleshooting.
+
+---
 
 ## 📊 Data Flow Summary
 
@@ -43,28 +81,34 @@ Interfaces for system operators and city authorities to monitor and receive upda
 ## 🗺️ System Architecture Diagrams
 
 ### 🔧 Microservices Architecture  
-![Microservices Architecture](diagrams/Microservices/Architecture.png)  
-[View full-size](diagrams/Microservices/Architecture.png)  
+![Microservices Architecture](diagrams/Microservices/Architecture.jpg)  
+[View full-size](diagrams/Microservices/Architecture.jpg)  
 
 > Overview of the complete microservices ecosystem showing how Sensor, Traffic, and User layers interact via services and databases.
 
 #### 🧠 Sensor Layer Diagram  
-![Sensor Layer](diagrams/Microservices/SensorLayer.png)  
-[View full-size](diagrams/Microservices/SensorLayer.png)  
+![Sensor Layer](diagrams/Microservices/SensorLayer.jpg)  
+[View full-size](diagrams/Microservices/SensorLayer.jpg)  
 
 > Shows how various real-time sensors (vehicles, pedestrians, cyclists, etc.) connect to detection services and pass data to the traffic control logic.
 
 #### 🚦 Traffic Layer Diagram  
-![Traffic Layer](diagrams/Microservices/TrafficLayer.png)  
-[View full-size](diagrams/Microservices/TrafficLayer.png)  
+![Traffic Layer](diagrams/Microservices/TrafficLayer.jpg)  
+[View full-size](diagrams/Microservices/TrafficLayer.jpg)  
 
 > Displays the analytical and control services responsible for processing traffic data and managing dynamic traffic light behavior.
 
 #### 👥 User Layer Diagram  
-![User Layer](diagrams/Microservices/UserLayer.png)  
-[View full-size](diagrams/Microservices/UserLayer.png)  
+![User Layer](diagrams/Microservices/UserLayer.jpg)  
+[View full-size](diagrams/Microservices/UserLayer.jpg)  
 
 > Highlights components that handle notifications, user interaction, activity logging, and system oversight.
+
+#### Log Layer Diagram
+![Log Layer](diagrams/Microservices/LogLayer.jpg)
+[View full-size](diagrams/Microservices/LogLayer.jpg)
+
+> Depicts how the system logs critical information such as errors, user actions, and audit trails, ensuring observability, traceability, and operational compliance.
 
 ---
 
@@ -161,5 +205,77 @@ Interfaces for system operators and city authorities to monitor and receive upda
 - **Postman** – API testing tool for REST and gRPC endpoints
 - **Swagger** – API documentation and testing interface
 - **Grafana / Prometheus** – System monitoring and observability
+
+---
+
+## ▶️ How to Run the App
+
+### 📦 Prerequisites
+
+- Docker & Docker Compose
+- Node.js (v18+)
+- .NET 9.0 SDK
+- RabbitMQ (containerized)
+- (Optional) K3s or Minikube for Kubernetes
+
+### 🐳 Local Docker Setup
+
+Start all services:
+```bash
+./up.sh
+```
+
+Stop all services:
+```bash
+./down.sh
+```
+
+Start/stop specific layers:
+```bash
+./upUserLayer.sh
+./downUserLayer.sh
+```
+
+Run frontend:
+```bash
+cd front-end
+npm install
+npm run dev
+```
+
+Frontend available at [http://localhost:5173](http://localhost:5173)
+
+---
+
+## 📁 Project Structure
+
+```bash
+SMART-TRAFFIC-LIGHTS-SYSTEM/
+│
+├── diagrams/                # Architecture and database diagrams
+│   ├── Cloud/
+│   ├── Databases/
+│   ├── Microservices/
+│   └── UseCases/
+│
+├── docs/                    # Layer documentation
+│
+├── src/
+│   ├── back-end/
+│   │   ├── LogLayer/
+│   │   ├── RabbitMQ/
+│   │   ├── SensorLayer/
+│   │   ├── TrafficLayer/
+│   │   └── UserLayer/
+│   │       ├── NotificationService/
+│   │       └── UserService/
+│   │           ├── MSSQL/
+│   │           └── UserAPI/
+│   └── front-end/          # Vue.js dashboard
+│
+├── *.sh                    # Layer startup/shutdown scripts
+│
+└── README.md
+```
 
 ---
