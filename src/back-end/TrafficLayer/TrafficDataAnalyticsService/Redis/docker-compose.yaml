@@ -1,4 +1,4 @@
 services:
   traffic_data_analytics_redis:
-    image: redis/redis-stack-server:latest
+    image: redis:latest
     container_name: traffic_data_analytics_redis_container

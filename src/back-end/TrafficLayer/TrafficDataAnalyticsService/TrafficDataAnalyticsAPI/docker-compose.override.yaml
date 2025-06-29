@@ -1,0 +1,30 @@
+services:
+  traffic_data_analytics_api:
+    ports:
+      - '5208:8080'
+    environment:
+      
+      DefaultConnection__ConnectionString: mongodb://traffic_data_analytics_mongo:27017
+      DefaultConnection__DatabaseName: TrafficDataDb
+      DefaultConnection__IntersectionsCollectionName: Intersections
+      DefaultConnection_VehicleCountsCollectionName: VehicleCounts
+      DefaultConnection__PedestrianCountsCollectionName: PedestrianCounts
+      DefaultConnection__CyclistCountsCollectionName: CyclistCounts
+      DefaultConnection__CongestionAlertsCollectionName: CongestionAlerts
+      DefaultConnection__DailySummaryCollectionName: DailySummaries
+
+      ASPNETCORE_ENVIRONMENT: Development
+
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Port: 5672
+      RabbitMQ__Username: admin
+      RabbitMQ__Password: admin123
+
+      RabbitMQ__TrafficAnalyticsExchange: traffic.analytics.exchange
+      RabbitMQ__RoutingKeys__Traffic__DailySummary: traffic.analytics.daily_summary
+      RabbitMQ__RoutingKeys__Traffic__CongestionAlert: traffic.analytics.congestion_alert
+
+    depends_on:
+      traffic_data_analytics_mongo:
+        condition: service_started
+    restart: always
