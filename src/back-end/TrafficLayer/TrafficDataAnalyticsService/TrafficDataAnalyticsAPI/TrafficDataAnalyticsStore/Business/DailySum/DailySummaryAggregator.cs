@@ -1,5 +1,8 @@
 using System;
+using AutoMapper;
+using TrafficDataAnalyticsData.Collections;
 using TrafficDataAnalyticsStore.Business.Redis;
+using TrafficDataAnalyticsStore.Repository;
 
 namespace TrafficDataAnalyticsStore.Business.DailySum;
 
@@ -7,13 +10,16 @@ public class DailySummaryAggregator : BackgroundService
 {
     private readonly ILogger<DailySummaryAggregator> _logger;
     private readonly IServiceProvider _serviceProvider;
+    private readonly IMapper _mapper;
 
     public DailySummaryAggregator(
         ILogger<DailySummaryAggregator> logger,
-        IServiceProvider serviceProvider)
+        IServiceProvider serviceProvider,
+        IMapper mapper)
     {
         _logger = logger;
         _serviceProvider = serviceProvider;
+        _mapper = mapper;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -26,15 +32,16 @@ public class DailySummaryAggregator : BackgroundService
 
                 var redisReader = scope.ServiceProvider.GetRequiredService<IRedisReader>();
                 var mongo = scope.ServiceProvider.GetRequiredService<IMongoDbWriter>();
-                var publisher = scope.ServiceProvider.GetRequiredService<ITrafficDataPublisher>();
+                var publisher = scope.ServiceProvider.GetRequiredService<ITrafficDataAnalyticsPublisher>();
 
                 var intersectionIds = await mongo.GetAllIntersectionIdsAsync();
 
                 foreach (var id in intersectionIds)
                 {
-                    var summary = await redisReader.ComputeDailySummaryAsync(id);
-                    if (summary != null)
+                    var summaryDto = await redisReader.ComputeDailySummaryAsync(id);
+                    if (summaryDto != null)
                     {
+                        var summary = _mapper.Map<DailySummary>(summaryDto);
                         await mongo.InsertDailySummaryAsync(summary);
                         await publisher.PublishAsync(summary);
                         _logger.LogInformation("Daily summary for intersection {IntersectionId} processed successfully.", id);

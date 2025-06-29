@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using StackExchange.Redis;
 using TrafficDataAnalyticsData.Collections;
+using TrafficDataAnalyticsStore.Models;
 
 namespace TrafficDataAnalyticsStore.Business.Redis
 {
@@ -22,7 +24,7 @@ namespace TrafficDataAnalyticsStore.Business.Redis
             _database = connectionMultiplexer.GetDatabase();
         }
 
-        public async Task<DailySummary?> ComputeDailySummaryAsync(string intersectionId)
+        public async Task<DailySummaryDto?> ComputeDailySummaryAsync(string intersectionId)
         {
             var now = DateTime.UtcNow;
             var start = new DateTimeOffset(now.Date).ToUnixTimeMilliseconds();
@@ -66,16 +68,15 @@ namespace TrafficDataAnalyticsStore.Business.Redis
 
             if (total == 0) return null;
 
-            return new DailySummary
+            return new DailySummaryDto
             {
-                SummaryId = Guid.NewGuid().ToString(),
                 IntersectionId = intersectionId,
                 Date = now.Date,
-                AverageWaitTime = 0, // TODO: υπολογισμός όταν υπάρχουν timestamps φάσης
-                PeakHours = new BsonDocument(hourly
+                AvgWaitTime = 0, // TODO: υπολογισμός όταν υπάρχουν timestamps φάσης
+                PeakHours = hourly
                     .OrderByDescending(p => p.Value)
                     .Take(3)
-                    .ToDictionary(p => p.Key, p => p.Value)),
+                    .ToDictionary(p => p.Key, p => p.Value),
                 TotalVehicleCount = total
             };
         }

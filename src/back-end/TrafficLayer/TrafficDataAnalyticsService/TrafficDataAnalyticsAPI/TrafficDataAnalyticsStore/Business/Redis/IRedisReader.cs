@@ -1,10 +1,11 @@
 using System;
 using TrafficDataAnalyticsData.Collections;
+using TrafficDataAnalyticsStore.Models;
 
 namespace TrafficDataAnalyticsStore.Business.Redis;
 
 public interface IRedisReader
 {
-    Task<DailySummary?> ComputeDailySummaryAsync(string intersectionId);
+    Task<DailySummaryDto?> ComputeDailySummaryAsync(string intersectionId);
     Task<List<string>> GetVehicleKeysForIntersection(string id);
 }
