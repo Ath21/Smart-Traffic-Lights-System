@@ -4,6 +4,7 @@ using Microsoft.OpenApi.Models;
 using RabbitMQ.Client;
 using TrafficDataAnalyticsData;
 using TrafficDataAnalyticsData.Redis;
+using TrafficDataAnalyticsStore.Business.DailySum;
 using TrafficDataAnalyticsStore.Business.RedisReader;
 using TrafficDataAnalyticsStore.Repository;
 using TrafficMessages;
@@ -42,7 +43,8 @@ public class Startup
 
         /******* [4] Services ********/
 
-        services.AddScoped<IRedisReader, RedisReader>();
+        services.AddScoped(typeof(IRedisReader), typeof(RedisReader));
+        services.AddScoped(typeof(ISummaryService), typeof(SummaryService));
 
         /******* [5] AutoMapper ********/
 
