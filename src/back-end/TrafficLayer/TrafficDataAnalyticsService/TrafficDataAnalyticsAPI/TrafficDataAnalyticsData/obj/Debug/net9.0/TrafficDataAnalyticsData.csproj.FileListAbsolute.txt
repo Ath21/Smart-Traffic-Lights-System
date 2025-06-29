@@ -10,3 +10,4 @@
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficDataAnalyticsService/TrafficDataAnalyticsAPI/TrafficDataAnalyticsData/obj/Debug/net9.0/refint/TrafficDataAnalyticsData.dll
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficDataAnalyticsService/TrafficDataAnalyticsAPI/TrafficDataAnalyticsData/obj/Debug/net9.0/TrafficDataAnalyticsData.pdb
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficDataAnalyticsService/TrafficDataAnalyticsAPI/TrafficDataAnalyticsData/obj/Debug/net9.0/ref/TrafficDataAnalyticsData.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficDataAnalyticsService/TrafficDataAnalyticsAPI/TrafficDataAnalyticsData/obj/Debug/net9.0/TrafficDataAnalyticsData.csproj.AssemblyReference.cache
