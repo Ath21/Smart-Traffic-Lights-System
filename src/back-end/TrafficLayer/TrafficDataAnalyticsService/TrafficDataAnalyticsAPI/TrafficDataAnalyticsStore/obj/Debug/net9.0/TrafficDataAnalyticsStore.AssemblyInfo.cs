@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TrafficDataAnalyticsStore")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5d940bd62bee3409d4de668acf01804b91c2ac48")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2a3ab8a8477b691e232f6b1f03fc5366bbfa0647")]
 [assembly: System.Reflection.AssemblyProductAttribute("TrafficDataAnalyticsStore")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TrafficDataAnalyticsStore")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
