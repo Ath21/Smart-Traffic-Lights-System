@@ -1,4 +1,5 @@
 using System;
+using TrafficDataAnalyticsStore.Business.Redis;
 
 namespace TrafficDataAnalyticsStore.Business.DailySum;
 
