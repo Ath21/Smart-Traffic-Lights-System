@@ -1,0 +1,13 @@
+services:
+  
+  traffic_data_analytics_mongo:
+    ports:
+      - '27019:27017'
+    volumes:
+      - traffic_data_analytics_data:/data/db
+    restart: always
+
+volumes:
+  traffic_data_analytics_data:
+    name: traffic_data_analytics_data
+    driver: local
