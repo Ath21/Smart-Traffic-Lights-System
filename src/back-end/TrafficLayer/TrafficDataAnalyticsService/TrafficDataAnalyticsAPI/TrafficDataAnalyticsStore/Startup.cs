@@ -1,5 +1,11 @@
 using System;
+using MassTransit;
 using Microsoft.OpenApi.Models;
+using RabbitMQ.Client;
+using TrafficDataAnalyticsData;
+using TrafficDataAnalyticsStore.Business.Redis;
+using TrafficDataAnalyticsStore.Repository;
+using TrafficMessages;
 
 namespace TrafficDataAnalyticsStore;
 
@@ -16,34 +22,31 @@ public class Startup
     {
         /******* [1] MongoDb Config ********/
 
-        /*
+        
         services.Configure<TrafficDataAnalyticsDbSettings>(
             _configuration.GetSection("DefaultConnection")
         );
         services.AddSingleton<TrafficDataAnalyticsDbContext>();
-        */
+        
 
         /******* [2] Repositories ********/
 
-        //services.AddScoped(typeof(INotificationRepository), typeof(NotificationRepository));
+        services.AddScoped(typeof(IMongoDbWriter), typeof(MongoDbWriter));
 
         /******* [3] Services ********/
 
-
-        //services.AddScoped(typeof(IEmailService), typeof(EmailService));
-
-        //services.AddScoped(typeof(INotificationService), typeof(NotificationService));
+        services.AddScoped<IRedisReader, RedisReader>();
 
         /******* [4] AutoMapper ********/
 
-        //services.AddAutoMapper(typeof(NotificationStoreProfile));
+        services.AddAutoMapper(typeof(TrafficDataAnalyticsStoreProfile));
 
         /******* [5] MassTransit ********/
 
-        /*
+        
         services.AddMassTransit(x =>
         {
-            x.AddConsumer<NotificationRequestConsumer>();
+            //x.AddConsumer<NotificationRequestConsumer>();
 
             x.UsingRabbitMq((context, cfg) =>
             {
@@ -57,35 +60,17 @@ public class Startup
             
                 });
 
-                // user.notifications.request
-                cfg.Message<NotificationRequest>(e =>
-                {
-                    e.SetEntityName(rabbitmqSettings["UserNotificationsExchange"]);
-                });
-                cfg.Publish<NotificationRequest>(e =>
-                {
-                    e.ExchangeType = ExchangeType.Direct;
-                });
-            
-                cfg.ReceiveEndpoint("user.notifications.request.queue", e =>
-                {
-                    e.ConfigureConsumer<NotificationRequestConsumer>(context);
-                    e.PrefetchCount = 16;
-                    e.UseConcurrencyLimit(4);
+                cfg.Message<TrafficDailySummary>(e => { e.SetEntityName(rabbitmqSettings["TrafficDataAnalyticsExchange"]); }); 
+                cfg.Publish<TrafficDailySummary>(e => { e.ExchangeType = ExchangeType.Direct; });
 
-                    e.Bind(rabbitmqSettings["UserNotificationsExchange"], x =>
-                    {
-                        x.ExchangeType = ExchangeType.Direct;
-                        x.RoutingKey = rabbitmqSettings["RoutingKeys:UserNotifications:Request"];
-                    });
-
-                });
+                cfg.Message<TrafficCongestionAlert>(e => { e.SetEntityName(rabbitmqSettings["TrafficDataAnalyticsExchange"]); }); 
+                cfg.Publish<TrafficCongestionAlert>(e => { e.ExchangeType = ExchangeType.Direct; });
 
                 cfg.ConfigureEndpoints(context);
 
             });
         });
-        */
+        
 
         /******* [6] Controllers ********/
 

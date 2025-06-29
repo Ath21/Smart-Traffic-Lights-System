@@ -2,6 +2,7 @@ using System;
 using AutoMapper;
 using TrafficDataAnalyticsData.Collections;
 using TrafficDataAnalyticsStore.Business.Redis;
+using TrafficDataAnalyticsStore.Publishers;
 using TrafficDataAnalyticsStore.Repository;
 
 namespace TrafficDataAnalyticsStore.Business.DailySum;
@@ -43,7 +44,7 @@ public class DailySummaryAggregator : BackgroundService
                     {
                         var summary = _mapper.Map<DailySummary>(summaryDto);
                         await mongo.InsertDailySummaryAsync(summary);
-                        await publisher.PublishAsync(summary);
+                        await publisher.PublishDailySummaryAsync(summaryDto);
                         _logger.LogInformation("Daily summary for intersection {IntersectionId} processed successfully.", id);
                     }
                 }
