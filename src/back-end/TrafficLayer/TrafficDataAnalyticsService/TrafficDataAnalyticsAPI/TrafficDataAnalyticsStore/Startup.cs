@@ -4,6 +4,7 @@ using Microsoft.OpenApi.Models;
 using RabbitMQ.Client;
 using TrafficDataAnalyticsData;
 using TrafficDataAnalyticsData.Redis;
+using TrafficDataAnalyticsService.Middleware;
 using TrafficDataAnalyticsStore.Business.Congestion;
 using TrafficDataAnalyticsStore.Business.DailySum;
 using TrafficDataAnalyticsStore.Business.RedisReader;
@@ -134,7 +135,7 @@ public class Startup
 
         app.UseHttpsRedirection();
 
-        //app.UseMiddleware<ExceptionMiddleware>();
+        app.UseMiddleware<ExceptionMiddleware>();
 
         app.UseAuthentication();
         app.UseAuthorization();
