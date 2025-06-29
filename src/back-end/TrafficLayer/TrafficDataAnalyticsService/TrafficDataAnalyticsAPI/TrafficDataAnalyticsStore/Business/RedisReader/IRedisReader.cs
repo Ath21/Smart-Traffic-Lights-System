@@ -2,7 +2,7 @@ using System;
 using TrafficDataAnalyticsData.Collections;
 using TrafficDataAnalyticsStore.Models;
 
-namespace TrafficDataAnalyticsStore.Business.Redis;
+namespace TrafficDataAnalyticsStore.Business.RedisReader;
 
 public interface IRedisReader
 {

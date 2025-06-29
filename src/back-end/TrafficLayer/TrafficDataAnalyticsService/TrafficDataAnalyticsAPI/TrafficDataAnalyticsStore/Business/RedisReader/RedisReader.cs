@@ -1,27 +1,26 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
-using Microsoft.Extensions.Logging;
-using MongoDB.Bson;
+using Microsoft.Extensions.Options;
 using StackExchange.Redis;
-using TrafficDataAnalyticsData.Collections;
+using TrafficDataAnalyticsData.Redis;
 using TrafficDataAnalyticsStore.Models;
 
-namespace TrafficDataAnalyticsStore.Business.Redis
+namespace TrafficDataAnalyticsStore.Business.RedisReader
 {
     public class RedisReader : IRedisReader
     {
         private readonly ILogger<RedisReader> _logger;
-        private readonly IDatabase _database;
+        private readonly RedisDbContext _context;
+        private readonly RedisDbSettings _settings;
+        private readonly IDatabase _db;
 
         public RedisReader(
             ILogger<RedisReader> logger,
-            IConnectionMultiplexer connectionMultiplexer)
+            RedisDbContext context,
+            IOptions<RedisDbSettings> settings)
         {
             _logger = logger;
-            _database = connectionMultiplexer.GetDatabase();
+            _context = context;
+            _db = context.Database;
+            _settings = settings.Value;
         }
 
         public async Task<DailySummaryDto?> ComputeDailySummaryAsync(string intersectionId)
@@ -37,13 +36,11 @@ namespace TrafficDataAnalyticsStore.Business.Redis
 
             foreach (var key in keys)
             {
-                var result = await _database.ExecuteAsync("TS.RANGE", key, start, end);
+                var result = await _db.ExecuteAsync("TS.RANGE", key, start, end);
 
-                // Αν δεν είναι πίνακας, αγνόησε
                 if (result.Type != ResultType.MultiBulk) continue;
 
                 var entries = (RedisResult[])result!;
-
                 foreach (var entry in entries)
                 {
                     if (entry.Type != ResultType.MultiBulk) continue;
@@ -57,7 +54,6 @@ namespace TrafficDataAnalyticsStore.Business.Redis
                     total += val;
                     var hour = DateTimeOffset.FromUnixTimeMilliseconds(ts).Hour;
                     var hourKey = $"{hour}:00";
-
                     if (!hourly.ContainsKey(hourKey))
                         hourly[hourKey] = 0;
 
@@ -65,14 +61,13 @@ namespace TrafficDataAnalyticsStore.Business.Redis
                 }
             }
 
-
             if (total == 0) return null;
 
             return new DailySummaryDto
             {
                 IntersectionId = intersectionId,
                 Date = now.Date,
-                AvgWaitTime = 0, // TODO: υπολογισμός όταν υπάρχουν timestamps φάσης
+                AvgWaitTime = 0,
                 PeakHours = hourly
                     .OrderByDescending(p => p.Value)
                     .Take(3)
@@ -83,8 +78,8 @@ namespace TrafficDataAnalyticsStore.Business.Redis
 
         public async Task<List<string>> GetVehicleKeysForIntersection(string intersectionId)
         {
-            var server = _database.Multiplexer
-                .GetServer("redis", 6379); // Εναλλακτικά: μέσω config
+            var server = _context.GetServer(_settings); // το παίρνεις έτοιμο από context
+
             var keys = server
                 .Keys(pattern: $"vehicle:{intersectionId}:*")
                 .Select(k => k.ToString())

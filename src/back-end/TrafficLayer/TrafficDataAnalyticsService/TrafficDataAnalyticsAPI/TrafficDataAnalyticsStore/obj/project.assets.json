@@ -644,7 +644,8 @@
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
           "Microsoft.Extensions.Options": "9.0.6",
-          "MongoDB.Driver": "3.4.0"
+          "MongoDB.Driver": "3.4.0",
+          "StackExchange.Redis": "2.8.41"
         },
         "compile": {
           "bin/placeholder/TrafficDataAnalyticsData.dll": {}
@@ -1731,7 +1732,7 @@
   },
   "projectFileDependencyGroups": {
     "net9.0": [
-      "Automapper >= 14.0.0",
+      "AutoMapper >= 14.0.0",
       "MassTransit >= 8.5.0",
       "MassTransit.RabbitMQ >= 8.5.0",
       "Microsoft.AspNetCore.OpenApi >= 9.0.6",
@@ -1793,7 +1794,7 @@
       "net9.0": {
         "targetAlias": "net9.0",
         "dependencies": {
-          "Automapper": {
+          "AutoMapper": {
             "target": "Package",
             "version": "[14.0.0, )"
           },

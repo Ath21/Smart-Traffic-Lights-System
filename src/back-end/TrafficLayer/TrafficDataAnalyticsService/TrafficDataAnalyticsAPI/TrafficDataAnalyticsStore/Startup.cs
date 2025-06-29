@@ -3,7 +3,8 @@ using MassTransit;
 using Microsoft.OpenApi.Models;
 using RabbitMQ.Client;
 using TrafficDataAnalyticsData;
-using TrafficDataAnalyticsStore.Business.Redis;
+using TrafficDataAnalyticsData.Redis;
+using TrafficDataAnalyticsStore.Business.RedisReader;
 using TrafficDataAnalyticsStore.Repository;
 using TrafficMessages;
 
@@ -27,21 +28,27 @@ public class Startup
             _configuration.GetSection("DefaultConnection")
         );
         services.AddSingleton<TrafficDataAnalyticsDbContext>();
-        
 
-        /******* [2] Repositories ********/
+        /******* [2] Redis Config ********/
+
+        services.Configure<RedisDbSettings>(
+            _configuration.GetSection("RedisConnection")
+        );
+        services.AddSingleton<RedisDbContext>();
+
+        /******* [3] Repositories ********/
 
         services.AddScoped(typeof(IMongoDbWriter), typeof(MongoDbWriter));
 
-        /******* [3] Services ********/
+        /******* [4] Services ********/
 
         services.AddScoped<IRedisReader, RedisReader>();
 
-        /******* [4] AutoMapper ********/
+        /******* [5] AutoMapper ********/
 
         services.AddAutoMapper(typeof(TrafficDataAnalyticsStoreProfile));
 
-        /******* [5] MassTransit ********/
+        /******* [6] MassTransit ********/
 
         
         services.AddMassTransit(x =>
@@ -72,14 +79,14 @@ public class Startup
         });
         
 
-        /******* [6] Controllers ********/
+        /******* [7] Controllers ********/
 
         services.AddControllers()
             .AddJsonOptions(
                 options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
         services.AddEndpointsApiExplorer();
 
-        /******* [7] Swagger ********/
+        /******* [8] Swagger ********/
 
         services.AddSwaggerGen(c =>
             {

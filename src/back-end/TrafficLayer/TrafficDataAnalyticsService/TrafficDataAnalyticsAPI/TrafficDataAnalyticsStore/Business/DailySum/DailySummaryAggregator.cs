@@ -1,7 +1,7 @@
 using System;
 using AutoMapper;
 using TrafficDataAnalyticsData.Collections;
-using TrafficDataAnalyticsStore.Business.Redis;
+using TrafficDataAnalyticsStore.Business.RedisReader;
 using TrafficDataAnalyticsStore.Publishers;
 using TrafficDataAnalyticsStore.Repository;
 
