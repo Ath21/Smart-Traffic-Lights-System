@@ -3,11 +3,3 @@ services:
   traffic_data_analytics_mongo:
     image: mongo:6.0
     container_name: traffic_data_analytics_container
-    #networks:
-     # - traffic_data_analytics_network
-
-#networks:
- # traffic_data_analytics_network:
-  #  name: traffic_data_analytics_network
-   # driver: bridge
-    #external: true
