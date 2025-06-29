@@ -22,4 +22,8 @@
     <ProjectReference Include="..\..\..\TrafficMessages\TrafficMessages.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Middleware/" />
+  </ItemGroup>
+
 </Project>

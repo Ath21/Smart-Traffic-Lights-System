@@ -4,6 +4,7 @@ using Microsoft.OpenApi.Models;
 using RabbitMQ.Client;
 using TrafficDataAnalyticsData;
 using TrafficDataAnalyticsData.Redis;
+using TrafficDataAnalyticsStore.Business.Congestion;
 using TrafficDataAnalyticsStore.Business.DailySum;
 using TrafficDataAnalyticsStore.Business.RedisReader;
 using TrafficDataAnalyticsStore.Repository;
@@ -45,6 +46,7 @@ public class Startup
 
         services.AddScoped(typeof(IRedisReader), typeof(RedisReader));
         services.AddScoped(typeof(ISummaryService), typeof(SummaryService));
+        services.AddScoped(typeof(ICongestionAlertService), typeof(CongestionAlertService));
 
         /******* [5] AutoMapper ********/
 
