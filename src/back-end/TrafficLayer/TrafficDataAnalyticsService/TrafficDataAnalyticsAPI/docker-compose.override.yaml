@@ -3,28 +3,37 @@ services:
     ports:
       - '5208:8080'
     environment:
-      
+      # 🔵 MongoDB
       DefaultConnection__ConnectionString: mongodb://traffic_data_analytics_mongo:27017
       DefaultConnection__DatabaseName: TrafficDataDb
       DefaultConnection__IntersectionsCollectionName: Intersections
-      DefaultConnection_VehicleCountsCollectionName: VehicleCounts
+      DefaultConnection__VehicleCountsCollectionName: VehicleCounts
       DefaultConnection__PedestrianCountsCollectionName: PedestrianCounts
       DefaultConnection__CyclistCountsCollectionName: CyclistCounts
       DefaultConnection__CongestionAlertsCollectionName: CongestionAlerts
       DefaultConnection__DailySummaryCollectionName: DailySummaries
 
+      # 🟠 Redis
+      Redis_ConnectionString: traffic_data_analytics_redis:6379
+      Redis_Host: traffic_data_analytics_redis
+      Redis_Port: 6379
+
+      # 🌱 ASP.NET Core
       ASPNETCORE_ENVIRONMENT: Development
 
+      # 🟣 RabbitMQ
       RabbitMQ__Host: rabbitmq
       RabbitMQ__Port: 5672
       RabbitMQ__Username: admin
       RabbitMQ__Password: admin123
-
-      RabbitMQ__TrafficAnalyticsExchange: traffic.analytics.exchange
-      RabbitMQ__RoutingKeys__Traffic__DailySummary: traffic.analytics.daily_summary
-      RabbitMQ__RoutingKeys__Traffic__CongestionAlert: traffic.analytics.congestion_alert
+      RabbitMQ__TrafficDataAnalyticsExchange: traffic.data.analytics.exchange
+      RabbitMQ__RoutingKeys__Traffic__DailySummary: traffic.data.analytics.daily_summary
+      RabbitMQ__RoutingKeys__Traffic__CongestionAlert: traffic.data.analytics.congestion_alert
 
     depends_on:
       traffic_data_analytics_mongo:
         condition: service_started
+      traffic_data_analytics_redis:
+        condition: service_started
+
     restart: always

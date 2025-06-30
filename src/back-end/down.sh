@@ -18,6 +18,9 @@ stop_application_layers()
 
     echo "🛑 Stopping User Layer..."
     bash ./UserLayer/downUserLayer.sh
+
+    echo "🛑 Stopping Traffic Layer..."
+    bash ./TrafficLayer/downTrafficLayer.sh
 }
 
 # ================================

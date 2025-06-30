@@ -12,9 +12,11 @@ DOCKER_COMPOSE_OVERRIDE_FILE="docker-compose.override.yaml"
 USER_API_DIR="./UserLayer/UserService/UserAPI"
 LOG_API_DIR="./LogLayer/LogService/LogAPI"
 NOTIFICATION_API_DIR="./UserLayer/NotificationService/NotificationAPI"
+TRAFFIC_DATA_API_DIR="./TrafficLayer/TrafficDataAnalyticsService/TrafficDataAnalyticsAPI"
 BUILD_CONTEXT_USER="."
 BUILD_CONTEXT_LOG="."
 BUILD_CONTEXT_NOTIFICATION="."
+BUILD_CONTEXT_TRAFFIC_DATA="."
 
 # Docker Hub Details
 DOCKER_USERNAME="ath21"
@@ -22,9 +24,11 @@ DOCKER_REPO="stls"
 USER_API_TAG="user_api"
 LOG_API_TAG="log_api"
 NOTIFICATION_API_TAG="notification_api"
+TRAFFIC_DATA_API_TAG="traffic_data_analytics_api"
 USER_API_IMAGE="$DOCKER_USERNAME/$DOCKER_REPO:$USER_API_TAG"
 LOG_API_IMAGE="$DOCKER_USERNAME/$DOCKER_REPO:$LOG_API_TAG"
 NOTIFICATION_API_IMAGE="$DOCKER_USERNAME/$DOCKER_REPO:$NOTIFICATION_API_TAG"
+TRAFFIC_DATA_API_IMAGE="$DOCKER_USERNAME/$DOCKER_REPO:$TRAFFIC_DATA_API_TAG"
 
 # ================================
 # 🕓 Wait for RabbitMQ to be Ready
@@ -83,12 +87,16 @@ start_rabbitmq()
 # ================================
 build_and_push_images() 
 {
+    # ath21/stls:user_api
+
     echo "🔨 Building Docker image: $USER_API_IMAGE"
     docker build -t "$USER_API_IMAGE" -f "$USER_API_DIR/Dockerfile" "$BUILD_CONTEXT_USER"
 
     echo "🚀 Pushing image to Docker Hub: $USER_API_IMAGE"
     docker push "$USER_API_IMAGE"
     echo "✅ Successfully pushed: $USER_API_IMAGE"
+
+    # ath21/stls:log_api
 
     echo "🔨 Building Docker image: $LOG_API_IMAGE"
     docker build -t "$LOG_API_IMAGE" -f "$LOG_API_DIR/Dockerfile" "$BUILD_CONTEXT_LOG"
@@ -97,12 +105,23 @@ build_and_push_images()
     docker push "$LOG_API_IMAGE"
     echo "✅ Successfully pushed: $LOG_API_IMAGE"
 
+    # ath21/stls:notification_api
+
     echo "🔨 Building Docker image: $NOTIFICATION_API_IMAGE"
     docker build -t "$NOTIFICATION_API_IMAGE" -f "$NOTIFICATION_API_DIR/Dockerfile" "$BUILD_CONTEXT_NOTIFICATION"
 
     echo "🚀 Pushing image to Docker Hub: $NOTIFICATION_API_IMAGE"
     docker push "$NOTIFICATION_API_IMAGE"
     echo "✅ Successfully pushed: $NOTIFICATION_API_IMAGE"
+
+    # ath21/stls:traffic_data_analytics_api
+
+    echo "🔨 Building Docker image: $TRAFFIC_DATA_API_IMAGE"
+    docker build -t "$TRAFFIC_DATA_API_IMAGE" -f "$TRAFFIC_DATA_API_DIR/Dockerfile" "$BUILD_CONTEXT_TRAFFIC_DATA"
+
+    echo "🚀 Pushing image to Docker Hub: $TRAFFIC_DATA_API_IMAGE"
+    docker push "$TRAFFIC_DATA_API_IMAGE"
+    echo "✅ Successfully pushed: $TRAFFIC_DATA_API_IMAGE"
 }
 
 # ================================
@@ -115,6 +134,9 @@ start_application_layers()
 
     echo "🚀 Starting User Layer..."
     bash ./UserLayer/upUserLayer.sh
+
+    echo "🚀 Starting Traffic Layer..."
+    bash ./TrafficLayer/upTrafficLayer.sh
 }
 
 # ================================

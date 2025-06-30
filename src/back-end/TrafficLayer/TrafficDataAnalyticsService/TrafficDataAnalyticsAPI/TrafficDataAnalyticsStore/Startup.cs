@@ -1,7 +1,9 @@
 using System;
 using MassTransit;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using RabbitMQ.Client;
+using StackExchange.Redis;
 using TrafficDataAnalyticsData;
 using TrafficDataAnalyticsData.Redis;
 using TrafficDataAnalyticsService.Middleware;
@@ -35,9 +37,18 @@ public class Startup
         /******* [2] Redis Config ********/
 
         services.Configure<RedisDbSettings>(
-            _configuration.GetSection("RedisConnection")
+            _configuration.GetSection("Redis")
         );
+
+        services.AddSingleton<IConnectionMultiplexer>(sp =>
+        {
+            var settings = sp.GetRequiredService<IOptions<RedisDbSettings>>().Value;
+            var configurationString = $"{settings.Host}:{settings.Port}";
+            return ConnectionMultiplexer.Connect(configurationString);
+        });
+
         services.AddSingleton<RedisDbContext>();
+
 
         /******* [3] Repositories ********/
 

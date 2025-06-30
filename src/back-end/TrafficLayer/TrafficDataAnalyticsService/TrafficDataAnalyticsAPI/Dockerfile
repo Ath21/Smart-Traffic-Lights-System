@@ -13,7 +13,7 @@ WORKDIR /src
 COPY TrafficLayer TrafficLayer/
 
 # 🔹 Restore
-RUN dotnet restore TrafficLayer/TrafficDataAnalyticsService/TrafficDataAnalyticsPI/TrafficDataAnalyticsStore/TrafficDataAnalyticsStore.csproj
+RUN dotnet restore TrafficLayer/TrafficDataAnalyticsService/TrafficDataAnalyticsAPI/TrafficDataAnalyticsStore/TrafficDataAnalyticsStore.csproj
 
 # 🔹 Build
 RUN dotnet build TrafficLayer/TrafficDataAnalyticsService/TrafficDataAnalyticsAPI/TrafficDataAnalyticsStore/TrafficDataAnalyticsStore.csproj -c $BUILD_CONFIGURATION -o /app/build
