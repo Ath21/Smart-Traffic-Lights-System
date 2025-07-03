@@ -5,6 +5,7 @@
 # ================================
 NETWORK_NAME="traffic_data_analytics_network"
 
+# Shut down all services
 TRAFFIC_DATA_API_DIR="./TrafficLayer/TrafficDataAnalyticsService/TrafficDataAnalyticsAPI"
 TRAFFIC_DATA_DB_DIR="./TrafficLayer/TrafficDataAnalyticsService/Mongo"
 TRAFFIC_DATA_REDIS_DIR="./TrafficLayer/TrafficDataAnalyticsService/Redis"
@@ -15,7 +16,7 @@ DOCKER_COMPOSE_FILE="docker-compose.yaml"
 DOCKER_COMPOSE_OVERRIDE="docker-compose.override.yaml"
 
 # ================================
-# 🛑 Stop User Service Containers
+# 🛑 Stop Traffic Data Analytics Service Containers
 # ================================
 stop_containers() 
 {

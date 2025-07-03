@@ -1,20 +1,40 @@
 #!/bin/bash
 
 # ================================
-# 🛑 Stop User Layer
+# 🧠 Helper: Run script if exists
 # ================================
-stop_user_layer() 
-{
-    echo "🛑 Stopping User Service..."
-    bash ./UserLayer/UserService/downUserService.sh
-
-    echo "🛑 Stopping Notification Service..."
-    bash ./UserLayer/NotificationService/downNotificationService.sh
+try_stop() {
+    local script="$1"
+    if [ -x "$script" ]; then
+        bash "$script"
+    else
+        echo "⚠️ Cannot execute $script. Skipping."
+    fi
 }
 
 # ================================
-# 🧩 Main Script Execution
+# 🔍 Parse --service flag
 # ================================
-stop_user_layer
+SERVICE=""
+
+while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+        --service=*) SERVICE="${1#*=}" ;;
+        *) echo "❌ Unknown option: $1"; exit 1 ;;
+    esac
+    shift
+done
+
+# ================================
+# 🧩 Main Execution
+# ================================
+if [[ -n "$SERVICE" ]]; then
+    echo "🛑 Stopping ONLY $SERVICE in User Layer..."
+    try_stop "./UserLayer/$SERVICE/down$SERVICE.sh"
+else
+    echo "🛑 Stopping ALL services in User Layer..."
+    try_stop ./UserLayer/UserService/downUserService.sh
+    try_stop ./UserLayer/NotificationService/downNotificationService.sh
+fi
 
 exit 0
