@@ -1,4 +1,16 @@
-using Microsoft.AspNetCore.Http;
+/*
+GET /summary/daily/{intersectionId}?date=2025-07-05
+Returns one record from daily_summaries.
+
+GET /summary/range/{intersectionId}?from=2025-07-01&to=2025-07-06
+Returns trend data for dashboard graphs.
+
+GET /alerts/recent?severity=HIGH&limit=10
+Returns recent congestion alerts.
+
+GET /counts/vehicle/{intersectionId}?from=...&to=...
+Returns raw count data from vehicle_counts.
+*/
 using Microsoft.AspNetCore.Mvc;
 using TrafficDataAnalyticsStore.Business.Congestion;
 using TrafficDataAnalyticsStore.Business.DailySum;
