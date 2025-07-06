@@ -1,7 +1,0 @@
-services:
-  traffic_data_analytics_redis:
-    ports:
-      - '6379:6379'
-    environment:
-      - REDIS_ARGS=--loadmodule /opt/redis-stack/lib/redistimeseries.so
-    restart: unless-stopped
