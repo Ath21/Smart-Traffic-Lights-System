@@ -11,9 +11,11 @@ Returns recent congestion alerts.
 GET /counts/vehicle/{intersectionId}?from=...&to=...
 Returns raw count data from vehicle_counts.
 */
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using TrafficDataAnalyticsStore.Business.Congestion;
-using TrafficDataAnalyticsStore.Business.DailySum;
+using TrafficDataAnalyticsStore.Models;
+using TrafficDataAnalyticsStore.Repository.Summary;
+
 
 namespace TrafficDataAnalyticsStore.Controllers
 {
@@ -21,29 +23,22 @@ namespace TrafficDataAnalyticsStore.Controllers
     [ApiController]
     public class TrafficDataAnalyticsController : ControllerBase
     {
-        private readonly ICongestionAlertService _congestionService;
-        private readonly ISummaryService _summaryService;
+        private readonly IDailySummaryRepository _dailySummaryRepository;
+        private readonly IMapper _mapper;
 
-        public TrafficDataAnalyticsController(
-            ICongestionAlertService congestionService,
-            ISummaryService summaryService)
+        public TrafficDataAnalyticsController(IDailySummaryRepository dailySummaryRepository, IMapper mapper)
         {
-            _congestionService = congestionService;
-            _summaryService = summaryService;
+            _dailySummaryRepository = dailySummaryRepository;
+            _mapper = mapper;
         }
 
-        [HttpGet("congestion/alerts")]
-        public async Task<IActionResult> GetActiveCongestionAlerts()
+        [HttpGet("summary/daily/{intersectionId}")]
+        public async Task<ActionResult<DailySummaryDto>> GetDailySummary(string intersectionId, [FromQuery] DateTime date)
         {
-            var alerts = await _congestionService.GetActiveAlertsAsync();
-            return Ok(alerts);
-        }
+            var summary = await _dailySummaryRepository.GetByIntersectionAndDateAsync(intersectionId, date);
+            if (summary == null) return NotFound();
 
-        [HttpGet("daily/summaries")]
-        public async Task<IActionResult> GetLatestDailySummaries()
-        {
-            var summaries = await _summaryService.GetLatestSummariesAsync();
-            return Ok(summaries);
+            return Ok(_mapper.Map<DailySummaryDto>(summary));
         }
     }
 }

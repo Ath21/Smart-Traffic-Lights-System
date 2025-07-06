@@ -20,6 +20,14 @@ public class VehicleCountRepository : IVehicleCountRepository
         await _context.SaveChangesAsync();
     }
 
+    public async Task<List<string>> GetAllIntersectionIdsAsync()
+    {
+        return await _context.VehicleCounts
+            .Select(vc => vc.IntersectionId)
+            .Distinct()
+            .ToListAsync();
+    }
+
     public async Task<List<VehicleCount>> GetByIntersectionAndDateAsync(string intersectionId, DateTime date)
     {
         return await _context.VehicleCounts

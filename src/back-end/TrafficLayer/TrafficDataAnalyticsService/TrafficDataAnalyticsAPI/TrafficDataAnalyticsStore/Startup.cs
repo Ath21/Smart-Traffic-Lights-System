@@ -13,6 +13,7 @@ using TrafficDataAnalyticsStore.Repository.Pedestrian;
 using TrafficDataAnalyticsStore.Repository.Vehicle;
 using TrafficDataAnalyticsStore.Repository.Congestion;
 using TrafficDataAnalyticsStore.Repository.Summary;
+using TrafficDataAnalyticsStore.Business.DailySum;
 
 namespace TrafficDataAnalyticsStore;
 
@@ -41,15 +42,19 @@ public class Startup
         
         /******* [3] Services ********/
 
-
+        services.AddScoped(typeof(IDailyAggregationService), typeof(DailyAggregationService));
 
         /******* [4] AutoMapper ********/
 
         services.AddAutoMapper(typeof(TrafficDataAnalyticsStoreProfile));
 
-        /******* [5] MassTransit ********/
-
+        /******* [6] Background Services ********/
         
+        services.AddHostedService<DailyAggregationJob>();
+
+        /******* [7] MassTransit ********/
+
+
         services.AddMassTransit(x =>
         {
             //x.AddConsumer<NotificationRequestConsumer>();
