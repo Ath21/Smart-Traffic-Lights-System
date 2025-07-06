@@ -14,6 +14,7 @@ using TrafficDataAnalyticsStore.Repository.Vehicle;
 using TrafficDataAnalyticsStore.Repository.Congestion;
 using TrafficDataAnalyticsStore.Repository.Summary;
 using TrafficDataAnalyticsStore.Business.DailySum;
+using TrafficDataAnalyticsStore.Business.CongestionDetection;
 
 namespace TrafficDataAnalyticsStore;
 
@@ -43,6 +44,7 @@ public class Startup
         /******* [3] Services ********/
 
         services.AddScoped(typeof(IDailyAggregationService), typeof(DailyAggregationService));
+        services.AddScoped(typeof(ICongestionDetector), typeof(CongestionDetector));
 
         /******* [4] AutoMapper ********/
 

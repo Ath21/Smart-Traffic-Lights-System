@@ -1,5 +1,6 @@
 using System;
 using TrafficDataAnalyticsData.Entities;
+using TrafficDataAnalyticsStore.Business.CongestionDetection;
 using TrafficDataAnalyticsStore.Repository.Congestion;
 using TrafficDataAnalyticsStore.Repository.Summary;
 using TrafficDataAnalyticsStore.Repository.Vehicle;
@@ -12,17 +13,20 @@ public class DailyAggregationJob : BackgroundService
     private readonly IVehicleCountRepository _vehicleCountRepository;
     private readonly IDailySummaryRepository _dailySummaryRepository;
     private readonly ICongestionAlertRepository _congestionAlertRepository;
+    private readonly ICongestionDetector _congestionDetector;
 
     public DailyAggregationJob(
         ILogger<DailyAggregationJob> logger,
         IVehicleCountRepository vehicleCountRepository,
         IDailySummaryRepository dailySummaryRepository,
-        ICongestionAlertRepository congestionAlertRepository)
+        ICongestionAlertRepository congestionAlertRepository,
+        ICongestionDetector congestionDetector)
     {
         _logger = logger;
         _vehicleCountRepository = vehicleCountRepository;
         _dailySummaryRepository = dailySummaryRepository;
         _congestionAlertRepository = congestionAlertRepository;
+        _congestionDetector = congestionDetector;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -52,13 +56,15 @@ public class DailyAggregationJob : BackgroundService
 
                     await _dailySummaryRepository.AddAsync(summary);
 
-                    if (avgWait > 45 || totalCount > 10000)
+                    if (_congestionDetector.isCongested(avgWait, totalCount))
                     {
+                        var severity = _congestionDetector.GetSeverity(avgWait, totalCount);
+
                         var alert = new CongestionAlert
                         {
                             AlertId = Guid.NewGuid(),
                             IntersectionId = id,
-                            Severity = "HIGH",
+                            Severity = severity,
                             Description = $"High congestion detected at {id} on {yesterday:yyyy-MM-dd}",
                             Timestamp = DateTime.UtcNow
                         };
