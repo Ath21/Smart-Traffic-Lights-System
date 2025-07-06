@@ -55,6 +55,10 @@
             "Microsoft.Extensions.Options": {
               "target": "Package",
               "version": "[9.0.6, )"
+            },
+            "Npgsql.EntityFrameworkCore.PostgreSQL": {
+              "target": "Package",
+              "version": "[9.0.4, )"
             }
           },
           "imports": [
@@ -140,17 +144,13 @@
               "target": "Package",
               "version": "[9.0.6, )"
             },
-            "MongoDB.Driver": {
+            "Microsoft.EntityFrameworkCore": {
               "target": "Package",
-              "version": "[3.4.0, )"
+              "version": "[9.0.6, )"
             },
             "RabbitMQ.Client": {
               "target": "Package",
               "version": "[7.1.2, )"
-            },
-            "StackExchange.Redis": {
-              "target": "Package",
-              "version": "[2.8.41, )"
             },
             "Swashbuckle.AspNetCore": {
               "target": "Package",

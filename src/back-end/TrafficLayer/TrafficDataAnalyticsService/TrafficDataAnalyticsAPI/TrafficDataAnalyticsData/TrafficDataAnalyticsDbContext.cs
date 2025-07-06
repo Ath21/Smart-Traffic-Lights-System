@@ -1,5 +1,6 @@
 ﻿
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using TrafficDataAnalyticsData.Entities;
 
@@ -7,6 +8,8 @@ namespace TrafficDataAnalyticsData;
 
 public class TrafficDataAnalyticsDbContext : DbContext
 {
+    private readonly IConfiguration _configuration;
+
     public TrafficDataAnalyticsDbContext(DbContextOptions<TrafficDataAnalyticsDbContext> options)
         : base(options) { }
 
@@ -25,5 +28,14 @@ public class TrafficDataAnalyticsDbContext : DbContext
         modelBuilder.Entity<DailySummary>().ToTable("daily_summaries");
         modelBuilder.Entity<CongestionAlert>().ToTable("congestion_alerts");
         modelBuilder.Entity<Intersection>().ToTable("intersections");
+    }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        if (!optionsBuilder.IsConfigured)
+        {
+            var connectionString = _configuration.GetConnectionString("DefaultConnection");
+            optionsBuilder.UseNpgsql(connectionString);
+        }
     }
 }

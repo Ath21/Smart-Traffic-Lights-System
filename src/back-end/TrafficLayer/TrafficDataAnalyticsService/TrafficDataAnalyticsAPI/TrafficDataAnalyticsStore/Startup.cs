@@ -3,9 +3,8 @@ using MassTransit;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using RabbitMQ.Client;
-using StackExchange.Redis;
+using Microsoft.EntityFrameworkCore;
 using TrafficDataAnalyticsData;
-using TrafficDataAnalyticsData.Redis;
 using TrafficDataAnalyticsService.Middleware;
 using TrafficDataAnalyticsStore.Business.Congestion;
 using TrafficDataAnalyticsStore.Business.DailySum;
@@ -28,37 +27,18 @@ public class Startup
     {
         /******* [1] MongoDb Config ********/
 
-        
-        services.Configure<TrafficDataAnalyticsDbSettings>(
-            _configuration.GetSection("DefaultConnection")
-        );
-        services.AddSingleton<TrafficDataAnalyticsDbContext>();
+        services.AddDbContext<TrafficDataAnalyticsDbContext>();
 
         /******* [2] Redis Config ********/
 
-        services.Configure<RedisDbSettings>(
-            _configuration.GetSection("Redis")
-        );
-
-        services.AddSingleton<IConnectionMultiplexer>(sp =>
-        {
-            var settings = sp.GetRequiredService<IOptions<RedisDbSettings>>().Value;
-            var configurationString = $"{settings.Host}:{settings.Port}";
-            return ConnectionMultiplexer.Connect(configurationString);
-        });
-
-        services.AddSingleton<RedisDbContext>();
 
 
         /******* [3] Repositories ********/
 
-        services.AddScoped(typeof(IMongoDbWriter), typeof(MongoDbWriter));
 
         /******* [4] Services ********/
 
-        services.AddScoped(typeof(IRedisReader), typeof(RedisReader));
-        services.AddScoped(typeof(ISummaryService), typeof(SummaryService));
-        services.AddScoped(typeof(ICongestionAlertService), typeof(CongestionAlertService));
+
 
         /******* [5] AutoMapper ********/
 
