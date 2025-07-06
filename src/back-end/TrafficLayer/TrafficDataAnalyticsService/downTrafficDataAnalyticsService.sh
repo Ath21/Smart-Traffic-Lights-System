@@ -18,8 +18,7 @@ DOCKER_COMPOSE_OVERRIDE="docker-compose.override.yaml"
 # ================================
 # 🛑 Stop Traffic Data Analytics Service Containers
 # ================================
-stop_containers() 
-{
+stop_containers() {
     echo "🛑 Stopping Traffic Data Analytics Service containers..."
 
     docker compose \
@@ -38,8 +37,7 @@ stop_containers()
 # ================================
 # 🔌 Remove Docker Network
 # ================================
-remove_docker_network() 
-{
+remove_docker_network() {
     if docker network ls | grep -q "$NETWORK_NAME"; then
         echo "🔌 Removing Docker network '$NETWORK_NAME'..."
         docker network rm "$NETWORK_NAME"
@@ -50,9 +48,12 @@ remove_docker_network()
 }
 
 # ================================
-# 🧩 Main Script Execution
+# 🧩 Main
 # ================================
-stop_containers
-remove_docker_network
+main() {
+    stop_containers
+    remove_docker_network
+    exit 0
+}
 
-exit 0
+main "$@"

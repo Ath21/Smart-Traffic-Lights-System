@@ -139,26 +139,52 @@ done
 # ================================
 # 🧩 Main Execution
 # ================================
-if [[ -z "$MODE" ]]; then
-    print_help
+main() {
+    if [[ -z "$MODE" ]]; then
+        print_help
+        exit 0
+    fi
+
+    create_network
+
+    case "$MODE" in
+        log)
+            containers=("log_api_container")
+            check_containers_and_build_missing containers
+            start_log_layer --service="$TARGET_SERVICE"
+            ;;
+        user)
+            if [[ -n "$TARGET_SERVICE" ]]; then
+                case "$TARGET_SERVICE" in
+                    UserService) containers=("user_api_container") ;;
+                    NotificationService) containers=("notification_api_container") ;;
+                    *) containers=("user_api_container" "notification_api_container") ;;
+                esac
+            else
+                containers=("user_api_container" "notification_api_container")
+            fi
+            check_containers_and_build_missing containers
+            start_user_layer --service="$TARGET_SERVICE"
+            ;;
+        traffic)
+            containers=("traffic_data_analytics_api_container")
+            check_containers_and_build_missing containers
+            start_traffic_layer --service="$TARGET_SERVICE"
+            ;;
+        all)
+            start_rabbitmq
+            containers=("log_api_container" "notification_api_container" "traffic_data_analytics_api_container" "user_api_container")
+            check_containers_and_build_missing containers
+            start_application_layers
+            ;;
+        rabbitmq)
+            start_rabbitmq
+            ;;
+    esac
+
+    echo "🏁 Services started."
     exit 0
-fi
+}
 
-create_network
+main "$@"
 
-case "$MODE" in
-    log) check_core_containers_and_build_missing; start_log_layer --service="$TARGET_SERVICE" ;;
-    user) check_core_containers_and_build_missing; start_user_layer --service="$TARGET_SERVICE" ;;
-    traffic) check_core_containers_and_build_missing; start_traffic_layer --service="$TARGET_SERVICE" ;;
-    all)
-        start_rabbitmq
-        check_core_containers_and_build_missing
-        start_application_layers
-        ;;
-    rabbitmq)
-        start_rabbitmq
-        ;;
-esac
-
-echo "🏁 Services started."
-exit 0

@@ -17,8 +17,7 @@ DOCKER_COMPOSE_OVERRIDE="docker-compose.override.yaml"
 # ================================
 # 🌐 Create Docker Network
 # ================================
-create_network() 
-{
+create_network() {
     if docker network ls | grep -q "$NETWORK_NAME"; then
         echo "🔄 Docker network '$NETWORK_NAME' already exists."
     else
@@ -30,8 +29,7 @@ create_network()
 # ================================
 # 📦 Start Traffic Data Analytics Service Containers
 # ================================
-start_containers() 
-{
+start_containers() {
     echo "📦 Starting Traffic Data Analytics Service containers..."
 
     docker compose \
@@ -48,9 +46,12 @@ start_containers()
 }
 
 # ================================
-# 🧩 Main Script Execution
+# 🧩 Main
 # ================================
-create_network
-start_containers
+main() {
+    create_network
+    start_containers
+    exit 0
+}
 
-exit 0
+main "$@"

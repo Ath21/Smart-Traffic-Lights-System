@@ -97,62 +97,63 @@ print_help() {
 }
 
 # ================================
-# 🚦 Parse Arguments
+# 🚦 Parse & Execute in Main
 # ================================
-MODE=""
-DO_CLEAN=false
-TARGET_SERVICE=""
+main() {
+    MODE=""
+    DO_CLEAN=false
+    TARGET_SERVICE=""
 
-while [[ "$#" -gt 0 ]]; do
-    case "$1" in
-        --log) MODE="log" ;;
-        --user) MODE="user" ;;
-        --traffic) MODE="traffic" ;;
-        --all) MODE="all" ;;
-        --rabbitmq) MODE="rabbitmq" ;;
-        --clean) DO_CLEAN=true ;;
-        --service=*) TARGET_SERVICE="${1#*=}" ;;
-        --help) print_help; exit 0 ;;
-        *) echo "❌ Unknown option: $1"; print_help; exit 1 ;;
+    while [[ "$#" -gt 0 ]]; do
+        case "$1" in
+            --log) MODE="log" ;;
+            --user) MODE="user" ;;
+            --traffic) MODE="traffic" ;;
+            --all) MODE="all" ;;
+            --rabbitmq) MODE="rabbitmq" ;;
+            --clean) DO_CLEAN=true ;;
+            --service=*) TARGET_SERVICE="${1#*=}" ;;
+            --help) print_help; exit 0 ;;
+            *) echo "❌ Unknown option: $1"; print_help; exit 1 ;;
+        esac
+        shift
+    done
+
+    if [[ "$MODE" == "" && "$DO_CLEAN" == false ]]; then
+        print_help
+        exit 0
+    fi
+
+    case "$MODE" in
+        log) stop_log_layer "--service=$TARGET_SERVICE" ;;
+        user) stop_user_layer "--service=$TARGET_SERVICE" ;;
+        traffic) stop_traffic_layer "--service=$TARGET_SERVICE" ;;
+        all)
+            stop_application_layers
+            if docker ps -a --format '{{.Names}}' | grep -q "rabbitmq"; then
+                stop_rabbitmq
+            else
+                echo "⚠️ RabbitMQ container not found. Skipping shutdown."
+            fi
+            remove_docker_network
+            ;;
+        rabbitmq)
+            if docker ps -a --format '{{.Names}}' | grep -q "rabbitmq"; then
+                stop_rabbitmq
+            else
+                echo "⚠️ RabbitMQ container not found. Skipping shutdown."
+            fi
+            remove_docker_network
+            ;;
     esac
-    shift
-done
 
-# ================================
-# ✅ Execute Selected Operation
-# ================================
-if [[ "$MODE" == "" && "$DO_CLEAN" == false ]]; then
-    print_help
+    if $DO_CLEAN; then
+        prune_docker_volumes
+        prune_dangling_images
+    fi
+
+    echo "🏁 Shutdown complete."
     exit 0
-fi
+}
 
-case "$MODE" in
-    log) stop_log_layer "--service=$TARGET_SERVICE" ;;
-    user) stop_user_layer "--service=$TARGET_SERVICE" ;;
-    traffic) stop_traffic_layer "--service=$TARGET_SERVICE" ;;
-    all)
-        stop_application_layers
-        if docker ps -a --format '{{.Names}}' | grep -q "rabbitmq"; then
-            stop_rabbitmq
-        else
-            echo "⚠️ RabbitMQ container not found. Skipping shutdown."
-        fi
-        remove_docker_network
-        ;;
-    rabbitmq)
-        if docker ps -a --format '{{.Names}}' | grep -q "rabbitmq"; then
-            stop_rabbitmq
-        else
-            echo "⚠️ RabbitMQ container not found. Skipping shutdown."
-        fi
-        remove_docker_network
-        ;;
-esac
-
-if $DO_CLEAN; then
-    prune_docker_volumes
-    prune_dangling_images
-fi
-
-echo "🏁 Shutdown complete."
-exit 0
+main "$@"

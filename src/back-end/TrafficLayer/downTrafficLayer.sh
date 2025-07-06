@@ -18,33 +18,34 @@ try_stop() {
 }
 
 # ================================
-# 🔍 Parse --service flag
+# 🧩 Main
 # ================================
-SERVICE=""
+main() {
+    SERVICE=""
 
-while [[ "$#" -gt 0 ]]; do
-    case "$1" in
-        --service=*) SERVICE="${1#*=}" ;;
-        *) echo "❌ Unknown option: $1"; exit 1 ;;
-    esac
-    shift
-done
+    while [[ "$#" -gt 0 ]]; do
+        case "$1" in
+            --service=*) SERVICE="${1#*=}" ;;
+            *) echo "❌ Unknown option: $1"; exit 1 ;;
+        esac
+        shift
+    done
 
-# ================================
-# 🧩 Main Execution
-# ================================
-if [[ -n "$SERVICE" ]]; then
-    if [[ ! -d "$SCRIPT_DIR/$SERVICE" ]]; then
-        echo "❌ Unknown service '$SERVICE' in Traffic Layer."
-        exit 1
+    if [[ -n "$SERVICE" ]]; then
+        if [[ ! -d "$SCRIPT_DIR/$SERVICE" ]]; then
+            echo "❌ Unknown service '$SERVICE' in Traffic Layer."
+            exit 1
+        fi
+
+        echo "🛑 Stopping ONLY $SERVICE in Traffic Layer..."
+        try_stop "$SCRIPT_DIR/$SERVICE/down$SERVICE.sh"
+    else
+        echo "🛑 Stopping ALL services in Traffic Layer..."
+        try_stop "$SCRIPT_DIR/TrafficDataAnalyticsService/downTrafficDataAnalyticsService.sh"
+        try_stop "$SCRIPT_DIR/TrafficLightControlService/downTrafficLightControlService.sh"
     fi
 
-    echo "🛑 Stopping ONLY $SERVICE in Traffic Layer..."
-    try_stop "$SCRIPT_DIR/$SERVICE/down$SERVICE.sh"
-else
-    echo "🛑 Stopping ALL services in Traffic Layer..."
-    try_stop "$SCRIPT_DIR/TrafficDataAnalyticsService/downTrafficDataAnalyticsService.sh"
-    try_stop "$SCRIPT_DIR/TrafficLightControlService/downTrafficLightControlService.sh"
-fi
+    exit 0
+}
 
-exit 0
+main "$@"
