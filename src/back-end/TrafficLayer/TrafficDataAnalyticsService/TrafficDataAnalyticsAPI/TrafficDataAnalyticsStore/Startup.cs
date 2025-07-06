@@ -11,6 +11,11 @@ using TrafficDataAnalyticsStore.Business.DailySum;
 using TrafficDataAnalyticsStore.Business.RedisReader;
 using TrafficDataAnalyticsStore.Repository;
 using TrafficMessages;
+using TrafficDataAnalyticsStore.Repository.Cyclist;
+using TrafficDataAnalyticsStore.Repository.Pedestrian;
+using TrafficDataAnalyticsStore.Repository.Vehicle;
+using TrafficDataAnalyticsStore.Repository.Congestion;
+using TrafficDataAnalyticsStore.Repository.Summary;
 
 namespace TrafficDataAnalyticsStore;
 
@@ -25,26 +30,27 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
-        /******* [1] MongoDb Config ********/
+        /******* [1] PostgreSQL Config ********/
 
         services.AddDbContext<TrafficDataAnalyticsDbContext>();
 
-        /******* [2] Redis Config ********/
+        /******* [2] Repositories ********/
+
+        services.AddScoped(typeof(IDailySummaryRepository), typeof(DailySummaryRepository));
+        services.AddScoped(typeof(ICongestionAlertRepository), typeof(CongestionAlertRepository));
+        services.AddScoped(typeof(IVehicleCountRepository), typeof(VehicleCountRepository));
+        services.AddScoped(typeof(IPedestrianCountRepository), typeof(PedestrianCountRepository));
+        services.AddScoped(typeof(ICyclistCountRepository), typeof(CyclistCountRepository));
+        
+        /******* [3] Services ********/
 
 
 
-        /******* [3] Repositories ********/
-
-
-        /******* [4] Services ********/
-
-
-
-        /******* [5] AutoMapper ********/
+        /******* [4] AutoMapper ********/
 
         services.AddAutoMapper(typeof(TrafficDataAnalyticsStoreProfile));
 
-        /******* [6] MassTransit ********/
+        /******* [5] MassTransit ********/
 
         
         services.AddMassTransit(x =>
