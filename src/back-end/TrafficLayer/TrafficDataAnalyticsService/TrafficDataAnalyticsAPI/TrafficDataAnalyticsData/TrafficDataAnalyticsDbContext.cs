@@ -1,46 +1,29 @@
 ﻿
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using MongoDB.Driver;
-using TrafficDataAnalyticsData.Collections;
+using TrafficDataAnalyticsData.Entities;
 
 namespace TrafficDataAnalyticsData;
 
-public class TrafficDataAnalyticsDbContext
+public class TrafficDataAnalyticsDbContext : DbContext
 {
-    private readonly IMongoCollection<Intersection> _intersectionsCollection;
-    private readonly IMongoCollection<VehicleCount> _vehicleCountsCollection;
-    private readonly IMongoCollection<PedestrianCount> _pedestrianCountsCollection;
-    private readonly IMongoCollection<CyclistCount> _cyclistCountsCollection;
-    private readonly IMongoCollection<DailySummary> _dailySummariesCollection;
-    private readonly IMongoCollection<CongestionAlert> _congestionAlertsCollection;
+    public TrafficDataAnalyticsDbContext(DbContextOptions<TrafficDataAnalyticsDbContext> options)
+        : base(options) { }
 
+    public DbSet<VehicleCount> VehicleCounts { get; set; }
+    public DbSet<PedestrianCount> PedestrianCounts { get; set; }
+    public DbSet<CyclistCount> CyclistCounts { get; set; }
+    public DbSet<DailySummary> DailySummaries { get; set; }
+    public DbSet<CongestionAlert> CongestionAlerts { get; set; }
+    public DbSet<Intersection> Intersections { get; set; }
 
-    public TrafficDataAnalyticsDbContext(IOptions<TrafficDataAnalyticsDbSettings> trafficDataAnalyticsDbSettings)
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        var mongoClient = new MongoClient(
-            trafficDataAnalyticsDbSettings.Value.ConnectionString);
-
-        var mongoDatabase = mongoClient.GetDatabase(
-            trafficDataAnalyticsDbSettings.Value.DatabaseName);
-
-        _intersectionsCollection = mongoDatabase.GetCollection<Intersection>(
-            trafficDataAnalyticsDbSettings.Value.IntersectionsCollectionName);
-        _vehicleCountsCollection = mongoDatabase.GetCollection<VehicleCount>(
-            trafficDataAnalyticsDbSettings.Value.VehicleCountsCollectionName);
-        _pedestrianCountsCollection = mongoDatabase.GetCollection<PedestrianCount>(
-            trafficDataAnalyticsDbSettings.Value.PedestrianCountsCollectionName);
-        _cyclistCountsCollection = mongoDatabase.GetCollection<CyclistCount>(
-            trafficDataAnalyticsDbSettings.Value.CyclistCountsCollectionName);
-        _congestionAlertsCollection = mongoDatabase.GetCollection<CongestionAlert>(
-            trafficDataAnalyticsDbSettings.Value.CongestionAlertsCollectionName);
-        _dailySummariesCollection = mongoDatabase.GetCollection<DailySummary>(
-            trafficDataAnalyticsDbSettings.Value.DailySummaryCollectionName);
+        modelBuilder.Entity<VehicleCount>().ToTable("vehicle_counts");
+        modelBuilder.Entity<PedestrianCount>().ToTable("pedestrian_counts");
+        modelBuilder.Entity<CyclistCount>().ToTable("cyclist_counts");
+        modelBuilder.Entity<DailySummary>().ToTable("daily_summaries");
+        modelBuilder.Entity<CongestionAlert>().ToTable("congestion_alerts");
+        modelBuilder.Entity<Intersection>().ToTable("intersections");
     }
-
-    public IMongoCollection<Intersection> IntersectionsCollection => _intersectionsCollection;
-    public IMongoCollection<VehicleCount> VehicleCountsCollection => _vehicleCountsCollection;
-    public IMongoCollection<PedestrianCount> PedestrianCountsCollection => _pedestrianCountsCollection;
-    public IMongoCollection<CyclistCount> CyclistCountsCollection => _cyclistCountsCollection;
-    public IMongoCollection<CongestionAlert> CongestionAlertsCollection => _congestionAlertsCollection;
-    public IMongoCollection<DailySummary> DailySummariesCollection => _dailySummariesCollection;
 }

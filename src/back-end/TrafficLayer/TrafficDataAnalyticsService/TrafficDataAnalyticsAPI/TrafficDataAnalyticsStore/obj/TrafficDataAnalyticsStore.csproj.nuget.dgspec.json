@@ -48,6 +48,10 @@
               "target": "Package",
               "version": "[9.0.6, )"
             },
+            "Microsoft.EntityFrameworkCore.Relational": {
+              "target": "Package",
+              "version": "[9.0.6, )"
+            },
             "Microsoft.Extensions.Options": {
               "target": "Package",
               "version": "[9.0.6, )"
