@@ -10,5 +10,5 @@ public class Intersection
 
     public string Coordinates { get; set; } = "{}"; // JSON string for coordinates
 
-    public string Status { get; set; } = "active"; // Default status is active
+    public string Status { get; set; } = "ACTIVE"; // Default status is active
 }
