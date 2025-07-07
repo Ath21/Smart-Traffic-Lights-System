@@ -1,6 +1,8 @@
 using System;
 using TrafficDataAnalyticsData.Entities;
 using TrafficDataAnalyticsStore.Business.CongestionDetection;
+using TrafficDataAnalyticsStore.Models;
+using TrafficDataAnalyticsStore.Publishers;
 using TrafficDataAnalyticsStore.Repository.Congestion;
 using TrafficDataAnalyticsStore.Repository.Summary;
 using TrafficDataAnalyticsStore.Repository.Vehicle;
@@ -14,19 +16,22 @@ public class DailyAggregationJob : BackgroundService
     private readonly IDailySummaryRepository _dailySummaryRepository;
     private readonly ICongestionAlertRepository _congestionAlertRepository;
     private readonly ICongestionDetector _congestionDetector;
+    private readonly ITrafficDataAnalyticsPublisher _publisher;
 
     public DailyAggregationJob(
         ILogger<DailyAggregationJob> logger,
         IVehicleCountRepository vehicleCountRepository,
         IDailySummaryRepository dailySummaryRepository,
         ICongestionAlertRepository congestionAlertRepository,
-        ICongestionDetector congestionDetector)
+        ICongestionDetector congestionDetector,
+        ITrafficDataAnalyticsPublisher publisher)
     {
         _logger = logger;
         _vehicleCountRepository = vehicleCountRepository;
         _dailySummaryRepository = dailySummaryRepository;
         _congestionAlertRepository = congestionAlertRepository;
         _congestionDetector = congestionDetector;
+        _publisher = publisher;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -56,6 +61,19 @@ public class DailyAggregationJob : BackgroundService
 
                     await _dailySummaryRepository.AddAsync(summary);
 
+                    var summaryDto = new DailySummaryDto
+                    {
+                        IntersectionId = summary.IntersectionId,
+                        Date = summary.Date,
+                        AvgWaitTime = summary.AverageWaitTime,
+                        PeakHours = summary.PeakHours,
+                        TotalVehicleCount = summary.TotalVehicleCount
+                    };
+
+                    await _publisher.PublishDailySummaryAsync(summaryDto);
+                    _logger.LogInformation("Published daily summary for intersection {IntersectionId} on {Date}", id, yesterday);
+
+
                     if (_congestionDetector.isCongested(avgWait, totalCount))
                     {
                         var severity = _congestionDetector.GetSeverity(avgWait, totalCount);
@@ -70,6 +88,15 @@ public class DailyAggregationJob : BackgroundService
                         };
 
                         await _congestionAlertRepository.AddAsync(alert);
+
+                        var alertDto = new CongestionAlertDto
+                        {
+                            IntersectionId = alert.IntersectionId,
+                            Severity = alert.Severity
+                        };
+
+                        await _publisher.PublishCongestionAlertAsync(alertDto);
+                        _logger.LogInformation("Published congestion alert for intersection {IntersectionId} with severity {Severity}", id, severity);
                     }
                 }
 

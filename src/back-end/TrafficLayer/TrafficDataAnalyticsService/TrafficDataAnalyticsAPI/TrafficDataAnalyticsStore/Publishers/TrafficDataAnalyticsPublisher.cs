@@ -31,41 +31,64 @@ public class TrafficDataAnalyticsPublisher : ITrafficDataAnalyticsPublisher
 
     public async Task PublishDailySummaryAsync(DailySummaryDto dto)
     {
+        if (string.IsNullOrWhiteSpace(dto.IntersectionId))
+        {
+            _logger.LogWarning("[SUMMARY] Skipped publish: IntersectionId is missing.");
+            return;
+        }
+
         var message = new TrafficDailySummary(
             IntersectionId: dto.IntersectionId,
             VehicleCount: dto.TotalVehicleCount,
-            AverageSpeed: 0, // TODO: Add logic for speed if available
-            Notes: "Auto-generated summary",
-            Timestamp: dto.Date.Date.AddHours(23).AddMinutes(59) // end of day snapshot
+            AverageSpeed: 0, // TODO: Replace with actual calculation if available
+            Notes: $"Summary for {dto.IntersectionId}",
+            Timestamp: dto.Date.Date.AddHours(23).AddMinutes(59)
         );
 
-        _logger.LogInformation("[SUMMARY] Publishing summary to {Exchange} with key {Key}", _analyticsExchangeName, _summaryRoutingKey);
+        _logger.LogInformation("[SUMMARY] Publishing to {Exchange} with routing key {Key}", _analyticsExchangeName, _summaryRoutingKey);
 
         await _bus.Publish(message, context =>
         {
             context.SetRoutingKey(_summaryRoutingKey);
         });
 
-        _logger.LogInformation("[SUMMARY] Published TrafficDailySummary for intersection {IntersectionId}", dto.IntersectionId);
+        _logger.LogInformation("[SUMMARY] Published for {IntersectionId}", dto.IntersectionId);
     }
 
     public async Task PublishCongestionAlertAsync(CongestionAlertDto dto)
     {
+        if (string.IsNullOrWhiteSpace(dto.IntersectionId))
+        {
+            _logger.LogWarning("[ALERT] Skipped publish: IntersectionId is missing.");
+            return;
+        }
+
+        var now = DateTime.UtcNow;
+
         var message = new TrafficCongestionAlert(
             IntersectionId: dto.IntersectionId,
-            CongestionLevel: dto.CongestionLevel,
+            CongestionLevel: GetCongestionLevelFromSeverity(dto.Severity),
             Severity: dto.Severity,
-            Description: dto.Description,
-            Timestamp: dto.Timestamp
+            Description: $"Detected {dto.Severity} congestion at intersection {dto.IntersectionId}",
+            Timestamp: now
         );
 
-        _logger.LogInformation("[ALERT] Publishing alert to {Exchange} with key {Key}", _analyticsExchangeName, _alertRoutingKey);
+        var routingKey = $"{_alertRoutingKey}.{dto.IntersectionId}";
+
+        _logger.LogInformation("[ALERT] Publishing to {Exchange} with routing key {Key}", _analyticsExchangeName, routingKey);
 
         await _bus.Publish(message, context =>
         {
-            context.SetRoutingKey(_alertRoutingKey);
+            context.SetRoutingKey(routingKey);
         });
 
-        _logger.LogInformation("[ALERT] Published TrafficCongestionAlert for intersection {IntersectionId}", dto.IntersectionId);
+        _logger.LogInformation("[ALERT] Published for {IntersectionId}", dto.IntersectionId);
     }
+
+    private static double GetCongestionLevelFromSeverity(string severity) => severity switch
+    {
+        "HIGH" => 0.9,
+        "MEDIUM" => 0.6,
+        _ => 0.3
+    };
 }
