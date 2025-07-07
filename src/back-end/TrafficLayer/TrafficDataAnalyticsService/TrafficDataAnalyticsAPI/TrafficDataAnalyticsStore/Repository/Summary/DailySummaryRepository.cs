@@ -26,4 +26,11 @@ public class DailySummaryRepository : IDailySummaryRepository
             .Where(v => v.IntersectionId == intersectionId && v.Date == date)
             .ToListAsync();
     }
+
+    public Task<List<DailySummary>> GetRangeByIntersectionAsync(string intersectionId, DateTime from, DateTime to)
+    {
+    return _context.DailySummaries
+            .Where(v => v.IntersectionId == intersectionId && v.Date >= from && v.Date <= to)
+            .ToListAsync();
+    }
 }

@@ -34,4 +34,11 @@ public class VehicleCountRepository : IVehicleCountRepository
             .Where(v => v.IntersectionId == intersectionId && v.Timestamp == date)
             .ToListAsync();
     }
+
+    public Task<List<VehicleCount>> GetRangeByIntersectionAsync(string intersectionId, DateTime from, DateTime to)
+    {
+        return _context.VehicleCounts
+                .Where(v => v.IntersectionId == intersectionId && v.Timestamp >= from && v.Timestamp <= to)
+                .ToListAsync();
+    }
 }
