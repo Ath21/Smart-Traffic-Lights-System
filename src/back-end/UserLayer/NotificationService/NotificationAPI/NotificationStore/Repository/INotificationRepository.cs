@@ -14,7 +14,7 @@ namespace NotificationStore.Repository;
 
 public interface INotificationRepository
 {
-    Task CreateAsync(Notification newNotification);
+    Task InsertAsync(Notification newNotification);
     Task<List<Notification>> GetAllAsync();
     Task<IEnumerable<Notification>> GetByRecipientEmailAsync(string recipientEmail);
 

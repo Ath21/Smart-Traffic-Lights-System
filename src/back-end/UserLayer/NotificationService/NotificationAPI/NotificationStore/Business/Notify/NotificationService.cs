@@ -41,14 +41,32 @@ public class NotificationService : INotificationService
     {
         var notificationModel = _mapper.Map<Notification>(notification);
 
-        await _emailService.SendEmailAsync(
-            notification.RecipientEmail,
-            $"[{notification.Type}] Welcome to PADA Smart Traffic Lights System!",
-            $"We received your message : {notification.Message}");
+        string subject;
+        string body;
+
+        switch (notification.Type?.ToUpperInvariant())
+        {
+            case "ALERT":
+                subject = "⚠️ Traffic Congestion Alert";
+                body = $"A congestion event was detected:\n\n{notification.Message}\n\nTimestamp: {notification.Timestamp.ToLocalTime()}";
+                break;
+
+            case "SUMMARY":
+                subject = "📊 Daily Traffic Summary";
+                body = $"Your daily summary is ready:\n\n{notification.Message}\n\nGenerated on: {notification.Timestamp.ToLocalTime()}";
+                break;
+
+            default:
+                subject = $"[Notification] PADA Smart Traffic Lights";
+                body = $"We received your message:\n\n{notification.Message}\n\nTime: {notification.Timestamp.ToLocalTime()}";
+                break;
+        }
+
+        await _emailService.SendEmailAsync(notification.RecipientEmail, subject, body);
 
         notificationModel.Status = "Sent";
 
-        await _repository.CreateAsync(notificationModel);
+        await _repository.InsertAsync(notificationModel);
     }
 
     // GET: /API/Notification/GetAllNotifications
@@ -67,4 +85,19 @@ public class NotificationService : INotificationService
         return _mapper.Map<IEnumerable<NotificationDto>>(notifications);
     }
 
+    public async Task CreateAsync(NotificationDto dto)
+    {
+        var entity = new Notification
+        {
+            Id = Guid.NewGuid().ToString(),
+            Type = dto.Type,
+            RecipientId = dto.RecipientId,
+            RecipientEmail = dto.RecipientEmail,
+            Message = dto.Message,
+            Status = "UNREAD",
+            Timestamp = dto.Timestamp
+        };
+
+        await _repository.InsertAsync(entity);
+    }
 }

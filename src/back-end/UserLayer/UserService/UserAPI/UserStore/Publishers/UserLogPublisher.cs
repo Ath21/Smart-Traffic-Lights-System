@@ -1,5 +1,5 @@
 /* 
- * UserStore.Publishers.UserLogPublisher
+ * UserStore.Publishers.UserPub.UserLogPublisher
  * 
  * This class implements the IUserLogPublisher interface to publish user-related logs
  * such as informational logs, audit logs, and error logs to a message broker (e.g., RabbitMQ).

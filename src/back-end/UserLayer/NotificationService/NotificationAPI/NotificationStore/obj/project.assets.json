@@ -727,6 +727,16 @@
           "bin/placeholder/NotificationData.dll": {}
         }
       },
+      "TrafficMessages/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "compile": {
+          "bin/placeholder/TrafficMessages.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/TrafficMessages.dll": {}
+        }
+      },
       "UserMessages/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
@@ -1994,6 +2004,11 @@
       "path": "../NotificationData/NotificationData.csproj",
       "msbuildProject": "../NotificationData/NotificationData.csproj"
     },
+    "TrafficMessages/1.0.0": {
+      "type": "project",
+      "path": "../../../../TrafficLayer/TrafficMessages/TrafficMessages.csproj",
+      "msbuildProject": "../../../../TrafficLayer/TrafficMessages/TrafficMessages.csproj"
+    },
     "UserMessages/1.0.0": {
       "type": "project",
       "path": "../../../UserMessages/UserMessages.csproj",
@@ -2012,6 +2027,7 @@
       "NotificationData >= 1.0.0",
       "RabbitMQ.Client >= 7.1.2",
       "Swashbuckle.AspNetCore >= 9.0.1",
+      "TrafficMessages >= 1.0.0",
       "UserMessages >= 1.0.0"
     ]
   },
@@ -2040,6 +2056,9 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficMessages/TrafficMessages.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficMessages/TrafficMessages.csproj"
+            },
             "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/NotificationService/NotificationAPI/NotificationData/NotificationData.csproj": {
               "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/NotificationService/NotificationAPI/NotificationData/NotificationData.csproj"
             },

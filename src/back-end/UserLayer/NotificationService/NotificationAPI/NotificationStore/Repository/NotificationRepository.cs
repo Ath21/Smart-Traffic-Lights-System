@@ -23,7 +23,7 @@ public class NotificationRepository : INotificationRepository
         _context = context; 
     }
 
-    public async Task CreateAsync(Notification newNotification)
+    public async Task InsertAsync(Notification newNotification)
     {
         await _context.NotificationsCollection.InsertOneAsync(newNotification);
     }
