@@ -1,4 +1,4 @@
-# 🚦 Smart Traffic Management System
+# 🚦 Smart Traffic Lights System
 
 ## Overview
 
@@ -330,10 +330,10 @@ Frontend available at [http://localhost:5173](http://localhost:5173)
 SMART-TRAFFIC-LIGHTS-SYSTEM/
 │
 ├── diagrams/                # Architecture and database diagrams
-│   ├── Cloud/
+│   ├── Deployment/
 │   ├── Databases/
 │   ├── Microservices/
-│   └── UseCases/
+│   └── UML/
 │
 ├── docs/                    # Layer documentation
 │
