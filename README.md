@@ -1,172 +1,249 @@
-# Smart Traffic Lights System (STLS)
+# 🚦 Smart Traffic Management System
 
-A microservices-based, containerized Smart Traffic Lights System that enhances urban mobility by dynamically managing traffic light signals based on real-time sensor input and analytics. This project aims to reduce congestion, prioritize emergency and public transport, and improve overall traffic efficiency.
+## Overview
 
-## 🚦 Overview
-
-STLS is organized into four distinct architectural layers:
-
-### 1. Sensor Layer (Επίπεδο Αισθητήρων)
-
-Captures raw real-time data from various sensors deployed at intersections:
-
-- **Vehicle Sensors** – Detect number of vehicles.
-- **Emergency Vehicle Sensors** – Identify presence of emergency responders.
-- **Public Transport Sensors** – Detect buses, trams, and priority vehicles.
-- **Pedestrian Sensors** – Register pedestrian crossing requests.
-- **Cyclist Sensors** – Monitor cyclist presence.
-
-Each sensor transmits data to a corresponding Detection Service, which triggers priority events (`priority.<type>.<intersection_id>`) to downstream services.
+The **Smart Traffic Light System (STLS)** is a microservices-based platform designed to optimize urban traffic flow, prioritize emergency vehicles, manage public transport, and improve safety for pedestrians and cyclists. It uses **RabbitMQ** for asynchronous messaging and event-driven communication, **MS SQL** and **InfluxDB** for persistent and time-series data storage, respectively, and **Redis** for caching and fast data retrieval. The system leverages containerized services to ensure scalability, fault tolerance, and easy deployment.
 
 ---
 
-### 2. Traffic Layer (Επίπεδο Κυκλοφορίας)
+## Layers & Services
 
-Analyzes data and dynamically regulates traffic behavior:
-
-- **Detection Services** forward data to:
-  - **Traffic Data Analytics Service**
-    - Emits daily summaries and congestion alerts.
-    - Topics: `traffic.analytics.daily_summary`, `traffic.analytics.congestion.alert`
-  - **Traffic Light Control Service**
-    - Adjusts signal timings per intersection.
-    - Topics: `traffic.light.control.<intersection_id>`
-- Databases:
-  - `TrafficDataDb`: Traffic stats & analytics.
-  - `TrafficLightDb`: Traffic light configs and status.
+### **1. Sensor Layer**
+Simulates and collects traffic-related data from:
+- Vehicles
+- Emergency Vehicles
+- Public Transport
+- Pedestrians
+- Cyclists
+- Incident Reports
 
 ---
 
-### 3. User Layer (Επίπεδο Χρήστη)
-
-Provides interaction and feedback mechanisms for city operators:
-
-- **User Service**
-  - Manages operator accounts and access.
-  - Consumes `user.notification.request`.
-- **Notification Service**
-  - Sends targeted alerts (`notification.event.operator_alert`) and public notices (`notification.event.public_notice`).
-- **Dashboard UI**
-  - Front-end visualization and management interface.
-- Databases:
-  - `UserDb`: Operator credentials and metadata.
-  - `NotificationDb`: Active alerts and public messages.
+### **2. Traffic Layer**
+- **Intersection Controller Service** – Processes incoming sensor data to decide priorities.
+- **Traffic Light Control Service** – Updates lights according to instructions.
+- **Traffic Light Coordination Service** – Synchronizes lights across intersections.
+- **Traffic Data Analytics Service** – Detects congestion patterns and generates alerts.
 
 ---
 
-### 4. Log Layer (Επίπεδο Καταγραφής)
-
-Tracks all system activity and ensures auditability:
-
-- **Log Service**
-  - Captures logs via:
-    - `user.logs.error`
-    - `user.logs.audit`
-    - `user.logs.info`
-- **LogDb** stores:
-  - Errors, user actions, and event logs for compliance and troubleshooting.
+### **3. User Layer**
+- **Notification Service** – Sends alerts to operators and the public.
+- **User Service** – Manages operator accounts, roles, and preferences.
 
 ---
 
-## 📊 Data Flow Summary
-
-1. Sensors send real-time data to Detection Services.
-2. Detection Services flag prioritization events (e.g. emergency vehicle detected).
-3. Traffic Analytics Service processes data for trends and congestion.
-4. Traffic Light Control Service adjusts signals dynamically.
-5. User Layer issues notifications and logs events for audit/compliance.
+### **4. Log Layer**
+- **Log Service** – Centralized logging from all services for auditing and debugging.
 
 ---
 
-## 🗺️ System Architecture Diagrams
+## AMQP Overview and Data Flow Summary
 
-### 🔧 Microservices Architecture  
-![Microservices Architecture](diagrams/Microservices/Architecture.jpg)  
-[View full-size](diagrams/Microservices/Architecture.jpg)  
+### AMQP Overview
 
-> Overview of the complete microservices ecosystem showing how Sensor, Traffic, User and Log layers interact via services and databases.
+The Smart Traffic Management System uses RabbitMQ as its messaging backbone to enable asynchronous communication between distributed services. Each service publishes and subscribes to specific AMQP topics (exchanges and queues) identified by structured routing keys, often including intersection IDs for scoped data.
 
-#### 🧠 Sensor Layer Diagram  
-![Sensor Layer](diagrams/Microservices/SensorLayer.jpg)  
-[View full-size](diagrams/Microservices/SensorLayer.jpg)  
+- **Sensor Layer Services** publish real-time traffic and event data (e.g., vehicle counts, emergency vehicle detections, pedestrian crossing requests) on topics prefixed with `sensor.data.*`.
+- **Traffic Layer Services** subscribe to sensor data topics to analyze traffic conditions and set priorities. They publish control commands and updates on topics such as `priority.*` and `traffic.light.*`.
+- **User Layer Services** subscribe to analytics and notification topics to send alerts to operators and users.
+- **Log Layer** centralizes all audit and error logs from every service using wildcard topics like `*.logs.*`, enabling centralized storage and monitoring.
+
+The topic structure ensures decoupled communication where publishers and subscribers do not require direct knowledge of each other, allowing scalability and flexibility in the system.
+
+---
+
+### Data Flow Summary
+
+#### 1. Sensor Layer: Data Collection and Publishing
+- Vehicle Detection, Emergency Vehicle Detection, Public Transport Detection, Pedestrian and Cyclist Detection, and Incident Detection services collect real-time data using sensors.
+- Each service publishes processed event data to intersection-specific AMQP topics such as:
+  - `sensor.data.vehicle.count.<intersection_id>`
+  - `sensor.data.emergency_vehicle.<intersection_id>`
+  - `sensor.data.pedestrian.request.<intersection_id>`
+- These messages represent the raw or pre-processed traffic events captured at each intersection.
+
+#### 2. Traffic Layer: Data Aggregation and Control
+- The Intersection Controller Service subscribes to sensor data topics for its intersection.
+- It analyzes the incoming data to set priorities (e.g., emergency vehicles, public transport, pedestrians, cyclists) and publishes priority commands on topics like:
+  - `priority.emergency.vehicle.<intersection_id>`
+  - `priority.pedestrian.<intersection_id>`
+- Traffic Light Control Service listens for control commands (`traffic.light.control.<intersection_id>`) and updates the state of individual traffic lights.
+- Traffic Light Coordination Service synchronizes light timings across intersections by listening to priority topics and publishing coordinated light updates.
+- Traffic Data Analytics Service performs data analytics by subscribing to sensor data topics, detecting congestion or incidents, and publishing alerts on topics such as:
+  - `traffic.analytics.congestion.alert`
+  - `traffic.analytics.daily.summary`
+
+#### 3. User Layer: Notifications and Interaction
+- Notification Service subscribes to analytics alerts and user notification requests, distributing messages to operators or the public via:
+  - `notification.event.public_notice`
+  - `notification.event.operator.alert`
+- User Service manages user accounts and triggers notifications by publishing to `user.notification.request`.
+
+#### 4. Log Layer: Centralized Logging
+- All services publish audit and error logs to dedicated topics (e.g., `sensor.logs.audit`, `traffic.logs.error`).
+- Log Service subscribes to all logs using wildcard topics like `*.logs.*` for centralized collection and storage.
+
+---
+
+This AMQP topic-driven design enables modular, scalable, and reliable communication between all layers of the traffic management system.
+
+---
+
+## Use Cases
+
+### A. Traffic Management (Automatic)
+
+1. **Adjust traffic lights based on vehicle flow**  
+   - Sensor Layer detects vehicle count and sends it to Intersection Controller.  
+   - Controller sets light durations accordingly.  
+
+2. **Prioritize emergency vehicles**  
+   - Emergency Vehicle Detection triggers priority mode at intersection.  
+
+3. **Prioritize public transport**  
+   - Bus/tram detection extends green light for transit lanes.  
+
+4. **Handle pedestrian and cyclist crossings**  
+   - When detected, the light cycle adjusts to allow safe passage.  
+
+5. **Incident response**  
+   - Accident or hazard detection changes light cycles to reroute traffic.  
+
+---
+
+### B. Analytics & Monitoring
+
+6. **Real-time traffic status monitoring**  
+   - Traffic Light Control & Coordination services expose current light state.  
+
+7. **Congestion alerts**  
+   - Analytics service sends alert if congestion threshold is exceeded.  
+
+8. **Daily traffic summaries**  
+   - Analytics generates daily/weekly reports for operators.  
+
+---
+
+### C. User Interaction
+
+9. **Operator manual override**  
+   - Authorized operators can manually set light states or timing.  
+
+10. **Public notifications**  
+    - Push alerts for delays, road closures, incidents.  
+
+11. **User management**  
+    - Create, update, and authenticate operator accounts.  
+
+---
+
+### D. System Management
+
+12. **Logging and auditing**  
+    - All actions/events stored in centralized log.  
+
+13. **Service health checks**  
+    - Endpoints to monitor microservice status.  
+
+
+## System Architecture Diagrams
+
+The following diagrams illustrate the layered architecture of the Smart Traffic Management System (STMS), showing how microservices interact within Sensor, Traffic, User, and Log domains. The system relies on RabbitMQ messaging to enable real-time event-driven communication between services.
+
+### Microservices Architecture  
+![Microservices Architecture](diagrams/Microservices/Architecture.png)  
+[View full-size](diagrams/Microservices/Architecture.png)  
+
+> Overview of the complete microservices ecosystem showing how **Sensor**, **Traffic**, **User**, and **Log** layers interact via services and databases.
+
+#### Sensor Layer Diagram  
+![Sensor Layer](diagrams/Microservices/SensorLayer.png)  
+[View full-size](diagrams/Microservices/SensorLayer.png)  
 
 > Shows how various real-time sensors (vehicles, pedestrians, cyclists, etc.) connect to detection services and pass data to the traffic control logic.
 
-#### 🚦 Traffic Layer Diagram  
-![Traffic Layer](diagrams/Microservices/TrafficLayer.jpg)  
-[View full-size](diagrams/Microservices/TrafficLayer.jpg)  
+#### Traffic Layer Diagram  
+![Traffic Layer](diagrams/Microservices/TrafficLayer.png)  
+[View full-size](diagrams/Microservices/TrafficLayer.png)  
 
 > Displays the analytical and control services responsible for processing traffic data and managing dynamic traffic light behavior.
 
-#### 👥 User Layer Diagram  
-![User Layer](diagrams/Microservices/UserLayer.jpg)  
-[View full-size](diagrams/Microservices/UserLayer.jpg)  
+#### User Layer Diagram  
+![User Layer](diagrams/Microservices/UserLayer.png)  
+[View full-size](diagrams/Microservices/UserLayer.png)  
 
 > Highlights components that handle notifications, user interaction, activity logging, and system oversight.
 
-#### 🏴󠁡󠁦󠁬󠁯󠁧󠁿 Log Layer Diagram
-![Log Layer](diagrams/Microservices/LogLayer.jpg)
-[View full-size](diagrams/Microservices/LogLayer.jpg)
+#### Log Layer Diagram  
+![Log Layer](diagrams/Microservices/LogLayer.png)  
+[View full-size](diagrams/Microservices/LogLayer.png)  
 
 > Depicts how the system logs critical information such as errors, user actions, and audit trails, ensuring observability, traceability, and operational compliance.
 
 ---
 
-### 🗄️ Database Schemas
+### Database Schemas
 
-- **Overall Database Schema**  
-  ![OverallDb Schema](diagrams/Databases/Schema.png)  
-  [View full-size](diagrams/Databases/Schema.png)  
+**Overall Database Schema**  
+![OverallDb Schema](diagrams/Databases/DbSchema.png)  
+[View full-size](diagrams/Databases/DbSchema.png)  
 
-  > High-level view showing relationships among all system databases: User, Log, Notification, Traffic Data, and Traffic Light DBs. Useful for understanding how microservices interact with data stores.
+> High-level view showing relationships among all system databases: User, Log, Notification, Traffic Data, Traffic Light, and Detection DBs. Useful for understanding how microservices interact with data stores.
 
-- **User Database Schema**  
-  ![UserDb Schema](diagrams/Databases/UserDb.png)  
-  [View full-size](diagrams/Databases/UserDb.png)  
+**User Database Schema**  
+![UserDb Schema](diagrams/Databases/UserDb.png)  
+[View full-size](diagrams/Databases/UserDb.png)  
 
-  > Structure for storing user profiles, roles, access levels, and authentication details.
+> Structure for storing user profiles, roles, access levels, and authentication details.
 
-- **Log Database Schema**  
-  ![LogDb Schema](diagrams/Databases/LogDb.png)  
-  [View full-size](diagrams/Databases/LogDb.png)  
+**Log Database Schema**  
+![LogDb Schema](diagrams/Databases/LogDb.png)  
+[View full-size](diagrams/Databases/LogDb.png)  
 
-  > Schema for system activity logging, including error tracking, audits, and operational logs.
+> Schema for system activity logging, including error tracking, audits, and operational logs.
 
-- **Notification Database Schema**  
-  ![NotificationDb Schema](diagrams/Databases/NotificationDb.png)  
-  [View full-size](diagrams/Databases/NotificationDb.png)  
+**Notification Database Schema**  
+![NotificationDb Schema](diagrams/Databases/NotificationDb.png)  
+[View full-size](diagrams/Databases/NotificationDb.png)  
 
-  > Stores alert events, public notices, and internal system notifications for city authorities and operators.
+> Stores alert events, public notices, and internal system notifications for city authorities and operators.
 
-- **Traffic Data Database Schema**  
-  ![TafficDataDb Schema](diagrams/Databases/TrafficDataDb.png)  
-  [View full-size](diagrams/Databases/TrafficDataDb.png)  
+**Traffic Data Database Schema**  
+![TrafficDataDb Schema](diagrams/Databases/TrafficDataDb.png)  
+[View full-size](diagrams/Databases/TrafficDataDb.png)  
 
-  > Schema for traffic statistics, historical flow data, and congestion metrics collected from intersections.
+> Schema for traffic statistics, historical flow data, and congestion metrics collected from intersections.
 
-- **Traffic Light Database Schema**  
-  ![TrafficLightDb Schema](diagrams/Databases/TrafficLightDb.png)  
-  [View full-size](diagrams/Databases/TrafficLightDb.png)  
+**Traffic Light Database Schema**  
+![TrafficLightDb Schema](diagrams/Databases/TrafficLightDb.png)  
+[View full-size](diagrams/Databases/TrafficLightDb.png)  
 
-  > Stores configuration and status of individual traffic lights, including priority flags and control history.
+> Stores configuration and status of individual traffic lights, including priority flags and control history.
+
+**Detection Database Schema**  
+![DetectionDb Schema](diagrams/Databases/DetectionDb.png)  
+[View full-size](diagrams/Databases/DetectionDb.png)  
+
+> Contains raw and processed sensor data from vehicles, emergency vehicles, public transport, pedestrians, cyclists, and incidents to support real-time traffic monitoring and control.
 
 ---
 
-### ☁️ Cloud Architecture
+### Kubernetes Deployment Architecture
 
-#### 🧩 Cloud Deployment Diagram  
-![Cloud Architecture](diagrams/Cloud/CloudArchitecture.png)  
-[View full-size](diagrams/Cloud/CloudArchitecture.png)  
+#### Kubernetes Deployment Diagram  
+![Cloud Architecture](diagrams/Deployment/Kubernetes.png)  
+[View full-size](diagrams/Deployment/Kubernetes.png)  
 
 > This diagram illustrates container orchestration using Docker & Kubernetes, distributed microservices deployment, message queues, and cloud databases.
 
 ---
 
-### 📘 Use Case Diagram
+### Use Case Diagram
 
-#### 🎯 System Use Cases  
-![Use Case Diagram](diagrams/UseCases/UseCases.png)  
-[View full-size](diagrams/UseCases/UseCases.png)  
+#### System Use Cases  
+![Use Case Diagram](diagrams/UML/UseCases.png)  
+[View full-size](diagrams/UML/UseCases.png)  
 
 > Describes the system’s main functional scenarios—like prioritizing emergency vehicles, logging operator actions, and controlling traffic lights—along with interactions by users and automated agents.
 
