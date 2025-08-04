@@ -42,7 +42,7 @@ Simulates and collects traffic-related data from:
 
 ### AMQP Overview
 
-The Smart Traffic Management System uses RabbitMQ as its messaging backbone to enable asynchronous communication between distributed services. Each service publishes and subscribes to specific AMQP topics (exchanges and queues) identified by structured routing keys, often including intersection IDs for scoped data.
+The Smart Traffic Lights System uses RabbitMQ as its messaging backbone to enable asynchronous communication between distributed services. Each service publishes and subscribes to specific AMQP topics (exchanges and queues) identified by structured routing keys, often including intersection IDs for scoped data.
 
 - **Sensor Layer Services** publish real-time traffic and event data (e.g., vehicle counts, emergency vehicle detections, pedestrian crossing requests) on topics prefixed with `sensor.data.*`.
 - **Traffic Layer Services** subscribe to sensor data topics to analyze traffic conditions and set priorities. They publish control commands and updates on topics such as `priority.*` and `traffic.light.*`.
@@ -77,7 +77,7 @@ The topic structure ensures decoupled communication where publishers and subscri
 #### 3. User Layer: Notifications and Interaction
 - Notification Service subscribes to analytics alerts and user notification requests, distributing messages to operators or the public via:
   - `notification.event.public_notice`
-  - `notification.event.operator.alert`
+  - `notification.event.operator_alert`
 - User Service manages user accounts and triggers notifications by publishing to `user.notification.request`.
 
 #### 4. Log Layer: Centralized Logging
@@ -149,7 +149,7 @@ This AMQP topic-driven design enables modular, scalable, and reliable communicat
 
 ## System Architecture Diagrams
 
-The following diagrams illustrate the layered architecture of the Smart Traffic Management System (STMS), showing how microservices interact within Sensor, Traffic, User, and Log domains. The system relies on RabbitMQ messaging to enable real-time event-driven communication between services.
+The following diagrams illustrate the layered architecture of the Smart Traffic Lights System (STLS), showing how microservices interact within Sensor, Traffic, User, and Log domains. The system relies on RabbitMQ messaging to enable real-time event-driven communication between services.
 
 ### Microservices Architecture  
 ![Microservices Architecture](diagrams/Microservices/Architecture.png)  
@@ -185,67 +185,105 @@ The following diagrams illustrate the layered architecture of the Smart Traffic 
 
 ### Database Schemas
 
-**Overall Database Schema**  
+#### Overall Database Schema  
 ![OverallDb Schema](diagrams/Databases/DbSchema.png)  
 [View full-size](diagrams/Databases/DbSchema.png)  
 
 > High-level view showing relationships among all system databases: User, Log, Notification, Traffic Data, Traffic Light, and Detection DBs. Useful for understanding how microservices interact with data stores.
 
-**User Database Schema**  
-![UserDb Schema](diagrams/Databases/UserDb.png)  
-[View full-size](diagrams/Databases/UserDb.png)  
+#### Detection Database Schema  
+![DetectionDb Schema](diagrams/Databases/DetectionDb.png)  
+[View full-size](diagrams/Databases/DetectionDb.png)  
 
-> Structure for storing user profiles, roles, access levels, and authentication details.
+> Contains raw and processed sensor data from vehicles, emergency vehicles, public transport, pedestrians, cyclists, and incidents to support real-time traffic monitoring and control.
 
-**Log Database Schema**  
-![LogDb Schema](diagrams/Databases/LogDb.png)  
-[View full-size](diagrams/Databases/LogDb.png)  
-
-> Schema for system activity logging, including error tracking, audits, and operational logs.
-
-**Notification Database Schema**  
-![NotificationDb Schema](diagrams/Databases/NotificationDb.png)  
-[View full-size](diagrams/Databases/NotificationDb.png)  
-
-> Stores alert events, public notices, and internal system notifications for city authorities and operators.
-
-**Traffic Data Database Schema**  
+#### Traffic Data Database Schema  
 ![TrafficDataDb Schema](diagrams/Databases/TrafficDataDb.png)  
 [View full-size](diagrams/Databases/TrafficDataDb.png)  
 
 > Schema for traffic statistics, historical flow data, and congestion metrics collected from intersections.
 
-**Traffic Light Database Schema**  
+#### Traffic Light Database Schema  
 ![TrafficLightDb Schema](diagrams/Databases/TrafficLightDb.png)  
 [View full-size](diagrams/Databases/TrafficLightDb.png)  
 
 > Stores configuration and status of individual traffic lights, including priority flags and control history.
 
-**Detection Database Schema**  
-![DetectionDb Schema](diagrams/Databases/DetectionDb.png)  
-[View full-size](diagrams/Databases/DetectionDb.png)  
+#### User Database Schema  
+![UserDb Schema](diagrams/Databases/UserDb.png)  
+[View full-size](diagrams/Databases/UserDb.png)  
 
-> Contains raw and processed sensor data from vehicles, emergency vehicles, public transport, pedestrians, cyclists, and incidents to support real-time traffic monitoring and control.
+> Structure for storing user profiles, roles, access levels, and authentication details.
+
+#### Notification Database Schema   
+![NotificationDb Schema](diagrams/Databases/NotificationDb.png)  
+[View full-size](diagrams/Databases/NotificationDb.png)  
+
+> Stores alert events, public notices, and internal system notifications for city authorities and operators.
+
+#### Log Database Schema  
+![LogDb Schema](diagrams/Databases/LogDb.png)  
+[View full-size](diagrams/Databases/LogDb.png)  
+
+> Schema for system activity logging, including error tracking, audits, and operational logs.
+
+---
+
+### Use Case Diagram
+
+#### System Use Cases (Overall)  
+![Use Case Diagram](diagrams/UML/UseCases.png)  
+[View full-size](diagrams/UML/UseCases.png)  
+
+> This diagram captures the primary functional scenarios of the Smart Traffic Management System, grouped into four main domains: **Traffic Management (Automatic)**, **Analytics & Monitoring**, **User Interaction**, and **System Management**.
+
+---
+
+## Use Cases
+
+### A. Traffic Management (Automatic)
+
+![Automatic Traffic Management](diagrams/UML/AutomaticTrafficManagement.png)  
+[View full-size](diagrams/UML/AutomaticTrafficManagement.png)  
+
+> Automated control of traffic lights, prioritization of emergency and public transport vehicles, pedestrian and cyclist safety, and incident-based traffic adjustments.
+
+---
+
+### B. Analytics & Monitoring
+
+![Analytics & Monitoring](diagrams/UML/AnalyticsAndMonitoring.png)  
+[View full-size](diagrams/UML/AnalyticsAndMonitoring.png)  
+
+> Real-time monitoring of traffic conditions, congestion detection, and generation of analytical reports for operators.
+
+---
+
+### C. User Interaction
+
+![User Interaction](diagrams/UML/UserInteraction.png)  
+[View full-size](diagrams/UML/UserInteraction.png)  
+
+> Interfaces for operators to manually control traffic lights, send public notifications, and manage user accounts.
+
+---
+
+### D. System Management
+
+![System Management](diagrams/UML/SystemManagement.png)  
+[View full-size](diagrams/UML/SystemManagement.png)  
+
+> Logging of all actions/events and monitoring of microservice health to ensure operational reliability.
 
 ---
 
 ### Kubernetes Deployment Architecture
 
 #### Kubernetes Deployment Diagram  
-![Cloud Architecture](diagrams/Deployment/Kubernetes.png)  
+![Kubernetes Deployment Architecture](diagrams/Deployment/Kubernetes.png)  
 [View full-size](diagrams/Deployment/Kubernetes.png)  
 
 > This diagram illustrates container orchestration using Docker & Kubernetes, distributed microservices deployment, message queues, and cloud databases.
-
----
-
-### Use Case Diagram
-
-#### System Use Cases  
-![Use Case Diagram](diagrams/UML/UseCases.png)  
-[View full-size](diagrams/UML/UseCases.png)  
-
-> Describes the system’s main functional scenarios—like prioritizing emergency vehicles, logging operator actions, and controlling traffic lights—along with interactions by users and automated agents.
 
 ---
 
@@ -253,74 +291,127 @@ The following diagrams illustrate the layered architecture of the Smart Traffic 
 
 ### Backend – .NET Core
 
-- **.NET 9.0 (ASP.NET Core Web API)** – Development of REST and gRPC services
-- **Entity Framework Core** – ORM for managing database access
-- **MS SQL / MongoDB** – Support for both SQL and NoSQL storage
-- **RabbitMQ** – Message broker for real-time, event-driven communication
-- **JWT** – Authentication and authorization system
+- **.NET 9.0 (ASP.NET Core Web API)** – REST and gRPC services
+- **Entity Framework Core** – ORM for relational databases (MSSQL)
+- **MassTransit** – Distributed message bus integration with RabbitMQ
+- **AutoMapper** – Object-to-object mapping between DTOs and entities
+- **JWT** – Authentication and authorization
+- **MS SQL / MongoDB / InfluxDB / Redis** – Multiple database types for different workloads
 
 ### Frontend – Vue.js
 
-- **Vue.js 3 + Composition API** – Lightweight and scalable frontend framework
-- **Vite** – Fast build system with hot module replacement
-- **Pinia / Vuex** – State management for real-time UI updates
+- **Vue.js 3 + Composition API** – Modern reactive frontend framework
+- **Vite** – Fast build tool with hot module replacement
+- **Pinia** – State management
 - **Vue Router** – Routing and navigation
-- **gRPC-Web** – Communication with backend services over gRPC
-- **Leaflet / Mapbox** – Traffic mapping and visualizations
-- **Tailwind CSS** – Fast and responsive UI development
+- **Axios** – HTTP client for REST calls
+- **gRPC-Web** – Communication with backend gRPC endpoints
+- **Leaflet** or **Mapbox GL JS** – Interactive maps
+- **Chart.js** or **Apache ECharts** – Graphs and traffic statistics visualizations
+- **Tailwind CSS** – Utility-first responsive UI design
+- **VueUse** – Common composition utilities
 
-### Containers & Cloud Orchestration
+### Containers & Orchestration
 
-- **Docker & Docker Compose** – Containerized development and testing environments
-- **Kubernetes (K8s / K3s)** – Service orchestration, scaling, and high availability
+- **Docker & Docker Compose** – Containerized dev/test environments
+- **Minikube** – Local Kubernetes cluster for development
+- **Kubernetes (K8s)** – Service orchestration, scaling, and availability
+- **Helm** – Package management for Kubernetes
 
 ---
 
 ## Development Environment
 
-- **Visual Studio Code** – Lightweight editor for both frontend and backend
-- **Postman** – API testing tool for REST and gRPC endpoints
-- **Swagger** – API documentation and testing interface
-- **Grafana / Prometheus** – System monitoring and observability
+- **OS:** Debian VM on VirtualBox  
+- **IDE:** Visual Studio Code  
+- **Database Tools:** Azure Data Studio for relational DBs (MS SQL), **Chronograf** or **InfluxDB UI** for time-series DBs, and **RedisInsight** for Redis cache monitoring  
+- **API Testing:** Postman  
+- **API Documentation:** Swagger  
+- **Monitoring:** Grafana / Prometheus  
 
 ---
 
-## ▶️ How to Run the App
+## How to Run the App
 
-### 📦 Prerequisites
+### Prerequisites
 
-- Docker & Docker Compose
-- Node.js (v18+)
-- .NET 9.0 SDK
-- RabbitMQ (containerized)
-- (Optional) K3s or Minikube for Kubernetes
+- Docker & Docker Compose  
+- Node.js (v18+)  
+- .NET 9.0 SDK  
+- K3s or Minikube for Kubernetes  
+- Linux: Ubuntu 20.04 / Debian 11 (recommended for development VM or host OS)
 
-### 🐳 Local Docker Setup
+### Clone Repository and Navigate
 
-Start all services:
+Clone the project repository:
+
 ```bash
-./up.sh
+git clone https://github.com/Ath21/Smart-Traffic-Lights-System.git
+```
+
+Navigate to backend:
+
+```bash
+cd Smart-Traffic-Lights-System/src/back-end
+# Here you will find the up.sh and down.sh scripts
+```
+
+### Command Tools
+
+Start all services (default starts all layers & RabbitMQ):
+```bash
+./up.sh --all
 ```
 
 Stop all services:
 ```bash
-./down.sh
+./down.sh --all
 ```
 
 Start/stop specific layers:
 ```bash
-./upUserLayer.sh
-./downUserLayer.sh
+./up.sh --user
+./down.sh --user
+
+./up.sh --log
+./down.sh --log
+
+./up.sh --traffic
+./down.sh --traffic
+
+./up.sh --sensor
+./down.sh --sensor
 ```
 
-Run frontend:
+Start/stop specific service inside a layer:
 ```bash
-cd front-end
-npm install
-npm run dev
+./up.sh --service=ServiceName
+./down.sh --service=ServiceName
 ```
 
-Frontend available at [http://localhost:5173](http://localhost:5173)
+Start/stop RabbitMQ only:
+```bash
+./up.sh --rabbitmq
+./down.sh --rabbitmq
+```
+
+Run services in different modes:
+```bash
+./up.sh --mode=local
+./down.sh --mode=local
+
+./up.sh --mode=docker
+./down.sh --mode=docker
+
+./up.sh --mode=k8s
+./down.sh --mode=k8s
+```
+
+Show help message:
+```bash
+./up.sh --help
+./down.sh --help
+```
 
 ---
 
