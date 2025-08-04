@@ -415,7 +415,7 @@ Show help message:
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```bash
 SMART-TRAFFIC-LIGHTS-SYSTEM/
