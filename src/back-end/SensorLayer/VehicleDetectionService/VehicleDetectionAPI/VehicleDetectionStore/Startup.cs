@@ -1,5 +1,6 @@
 using System.Text;
 using DetectionData;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi;
 using Microsoft.OpenApi.Models;
 using VehicleDetectionStore.Repositories;
@@ -33,7 +34,7 @@ public class Startup
 
         /******* [4] AutoMapper ********/
 
-        // services.AddAutoMapper(typeof(UserStoreProfile));
+        services.AddAutoMapper(typeof(VehicleDetectionStoreProfile));
 
         /******* [5] MassTransit ********/
 
