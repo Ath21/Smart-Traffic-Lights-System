@@ -3,6 +3,7 @@ using DetectionData;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi;
 using Microsoft.OpenApi.Models;
+using VehicleDetectionStore.Business;
 using VehicleDetectionStore.Repositories;
 
 namespace VehicleDetectionStore;
@@ -30,7 +31,7 @@ public class Startup
 
         /******* [3] Services ********/
 
-        //    services.AddScoped(typeof(IPasswordHasher), typeof(PasswordHasher));
+        services.AddScoped(typeof(IVehicleDetectionService), typeof(VehicleDetectionService));
 
         /******* [4] AutoMapper ********/
 
