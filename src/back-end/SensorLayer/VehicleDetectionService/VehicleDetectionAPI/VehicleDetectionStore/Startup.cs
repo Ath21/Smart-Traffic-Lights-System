@@ -1,10 +1,16 @@
 using System.Text;
 using DetectionData;
+using MassTransit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi;
 using Microsoft.OpenApi.Models;
+using RabbitMQ.Client;
+using SensorMessages.Data;
+using SensorMessages.Logs;
 using VehicleDetectionService.Middleware;
+using VehicleDetectionService.Publishers;
 using VehicleDetectionStore.Business;
+using VehicleDetectionStore.Publishers;
 using VehicleDetectionStore.Repositories;
 
 namespace VehicleDetectionStore;
@@ -40,8 +46,7 @@ public class Startup
 
         /******* [5] MassTransit ********/
 
-        /*
-        services.AddScoped(typeof(IUserLogPublisher), typeof(UserLogPublisher));
+        services.AddScoped(typeof(IVehicleDetectionPublisher), typeof(VehicleDetectionPublisher));
 
         services.AddMassTransit(x =>
         {
@@ -55,23 +60,22 @@ public class Startup
                     h.Password(rabbitmqSettings["Password"]);
                 });
 
-                // Publisher for LogInfo
-                cfg.Message<LogInfo>(e => { e.SetEntityName(rabbitmqSettings["UserLogsExchange"]); }); 
-                cfg.Publish<LogInfo>(e => { e.ExchangeType = ExchangeType.Direct; });
+                // Vehicle detection data topic exchange for sensor.data.vehicle.count.<intersection_id>
+                cfg.Message<VehicleCountMessage>(e => e.SetEntityName(rabbitmqSettings["SensorDataExchange"]));
+                cfg.Publish<VehicleCountMessage>(e => e.ExchangeType = ExchangeType.Topic);
 
-                cfg.Message<LogAudit>(e => { e.SetEntityName(rabbitmqSettings["UserLogsExchange"]); });
-                cfg.Publish<LogAudit>(e => { e.ExchangeType = ExchangeType.Direct;});
+                // Sensor logs exchange (direct)
+                cfg.Message<AuditLogMessage>(e => e.SetEntityName(rabbitmqSettings["SensorLogsExchange"]));
+                cfg.Publish<AuditLogMessage>(e => e.ExchangeType = ExchangeType.Direct);
 
-                cfg.Message<LogError>(e => { e.SetEntityName(rabbitmqSettings["UserLogsExchange"]); });
-                cfg.Publish<LogError>(e => { e.ExchangeType = ExchangeType.Direct; });
-
-                cfg.Message<NotificationRequest>(e => { e.SetEntityName(rabbitmqSettings["UserNotificationsExchange"]); });
-                cfg.Publish<NotificationRequest>(e => { e.ExchangeType = ExchangeType.Direct; });
+                cfg.Message<ErrorLogMessage>(e => e.SetEntityName(rabbitmqSettings["SensorLogsExchange"]));
+                cfg.Publish<ErrorLogMessage>(e => e.ExchangeType = ExchangeType.Direct);
 
                 cfg.ConfigureEndpoints(context);
             });
         });
-        */
+
+        
 
         /******* [6] Controllers ********/
 

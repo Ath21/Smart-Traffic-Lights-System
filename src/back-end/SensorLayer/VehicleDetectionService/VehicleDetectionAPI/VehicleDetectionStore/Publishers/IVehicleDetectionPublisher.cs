@@ -2,7 +2,7 @@ using System;
 
 namespace VehicleDetectionStore.Publishers;
 
-public interface IVehicleDataPublisher
+public interface IVehicleDetectionPublisher
 {
     Task PublishVehicleCountAsync(Guid intersectionId, int vehicleCount, double avgSpeed, DateTime timestamp);
     Task PublishAuditLogAsync(string message);

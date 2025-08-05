@@ -850,6 +850,16 @@
         "runtime": {
           "bin/placeholder/DetectionData.dll": {}
         }
+      },
+      "SensorMessages/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "compile": {
+          "bin/placeholder/SensorMessages.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/SensorMessages.dll": {}
+        }
       }
     }
   },
@@ -2386,6 +2396,11 @@
       "type": "project",
       "path": "../../../DetectionData/DetectionData.csproj",
       "msbuildProject": "../../../DetectionData/DetectionData.csproj"
+    },
+    "SensorMessages/1.0.0": {
+      "type": "project",
+      "path": "../../../SensorMessages/SensorMessages.csproj",
+      "msbuildProject": "../../../SensorMessages/SensorMessages.csproj"
     }
   },
   "projectFileDependencyGroups": {
@@ -2396,6 +2411,7 @@
       "MassTransit >= 8.5.1",
       "MassTransit.RabbitMQ >= 8.5.1",
       "Microsoft.AspNetCore.Authentication.JwtBearer >= 9.0.8",
+      "SensorMessages >= 1.0.0",
       "Swashbuckle.AspNetCore >= 9.0.3"
     ]
   },
@@ -2426,6 +2442,9 @@
           "projectReferences": {
             "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/DetectionData/DetectionData.csproj": {
               "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/DetectionData/DetectionData.csproj"
+            },
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/SensorMessages/SensorMessages.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/SensorMessages/SensorMessages.csproj"
             }
           }
         }
