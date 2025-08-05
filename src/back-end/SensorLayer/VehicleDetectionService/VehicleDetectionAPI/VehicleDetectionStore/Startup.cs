@@ -12,6 +12,7 @@ using VehicleDetectionService.Publishers;
 using VehicleDetectionStore.Business;
 using VehicleDetectionStore.Publishers;
 using VehicleDetectionStore.Repositories;
+using VehicleDetectionStore.Workers;
 
 namespace VehicleDetectionStore;
 
@@ -75,16 +76,18 @@ public class Startup
             });
         });
 
-        
+        /******* [7] Workers ********/
 
-        /******* [6] Controllers ********/
+        services.AddHostedService<VehicleSensor>();
+
+        /******* [8] Controllers ********/
 
         services.AddControllers()
             .AddJsonOptions(
                 options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
         services.AddEndpointsApiExplorer();
 
-        /******* [7] Swagger ********/
+        /******* [8] Swagger ********/
 
         services.AddSwaggerGen(c =>
             {
