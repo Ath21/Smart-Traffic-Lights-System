@@ -3,6 +3,7 @@ using DetectionData;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi;
 using Microsoft.OpenApi.Models;
+using VehicleDetectionService.Middleware;
 using VehicleDetectionStore.Business;
 using VehicleDetectionStore.Repositories;
 
@@ -31,7 +32,7 @@ public class Startup
 
         /******* [3] Services ********/
 
-        services.AddScoped(typeof(IVehicleDetectionService), typeof(VehicleDetectionService));
+        services.AddScoped(typeof(IVehicleDetectService), typeof(VehicleDetectService));
 
         /******* [4] AutoMapper ********/
 
@@ -123,7 +124,7 @@ public class Startup
 
         app.UseHttpsRedirection();
 
-        //app.UseMiddleware<ExceptionMiddleware>();
+        app.UseMiddleware<ExceptionMiddleware>();
 
         app.UseAuthentication();
         app.UseAuthorization();

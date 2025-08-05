@@ -61,3 +61,7 @@
 /home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/VehicleDetectionService/VehicleDetectionAPI/VehicleDetectionStore/obj/Debug/net9.0/VehicleDetectionStore.pdb
 /home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/VehicleDetectionService/VehicleDetectionAPI/VehicleDetectionStore/obj/Debug/net9.0/VehicleDetectionStore.genruntimeconfig.cache
 /home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/VehicleDetectionService/VehicleDetectionAPI/VehicleDetectionStore/obj/Debug/net9.0/ref/VehicleDetectionStore.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/VehicleDetectionService/VehicleDetectionAPI/VehicleDetectionStore/bin/Debug/net9.0/MassTransit.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/VehicleDetectionService/VehicleDetectionAPI/VehicleDetectionStore/bin/Debug/net9.0/MassTransit.Abstractions.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/VehicleDetectionService/VehicleDetectionAPI/VehicleDetectionStore/bin/Debug/net9.0/MassTransit.RabbitMqTransport.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/VehicleDetectionService/VehicleDetectionAPI/VehicleDetectionStore/bin/Debug/net9.0/RabbitMQ.Client.dll

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("VehicleDetectionStore")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d5c701416063d859a4e408c9073781872ea5c335")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cc90bb0f614b0146fcaae6d638721a14e065a6ed")]
 [assembly: System.Reflection.AssemblyProductAttribute("VehicleDetectionStore")]
 [assembly: System.Reflection.AssemblyTitleAttribute("VehicleDetectionStore")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
