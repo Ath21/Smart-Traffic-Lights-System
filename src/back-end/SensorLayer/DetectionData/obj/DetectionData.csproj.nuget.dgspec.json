@@ -47,6 +47,14 @@
             "InfluxDB.Client": {
               "target": "Package",
               "version": "[4.18.0, )"
+            },
+            "Microsoft.Extensions.Configuration": {
+              "target": "Package",
+              "version": "[9.0.8, )"
+            },
+            "Microsoft.Extensions.Options": {
+              "target": "Package",
+              "version": "[9.0.8, )"
             }
           },
           "imports": [
