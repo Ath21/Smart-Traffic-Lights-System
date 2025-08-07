@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e  # Exit on any error
+
 # ================================
 # 🔧 Configuration
 # ================================
@@ -9,15 +11,14 @@ TRAFFIC_DATA_API_DIR="./TrafficLayer/TrafficDataAnalyticsService/TrafficDataAnal
 TRAFFIC_DATA_DB_DIR="./TrafficLayer/TrafficDataAnalyticsService/Mongo"
 TRAFFIC_DATA_REDIS_DIR="./TrafficLayer/TrafficDataAnalyticsService/Redis"
 
-BUILD_CONTEXT="./TrafficLayer"
-
 DOCKER_COMPOSE_FILE="docker-compose.yaml"
 DOCKER_COMPOSE_OVERRIDE="docker-compose.override.yaml"
 
 # ================================
 # 🌐 Create Docker Network
 # ================================
-create_network() {
+create_network() 
+{
     if docker network ls | grep -q "$NETWORK_NAME"; then
         echo "🔄 Docker network '$NETWORK_NAME' already exists."
     else
@@ -27,9 +28,10 @@ create_network() {
 }
 
 # ================================
-# 📦 Start Traffic Data Analytics Service Containers
+# 📦 Start Containers
 # ================================
-start_containers() {
+start_containers() 
+{
     echo "📦 Starting Traffic Data Analytics Service containers..."
 
     docker compose \
@@ -48,10 +50,10 @@ start_containers() {
 # ================================
 # 🧩 Main
 # ================================
-main() {
+main() 
+{
     create_network
     start_containers
-    exit 0
 }
 
 main "$@"

@@ -8,16 +8,14 @@ NETWORK_NAME="log_network"
 LOG_API_DIR="./LogLayer/LogService/LogAPI"
 LOG_DB_DIR="./LogLayer/LogService/Mongo"
 
-# Context goes to ./LogLayer to access UserMessages correctly
-BUILD_CONTEXT="./LogLayer"
-
 DOCKER_COMPOSE_FILE="docker-compose.yaml"
 DOCKER_COMPOSE_OVERRIDE="docker-compose.override.yaml"
 
 # ================================
 # 🌐 Create Docker Network
 # ================================
-create_network() {
+create_network() 
+{
     if docker network ls | grep -q "$NETWORK_NAME"; then
         echo "🔄 Docker network '$NETWORK_NAME' already exists."
     else
@@ -29,7 +27,8 @@ create_network() {
 # ================================
 # 📦 Start Log Service Containers
 # ================================
-start_containers() {
+start_containers() 
+{
     echo "📦 Starting Log Service containers..."
 
     docker compose \
@@ -46,7 +45,8 @@ start_containers() {
 # ================================
 # 🧩 Main
 # ================================
-main() {
+main() 
+{
     create_network
     start_containers
     exit 0

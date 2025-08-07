@@ -1,14 +1,12 @@
 #!/bin/bash
 
-set -e  # Exit immediately on error
-
 # ================================
 # 📌 Resolve script path
 # ================================
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # ================================
-# 🧠 Run child script if valid
+# 🧠 Run script if it exists
 # ================================
 try_stop() 
 {
@@ -21,7 +19,7 @@ try_stop()
 }
 
 # ================================
-# 🧩 Main
+# 🛑 Main Execution
 # ================================
 main() 
 {
@@ -37,17 +35,19 @@ main()
 
     if [[ -n "$SERVICE" ]]; then
         if [[ ! -d "$SCRIPT_DIR/$SERVICE" ]]; then
-            echo "❌ Unknown service '$SERVICE' in Traffic Layer."
+            echo "❌ Unknown service '$SERVICE' in Sensor Layer."
             exit 1
         fi
-        echo "🛑 Stopping ONLY $SERVICE in Traffic Layer..."
+        echo "🛑 Stopping ONLY $SERVICE in Sensor Layer..."
         try_stop "$SCRIPT_DIR/$SERVICE/down$SERVICE.sh"
     else
-        echo "🛑 Stopping ALL services in Traffic Layer..."
-        try_stop "$SCRIPT_DIR/IntersectionControllerService/downIntersectionControllerService.sh"
-        try_stop "$SCRIPT_DIR/TrafficLightControlService/downTrafficLightControlService.sh"
-        try_stop "$SCRIPT_DIR/TrafficLightCoordinationService/downTrafficLightCoordinationService.sh"
-        try_stop "$SCRIPT_DIR/TrafficDataAnalyticsService/downTrafficDataAnalyticsService.sh"
+        echo "🛑 Stopping ALL services in Sensor Layer..."
+        try_stop "$SCRIPT_DIR/VehicleDetectionService/downVehicleDetectionService.sh"
+        try_stop "$SCRIPT_DIR/EmergencyVehicleDetectionService/downEmergencyVehicleDetectionService.sh"
+        try_stop "$SCRIPT_DIR/PublicTransportDetectionService/downPublicTransportDetectionService.sh"
+        try_stop "$SCRIPT_DIR/PedestrianDetectionService/downPedestrianDetectionService.sh"
+        try_stop "$SCRIPT_DIR/CyclistDetectionService/downCyclistDetectionService.sh"
+        try_stop "$SCRIPT_DIR/IncidentDetectionService/downIncidentDetectionService.sh"
     fi
 }
 

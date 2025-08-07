@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e  # Exit immediately if a command exits with a non-zero status
+
 # ================================
 # 🔧 Configuration
 # ================================
@@ -14,7 +16,8 @@ DOCKER_COMPOSE_OVERRIDE="docker-compose.override.yaml"
 # ================================
 # 🛑 Stop User Service Containers
 # ================================
-stop_containers() {
+stop_containers() 
+{
     echo "🛑 Stopping User Service containers..."
 
     docker compose \
@@ -31,11 +34,12 @@ stop_containers() {
 # ================================
 # 🔌 Remove Docker Network
 # ================================
-remove_docker_network() {
-    if docker network ls | grep -q "$NETWORK_NAME"; then
+remove_docker_network() 
+{
+    if docker network ls --format '{{.Name}}' | grep -wq "$NETWORK_NAME"; then
         echo "🔌 Removing Docker network '$NETWORK_NAME'..."
         docker network rm "$NETWORK_NAME"
-        echo "✅ Network removed."
+        echo "✅ Network '$NETWORK_NAME' removed."
     else
         echo "⚠️ Docker network '$NETWORK_NAME' not found. Skipping."
     fi
@@ -44,10 +48,11 @@ remove_docker_network() {
 # ================================
 # 🧩 Main
 # ================================
-main() {
+main() 
+{
     stop_containers
     remove_docker_network
-    exit 0
+    echo "🏁 User Service shutdown complete."
 }
 
 main "$@"

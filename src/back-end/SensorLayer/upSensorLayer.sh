@@ -6,7 +6,7 @@
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # ================================
-# 🧠 Run a service script if it exists
+# 🧠 Run script if it exists
 # ================================
 try_start() 
 {
@@ -23,7 +23,7 @@ try_start()
 # ================================
 main() 
 {
-    local SERVICE=""
+    SERVICE=""
 
     while [[ "$#" -gt 0 ]]; do
         case "$1" in
@@ -35,19 +35,20 @@ main()
 
     if [[ -n "$SERVICE" ]]; then
         if [[ ! -d "$SCRIPT_DIR/$SERVICE" ]]; then
-            echo "❌ Unknown service '$SERVICE' in User Layer."
+            echo "❌ Unknown service '$SERVICE' in Sensor Layer."
             exit 1
         fi
-        echo "🚀 Starting ONLY $SERVICE in User Layer..."
+        echo "🚀 Starting ONLY $SERVICE in Sensor Layer..."
         try_start "$SCRIPT_DIR/$SERVICE/up$SERVICE.sh"
     else
-        echo "🚀 Starting ALL services in User Layer..."
-        try_start "$SCRIPT_DIR/UserService/upUserService.sh"
-        try_start "$SCRIPT_DIR/NotificationService/upNotificationService.sh"
+        echo "🚀 Starting ALL services in Sensor Layer..."
+        try_start "$SCRIPT_DIR/VehicleDetectionService/upVehicleDetectionService.sh"
+        try_start "$SCRIPT_DIR/EmergencyVehicleDetectionService/upEmergencyVehicleDetectionService.sh"
+        try_start "$SCRIPT_DIR/PublicTransportDetectionService/upPublicTransportDetectionService.sh"
+        try_start "$SCRIPT_DIR/PedestrianDetectionService/upPedestrianDetectionService.sh"
+        try_start "$SCRIPT_DIR/CyclistDetectionService/upCyclistDetectionService.sh"
+        try_start "$SCRIPT_DIR/IncidentDetectionService/upIncidentDetectionService.sh"
     fi
-
-    echo "✅ User Layer startup complete."
-    exit 0
 }
 
 main "$@"

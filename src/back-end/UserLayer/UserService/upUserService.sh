@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e  # Exit immediately on error
+
 # ================================
 # 🔧 Configuration
 # ================================
@@ -8,27 +10,28 @@ NETWORK_NAME="user_network"
 USER_API_DIR="./UserLayer/UserService/UserAPI"
 USER_DB_DIR="./UserLayer/UserService/MSSQL"
 
-BUILD_CONTEXT="./UserLayer"
-
 DOCKER_COMPOSE_FILE="docker-compose.yaml"
 DOCKER_COMPOSE_OVERRIDE="docker-compose.override.yaml"
 
 # ================================
-# 🌐 Create Docker Network
+# 🌐 Ensure Docker Network Exists
 # ================================
-create_network() {
-    if docker network ls | grep -q "$NETWORK_NAME"; then
+create_network() 
+{
+    if docker network ls --format '{{.Name}}' | grep -wq "$NETWORK_NAME"; then
         echo "🔄 Docker network '$NETWORK_NAME' already exists."
     else
         echo "🌐 Creating Docker network '$NETWORK_NAME'..."
         docker network create "$NETWORK_NAME"
+        echo "✅ Network '$NETWORK_NAME' created."
     fi
 }
 
 # ================================
-# 📦 Start User Service Containers
+# 🚀 Start User Service Containers
 # ================================
-start_containers() {
+start_containers()
+{
     echo "📦 Starting User Service containers..."
 
     docker compose \
@@ -45,10 +48,11 @@ start_containers() {
 # ================================
 # 🧩 Main
 # ================================
-main() {
+main() 
+{
     create_network
     start_containers
-    exit 0
+    echo "🏁 User Service startup complete."
 }
 
 main "$@"

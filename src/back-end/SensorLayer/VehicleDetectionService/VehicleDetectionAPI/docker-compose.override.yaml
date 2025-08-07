@@ -24,8 +24,6 @@ services:
       InfluxDB__Bucket: DetectionDb
 
     depends_on:
-      rabbitmq:
-        condition: service_started
       influxdb:
         condition: service_started
     restart: always

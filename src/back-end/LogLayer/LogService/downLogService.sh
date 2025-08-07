@@ -14,7 +14,8 @@ DOCKER_COMPOSE_OVERRIDE="docker-compose.override.yaml"
 # ================================
 # 🛑 Stop Log Service Containers
 # ================================
-stop_containers() {
+stop_containers() 
+{
     echo "🛑 Stopping Log Service containers..."
 
     docker compose \
@@ -25,13 +26,14 @@ stop_containers() {
         -p log_service \
         down
 
-    echo "✅ All Log Service containers have been stopped."
+    echo "✅ Log Service containers stopped."
 }
 
 # ================================
 # 🔌 Remove Docker Network
 # ================================
-remove_docker_network() {
+remove_network() 
+{
     if docker network ls | grep -q "$NETWORK_NAME"; then
         echo "🔌 Removing Docker network '$NETWORK_NAME'..."
         docker network rm "$NETWORK_NAME"
@@ -44,9 +46,10 @@ remove_docker_network() {
 # ================================
 # 🧩 Main
 # ================================
-main() {
+main() 
+{
     stop_containers
-    remove_docker_network
+    remove_network
     exit 0
 }
 

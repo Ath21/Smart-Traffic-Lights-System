@@ -1,123 +1,162 @@
 #!/bin/bash
 
 # ================================
-# 🔧 Configuration
+# 🔧 CONFIGURATION
 # ================================
 NETWORK_NAME="rabbitmq_network"
-RABBITMQ_DIR="./RabbitMQ"
 DOCKER_COMPOSE_FILE="docker-compose.yaml"
 DOCKER_COMPOSE_OVERRIDE_FILE="docker-compose.override.yaml"
 
-USER_API_DIR="./UserLayer/UserService/UserAPI"
-LOG_API_DIR="./LogLayer/LogService/LogAPI"
-NOTIFICATION_API_DIR="./UserLayer/NotificationService/NotificationAPI"
-TRAFFIC_DATA_API_DIR="./TrafficLayer/TrafficDataAnalyticsService/TrafficDataAnalyticsAPI"
-BUILD_CONTEXT_USER="."
-BUILD_CONTEXT_LOG="."
-BUILD_CONTEXT_NOTIFICATION="."
-BUILD_CONTEXT_TRAFFIC_DATA="."
+# === All services and their Docker build paths ===
+declare -A SERVICES_PATHS=(
+    # User Layer
+    [user_api]="./UserLayer/UserService/UserAPI"
+    [notification_api]="./UserLayer/NotificationService/NotificationAPI"
+
+    # Log Layer
+    [log_api]="./LogLayer/LogService/LogAPI"
+
+    # Traffic Layer
+    [traffic_data_analytics_api]="./TrafficLayer/TrafficDataAnalyticsService/TrafficDataAnalyticsAPI"
+    [traffic_light_control_api]="./TrafficLayer/TrafficLightControlService/TrafficLightControlAPI"
+    [traffic_light_coordination_api]="./TrafficLayer/TrafficLightCoordinationService/TrafficLightCoordinationAPI"
+    [intersection_controller_api]="./TrafficLayer/IntersectionControllerService/IntersectionControllerAPI"
+
+    # Sensor Layer
+    [vehicle_detection_api]="./SensorLayer/VehicleDetectionService/VehicleDetectionAPI"
+    [emergency_vehicle_detection_api]="./SensorLayer/EmergencyVehicleDetectionService/EmergencyVehicleDetectionAPI"
+    [public_transport_detection_api]="./SensorLayer/PublicTransportDetectionService/PublicTransportDetectionAPI"
+    [pedestrian_detection_api]="./SensorLayer/PedestrianDetectionService/PedestrianDetectionAPI"
+    [cyclist_detection_api]="./SensorLayer/CyclistDetectionService/CyclistDetectionAPI"
+    [incident_detection_api]="./SensorLayer/IncidentDetectionService/IncidentDetectionAPI"
+)
 
 DOCKER_USERNAME="ath21"
 DOCKER_REPO="stls"
-USER_API_IMAGE="$DOCKER_USERNAME/$DOCKER_REPO:user_api"
-LOG_API_IMAGE="$DOCKER_USERNAME/$DOCKER_REPO:log_api"
-NOTIFICATION_API_IMAGE="$DOCKER_USERNAME/$DOCKER_REPO:notification_api"
-TRAFFIC_DATA_API_IMAGE="$DOCKER_USERNAME/$DOCKER_REPO:traffic_data_analytics_api"
 
 # ================================
-# 📦 Build & Push if Needed
+# 🔧 HELPER FUNCTIONS
 # ================================
-is_service_running() {
-    docker ps --format '{{.Names}}' | grep -q "^$1$"
-}
-
-build_and_push_image_for() {
-    case "$1" in
-        "user_api_container")
-            docker build -t "$USER_API_IMAGE" -f "$USER_API_DIR/Dockerfile" "$BUILD_CONTEXT_USER" && docker push "$USER_API_IMAGE"
-            ;;
-        "log_api_container")
-            docker build -t "$LOG_API_IMAGE" -f "$LOG_API_DIR/Dockerfile" "$BUILD_CONTEXT_LOG" && docker push "$LOG_API_IMAGE"
-            ;;
-        "notification_api_container")
-            docker build -t "$NOTIFICATION_API_IMAGE" -f "$NOTIFICATION_API_DIR/Dockerfile" "$BUILD_CONTEXT_NOTIFICATION" && docker push "$NOTIFICATION_API_IMAGE"
-            ;;
-        "traffic_data_analytics_api_container")
-            docker build -t "$TRAFFIC_DATA_API_IMAGE" -f "$TRAFFIC_DATA_API_DIR/Dockerfile" "$BUILD_CONTEXT_TRAFFIC_DATA" && docker push "$TRAFFIC_DATA_API_IMAGE"
-            ;;
-        *) echo "⚠️ Unknown container: $1" ;;
-    esac
-}
-
-check_core_containers_and_build_missing() {
-    local containers=("log_api_container" "notification_api_container" "traffic_data_analytics_api_container" "user_api_container")
-    for c in "${containers[@]}"; do
-        if ! is_service_running "$c"; then
-            echo "❌ $c not running – building image..."
-            build_and_push_image_for "$c"
-        fi
-    done
-}
-
-# ================================
-# 🐇 RabbitMQ
-# ================================
-wait_for_rabbitmq() {
-    echo "⏳ Waiting for RabbitMQ..."
-    local container=$(docker ps --filter "name=rabbitmq" --format "{{.Names}}")
-    if [[ -z "$container" ]]; then
-        echo "❌ RabbitMQ container not found."
-        exit 1
-    fi
-    until docker exec "$container" rabbitmqctl status >/dev/null 2>&1; do sleep 2; done
-    echo "✅ RabbitMQ is ready."
-}
-
-create_network() {
-    docker network ls | grep -q "$NETWORK_NAME" || docker network create "$NETWORK_NAME"
-}
-
-start_rabbitmq() {
-    echo "📦 Starting RabbitMQ..."
-    docker compose -f "$RABBITMQ_DIR/$DOCKER_COMPOSE_FILE" -f "$RABBITMQ_DIR/$DOCKER_COMPOSE_OVERRIDE_FILE" -p rabbitmq up -d
-    wait_for_rabbitmq
-}
-
-# ================================
-# 🚀 Start Layers or Services
-# ================================
-start_log_layer() {
-    bash ./LogLayer/upLogLayer.sh "$@"
-}
-start_user_layer() {
-    bash ./UserLayer/upUserLayer.sh "$@"
-}
-start_traffic_layer() {
-    bash ./TrafficLayer/upTrafficLayer.sh "$@"
-}
-start_application_layers() {
-    start_log_layer
-    start_user_layer
-    start_traffic_layer
-}
-
-# ================================
-# 🆘 Help
-# ================================
-print_help() {
-    echo "Usage: ./up.sh [--all] [--log|--user|--traffic] [--service=ServiceName] [--rabbitmq] [--help]"
+print_help() 
+{
+    echo "Usage: ./up.sh [--all] [--log|--user|--traffic|--sensor] [--service=Name] [--rabbitmq] [--help]"
     echo ""
-    echo "  --all            Start all layers and RabbitMQ (default)"
-    echo "  --log            Start Log Layer (or use --service)"
-    echo "  --user           Start User Layer (or use --service)"
-    echo "  --traffic        Start Traffic Layer (or use --service)"
+    echo "  --all            Start all layers and RabbitMQ"
+    echo "  --log            Start Log Layer"
+    echo "  --user           Start User Layer"
+    echo "  --traffic        Start Traffic Layer"
+    echo "  --sensor         Start Sensor Layer"
     echo "  --service=Name   Start specific service inside a layer"
     echo "  --rabbitmq       Start only RabbitMQ"
     echo "  --help           Show this message"
 }
 
+create_network() 
+{
+    docker network ls | grep -q "$NETWORK_NAME" || docker network create "$NETWORK_NAME"
+}
+
+is_container_running() 
+{
+    docker ps --format '{{.Names}}' | grep -q "^$1$"
+}
+
+build_and_push_image() 
+{
+    local service="$1"
+    local dir="${SERVICES_PATHS[$service]}"
+    local image="$DOCKER_USERNAME/$DOCKER_REPO:${service}"
+
+    if [[ -f "$dir/Dockerfile" ]]; then
+        echo "🔨 Building image for $service..."
+        docker build -t "$image" -f "$dir/Dockerfile" "$dir" || {
+            echo "❌ Build failed for $service"
+            return 1
+        }
+
+        echo "📤 (Optional) Pushing image for $service to Docker Hub..."
+        docker push "$image" || echo "⚠️ Push failed or skipped for $service"
+    else
+        echo "⚠️ No Dockerfile found for $service in $dir"
+    fi
+}
+
+check_and_build_missing_images() 
+{
+    local services=("$@")
+    for service in "${services[@]}"; do
+        local container_name="${service}_container"
+        if ! is_container_running "$container_name"; then
+            echo "❌ $container_name not running — attempting build..."
+            build_and_push_image "$service"
+        else
+            echo "✅ $container_name is already running."
+        fi
+    done
+}
+
 # ================================
-# 🚦 Parse Flags
+# 🐇 RABBITMQ FUNCTIONS
+# ================================
+start_rabbitmq() 
+{
+    echo "📦 Starting RabbitMQ..."
+    docker compose \
+        -f ./RabbitMQ/$DOCKER_COMPOSE_FILE \
+        -f ./RabbitMQ/$DOCKER_COMPOSE_OVERRIDE_FILE \
+        -p rabbitmq \
+        up -d
+
+    wait_for_rabbitmq
+}
+
+wait_for_rabbitmq() 
+{
+    echo "⏳ Waiting for RabbitMQ to be ready..."
+    local container
+    container=$(docker ps --filter "name=rabbitmq" --format "{{.Names}}")
+
+    if [[ -z "$container" ]]; then
+        echo "❌ RabbitMQ container not found."
+        exit 1
+    fi
+
+    until docker exec "$container" rabbitmqctl status &>/dev/null; do
+        sleep 2
+    done
+
+    echo "✅ RabbitMQ is ready."
+}
+
+# ================================
+# 🎯 LAYER STARTERS
+# ================================
+start_layer() 
+{
+    local layer_script="$1"
+    shift
+    if [[ -x "$layer_script" ]]; then
+        bash "$layer_script" "$@"
+    else
+        echo "⚠️ Cannot execute $layer_script"
+    fi
+}
+
+start_log_layer()     { start_layer ./LogLayer/upLogLayer.sh "$@"; }
+start_user_layer()    { start_layer ./UserLayer/upUserLayer.sh "$@"; }
+start_traffic_layer() { start_layer ./TrafficLayer/upTrafficLayer.sh "$@"; }
+start_sensor_layer()  { start_layer ./SensorLayer/upSensorLayer.sh "$@"; }
+
+start_all_layers() 
+{
+    start_log_layer
+    start_user_layer
+    start_traffic_layer
+    start_sensor_layer
+}
+
+# ================================
+# 🚦 ARGUMENT PARSING
 # ================================
 MODE=""
 TARGET_SERVICE=""
@@ -127,6 +166,7 @@ while [[ "$#" -gt 0 ]]; do
         --log) MODE="log" ;;
         --user) MODE="user" ;;
         --traffic) MODE="traffic" ;;
+        --sensor) MODE="sensor" ;;
         --all) MODE="all" ;;
         --rabbitmq) MODE="rabbitmq" ;;
         --service=*) TARGET_SERVICE="${1#*=}" ;;
@@ -137,9 +177,10 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 # ================================
-# 🧩 Main Execution
+# 🚀 MAIN EXECUTION
 # ================================
-main() {
+main() 
+{
     if [[ -z "$MODE" ]]; then
         print_help
         exit 0
@@ -149,42 +190,75 @@ main() {
 
     case "$MODE" in
         log)
-            containers=("log_api_container")
-            check_containers_and_build_missing containers
+            check_and_build_missing_images log_api
             start_log_layer --service="$TARGET_SERVICE"
             ;;
+
         user)
-            if [[ -n "$TARGET_SERVICE" ]]; then
-                case "$TARGET_SERVICE" in
-                    UserService) containers=("user_api_container") ;;
-                    NotificationService) containers=("notification_api_container") ;;
-                    *) containers=("user_api_container" "notification_api_container") ;;
-                esac
-            else
-                containers=("user_api_container" "notification_api_container")
-            fi
-            check_containers_and_build_missing containers
+            case "$TARGET_SERVICE" in
+                UserService) check_and_build_missing_images user_api ;;
+                NotificationService) check_and_build_missing_images notification_api ;;
+                *) check_and_build_missing_images user_api notification_api ;;
+            esac
             start_user_layer --service="$TARGET_SERVICE"
             ;;
+
         traffic)
-            containers=("traffic_data_analytics_api_container")
-            check_containers_and_build_missing containers
+            services_to_build=()
+            case "$TARGET_SERVICE" in
+                TrafficDataAnalyticsService) services_to_build+=(traffic_data_analytics_api) ;;
+                TrafficLightControlService) services_to_build+=(traffic_light_control_api) ;;
+                TrafficLightCoordinationService) services_to_build+=(traffic_light_coordination_api) ;;
+                IntersectionControllerService) services_to_build+=(intersection_controller_api) ;;
+                *)
+                    services_to_build+=(
+                        traffic_data_analytics_api
+                        traffic_light_control_api
+                        traffic_light_coordination_api
+                        intersection_controller_api
+                    )
+                    ;;
+            esac
+            check_and_build_missing_images "${services_to_build[@]}"
             start_traffic_layer --service="$TARGET_SERVICE"
             ;;
+
+        sensor)
+            services_to_build=()
+            case "$TARGET_SERVICE" in
+                VehicleDetectionService) services_to_build+=(vehicle_detection_api) ;;
+                EmergencyVehicleDetectionService) services_to_build+=(emergency_vehicle_detection_api) ;;
+                PublicTransportDetectionService) services_to_build+=(public_transport_detection_api) ;;
+                PedestrianDetectionService) services_to_build+=(pedestrian_detection_api) ;;
+                CyclistDetectionService) services_to_build+=(cyclist_detection_api) ;;
+                IncidentDetectionService) services_to_build+=(incident_detection_api) ;;
+                *)
+                    services_to_build+=(
+                        vehicle_detection_api
+                        emergency_vehicle_detection_api
+                        public_transport_detection_api
+                        pedestrian_detection_api
+                        cyclist_detection_api
+                        incident_detection_api
+                    )
+                    ;;
+            esac
+            check_and_build_missing_images "${services_to_build[@]}"
+            start_sensor_layer --service="$TARGET_SERVICE"
+            ;;
+
         all)
             start_rabbitmq
-            containers=("log_api_container" "notification_api_container" "traffic_data_analytics_api_container" "user_api_container")
-            check_containers_and_build_missing containers
-            start_application_layers
+            check_and_build_missing_images "${!SERVICES_PATHS[@]}"
+            start_all_layers
             ;;
+
         rabbitmq)
             start_rabbitmq
             ;;
     esac
 
     echo "🏁 Services started."
-    exit 0
 }
 
-main "$@"
-
+main
