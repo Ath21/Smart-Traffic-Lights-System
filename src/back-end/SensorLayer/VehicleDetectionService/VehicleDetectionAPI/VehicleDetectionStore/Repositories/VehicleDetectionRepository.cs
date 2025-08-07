@@ -64,6 +64,7 @@ public class VehicleDetectionRepository : IVehicleDetectionRepository
         foreach (var table in tables)
         {
             var grouped = table.Records
+                .Where(r => r.Values.ContainsKey("detection_id"))
                 .GroupBy(r => r.Values["detection_id"])
                 .Select(group =>
                 {
@@ -91,6 +92,7 @@ public class VehicleDetectionRepository : IVehicleDetectionRepository
 
             results.AddRange(grouped);
         }
+
 
         return results;
     }

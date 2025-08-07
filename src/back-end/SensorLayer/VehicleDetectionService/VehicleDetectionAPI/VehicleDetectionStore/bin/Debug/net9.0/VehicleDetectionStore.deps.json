@@ -14,6 +14,7 @@
           "MassTransit": "8.5.1",
           "MassTransit.RabbitMQ": "8.5.1",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "9.0.8",
+          "SensorMessages": "1.0.0",
           "Swashbuckle.AspNetCore": "9.0.3"
         },
         "runtime": {
@@ -454,6 +455,14 @@
             "fileVersion": "1.0.0.0"
           }
         }
+      },
+      "SensorMessages/1.0.0": {
+        "runtime": {
+          "SensorMessages.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
       }
     }
   },
@@ -821,6 +830,11 @@
       "hashPath": "system.threading.ratelimiting.8.0.0.nupkg.sha512"
     },
     "DetectionData/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "SensorMessages/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

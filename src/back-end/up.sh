@@ -69,7 +69,7 @@ build_and_push_image()
 
     if [[ -f "$dir/Dockerfile" ]]; then
         echo "🔨 Building image for $service..."
-        docker build -t "$image" -f "$dir/Dockerfile" "$dir" || {
+        docker build -t "$image" -f "$dir/Dockerfile" . || {
             echo "❌ Build failed for $service"
             return 1
         }

@@ -12,6 +12,7 @@ WORKDIR /src
 COPY LogLayer LogLayer/
 COPY UserLayer UserLayer/
 COPY TrafficLayer TrafficLayer/
+COPY SensorLayer SensorLayer/
 
 # 🔹 Restore
 RUN dotnet restore LogLayer/LogService/LogAPI/LogStore/LogStore.csproj

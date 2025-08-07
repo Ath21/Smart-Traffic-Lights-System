@@ -65,3 +65,5 @@
 /home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/VehicleDetectionService/VehicleDetectionAPI/VehicleDetectionStore/bin/Debug/net9.0/MassTransit.Abstractions.dll
 /home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/VehicleDetectionService/VehicleDetectionAPI/VehicleDetectionStore/bin/Debug/net9.0/MassTransit.RabbitMqTransport.dll
 /home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/VehicleDetectionService/VehicleDetectionAPI/VehicleDetectionStore/bin/Debug/net9.0/RabbitMQ.Client.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/VehicleDetectionService/VehicleDetectionAPI/VehicleDetectionStore/bin/Debug/net9.0/SensorMessages.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/VehicleDetectionService/VehicleDetectionAPI/VehicleDetectionStore/bin/Debug/net9.0/SensorMessages.pdb

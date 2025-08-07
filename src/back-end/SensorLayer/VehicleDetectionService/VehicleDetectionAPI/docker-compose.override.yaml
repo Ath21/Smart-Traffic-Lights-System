@@ -13,15 +13,16 @@ services:
 
       RabbitMQ__SensorDataExchange: sensor.data.exchange
       RabbitMQ__RoutingKeys__VehicleCount: sensor.data.vehicle.count
+      
       RabbitMQ__SensorLogsExchange: sensor.logs.exchange
       RabbitMQ__RoutingKeys__SensorLogs__Audit: sensor.logs.audit
       RabbitMQ__RoutingKeys__SensorLogs__Error: sensor.logs.error
 
       # InfluxDB Config
-      InfluxDB__Url: http://influxdb:8086
-      InfluxDB__Token: admin-token
-      InfluxDB__Org: DetectionOrg
-      InfluxDB__Bucket: DetectionDb
+      DetectionDb__Url: http://influxdb:8086
+      DetectionDb__Token: admin-token
+      DetectionDb__Org: DetectionOrg
+      DetectionDb__Bucket: DetectionDb
 
     depends_on:
       influxdb:
