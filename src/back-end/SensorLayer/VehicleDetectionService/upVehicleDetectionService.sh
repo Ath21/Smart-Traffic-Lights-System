@@ -3,7 +3,7 @@
 # ================================
 # 🔧 Configuration
 # ================================
-NETWORKS=("vehicle_detection_network" "influxdb_network")
+NETWORKS=("detection_network" "influxdb_network")
 
 VEHICLE_API_DIR="./SensorLayer/VehicleDetectionService/VehicleDetectionAPI"
 INFLUX_DB_DIR="./SensorLayer/InfluxDb"

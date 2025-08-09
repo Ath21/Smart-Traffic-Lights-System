@@ -3,13 +3,13 @@ services:
     image: ath21/stls:vehicle_detection_api
     container_name: vehicle_detection_api_container
     networks:
-      - vehicle_detection_network
+      - detection_network
       - rabbitmq_network
       - influxdb_network
 
 networks:
-  vehicle_detection_network:
-    name: vehicle_detection_network
+  detection_network:
+    name: detection_network
     driver: bridge
     external: true
   rabbitmq_network:
