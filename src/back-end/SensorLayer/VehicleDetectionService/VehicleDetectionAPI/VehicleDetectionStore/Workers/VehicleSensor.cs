@@ -1,44 +1,65 @@
 using System;
-using MassTransit;
-using SensorMessages.Data;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using VehicleDetectionStore.Publishers;
 
-namespace VehicleDetectionStore.Workers;
-
-public class VehicleSensor : BackgroundService
+namespace VehicleDetectionStore.Workers
 {
- private readonly IBus _bus;
-    private readonly ILogger<VehicleSensor> _logger;
-    private readonly Guid _intersectionId = Guid.NewGuid(); // Simulated intersection
-
-    public VehicleSensor(IBus bus, ILogger<VehicleSensor> logger)
+    public class VehicleSensor : BackgroundService
     {
-        _bus = bus;
-        _logger = logger;
-    }
+        private readonly IServiceProvider _serviceProvider;
+        private readonly ILogger<VehicleSensor> _logger;
+        private readonly IConfiguration _configuration;
+        private readonly Guid _intersectionId = Guid.NewGuid();
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        var random = new Random();
+        private readonly string _sensorDataExchange;
+        private readonly string _vehicleCountRoutingKeyBase;
 
-        while (!stoppingToken.IsCancellationRequested)
+        public VehicleSensor(IServiceProvider serviceProvider, ILogger<VehicleSensor> logger, IConfiguration configuration)
         {
-            var message = new VehicleCountMessage(
-                _intersectionId,
-                random.Next(5, 50),        // Random vehicle count
-                Math.Round(random.NextDouble() * 40 + 20, 2), // Avg speed 20–60 km/h
-                DateTime.UtcNow
-            );
+            _serviceProvider = serviceProvider;
+            _logger = logger;
+            _configuration = configuration;
 
-            var routingKey = $"sensor.data.vehicle.count.{_intersectionId}";
+            _sensorDataExchange = _configuration["RabbitMQ:Exchange:SensorDataExchange"] ?? "sensor.data.exchange";
+            _vehicleCountRoutingKeyBase = _configuration["RabbitMQ:RoutingKey:SensorVehicleDetectionVehicleCountKey"] ?? "sensor.vehicle_detection.vehicle_count.";
+        }
 
-            await _bus.Publish(message, context =>
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            var random = new Random();
+
+            while (!stoppingToken.IsCancellationRequested)
             {
-                context.SetRoutingKey(routingKey);
-            });
+                var vehicleCount = random.Next(5, 50);
+                var avgSpeed = Math.Round(random.NextDouble() * 40 + 20, 2);
+                var timestamp = DateTime.UtcNow;
 
-            _logger.LogInformation("Published vehicle count: {@Message}", message);
+                var routingKey = _vehicleCountRoutingKeyBase.EndsWith(".")
+                    ? $"{_vehicleCountRoutingKeyBase}{_intersectionId}"
+                    : $"{_vehicleCountRoutingKeyBase}.{_intersectionId}";
 
-            await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+                try
+                {
+                    using var scope = _serviceProvider.CreateScope();
+                    var publisher = scope.ServiceProvider.GetRequiredService<IVehicleDetectionPublisher>();
+
+                    await publisher.PublishVehicleCountAsync(_intersectionId, vehicleCount, avgSpeed, timestamp);
+
+                    _logger.LogInformation("[{Exchange}] Published vehicle count with routing key '{RoutingKey}' for intersection {IntersectionId}: {Count} vehicles, {Speed} km/h avg at {Timestamp}",
+                        _sensorDataExchange, routingKey, _intersectionId, vehicleCount, avgSpeed, timestamp);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error publishing vehicle count for intersection {IntersectionId}", _intersectionId);
+                }
+
+                await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+            }
         }
     }
 }

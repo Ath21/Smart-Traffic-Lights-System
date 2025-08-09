@@ -1,64 +1,82 @@
+using Microsoft.Extensions.Configuration;
 using MassTransit;
+using Microsoft.Extensions.Logging;
 using SensorMessages.Logs;
 using SensorMessages.Data;
+using System;
+using System.Threading.Tasks;
 using VehicleDetectionStore.Publishers;
 
-namespace VehicleDetectionService.Publishers;
-
-public class VehicleDetectionPublisher : IVehicleDetectionPublisher
+namespace VehicleDetectionService.Publishers
 {
-    private readonly IBus _bus;
-    private readonly ILogger<VehicleDetectionPublisher> _logger;
-
-    private readonly string _auditKey = "sensor.logs.audit";
-    private readonly string _errorKey = "sensor.logs.error";
-
-    public VehicleDetectionPublisher(IBus bus, ILogger<VehicleDetectionPublisher> logger)
+    public class VehicleDetectionPublisher : IVehicleDetectionPublisher
     {
-        _bus = bus;
-        _logger = logger;
-    }
+        private readonly IBus _bus;
+        private readonly ILogger<VehicleDetectionPublisher> _logger;
+        private readonly IConfiguration _configuration;
 
-    public async Task PublishVehicleCountAsync(Guid intersectionId, int vehicleCount, double avgSpeed, DateTime timestamp)
-    {
-        var routingKey = $"sensor.data.vehicle.count.{intersectionId}";
-        var message = new VehicleCountMessage(intersectionId, vehicleCount, avgSpeed, timestamp);
+        private readonly string _sensorDataExchange;
+        private readonly string _vehicleCountRoutingKeyBase;
+        private readonly string _auditRoutingKey;
+        private readonly string _errorRoutingKey;
 
-        _logger.LogInformation("[VEHICLE DATA] Publishing vehicle count to '{RoutingKey}'", routingKey);
-
-        await _bus.Publish(message, context =>
+        public VehicleDetectionPublisher(IBus bus, ILogger<VehicleDetectionPublisher> logger, IConfiguration configuration)
         {
-            context.SetRoutingKey(routingKey);
-        });
+            _bus = bus;
+            _logger = logger;
+            _configuration = configuration;
 
-        _logger.LogInformation("[VEHICLE DATA] Published: {Count} vehicles, {Speed} km/h avg", vehicleCount, avgSpeed);
-    }
+            // Use your configured names or fallbacks
+            _sensorDataExchange = _configuration["RabbitMQ:Exchange:SensorDataExchange"] ?? "sensor.data.exchange";
+            _vehicleCountRoutingKeyBase = _configuration["RabbitMQ:RoutingKey:SensorVehicleDetectionVehicleCountKey"] ?? "sensor.vehicle_detection.vehicle_count.*";
+            _auditRoutingKey = _configuration["RabbitMQ:RoutingKey:SensorLogsAuditKey"] ?? "sensor.vehicle_detection.logs.audit";
+            _errorRoutingKey = _configuration["RabbitMQ:RoutingKey:SensorLogsErrorKey"] ?? "sensor.vehicle_detection.logs.error";
+        }
 
-    public async Task PublishAuditLogAsync(string message)
-    {
-        _logger.LogInformation("[AUDIT] Publishing audit log to '{RoutingKey}'", _auditKey);
-
-        var logMessage = new AuditLogMessage("VehicleDetectionService", message, DateTime.UtcNow);
-
-        await _bus.Publish(logMessage, context =>
+        public async Task PublishVehicleCountAsync(Guid intersectionId, int vehicleCount, double avgSpeed, DateTime timestamp)
         {
-            context.SetRoutingKey(_auditKey);
-        });
+            // Remove trailing * if any from routing key base and append intersectionId
+            var routingKeyBase = _vehicleCountRoutingKeyBase.TrimEnd('*').TrimEnd('.');
+            var routingKey = $"{routingKeyBase}.{intersectionId}";
 
-        _logger.LogInformation("[AUDIT] Audit log published");
-    }
+            var message = new VehicleCountMessage(intersectionId, vehicleCount, avgSpeed, timestamp);
 
-    public async Task PublishErrorLogAsync(string message, Exception exception)
-    {
-        _logger.LogInformation("[ERROR] Publishing error log to '{RoutingKey}'", _errorKey);
+            _logger.LogInformation("[VEHICLE DATA] Publishing vehicle count to '{RoutingKey}' on exchange '{Exchange}'", routingKey, _sensorDataExchange);
 
-        var logMessage = new ErrorLogMessage("VehicleDetectionService", message, exception.ToString(), DateTime.UtcNow);
+            await _bus.Publish(message, context =>
+            {
+                context.SetRoutingKey(routingKey);
+            });
 
-        await _bus.Publish(logMessage, context =>
+            _logger.LogInformation("[VEHICLE DATA] Published: {Count} vehicles, {Speed} km/h avg", vehicleCount, avgSpeed);
+        }
+
+        public async Task PublishAuditLogAsync(string message)
         {
-            context.SetRoutingKey(_errorKey);
-        });
+            _logger.LogInformation("[AUDIT] Publishing audit log to '{RoutingKey}'", _auditRoutingKey);
 
-        _logger.LogInformation("[ERROR] Error log published");
+            var logMessage = new AuditLogMessage("VehicleDetectionService", message, DateTime.UtcNow);
+
+            await _bus.Publish(logMessage, context =>
+            {
+                context.SetRoutingKey(_auditRoutingKey);
+            });
+
+            _logger.LogInformation("[AUDIT] Audit log published");
+        }
+
+        public async Task PublishErrorLogAsync(string message, Exception exception)
+        {
+            _logger.LogInformation("[ERROR] Publishing error log to '{RoutingKey}'", _errorRoutingKey);
+
+            var logMessage = new ErrorLogMessage("VehicleDetectionService", message, exception.ToString(), DateTime.UtcNow);
+
+            await _bus.Publish(logMessage, context =>
+            {
+                context.SetRoutingKey(_errorRoutingKey);
+            });
+
+            _logger.LogInformation("[ERROR] Error log published");
+        }
     }
 }

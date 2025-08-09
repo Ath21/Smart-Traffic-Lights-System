@@ -10,6 +10,7 @@ using SensorMessages.Logs;
 using VehicleDetectionService.Middleware;
 using VehicleDetectionService.Publishers;
 using VehicleDetectionStore.Business;
+using VehicleDetectionStore.Consumers;
 using VehicleDetectionStore.Publishers;
 using VehicleDetectionStore.Repositories;
 using VehicleDetectionStore.Workers;
@@ -51,30 +52,63 @@ public class Startup
 
         services.AddMassTransit(x =>
         {
+            // Register the consumer for vehicle count messages
+            x.AddConsumer<VehicleCountConsumer>();
+
             x.UsingRabbitMq((context, cfg) =>
             {
-                var rabbitmqSettings = _configuration.GetSection("RabbitMQ");
-
-                cfg.Host(rabbitmqSettings["Host"], "/", h =>
+                cfg.Host(_configuration["RabbitMQ:Host"],
+                        "/",
+                        h =>
                 {
-                    h.Username(rabbitmqSettings["Username"]);
-                    h.Password(rabbitmqSettings["Password"]);
+                    h.Username(_configuration["RabbitMQ:Username"]);
+                    h.Password(_configuration["RabbitMQ:Password"]);
                 });
 
-                // Vehicle detection data topic exchange for sensor.data.vehicle.count.<intersection_id>
-                cfg.Message<VehicleCountMessage>(e => e.SetEntityName(rabbitmqSettings["SensorDataExchange"]));
-                cfg.Publish<VehicleCountMessage>(e => e.ExchangeType = ExchangeType.Topic);
+                cfg.Message<VehicleCountMessage>(x =>
+                {
+                    x.SetEntityName(_configuration["RabbitMQ:Exchange:SensorDataExchange"] ?? "sensor.data.exchange");
+                });
+                cfg.Publish<VehicleCountMessage>(x =>
+                {
+                    x.ExchangeType = ExchangeType.Topic;
+                });
 
-                // Sensor logs exchange (direct)
-                cfg.Message<AuditLogMessage>(e => e.SetEntityName(rabbitmqSettings["SensorLogsExchange"]));
-                cfg.Publish<AuditLogMessage>(e => e.ExchangeType = ExchangeType.Direct);
+                // Receive endpoint for vehicle count queue
+                cfg.ReceiveEndpoint(_configuration["RabbitMQ:Queue:SensorVehicleDetectionVehicleCountQueue"], e =>
+                {
+                    e.Bind(_configuration["RabbitMQ:Exchange:SensorDataExchange"], s =>
+                    {
+                        s.RoutingKey = _configuration["RabbitMQ:RoutingKey:SensorVehicleDetectionVehicleCountKey"];
+                        s.ExchangeType = "topic";
+                    });
 
-                cfg.Message<ErrorLogMessage>(e => e.SetEntityName(rabbitmqSettings["SensorLogsExchange"]));
-                cfg.Publish<ErrorLogMessage>(e => e.ExchangeType = ExchangeType.Direct);
+                    e.ConfigureConsumer<VehicleCountConsumer>(context);
+                });
 
-                cfg.ConfigureEndpoints(context);
+                cfg.Message<AuditLogMessage>(x =>
+                {
+                    x.SetEntityName(_configuration["RabbitMQ:Exchange:LogStoreExchange"] ?? "log.store.exchange");
+                });
+                cfg.Publish<AuditLogMessage>(x =>
+                {
+                    x.ExchangeType = ExchangeType.Direct;
+                });
+                cfg.Message<ErrorLogMessage>(x =>
+                {
+                    x.SetEntityName(_configuration["RabbitMQ:Exchange:LogStoreExchange"] ?? "log.store.exchange");
+                });
+                cfg.Publish<ErrorLogMessage>(x =>
+                {
+                    x.ExchangeType = ExchangeType.Direct;
+                });
             });
         });
+
+        // Register the consumer service itself
+        services.AddScoped<VehicleCountConsumer>();
+
+
 
         /******* [7] Workers ********/
 
@@ -90,33 +124,34 @@ public class Startup
         /******* [8] Swagger ********/
 
         services.AddSwaggerGen(c =>
+        {
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Vehicle Detection Service API", Version = "v1.0" });
+            c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Vehicle Detection Service API", Version = "v1.0" });
-                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-                {
-                    In = ParameterLocation.Header,
-                    Description = "Insert JWT token",
-                    Name = "Authorization",
-                    Type = SecuritySchemeType.Http,
-                    BearerFormat = "JWT",
-                    Scheme = "bearer"
-                });
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement
-                {
-                    {
-                        new OpenApiSecurityScheme
-                        {
-                            Reference = new OpenApiReference
-                            {
-                                Type = ReferenceType.SecurityScheme,
-                                Id = "Bearer"
-                            }
-                        },
-                        new string[] { }
-                    }
-                });
+                In = ParameterLocation.Header,
+                Description = "Insert JWT token",
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                BearerFormat = "JWT",
+                Scheme = "bearer"
             });
+            c.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                        {
+                            new OpenApiSecurityScheme
+                            {
+                                Reference = new OpenApiReference
+                                {
+                                    Type = ReferenceType.SecurityScheme,
+                                    Id = "Bearer"
+                                }
+                            },
+                            new string[] { }
+                        }
+            });
+        });
     }
+
 
     public void Configure(WebApplication app, IWebHostEnvironment env)
     {

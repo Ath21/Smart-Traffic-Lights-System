@@ -36,66 +36,80 @@ public class VehicleDetectionRepository : IVehicleDetectionRepository
         return detection.DetectionId;
     }
 
-    /// <summary>
-    /// Queries vehicle detections based on filters
-    /// </summary>
-    public async Task<List<VehicleDetection>> QueryAsync(
-        Guid? intersectionId = null,
-        DateTime? startTime = null,
-        DateTime? endTime = null,
-        int? limit = null)
+public async Task<List<VehicleDetection>> QueryAsync(
+    Guid? intersectionId = null,
+    DateTime? startTime = null,
+    DateTime? endTime = null,
+    int? limit = null)
+{
+    DateTime start = startTime ?? DateTime.UtcNow.AddDays(-1);
+    DateTime end = endTime ?? DateTime.UtcNow;
+
+    var flux = $"from(bucket: \"{_context.Bucket}\") |> range(start: {FormatDate(start)}, stop: {FormatDate(end)}) |> filter(fn: (r) => r._measurement == \"vehicle_detections\")";
+
+    if (intersectionId.HasValue)
     {
-        var flux = $"from(bucket: \"{_context.Bucket}\") |> range(start: {FormatDate(startTime ?? DateTime.MinValue)}, stop: {FormatDate(endTime ?? DateTime.UtcNow)}) |> filter(fn: (r) => r._measurement == \"vehicle_detections\")";
-
-        if (intersectionId.HasValue)
-        {
-            flux += $" |> filter(fn: (r) => r.intersection_id == \"{intersectionId.Value}\")";
-        }
-
-        if (limit.HasValue)
-        {
-            flux += $" |> limit(n: {limit.Value})";
-        }
-
-        var queryApi = _context.Client.GetQueryApi();
-        var tables = await queryApi.QueryAsync(flux, _context.Org);
-
-        var results = new List<VehicleDetection>();
-        foreach (var table in tables)
-        {
-            var grouped = table.Records
-                .Where(r => r.Values.ContainsKey("detection_id"))
-                .GroupBy(r => r.Values["detection_id"])
-                .Select(group =>
-                {
-                    var detection = new VehicleDetection
-                    {
-                        DetectionId = Guid.Parse(group.Key.ToString()!),
-                        IntersectionId = Guid.Parse(group.First().GetValueByKey("intersection_id")!.ToString()!),
-                        Timestamp = group.First().GetTimeInDateTime()!.Value
-                    };
-
-                    foreach (var record in group)
-                    {
-                        switch (record.GetField())
-                        {
-                            case "vehicle_count":
-                                detection.VehicleCount = Convert.ToInt32(record.GetValue());
-                                break;
-                            case "avg_speed":
-                                detection.AvgSpeed = Convert.ToSingle(record.GetValue());
-                                break;
-                        }
-                    }
-                    return detection;
-                });
-
-            results.AddRange(grouped);
-        }
-
-
-        return results;
+        flux += $" |> filter(fn: (r) => r.intersection_id == \"{intersectionId.Value}\")";
     }
+
+    if (limit.HasValue)
+    {
+        flux += $" |> limit(n: {limit.Value})";
+    }
+
+    Console.WriteLine($"Executing Flux query: {flux}");
+
+    var queryApi = _context.Client.GetQueryApi();
+    var tables = await queryApi.QueryAsync(flux, _context.Org);
+
+    Console.WriteLine($"Tables returned: {tables.Count}");
+
+    var results = new List<VehicleDetection>();
+
+    foreach (var table in tables)
+    {
+        Console.WriteLine($"Records in table: {table.Records.Count}");
+        foreach (var record in table.Records)
+        {
+            // We're interested only in the actual data field rows (_field and _value)
+            if (record.GetValue() != null && record.GetField() != null)
+            {
+                // Find or create VehicleDetection object for this timestamp + intersection
+                var existing = results.Find(d =>
+                    d.Timestamp == record.GetTimeInDateTime().Value &&
+                    d.IntersectionId.ToString() == record.Values["intersection_id"].ToString());
+
+                if (existing == null)
+                {
+                    existing = new VehicleDetection
+                    {
+                        Timestamp = record.GetTimeInDateTime().Value,
+                        IntersectionId = Guid.Parse(record.Values["intersection_id"].ToString())
+                    };
+                    results.Add(existing);
+                }
+
+                // Map fields accordingly
+                switch (record.GetField())
+                {
+                    case "vehicle_count":
+                        existing.VehicleCount = Convert.ToInt32(record.GetValue());
+                        break;
+                    case "avg_speed":
+                        existing.AvgSpeed = Convert.ToSingle(record.GetValue());
+                        break;
+                    case "detection_id":
+                        existing.DetectionId = Guid.Parse(record.GetValue().ToString());
+                        break;
+                }
+            }
+        }
+    }
+
+    return results;
+}
+
+
 
     private string FormatDate(DateTime dateTime) =>
         dateTime.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ");

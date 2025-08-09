@@ -1,6 +1,7 @@
 using System.Net;
 using MassTransit;
 using Microsoft.Extensions.Logging;
+using VehicleDetectionStore.Publishers;
 
 namespace VehicleDetectionService.Middleware;
 
@@ -74,8 +75,8 @@ public class ExceptionMiddleware
         _logger.LogError(ex, message);
 
         // Publish the error to message broker
-        //var logPublisher = context.RequestServices.GetRequiredService<IDetectionLogPublisher>();
-        //await logPublisher.PublishErrorAsync(message, ex);
+        var logPublisher = context.RequestServices.GetRequiredService<IVehicleDetectionPublisher>();
+        await logPublisher.PublishErrorLogAsync(message, ex);
 
         context.Response.StatusCode = (int)statusCode;
         context.Response.ContentType = "application/json";

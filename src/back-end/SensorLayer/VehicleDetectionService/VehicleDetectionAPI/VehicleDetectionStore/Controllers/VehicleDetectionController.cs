@@ -45,5 +45,14 @@ namespace VehicleDetectionStore.Controllers
             var results = await _detectionService.GetDetectionsAsync(intersection_id, start_time, end_time, limit);
             return Ok(results);
         }
+
+        [HttpGet("all")]
+        [ProducesResponseType(typeof(IEnumerable<VehicleDetectionReadDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetAllDetections()
+        {
+            // Pass null for all filters to retrieve everything
+            var results = await _detectionService.GetDetectionsAsync(null, null, null, null);
+            return Ok(results);
+        }
     }
 }
