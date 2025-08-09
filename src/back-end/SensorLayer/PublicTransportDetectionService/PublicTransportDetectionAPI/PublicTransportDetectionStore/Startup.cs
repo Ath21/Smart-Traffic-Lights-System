@@ -3,6 +3,7 @@ using DetectionData;
 using MassTransit;
 using Microsoft.OpenApi.Models;
 using PublicTransportDetectionStore.Business;
+using PublicTransportDetectionStore.Consumers;
 using PublicTransportDetectionStore.Middleware;
 using PublicTransportDetectionStore.Publishers;
 using PublicTransportDetectionStore.Repositories;
