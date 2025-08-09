@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EmergencyVehicleDetectionStore")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+44adfedba0b3943cd12ff7a8e32f9391d98a9206")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e3c087f9552756435b943d6f85bb66306262f3e3")]
 [assembly: System.Reflection.AssemblyProductAttribute("EmergencyVehicleDetectionStore")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EmergencyVehicleDetectionStore")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
