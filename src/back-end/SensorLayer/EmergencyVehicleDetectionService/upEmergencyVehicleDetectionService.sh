@@ -5,7 +5,7 @@
 # ================================
 NETWORKS=("detection_network" "influxdb_network")
 
-VEHICLE_API_DIR="./SensorLayer/VehicleDetectionService/VehicleDetectionAPI"
+EMERGENCY_API_DIR="./SensorLayer/EmergencyVehicleDetectionService/EmergencyVehicleDetectionAPI"
 INFLUX_DB_DIR="./SensorLayer/InfluxDb"
 
 DOCKER_COMPOSE_FILE="docker-compose.yaml"
@@ -31,17 +31,17 @@ create_networks()
 # ================================
 start_containers() 
 {
-    echo "📦 Starting Vehicle Detection Service containers..."
+    echo "📦 Starting Emergency Vehicle Detection Service containers..."
 
     docker compose \
-        -f "$VEHICLE_API_DIR/$DOCKER_COMPOSE_FILE" \
-        -f "$VEHICLE_API_DIR/$DOCKER_COMPOSE_OVERRIDE" \
+        -f "$EMERGENCY_API_DIR/$DOCKER_COMPOSE_FILE" \
+        -f "$EMERGENCY_API_DIR/$DOCKER_COMPOSE_OVERRIDE" \
         -f "$INFLUX_DB_DIR/$DOCKER_COMPOSE_FILE" \
         -f "$INFLUX_DB_DIR/$DOCKER_COMPOSE_OVERRIDE" \
-        -p vehicle_detection_service \
+        -p emergency_vehicle_detection_service \
         up -d
 
-    echo "✅ Vehicle Detection Service containers are running!"
+    echo "✅ Emergency Vehicle Detection Service containers are running!"
 }
 
 # ================================

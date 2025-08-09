@@ -5,7 +5,7 @@
 # ================================
 NETWORKS=("detection_network" "influxdb_network")
 
-VEHICLE_API_DIR="./SensorLayer/VehicleDetectionService/VehicleDetectionAPI"
+EMERGENCY_API_DIR="./SensorLayer/EmergencyVehicleDetectionService/EmergencyVehicleDetectionAPI"
 INFLUX_DB_DIR="./SensorLayer/InfluxDb"
 
 DOCKER_COMPOSE_FILE="docker-compose.yaml"
@@ -16,17 +16,17 @@ DOCKER_COMPOSE_OVERRIDE="docker-compose.override.yaml"
 # ================================
 stop_containers() 
 {
-    echo "🛑 Stopping Vehicle Detection Service containers..."
+    echo "🛑 Stopping Emergency Vehicle Detection Service containers..."
 
     docker compose \
-        -f "$VEHICLE_API_DIR/$DOCKER_COMPOSE_FILE" \
-        -f "$VEHICLE_API_DIR/$DOCKER_COMPOSE_OVERRIDE" \
+        -f "$EMERGENCY_API_DIR/$DOCKER_COMPOSE_FILE" \
+        -f "$EMERGENCY_API_DIR/$DOCKER_COMPOSE_OVERRIDE" \
         -f "$INFLUX_DB_DIR/$DOCKER_COMPOSE_FILE" \
         -f "$INFLUX_DB_DIR/$DOCKER_COMPOSE_OVERRIDE" \
-        -p vehicle_detection_service \
+        -p emergency_vehicle_detection_service \
         down
 
-    echo "✅ All Vehicle Detection Service containers have been stopped."
+    echo "✅ All Emergency Vehicle Detection Service containers have been stopped."
 }
 
 # ================================
@@ -48,7 +48,8 @@ remove_networks()
 # ================================
 # 🧩 Main
 # ================================
-main() {
+main() 
+{
     stop_containers
     remove_networks
     exit 0
