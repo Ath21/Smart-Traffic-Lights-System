@@ -1,3 +1,5 @@
+using VehicleDetectionStore;
+
 namespace EmergencyVehicleDetectionStore
 {
     public class Program
