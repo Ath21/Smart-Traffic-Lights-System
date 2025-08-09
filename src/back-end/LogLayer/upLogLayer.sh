@@ -1,14 +1,15 @@
 #!/bin/bash
 
 # ================================
-# 📌 Get script path
+# 📌 Resolve script directory
 # ================================
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # ================================
-# 🧠 Run sub-script safely
+# 🧠 Try to start service script
 # ================================
-try_start() {
+try_start() 
+{
     local script="$1"
     if [ -x "$script" ]; then
         bash "$script"
@@ -20,7 +21,8 @@ try_start() {
 # ================================
 # 🚀 Main
 # ================================
-main() {
+main() 
+{
     SERVICE=""
 
     while [[ "$#" -gt 0 ]]; do
@@ -37,7 +39,7 @@ main() {
             exit 1
         fi
         echo "🚀 Starting ONLY $SERVICE in Log Layer..."
-        try_start "$SCRIPT_DIR/$SERVICE/up$SERVICE.sh"
+        try_start "$SCRIPT_DIR/$SERVICE/up${SERVICE}.sh"
     else
         echo "🚀 Starting ALL services in Log Layer..."
         try_start "$SCRIPT_DIR/LogService/upLogService.sh"

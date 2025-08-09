@@ -1,9 +1,15 @@
 #!/bin/bash
 
 # ================================
+# 📌 Resolve script path
+# ================================
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# ================================
 # 🧠 Helper: Run script if exists
 # ================================
-try_stop() {
+try_stop()
+{
     local script="$1"
     if [ -x "$script" ]; then
         bash "$script"
@@ -13,10 +19,11 @@ try_stop() {
 }
 
 # ================================
-# 🧩 Main Execution
+# 🛑 Main Execution
 # ================================
-main() {
-    SERVICE=""
+main() 
+{
+    local SERVICE=""
 
     while [[ "$#" -gt 0 ]]; do
         case "$1" in
@@ -27,14 +34,20 @@ main() {
     done
 
     if [[ -n "$SERVICE" ]]; then
+        local path="$SCRIPT_DIR/$SERVICE/down$SERVICE.sh"
+        if [[ ! -f "$path" ]]; then
+            echo "❌ Unknown service '$SERVICE' in User Layer."
+            exit 1
+        fi
         echo "🛑 Stopping ONLY $SERVICE in User Layer..."
-        try_stop "./UserLayer/$SERVICE/down$SERVICE.sh"
+        try_stop "$path"
     else
         echo "🛑 Stopping ALL services in User Layer..."
-        try_stop ./UserLayer/UserService/downUserService.sh
-        try_stop ./UserLayer/NotificationService/downNotificationService.sh
+        try_stop "$SCRIPT_DIR/UserService/downUserService.sh"
+        try_stop "$SCRIPT_DIR/NotificationService/downNotificationService.sh"
     fi
 
+    echo "✅ User Layer shutdown complete."
     exit 0
 }
 

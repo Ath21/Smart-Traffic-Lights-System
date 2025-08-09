@@ -1,16 +1,15 @@
 #!/bin/bash
 
+set -e  # Exit immediately if a command exits with a non-zero status
+
 # ================================
 # 🔧 Configuration
 # ================================
 NETWORK_NAME="traffic_data_analytics_network"
 
-# Shut down all services
 TRAFFIC_DATA_API_DIR="./TrafficLayer/TrafficDataAnalyticsService/TrafficDataAnalyticsAPI"
 TRAFFIC_DATA_DB_DIR="./TrafficLayer/TrafficDataAnalyticsService/Mongo"
 TRAFFIC_DATA_REDIS_DIR="./TrafficLayer/TrafficDataAnalyticsService/Redis"
-
-BUILD_CONTEXT="./TrafficLayer"
 
 DOCKER_COMPOSE_FILE="docker-compose.yaml"
 DOCKER_COMPOSE_OVERRIDE="docker-compose.override.yaml"
@@ -18,7 +17,8 @@ DOCKER_COMPOSE_OVERRIDE="docker-compose.override.yaml"
 # ================================
 # 🛑 Stop Traffic Data Analytics Service Containers
 # ================================
-stop_containers() {
+stop_containers() 
+{
     echo "🛑 Stopping Traffic Data Analytics Service containers..."
 
     docker compose \
@@ -37,7 +37,8 @@ stop_containers() {
 # ================================
 # 🔌 Remove Docker Network
 # ================================
-remove_docker_network() {
+remove_docker_network() 
+{
     if docker network ls | grep -q "$NETWORK_NAME"; then
         echo "🔌 Removing Docker network '$NETWORK_NAME'..."
         docker network rm "$NETWORK_NAME"
@@ -50,10 +51,10 @@ remove_docker_network() {
 # ================================
 # 🧩 Main
 # ================================
-main() {
+main() 
+{
     stop_containers
     remove_docker_network
-    exit 0
 }
 
 main "$@"

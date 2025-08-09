@@ -1,14 +1,17 @@
 #!/bin/bash
 
+set -e  # Exit on any command failure
+
 # ================================
 # 📌 Get script directory
 # ================================
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # ================================
-# 🧠 Helper to run service script
+# 🧠 Helper: Run service script if it exists
 # ================================
-try_start() {
+try_start() 
+{
     local script="$1"
     if [ -x "$script" ]; then
         bash "$script"
@@ -18,9 +21,10 @@ try_start() {
 }
 
 # ================================
-# 🚀 Main
+# 🚀 Main Execution
 # ================================
-main() {
+main() 
+{
     SERVICE=""
 
     while [[ "$#" -gt 0 ]]; do
@@ -40,11 +44,11 @@ main() {
         try_start "$SCRIPT_DIR/$SERVICE/up$SERVICE.sh"
     else
         echo "🚀 Starting ALL services in Traffic Layer..."
-        try_start "$SCRIPT_DIR/TrafficDataAnalyticsService/upTrafficDataAnalyticsService.sh"
+        try_start "$SCRIPT_DIR/IntersectionControllerService/upIntersectionControllerService.sh"
         try_start "$SCRIPT_DIR/TrafficLightControlService/upTrafficLightControlService.sh"
+        try_start "$SCRIPT_DIR/TrafficLightCoordinationService/upTrafficLightCoordinationService.sh"
+        try_start "$SCRIPT_DIR/TrafficDataAnalyticsService/upTrafficDataAnalyticsService.sh"
     fi
-
-    exit 0
 }
 
 main "$@"

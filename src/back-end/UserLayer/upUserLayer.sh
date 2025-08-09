@@ -6,9 +6,10 @@
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # ================================
-# 🧠 Run script if it exists
+# 🧠 Run a service script if it exists
 # ================================
-try_start() {
+try_start() 
+{
     local script="$1"
     if [ -x "$script" ]; then
         bash "$script"
@@ -20,8 +21,9 @@ try_start() {
 # ================================
 # 🚀 Main Execution
 # ================================
-main() {
-    SERVICE=""
+main() 
+{
+    local SERVICE=""
 
     while [[ "$#" -gt 0 ]]; do
         case "$1" in
@@ -44,6 +46,7 @@ main() {
         try_start "$SCRIPT_DIR/NotificationService/upNotificationService.sh"
     fi
 
+    echo "✅ User Layer startup complete."
     exit 0
 }
 

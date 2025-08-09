@@ -1,14 +1,15 @@
 #!/bin/bash
 
 # ================================
-# 📌 Resolve script path
+# 📌 Resolve script directory
 # ================================
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # ================================
-# 🧠 Run child script safely
+# 🧠 Try to stop service script
 # ================================
-try_stop() {
+try_stop() 
+{
     local script="$1"
     if [ -x "$script" ]; then
         bash "$script"
@@ -18,9 +19,10 @@ try_stop() {
 }
 
 # ================================
-# 🧩 Main
+# 🛑 Main
 # ================================
-main() {
+main() 
+{
     SERVICE=""
 
     while [[ "$#" -gt 0 ]]; do
@@ -38,7 +40,7 @@ main() {
         fi
 
         echo "🛑 Stopping ONLY $SERVICE in Log Layer..."
-        try_stop "$SCRIPT_DIR/$SERVICE/down$SERVICE.sh"
+        try_stop "$SCRIPT_DIR/$SERVICE/down${SERVICE}.sh"
     else
         echo "🛑 Stopping ALL services in Log Layer..."
         try_stop "$SCRIPT_DIR/LogService/downLogService.sh"

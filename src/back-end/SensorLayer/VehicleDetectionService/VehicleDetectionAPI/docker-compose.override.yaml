@@ -1,0 +1,38 @@
+services:
+  vehicle_detection_api:
+    ports:
+      - '5226:8080' # Optional if you want metrics/health endpoints exposed
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+
+      # RabbitMQ Config
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Port: 5672
+      RabbitMQ__Username: admin
+      RabbitMQ__Password: admin123
+
+      # RabbitMQ Exchanges
+      RabbitMQ__Exchange__SensorDataExchange: sensor.data.exchange
+      RabbitMQ__Exchange__LogStoreExchange: log.store.exchange
+
+      # RabbitMQ Queues
+      RabbitMQ__Queue__SensorVehicleDetectionVehicleCountQueue: sensor.vehicle_detection.vehicle_count.queue
+      RabbitMQ__Queue__SensorLogsAuditQueue: sensor.logs.audit.queue
+      RabbitMQ__Queue__SensorLogsErrorQueue: sensor.logs.error.queue
+
+      # RabbitMQ Routing Keys
+      RabbitMQ__RoutingKey__SensorVehicleDetectionVehicleCountKey: sensor.vehicle_detection.vehicle_count.*
+      RabbitMQ__RoutingKey__SensorLogsAuditKey: sensor.vehicle_detection.logs.audit
+      RabbitMQ__RoutingKey__SensorLogsErrorKey: sensor.vehicle_detection.logs.error
+
+      # InfluxDB Config
+      DetectionDb__Url: http://influxdb:8086
+      DetectionDb__Token: admin-token
+      DetectionDb__Org: DetectionOrg
+      DetectionDb__Bucket: DetectionDb
+
+
+    depends_on:
+      influxdb:
+        condition: service_started
+    restart: always

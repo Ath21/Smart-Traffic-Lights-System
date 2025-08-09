@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e  # Exit immediately on error
+
 # ================================
 # 📌 Resolve script path
 # ================================
@@ -8,7 +10,8 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # ================================
 # 🧠 Run child script if valid
 # ================================
-try_stop() {
+try_stop() 
+{
     local script="$1"
     if [ -x "$script" ]; then
         bash "$script"
@@ -20,7 +23,8 @@ try_stop() {
 # ================================
 # 🧩 Main
 # ================================
-main() {
+main() 
+{
     SERVICE=""
 
     while [[ "$#" -gt 0 ]]; do
@@ -36,16 +40,15 @@ main() {
             echo "❌ Unknown service '$SERVICE' in Traffic Layer."
             exit 1
         fi
-
         echo "🛑 Stopping ONLY $SERVICE in Traffic Layer..."
         try_stop "$SCRIPT_DIR/$SERVICE/down$SERVICE.sh"
     else
         echo "🛑 Stopping ALL services in Traffic Layer..."
-        try_stop "$SCRIPT_DIR/TrafficDataAnalyticsService/downTrafficDataAnalyticsService.sh"
+        try_stop "$SCRIPT_DIR/IntersectionControllerService/downIntersectionControllerService.sh"
         try_stop "$SCRIPT_DIR/TrafficLightControlService/downTrafficLightControlService.sh"
+        try_stop "$SCRIPT_DIR/TrafficLightCoordinationService/downTrafficLightCoordinationService.sh"
+        try_stop "$SCRIPT_DIR/TrafficDataAnalyticsService/downTrafficDataAnalyticsService.sh"
     fi
-
-    exit 0
 }
 
 main "$@"

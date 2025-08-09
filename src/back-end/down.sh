@@ -8,8 +8,49 @@ RABBITMQ_DIR="./RabbitMQ"
 DOCKER_COMPOSE_FILE="docker-compose.yaml"
 DOCKER_COMPOSE_OVERRIDE_FILE="docker-compose.override.yaml"
 
+# === All services and their Docker build paths ===
+declare -A SERVICES_PATHS=(
+    # User Layer
+    [user_api]="./UserLayer/UserService/UserAPI"
+    [notification_api]="./UserLayer/NotificationService/NotificationAPI"
+
+    # Log Layer
+    [log_api]="./LogLayer/LogService/LogAPI"
+
+    # Traffic Layer
+    [traffic_data_analytics_api]="./TrafficLayer/TrafficDataAnalyticsService/TrafficDataAnalyticsAPI"
+    [traffic_light_control_api]="./TrafficLayer/TrafficLightControlService/TrafficLightControlAPI"
+    [traffic_light_coordination_api]="./TrafficLayer/TrafficLightCoordinationService/TrafficLightCoordinationAPI"
+    [intersection_controller_api]="./TrafficLayer/IntersectionControllerService/IntersectionControllerAPI"
+
+    # Sensor Layer
+    [vehicle_detection_api]="./SensorLayer/VehicleDetectionService/VehicleDetectionAPI"
+    [emergency_vehicle_detection_api]="./SensorLayer/EmergencyVehicleDetectionService/EmergencyVehicleDetectionAPI"
+    [public_transport_detection_api]="./SensorLayer/PublicTransportDetectionService/PublicTransportDetectionAPI"
+    [pedestrian_detection_api]="./SensorLayer/PedestrianDetectionService/PedestrianDetectionAPI"
+    [cyclist_detection_api]="./SensorLayer/CyclistDetectionService/CyclistDetectionAPI"
+    [incident_detection_api]="./SensorLayer/IncidentDetectionService/IncidentDetectionAPI"
+)
+
 # ================================
-# 🛑 Safe Layer Stop
+# 🆘 Help
+# ================================
+print_help() {
+    echo "Usage: ./down.sh [--all] [--log|--user|--traffic|--sensor] [--service=ServiceName] [--rabbitmq] [--clean] [--help]"
+    echo ""
+    echo "  --all                      Stop all layers and RabbitMQ"
+    echo "  --log                      Stop Log Layer (or use --service)"
+    echo "  --user                     Stop User Layer (or use --service)"
+    echo "  --traffic                  Stop Traffic Layer (or use --service)"
+    echo "  --sensor                   Stop Sensor Layer (or use --service)"
+    echo "  --service=ServiceName      Target specific service inside a layer"
+    echo "  --rabbitmq                 Stop only RabbitMQ and remove its network"
+    echo "  --clean                    Prune anonymous volumes and dangling images"
+    echo "  --help                     Show this message"
+}
+
+# ================================
+# 🛑 Stop Helpers
 # ================================
 try_stop_layer() {
     local script="$1"
@@ -21,25 +62,31 @@ try_stop_layer() {
     fi
 }
 
-stop_log_layer() {
-    echo "🛑 Stopping Log Layer..."
-    try_stop_layer ./LogLayer/downLogLayer.sh "$@"
-}
+stop_log_layer()       { try_stop_layer ./LogLayer/downLogLayer.sh "$@"; }
+stop_user_layer()      { try_stop_layer ./UserLayer/downUserLayer.sh "$@"; }
+stop_traffic_layer()   { try_stop_layer ./TrafficLayer/downTrafficLayer.sh "$@"; }
+stop_sensor_layer()    { try_stop_layer ./SensorLayer/downSensorLayer.sh "$@"; }
 
-stop_user_layer() {
-    echo "🛑 Stopping User Layer..."
-    try_stop_layer ./UserLayer/downUserLayer.sh "$@"
-}
-
-stop_traffic_layer() {
-    echo "🛑 Stopping Traffic Layer..."
-    try_stop_layer ./TrafficLayer/downTrafficLayer.sh "$@"
-}
-
-stop_application_layers() {
+stop_all_layers() {
     stop_log_layer
     stop_user_layer
     stop_traffic_layer
+    stop_sensor_layer
+}
+
+stop_single_service() {
+    local target="$1"
+    local key="${target,,}_api" # convert to lowercase + "_api"
+
+    if [[ -v SERVICES_PATHS["$key"] ]]; then
+        local service_dir="${SERVICES_PATHS[$key]}"
+        echo "🛑 Stopping container and volumes for $target..."
+        docker compose -f "$service_dir/docker-compose.yaml" down
+        echo "✅ $target stopped."
+    else
+        echo "❌ Unknown service: $target"
+        exit 1
+    fi
 }
 
 # ================================
@@ -66,7 +113,7 @@ remove_docker_network() {
 }
 
 # ================================
-# 🧹 Cleanup
+# 🧹 Docker Cleanup
 # ================================
 prune_docker_volumes() {
     echo "🧹 Pruning anonymous Docker volumes..."
@@ -81,34 +128,19 @@ prune_dangling_images() {
 }
 
 # ================================
-# 🆘 Help
-# ================================
-print_help() {
-    echo "Usage: ./down.sh [--all] [--log|--user|--traffic] [--service=ServiceName] [--rabbitmq] [--clean] [--help]"
-    echo ""
-    echo "  --all                      Stop all layers and RabbitMQ"
-    echo "  --log                      Stop Log Layer (or use --service)"
-    echo "  --user                     Stop User Layer (or use --service)"
-    echo "  --traffic                  Stop Traffic Layer (or use --service)"
-    echo "  --service=ServiceName      Target specific service inside a layer"
-    echo "  --rabbitmq                 Stop only RabbitMQ and remove its network"
-    echo "  --clean                    Prune anonymous volumes and dangling images"
-    echo "  --help                     Show this message"
-}
-
-# ================================
-# 🚦 Parse & Execute in Main
+# 🚦 Parse Arguments & Run
 # ================================
 main() {
     MODE=""
-    DO_CLEAN=false
     TARGET_SERVICE=""
+    DO_CLEAN=false
 
     while [[ "$#" -gt 0 ]]; do
         case "$1" in
             --log) MODE="log" ;;
             --user) MODE="user" ;;
             --traffic) MODE="traffic" ;;
+            --sensor) MODE="sensor" ;;
             --all) MODE="all" ;;
             --rabbitmq) MODE="rabbitmq" ;;
             --clean) DO_CLEAN=true ;;
@@ -119,30 +151,47 @@ main() {
         shift
     done
 
-    if [[ "$MODE" == "" && "$DO_CLEAN" == false ]]; then
+    if [[ -z "$MODE" && $DO_CLEAN == false ]]; then
         print_help
         exit 0
     fi
 
     case "$MODE" in
-        log) stop_log_layer "--service=$TARGET_SERVICE" ;;
-        user) stop_user_layer "--service=$TARGET_SERVICE" ;;
-        traffic) stop_traffic_layer "--service=$TARGET_SERVICE" ;;
-        all)
-            stop_application_layers
-            if docker ps -a --format '{{.Names}}' | grep -q "rabbitmq"; then
-                stop_rabbitmq
+        log)
+            if [[ -n "$TARGET_SERVICE" ]]; then
+                stop_single_service "$TARGET_SERVICE"
             else
-                echo "⚠️ RabbitMQ container not found. Skipping shutdown."
+                stop_log_layer
             fi
+            ;;
+        user)
+            if [[ -n "$TARGET_SERVICE" ]]; then
+                stop_single_service "$TARGET_SERVICE"
+            else
+                stop_user_layer
+            fi
+            ;;
+        traffic)
+            if [[ -n "$TARGET_SERVICE" ]]; then
+                stop_single_service "$TARGET_SERVICE"
+            else
+                stop_traffic_layer
+            fi
+            ;;
+        sensor)
+            if [[ -n "$TARGET_SERVICE" ]]; then
+                stop_single_service "$TARGET_SERVICE"
+            else
+                stop_sensor_layer
+            fi
+            ;;
+        all)
+            stop_all_layers
+            stop_rabbitmq
             remove_docker_network
             ;;
         rabbitmq)
-            if docker ps -a --format '{{.Names}}' | grep -q "rabbitmq"; then
-                stop_rabbitmq
-            else
-                echo "⚠️ RabbitMQ container not found. Skipping shutdown."
-            fi
+            stop_rabbitmq
             remove_docker_network
             ;;
     esac
