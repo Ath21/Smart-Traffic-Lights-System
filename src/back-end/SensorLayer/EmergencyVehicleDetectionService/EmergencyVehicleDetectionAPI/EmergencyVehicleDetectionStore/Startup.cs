@@ -38,7 +38,7 @@ public class Startup
 
         /******* [3] Services ********/
 
-        services.AddScoped(typeof(IEmergencyVehicleDetectionService), typeof(EmergencyVehicleDetectionService));
+        services.AddScoped(typeof(IEmergencyVehicleDetectService), typeof(EmergencyVehicleDetectService));
 
         /******* [4] AutoMapper ********/
 
