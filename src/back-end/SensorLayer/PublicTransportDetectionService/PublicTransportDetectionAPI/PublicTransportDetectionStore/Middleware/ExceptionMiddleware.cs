@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using InfluxDB.Client.Core.Exceptions;
+using PublicTransportDetectionStore.Publishers;
 
 namespace PublicTransportDetectionStore.Middleware;
 

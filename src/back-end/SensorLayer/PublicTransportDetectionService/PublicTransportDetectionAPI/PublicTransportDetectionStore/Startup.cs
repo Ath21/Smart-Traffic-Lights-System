@@ -4,6 +4,7 @@ using MassTransit;
 using Microsoft.OpenApi.Models;
 using PublicTransportDetectionStore.Business;
 using PublicTransportDetectionStore.Middleware;
+using PublicTransportDetectionStore.Publishers;
 using PublicTransportDetectionStore.Repositories;
 using RabbitMQ.Client;
 using SensorMessages.Data;
