@@ -64,17 +64,17 @@ public class Startup
                     h.Password(_configuration["RabbitMQ:Password"]);
                 });
 
-                cfg.Message<VehicleCountMessage>(x =>
+                cfg.Message<EmergencyVehicleDetectionMessage>(x =>
                 {
                     x.SetEntityName(_configuration["RabbitMQ:Exchange:SensorDataExchange"] ?? "sensor.data.exchange");
                 });
-                cfg.Publish<VehicleCountMessage>(x =>
+                cfg.Publish<EmergencyVehicleDetectionMessage>(x =>
                 {
                     x.ExchangeType = ExchangeType.Topic;
                 });
 
                 // Receive endpoint for vehicle count queue
-                cfg.ReceiveEndpoint(_configuration["RabbitMQ:Queue:ensorEmergencyVehicleDetectionDetectionQueue"], e =>
+                cfg.ReceiveEndpoint(_configuration["RabbitMQ:Queue:SensorEmergencyVehicleDetectionDetectionQueue"], e =>
                 {
                     e.Bind(_configuration["RabbitMQ:Exchange:SensorDataExchange"], s =>
                     {
