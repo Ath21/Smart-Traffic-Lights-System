@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PublicTransportDetectionStore")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6cd9549c261954751b38ec89460416950de9afba")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a87c77c1354d75ba26c8b8f5a09ce2270aff8ea9")]
 [assembly: System.Reflection.AssemblyProductAttribute("PublicTransportDetectionStore")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PublicTransportDetectionStore")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
