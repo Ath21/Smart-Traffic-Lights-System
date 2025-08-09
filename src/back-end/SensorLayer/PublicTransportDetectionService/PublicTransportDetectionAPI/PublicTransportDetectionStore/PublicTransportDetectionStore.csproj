@@ -27,7 +27,6 @@
     <Folder Include="Controllers/" />
     <Folder Include="Middleware/" />
     <Folder Include="Publishers/" />
-    <Folder Include="Repositories/" />
     <Folder Include="Workers/" />
   </ItemGroup>
 
