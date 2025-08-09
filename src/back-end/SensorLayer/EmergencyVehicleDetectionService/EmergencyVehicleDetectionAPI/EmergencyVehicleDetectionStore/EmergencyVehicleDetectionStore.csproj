@@ -26,7 +26,6 @@
     <Folder Include="Consumers/" />
     <Folder Include="Controllers/" />
     <Folder Include="Middleware/" />
-    <Folder Include="Repository/" />
     <Folder Include="Workers/" />
   </ItemGroup>
 
