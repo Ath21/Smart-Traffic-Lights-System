@@ -4,7 +4,6 @@ using Microsoft.OpenApi.Models;
 using RabbitMQ.Client;
 using SensorMessages.Data;
 using SensorMessages.Logs;
-using EmergencyVehicleDetectionService.Middleware;
 using EmergencyVehicleDetectionService.Publishers;
 using EmergencyVehicleDetectionStore.Business;
 using EmergencyVehicleDetectionStore.Consumers;
@@ -48,12 +47,12 @@ public class Startup
         /******* [5] MassTransit ********/
 
         services.AddScoped(typeof(IEmergencyVehicleDetectionPublisher), typeof(EmergencyVehicleDetectionPublisher));
-        services.AddScoped<EmergencyVehicleCountConsumer>();
+        services.AddScoped<EmergencyVehicleDetectionConsumer>();
 
         services.AddMassTransit(x =>
         {
             // Register the consumer for vehicle count messages
-            x.AddConsumer<EmergencyVehicleCountConsumer>();
+            x.AddConsumer<EmergencyVehicleDetectionConsumer>();
 
             x.UsingRabbitMq((context, cfg) =>
             {
@@ -83,7 +82,7 @@ public class Startup
                         s.ExchangeType = "topic";
                     });
 
-                    e.ConfigureConsumer<EmergencyVehicleCountConsumer>(context);
+                    e.ConfigureConsumer<EmergencyVehicleDetectionConsumer>(context);
                 });
 
                 cfg.Message<AuditLogMessage>(x =>

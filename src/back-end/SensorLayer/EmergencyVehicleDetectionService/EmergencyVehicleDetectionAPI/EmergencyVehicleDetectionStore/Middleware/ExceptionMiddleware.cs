@@ -1,5 +1,6 @@
 using System;
 using System.Net;
+using EmergencyVehicleDetectionStore.Publishers;
 using InfluxDB.Client.Core.Exceptions;
 
 namespace EmergencyVehicleDetectionStore.Middleware;
