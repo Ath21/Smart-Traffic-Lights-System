@@ -13,15 +13,15 @@ WORKDIR /src
 COPY SensorLayer SensorLayer/
 
 # 🔹 Restore
-RUN dotnet restore SensorLayer/PublicTransportDetectionService/EPublicTransportDetectionAPI/PublicTransportDetectionStore/PublicTransportDetectionStore.csproj
+RUN dotnet restore SensorLayer/PublicTransportDetectionService/PublicTransportDetectionAPI/PublicTransportDetectionStore/PublicTransportDetectionStore.csproj
 
 # 🔹 Build
-RUN dotnet build SensorLayer/PublicTransportDetectionService/EPublicTransportDetectionAPI/PublicTransportDetectionStore/PublicTransportDetectionStore.csproj -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build SensorLayer/PublicTransportDetectionService/PublicTransportDetectionAPI/PublicTransportDetectionStore/PublicTransportDetectionStore.csproj -c $BUILD_CONFIGURATION -o /app/build
 
 # 🔹 Publish
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish SensorLayer/PublicTransportDetectionService/EPublicTransportDetectionAPI/PublicTransportDetectionStore/PublicTransportDetectionStore.csproj -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish SensorLayer/PublicTransportDetectionService/PublicTransportDetectionAPI/PublicTransportDetectionStore/PublicTransportDetectionStore.csproj -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # 🔹 Τελικό image
 FROM base AS final

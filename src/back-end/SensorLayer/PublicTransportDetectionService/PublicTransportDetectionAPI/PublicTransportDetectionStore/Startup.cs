@@ -65,7 +65,7 @@ public class Startup
 
                 cfg.Message<PublicTransportDetectionMessage>(x =>
                 {
-                    x.SetEntityName(_configuration["RabbitMQ:Exchange:SensorDataExchange"] ?? "sensor.data.exchange");
+                    x.SetEntityName(_configuration["RabbitMQ:Exchange:SensorDataExchange"]);
                 });
                 cfg.Publish<PublicTransportDetectionMessage>(x =>
                 {
@@ -86,7 +86,7 @@ public class Startup
 
                 cfg.Message<AuditLogMessage>(x =>
                 {
-                    x.SetEntityName(_configuration["RabbitMQ:Exchange:LogStoreExchange"] ?? "log.store.exchange");
+                    x.SetEntityName(_configuration["RabbitMQ:Exchange:LogStoreExchange"]);
                 });
                 cfg.Publish<AuditLogMessage>(x =>
                 {
@@ -94,7 +94,7 @@ public class Startup
                 });
                 cfg.Message<ErrorLogMessage>(x =>
                 {
-                    x.SetEntityName(_configuration["RabbitMQ:Exchange:LogStoreExchange"] ?? "log.store.exchange");
+                    x.SetEntityName(_configuration["RabbitMQ:Exchange:LogStoreExchange"]);
                 });
                 cfg.Publish<ErrorLogMessage>(x =>
                 {
