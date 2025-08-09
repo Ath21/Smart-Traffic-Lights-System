@@ -1,9 +1,6 @@
-using System;
-using System.Threading.Tasks;
 using DetectionData.TimeSeriesObjects;
 using MassTransit;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
+
 using SensorMessages.Data;
 using VehicleDetectionStore.Repositories;
 

@@ -1,5 +1,3 @@
-using System;
-
 namespace VehicleDetectionStore.Publishers;
 
 public interface IVehicleDetectionPublisher

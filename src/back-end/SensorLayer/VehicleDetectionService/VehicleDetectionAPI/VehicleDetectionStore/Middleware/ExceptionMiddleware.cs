@@ -1,6 +1,5 @@
 using System.Net;
 using MassTransit;
-using Microsoft.Extensions.Logging;
 using VehicleDetectionStore.Publishers;
 
 namespace VehicleDetectionService.Middleware;

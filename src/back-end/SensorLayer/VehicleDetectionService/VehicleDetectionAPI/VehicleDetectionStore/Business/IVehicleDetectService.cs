@@ -1,4 +1,3 @@
-using System;
 using VehicleDetectionStore.Models;
 
 namespace VehicleDetectionStore.Business;

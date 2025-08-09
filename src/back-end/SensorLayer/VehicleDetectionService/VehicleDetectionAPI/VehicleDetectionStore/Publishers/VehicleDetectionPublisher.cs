@@ -1,10 +1,8 @@
-using Microsoft.Extensions.Configuration;
 using MassTransit;
-using Microsoft.Extensions.Logging;
 using SensorMessages.Logs;
 using SensorMessages.Data;
 using System;
-using System.Threading.Tasks;
+
 using VehicleDetectionStore.Publishers;
 
 namespace VehicleDetectionService.Publishers

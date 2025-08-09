@@ -1,4 +1,3 @@
-using System;
 using AutoMapper;
 using DetectionData.TimeSeriesObjects;
 using VehicleDetectionStore.Models;

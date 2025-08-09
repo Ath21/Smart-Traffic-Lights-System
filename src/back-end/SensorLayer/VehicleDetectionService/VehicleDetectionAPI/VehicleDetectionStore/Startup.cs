@@ -1,8 +1,5 @@
-using System.Text;
 using DetectionData;
 using MassTransit;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi;
 using Microsoft.OpenApi.Models;
 using RabbitMQ.Client;
 using SensorMessages.Data;
@@ -49,6 +46,7 @@ public class Startup
         /******* [5] MassTransit ********/
 
         services.AddScoped(typeof(IVehicleDetectionPublisher), typeof(VehicleDetectionPublisher));
+        services.AddScoped<VehicleCountConsumer>();
 
         services.AddMassTransit(x =>
         {
@@ -105,11 +103,7 @@ public class Startup
             });
         });
 
-        // Register the consumer service itself
-        services.AddScoped<VehicleCountConsumer>();
-
-
-
+        
         /******* [7] Workers ********/
 
         services.AddHostedService<VehicleSensor>();
