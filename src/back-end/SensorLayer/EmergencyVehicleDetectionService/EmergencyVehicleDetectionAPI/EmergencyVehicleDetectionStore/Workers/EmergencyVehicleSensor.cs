@@ -31,7 +31,7 @@ namespace EmergencyVehicleDetectionStore.Workers
             _configuration = configuration;
 
             _sensorDataExchange = _configuration["RabbitMQ:Exchange:SensorDataExchange"] ?? "sensor.data.exchange";
-            _emergencyVehicleRoutingKeyBase = _configuration["RabbitMQ:RoutingKey:SensorEmergencyVehicleDetectionKey"] ?? "sensor.emergency_vehicle_detection.";
+            _emergencyVehicleRoutingKeyBase = _configuration["RabbitMQ:RoutingKey:SensorEmergencyVehicleDetectionDetectionKey"] ?? "sensor.emergency_vehicle_detection.detection.*";
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)

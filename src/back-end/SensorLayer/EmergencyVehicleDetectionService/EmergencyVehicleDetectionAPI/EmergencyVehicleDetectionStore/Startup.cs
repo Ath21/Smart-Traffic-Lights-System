@@ -74,11 +74,11 @@ public class Startup
                 });
 
                 // Receive endpoint for vehicle count queue
-                cfg.ReceiveEndpoint(_configuration["RabbitMQ:Queue:SensorEmergencyVehicleDetectionVehicleCountQueue"], e =>
+                cfg.ReceiveEndpoint(_configuration["RabbitMQ:Queue:ensorEmergencyVehicleDetectionDetectionQueue"], e =>
                 {
                     e.Bind(_configuration["RabbitMQ:Exchange:SensorDataExchange"], s =>
                     {
-                        s.RoutingKey = _configuration["RabbitMQ:RoutingKey:SensorEmergencyVehicleDetectionVehicleCountKey"];
+                        s.RoutingKey = _configuration["RabbitMQ:RoutingKey:SensorEmergencyVehicleDetectionDetectionKey"];
                         s.ExchangeType = "topic";
                     });
 

@@ -1,7 +1,7 @@
 services:
-  vehicle_detection_api:
-    image: ath21/stls:vehicle_detection_api
-    container_name: vehicle_detection_api_container
+  emergency_vehicle_detection_api:
+    image: ath21/stls:emergency_vehicle_detection_api
+    container_name: emergency_vehicle_detection_api_container
     networks:
       - detection_network
       - rabbitmq_network

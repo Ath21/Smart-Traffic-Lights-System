@@ -27,7 +27,7 @@ namespace EmergencyVehicleDetectionService.Publishers
             _configuration = configuration;
 
             _sensorDataExchange = _configuration["RabbitMQ:Exchange:SensorDataExchange"] ?? "sensor.data.exchange";
-            _emergencyDetectionRoutingKeyBase = _configuration["RabbitMQ:RoutingKey:SensorEmergencyVehicleDetectionKey"] ?? "sensor.emergency_vehicle_detection.*";
+            _emergencyDetectionRoutingKeyBase = _configuration["RabbitMQ:RoutingKey:SensorEmergencyVehicleDetectionDetectionKey"] ?? "sensor.emergency_vehicle_detection.detection.*";
             _auditRoutingKey = _configuration["RabbitMQ:RoutingKey:SensorLogsAuditKey"] ?? "sensor.emergency_vehicle_detection.logs.audit";
             _errorRoutingKey = _configuration["RabbitMQ:RoutingKey:SensorLogsErrorKey"] ?? "sensor.emergency_vehicle_detection.logs.error";
         }
