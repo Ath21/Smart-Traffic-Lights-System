@@ -12,6 +12,7 @@ using EmergencyVehicleDetectionStore.Publishers;
 using EmergencyVehicleDetectionStore.Repositories;
 using VehicleDetectionStore.Workers;
 using EmergencyVehicleDetectionStore;
+using EmergencyVehicleDetectionStore.Middleware;
 
 namespace VehicleDetectionStore;
 
