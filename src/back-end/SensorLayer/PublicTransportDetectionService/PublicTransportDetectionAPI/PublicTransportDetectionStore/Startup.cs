@@ -7,6 +7,7 @@ using PublicTransportDetectionStore.Consumers;
 using PublicTransportDetectionStore.Middleware;
 using PublicTransportDetectionStore.Publishers;
 using PublicTransportDetectionStore.Repositories;
+using PublicTransportDetectionStore.Workers;
 using RabbitMQ.Client;
 using SensorMessages.Data;
 using SensorMessages.Logs;
