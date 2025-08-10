@@ -1,10 +1,6 @@
-using System;
-using System.Threading.Tasks;
 using MassTransit;
 using SensorMessages.Data;
 using SensorMessages.Logs;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Configuration;
 
 namespace IncidentDetectionStore.Publishers
 {
