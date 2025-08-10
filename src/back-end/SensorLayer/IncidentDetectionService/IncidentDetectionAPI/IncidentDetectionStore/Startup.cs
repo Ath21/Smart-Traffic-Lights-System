@@ -1,4 +1,5 @@
 using DetectionData;
+using IncidentDetectionStore.Repositories;
 using MassTransit;
 using Microsoft.OpenApi.Models;
 using RabbitMQ.Client;
