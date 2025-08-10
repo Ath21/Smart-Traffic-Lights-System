@@ -1,5 +1,6 @@
 using DetectionData;
 using IncidentDetectionStore.Business;
+using IncidentDetectionStore.Middleware;
 using IncidentDetectionStore.Repositories;
 using MassTransit;
 using Microsoft.OpenApi.Models;
