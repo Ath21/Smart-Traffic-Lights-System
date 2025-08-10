@@ -1,130 +1,224 @@
 using System;
+using IntersectionControlStore.Middleware;
 using IntersectionControlStore.Publishers.LightPub;
 using IntersectionControlStore.Publishers.LogPub;
 using IntersectionControlStore.Publishers.PriorityPub;
+using IntersectionControlStore.Consumers; // assuming your consumers are in this namespace
 using MassTransit;
-using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using RabbitMQ.Client;
+using TrafficMessages.Logs;
+using TrafficLightControlService.Consumers;
+using TrafficMessages.Priority;
+using TrafficMessages.Light;
+using SensorMessages.Data;
 
-using TrafficMessages;
-
-
-namespace TrafficDataAnalyticsStore;
-
-public class Startup
+namespace IntersectionControlStore
 {
-    private readonly IConfiguration _configuration;
-
-    public Startup(IConfiguration configuration)
+    public class Startup
     {
-        _configuration = configuration;
-    }
+        private readonly IConfiguration _configuration;
 
-    public void ConfigureServices(IServiceCollection services)
-    {
-        /******* [1] PostgreSQL Config ********/
-
-        //services.AddDbContext<TrafficDataAnalyticsDbContext>();
-
-        /******* [2] Repositories ********/
-
-        /*    
-        services.AddScoped(typeof(IDailySummaryRepository), typeof(DailySummaryRepository));
-        services.AddScoped(typeof(ICongestionAlertRepository), typeof(CongestionAlertRepository));
-        services.AddScoped(typeof(IVehicleCountRepository), typeof(VehicleCountRepository));
-        services.AddScoped(typeof(IPedestrianCountRepository), typeof(PedestrianCountRepository));
-        services.AddScoped(typeof(ICyclistCountRepository), typeof(CyclistCountRepository));
-        */
-        
-        /******* [3] Services ********/
-
-        //services.AddScoped(typeof(IDailyAggregationService), typeof(DailyAggregationService));
-        //services.AddScoped(typeof(ICongestionDetector), typeof(CongestionDetector));
-
-        /******* [4] AutoMapper ********/
-
-        //services.AddAutoMapper(typeof(TrafficDataAnalyticsStoreProfile));
-
-        /******* [6] Background Services ********/
-        
-        //services.AddHostedService<DailyAggregationJob>();
-
-        /******* [7] MassTransit ********/
-
-
-        services.AddScoped(typeof(IPriorityPublisher), typeof(PriorityPublisher));
-        services.AddScoped(typeof(ITrafficLightControlPublisher), typeof(TrafficLightControlPublisher));
-        services.AddScoped(typeof(ITrafficLogPublisher), typeof(TrafficLogPublisher));
-
-        //services.AddScoped<PriorityConsumer>();
-
-        services.AddMassTransit(x =>
+        public Startup(IConfiguration configuration)
         {
-            // Register the consumer for vehicle count messages
-            x.AddConsumer<CyclistDetectionConsumer>();
+            _configuration = configuration;
+        }
 
-            x.UsingRabbitMq((context, cfg) =>
+        public void ConfigureServices(IServiceCollection services)
+        {
+            /******* [1] Database Config ********/
+            // Example: services.AddDbContext<YourDbContext>(...);
+
+            /******* [2] Repositories ********/
+            // Register repositories here if any:
+            // services.AddScoped<IYourRepository, YourRepository>();
+
+            /******* [3] Services ********/
+            // Register any domain services here:
+            // services.AddScoped<IYourService, YourService>();
+
+            /******* [4] AutoMapper ********/
+            // services.AddAutoMapper(typeof(YourMappingProfile));
+
+            /******* [5] Publishers ********/
+            services.AddScoped<IPriorityPublisher, PriorityPublisher>();
+            services.AddScoped<ITrafficLightControlPublisher, TrafficLightControlPublisher>();
+            services.AddScoped<ITrafficLogPublisher, TrafficLogPublisher>();
+
+            /******* [6] Consumers ********/
+            // Register your consumers for MassTransit here:
+            services.AddScoped<TrafficLightStateUpdateConsumer>();
+            services.AddScoped<SensorDataConsumer>();
+            // Add other consumers as needed
+
+            /******* [7] MassTransit & RabbitMQ Config ********/
+            services.AddMassTransit(x =>
             {
-                cfg.Host(_configuration["RabbitMQ:Host"],
-                        "/",
-                        h =>
-                {
-                    h.Username(_configuration["RabbitMQ:Username"]);
-                    h.Password(_configuration["RabbitMQ:Password"]);
-                });
+                x.AddConsumer<SensorDataConsumer>();
+                x.AddConsumer<TrafficLightStateUpdateConsumer>();
 
-                cfg.Message<PublicTransportDetectionMessage>(x =>
+                x.UsingRabbitMq((context, cfg) =>
                 {
-                    x.SetEntityName(_configuration["RabbitMQ:Exchange:SensorDataExchange"]);
-                });
-                cfg.Publish<PublicTransportDetectionMessage>(x =>
-                {
-                    x.ExchangeType = ExchangeType.Topic;
-                });
-
-                // Receive endpoint for vehicle count queue
-                cfg.ReceiveEndpoint(_configuration["RabbitMQ:Queue:SensorCyclistDetectionRequestQueue"], e =>
-                {
-                    e.Bind(_configuration["RabbitMQ:Exchange:SensorDataExchange"], s =>
+                    cfg.Host(_configuration["RabbitMQ:Host"], "/", h =>
                     {
-                        s.RoutingKey = _configuration["RabbitMQ:RoutingKey:SensorCyclistDetectionRequestKey"];
-                        s.ExchangeType = "topic";
+                        h.Username(_configuration["RabbitMQ:Username"]);
+                        h.Password(_configuration["RabbitMQ:Password"]);
                     });
 
-                    e.ConfigureConsumer<CyclistDetectionConsumer>(context);
-                });
+                    // Sensor Data Exchange setup
+                    cfg.Message<VehicleCountMessage>(m =>
+                    {
+                        m.SetEntityName(_configuration["RabbitMQ:Exchange:SensorDataExchange"]);
+                    });
+                    cfg.Message<EmergencyVehicleDetectionMessage>(m =>
+                    {
+                        m.SetEntityName(_configuration["RabbitMQ:Exchange:SensorDataExchange"]);
+                    });
+                    cfg.Message<PublicTransportDetectionMessage>(m =>
+                    {
+                        m.SetEntityName(_configuration["RabbitMQ:Exchange:SensorDataExchange"]);
+                    });
+                    cfg.Message<PedestrianDetectionMessage>(m =>
+                    {
+                        m.SetEntityName(_configuration["RabbitMQ:Exchange:SensorDataExchange"]);
+                    });
+                    cfg.Message<CyclistDetectionMessage>(m =>
+                    {
+                        m.SetEntityName(_configuration["RabbitMQ:Exchange:SensorDataExchange"]);
+                    });
+                    cfg.Message<IncidentDetectionMessage>(m =>
+                    {
+                        m.SetEntityName(_configuration["RabbitMQ:Exchange:SensorDataExchange"]);
+                    });
 
-                cfg.Message<AuditLogMessage>(x =>
-                {
-                    x.SetEntityName(_configuration["RabbitMQ:Exchange:LogStoreExchange"]);
-                });
-                cfg.Publish<AuditLogMessage>(x =>
-                {
-                    x.ExchangeType = ExchangeType.Direct;
-                });
-                cfg.Message<ErrorLogMessage>(x =>
-                {
-                    x.SetEntityName(_configuration["RabbitMQ:Exchange:LogStoreExchange"]);
-                });
-                cfg.Publish<ErrorLogMessage>(x =>
-                {
-                    x.ExchangeType = ExchangeType.Direct;
+                    // Publish exchange type for all sensor messages
+                    cfg.Publish<VehicleCountMessage>(m => m.ExchangeType = ExchangeType.Topic);
+                    cfg.Publish<EmergencyVehicleDetectionMessage>(m => m.ExchangeType = ExchangeType.Topic);
+                    cfg.Publish<PublicTransportDetectionMessage>(m => m.ExchangeType = ExchangeType.Topic);
+                    cfg.Publish<PedestrianDetectionMessage>(m => m.ExchangeType = ExchangeType.Topic);
+                    cfg.Publish<CyclistDetectionMessage>(m => m.ExchangeType = ExchangeType.Topic);
+                    cfg.Publish<IncidentDetectionMessage>(m => m.ExchangeType = ExchangeType.Topic);
+
+                    // Receive endpoints - one per sensor data queue + routing key
+
+                    cfg.ReceiveEndpoint(_configuration["RabbitMQ:Queue:SensorVehicleCountQueue"], e =>
+                    {
+                        e.Bind(_configuration["RabbitMQ:Exchange:SensorDataExchange"], s =>
+                        {
+                            s.RoutingKey = _configuration["RabbitMQ:RoutingKey:SensorVehicleCount"];
+                            s.ExchangeType = ExchangeType.Topic;
+                        });
+                        e.ConfigureConsumer<SensorDataConsumer>(context);
+                    });
+
+                    cfg.ReceiveEndpoint(_configuration["RabbitMQ:Queue:SensorEmergencyVehicleQueue"], e =>
+                    {
+                        e.Bind(_configuration["RabbitMQ:Exchange:SensorDataExchange"], s =>
+                        {
+                            s.RoutingKey = _configuration["RabbitMQ:RoutingKey:SensorEmergencyVehicle"];
+                            s.ExchangeType = ExchangeType.Topic;
+                        });
+                        e.ConfigureConsumer<SensorDataConsumer>(context);
+                    });
+
+                    cfg.ReceiveEndpoint(_configuration["RabbitMQ:Queue:SensorPublicTransportQueue"], e =>
+                    {
+                        e.Bind(_configuration["RabbitMQ:Exchange:SensorDataExchange"], s =>
+                        {
+                            s.RoutingKey = _configuration["RabbitMQ:RoutingKey:SensorPublicTransport"];
+                            s.ExchangeType = ExchangeType.Topic;
+                        });
+                        e.ConfigureConsumer<SensorDataConsumer>(context);
+                    });
+
+                    cfg.ReceiveEndpoint(_configuration["RabbitMQ:Queue:SensorPedestrianQueue"], e =>
+                    {
+                        e.Bind(_configuration["RabbitMQ:Exchange:SensorDataExchange"], s =>
+                        {
+                            s.RoutingKey = _configuration["RabbitMQ:RoutingKey:SensorPedestrian"];
+                            s.ExchangeType = ExchangeType.Topic;
+                        });
+                        e.ConfigureConsumer<SensorDataConsumer>(context);
+                    });
+
+                    cfg.ReceiveEndpoint(_configuration["RabbitMQ:Queue:SensorCyclistQueue"], e =>
+                    {
+                        e.Bind(_configuration["RabbitMQ:Exchange:SensorDataExchange"], s =>
+                        {
+                            s.RoutingKey = _configuration["RabbitMQ:RoutingKey:SensorCyclist"];
+                            s.ExchangeType = ExchangeType.Topic;
+                        });
+                        e.ConfigureConsumer<SensorDataConsumer>(context);
+                    });
+
+                    cfg.ReceiveEndpoint(_configuration["RabbitMQ:Queue:SensorIncidentQueue"], e =>
+                    {
+                        e.Bind(_configuration["RabbitMQ:Exchange:SensorDataExchange"], s =>
+                        {
+                            s.RoutingKey = _configuration["RabbitMQ:RoutingKey:SensorIncident"];
+                            s.ExchangeType = ExchangeType.Topic;
+                        });
+                        e.ConfigureConsumer<SensorDataConsumer>(context);
+                    });
+
+                    // Traffic Light Coordination Exchange & Consumer
+
+                    cfg.Message<TrafficLightStateUpdate>(m =>
+                    {
+                        m.SetEntityName(_configuration["RabbitMQ:Exchange:TrafficControlExchange"]);
+                    });
+                    cfg.Publish<TrafficLightStateUpdate>(m =>
+                    {
+                        m.ExchangeType = ExchangeType.Topic;
+                    });
+
+                    cfg.ReceiveEndpoint(_configuration["RabbitMQ:Queue:TrafficLightStateUpdateQueue"], e =>
+                    {
+                        e.Bind(_configuration["RabbitMQ:Exchange:TrafficControlExchange"], s =>
+                        {
+                            s.RoutingKey = _configuration["RabbitMQ:RoutingKey:TrafficLightCoordinationUpdate"];
+                            s.ExchangeType = ExchangeType.Topic;
+                        });
+                        e.ConfigureConsumer<TrafficLightStateUpdateConsumer>(context);
+                    });
+
+                    // Logs exchange setup (optional)
+
+                    cfg.Message<AuditLogMessage>(m =>
+                    {
+                        m.SetEntityName(_configuration["RabbitMQ:Exchange:LogStoreExchange"]);
+                    });
+                    cfg.Publish<AuditLogMessage>(m =>
+                    {
+                        m.ExchangeType = ExchangeType.Direct;
+                    });
+                    cfg.Message<ErrorLogMessage>(m =>
+                    {
+                        m.SetEntityName(_configuration["RabbitMQ:Exchange:LogStoreExchange"]);
+                    });
+                    cfg.Publish<ErrorLogMessage>(m =>
+                    {
+                        m.ExchangeType = ExchangeType.Direct;
+                    });
                 });
             });
-        });
-        
 
-        /******* [7] Controllers ********/
 
-        services.AddControllers()
-            .AddJsonOptions(
-                options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
-        services.AddEndpointsApiExplorer();
 
-        /******* [8] Swagger ********/
+            /******* [8] Controllers ********/
+            services.AddControllers()
+                .AddJsonOptions(opts => opts.JsonSerializerOptions.PropertyNamingPolicy = null);
 
-        services.AddSwaggerGen(c =>
+            /******* [9] Exception Middleware ********/
+            // Middleware will be added in Configure method
+
+            /******* [10] Swagger ********/
+            services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Intersection Control API", Version = "v1.0" });
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -141,38 +235,46 @@ public class Startup
                     {
                         new OpenApiSecurityScheme
                         {
-                            Reference = new OpenApiReference
-                            {
-                                Type = ReferenceType.SecurityScheme,
-                                Id = "Bearer"
+                            Reference = new OpenApiReference 
+                            { 
+                                Type = ReferenceType.SecurityScheme, 
+                                Id = "Bearer" 
                             }
                         },
-                        new string[] { }
+                        Array.Empty<string>()
                     }
                 });
             });
-    }
 
-    public void Configure(WebApplication app, IWebHostEnvironment env)
-    {
-        if (env.IsDevelopment() || env.IsProduction())
-        {
-            app.UseSwagger();
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Intersection Control API");
-            });
+            /******* [11] Authentication & Authorization ********/
+            // Configure your authentication here
+            // services.AddAuthentication(...);
+            // services.AddAuthorization(...);
         }
 
-        app.UseHttpsRedirection();
+        public void Configure(WebApplication app, IWebHostEnvironment env)
+        {
+            if (env.IsDevelopment() || env.IsProduction())
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Intersection Control API");
+                });
+            }
 
-        app.UseMiddleware<ExceptionMiddleware>();
+            app.UseHttpsRedirection();
 
-        app.UseAuthentication();
-        app.UseAuthorization();
+            // Exception Middleware
+            app.UseMiddleware<ExceptionMiddleware>();
 
-        app.MapControllers();
+            // Authentication & Authorization Middleware
+            app.UseAuthentication();
+            app.UseAuthorization();
 
-        app.Run();
+            app.MapControllers();
+
+            app.Run();
+        }
     }
 }
