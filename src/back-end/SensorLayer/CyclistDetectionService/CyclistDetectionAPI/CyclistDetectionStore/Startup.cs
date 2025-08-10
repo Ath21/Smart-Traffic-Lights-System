@@ -1,5 +1,6 @@
 using System;
 using CyclistDetectionStore.Business;
+using CyclistDetectionStore.Consumers;
 using CyclistDetectionStore.Middleware;
 using CyclistDetectionStore.Publishers;
 using CyclistDetectionStore.Repositories;
