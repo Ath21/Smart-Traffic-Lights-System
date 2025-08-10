@@ -4,6 +4,7 @@ using MassTransit;
 using Microsoft.OpenApi.Models;
 using PedestrianDetectionStore;
 using PedestrianDetectionStore.Business;
+using PedestrianDetectionStore.Consumers;
 using PedestrianDetectionStore.Middleware;
 using PedestrianDetectionStore.Publishers;
 using PedestrianDetectionStore.Repositories;
