@@ -1,4 +1,5 @@
 using System;
+using CyclistDetectionStore.Repositories;
 using DetectionData;
 using MassTransit;
 using Microsoft.OpenApi.Models;
