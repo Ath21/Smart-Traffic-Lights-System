@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("IntersectionControlStore")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c14ed6c501b69376f674de09f1b1de4f64b4b5df")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6093c24f859d8adf7e395e72f05cf3d484a5904b")]
 [assembly: System.Reflection.AssemblyProductAttribute("IntersectionControlStore")]
 [assembly: System.Reflection.AssemblyTitleAttribute("IntersectionControlStore")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
