@@ -4,6 +4,7 @@ using CyclistDetectionStore.Consumers;
 using CyclistDetectionStore.Middleware;
 using CyclistDetectionStore.Publishers;
 using CyclistDetectionStore.Repositories;
+using CyclistDetectionStore.Workers;
 using DetectionData;
 using MassTransit;
 using Microsoft.OpenApi.Models;
