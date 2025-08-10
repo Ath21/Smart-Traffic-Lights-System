@@ -1,0 +1,6 @@
+@CyclistDetectionStore_HostAddress = http://localhost:5118
+
+GET {{CyclistDetectionStore_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

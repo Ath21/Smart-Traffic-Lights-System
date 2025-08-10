@@ -1,0 +1,16 @@
+**/bin/
+**/obj/
+**/.vs/
+**/.vscode/
+**/.cache/
+.git/
+*.user
+*.suo
+*.csproj.user
+*.db
+*.mdf
+*.ldf
+.env
+docker-compose.*
+Dockerfile*
+*.log
