@@ -1,0 +1,62 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DetectionData", "..\..\DetectionData\DetectionData.csproj", "{A4AE0A1C-52B3-41DB-A174-816AEE09A448}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PedestrianDetectionStore", "PedestrianDetectionStore\PedestrianDetectionStore.csproj", "{A7CEF8F3-BFF6-422C-901F-99D5013AC956}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SensorMessages", "..\..\SensorMessages\SensorMessages.csproj", "{B5CEC664-DDF0-4249-8656-F42B881225B7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A4AE0A1C-52B3-41DB-A174-816AEE09A448}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A4AE0A1C-52B3-41DB-A174-816AEE09A448}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A4AE0A1C-52B3-41DB-A174-816AEE09A448}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A4AE0A1C-52B3-41DB-A174-816AEE09A448}.Debug|x64.Build.0 = Debug|Any CPU
+		{A4AE0A1C-52B3-41DB-A174-816AEE09A448}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A4AE0A1C-52B3-41DB-A174-816AEE09A448}.Debug|x86.Build.0 = Debug|Any CPU
+		{A4AE0A1C-52B3-41DB-A174-816AEE09A448}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A4AE0A1C-52B3-41DB-A174-816AEE09A448}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A4AE0A1C-52B3-41DB-A174-816AEE09A448}.Release|x64.ActiveCfg = Release|Any CPU
+		{A4AE0A1C-52B3-41DB-A174-816AEE09A448}.Release|x64.Build.0 = Release|Any CPU
+		{A4AE0A1C-52B3-41DB-A174-816AEE09A448}.Release|x86.ActiveCfg = Release|Any CPU
+		{A4AE0A1C-52B3-41DB-A174-816AEE09A448}.Release|x86.Build.0 = Release|Any CPU
+		{A7CEF8F3-BFF6-422C-901F-99D5013AC956}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A7CEF8F3-BFF6-422C-901F-99D5013AC956}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A7CEF8F3-BFF6-422C-901F-99D5013AC956}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A7CEF8F3-BFF6-422C-901F-99D5013AC956}.Debug|x64.Build.0 = Debug|Any CPU
+		{A7CEF8F3-BFF6-422C-901F-99D5013AC956}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A7CEF8F3-BFF6-422C-901F-99D5013AC956}.Debug|x86.Build.0 = Debug|Any CPU
+		{A7CEF8F3-BFF6-422C-901F-99D5013AC956}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A7CEF8F3-BFF6-422C-901F-99D5013AC956}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A7CEF8F3-BFF6-422C-901F-99D5013AC956}.Release|x64.ActiveCfg = Release|Any CPU
+		{A7CEF8F3-BFF6-422C-901F-99D5013AC956}.Release|x64.Build.0 = Release|Any CPU
+		{A7CEF8F3-BFF6-422C-901F-99D5013AC956}.Release|x86.ActiveCfg = Release|Any CPU
+		{A7CEF8F3-BFF6-422C-901F-99D5013AC956}.Release|x86.Build.0 = Release|Any CPU
+		{B5CEC664-DDF0-4249-8656-F42B881225B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5CEC664-DDF0-4249-8656-F42B881225B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5CEC664-DDF0-4249-8656-F42B881225B7}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B5CEC664-DDF0-4249-8656-F42B881225B7}.Debug|x64.Build.0 = Debug|Any CPU
+		{B5CEC664-DDF0-4249-8656-F42B881225B7}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B5CEC664-DDF0-4249-8656-F42B881225B7}.Debug|x86.Build.0 = Debug|Any CPU
+		{B5CEC664-DDF0-4249-8656-F42B881225B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5CEC664-DDF0-4249-8656-F42B881225B7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B5CEC664-DDF0-4249-8656-F42B881225B7}.Release|x64.ActiveCfg = Release|Any CPU
+		{B5CEC664-DDF0-4249-8656-F42B881225B7}.Release|x64.Build.0 = Release|Any CPU
+		{B5CEC664-DDF0-4249-8656-F42B881225B7}.Release|x86.ActiveCfg = Release|Any CPU
+		{B5CEC664-DDF0-4249-8656-F42B881225B7}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
