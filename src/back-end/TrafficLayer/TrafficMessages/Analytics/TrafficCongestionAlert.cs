@@ -1,4 +1,4 @@
-﻿namespace TrafficMessages;
+﻿namespace TrafficMessages.Analytics;
 
 public record TrafficCongestionAlert(
     string IntersectionId,

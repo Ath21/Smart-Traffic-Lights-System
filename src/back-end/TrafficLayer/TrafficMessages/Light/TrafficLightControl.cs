@@ -1,4 +1,4 @@
-namespace TrafficMessages;
+namespace TrafficMessages.Light;
 
 public record TrafficLightControl(
     string IntersectionId,     // e.g., "INT-004"
