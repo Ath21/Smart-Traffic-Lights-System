@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("IncidentDetectionStore")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6c8586ff70f6f1679ce102969472ef0e47d32d8f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+aec7161e9d2909c14615d55ef84d0effc37c31fb")]
 [assembly: System.Reflection.AssemblyProductAttribute("IncidentDetectionStore")]
 [assembly: System.Reflection.AssemblyTitleAttribute("IncidentDetectionStore")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

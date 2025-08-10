@@ -4,6 +4,7 @@ using IncidentDetectionStore.Consumers;
 using IncidentDetectionStore.Middleware;
 using IncidentDetectionStore.Publishers;
 using IncidentDetectionStore.Repositories;
+using IncidentDetectionStore.Workers;
 using MassTransit;
 using Microsoft.OpenApi.Models;
 using RabbitMQ.Client;
