@@ -1,4 +1,3 @@
-using System;
 using CyclistDetectionStore.Business;
 using CyclistDetectionStore.Consumers;
 using CyclistDetectionStore.Middleware;
