@@ -1,0 +1,22 @@
+services:
+  pedestrian_detection_api:
+    image: ath21/stls:pedestrian_detection_api
+    container_name: pedestrian_detection_api_container
+    networks:
+      - detection_network
+      - rabbitmq_network
+      - influxdb_network
+
+networks:
+  detection_network:
+    name: detection_network
+    driver: bridge
+    external: true
+  rabbitmq_network:
+    name: rabbitmq_network
+    driver: bridge
+    external: true
+  influxdb_network:
+    name: influxdb_network
+    driver: bridge
+    external: true
