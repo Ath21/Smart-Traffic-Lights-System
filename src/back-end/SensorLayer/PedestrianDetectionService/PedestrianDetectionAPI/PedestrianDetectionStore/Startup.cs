@@ -3,6 +3,7 @@ using DetectionData;
 using MassTransit;
 using Microsoft.OpenApi.Models;
 using PedestrianDetectionStore;
+using PedestrianDetectionStore.Business;
 using PedestrianDetectionStore.Repositories;
 using RabbitMQ.Client;
 using SensorMessages.Data;
