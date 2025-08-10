@@ -1,4 +1,7 @@
 using System;
+using IntersectionControlStore.Publishers.LightPub;
+using IntersectionControlStore.Publishers.LogPub;
+using IntersectionControlStore.Publishers.PriorityPub;
 using MassTransit;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
@@ -50,8 +53,11 @@ public class Startup
         /******* [7] MassTransit ********/
 
 
-        services.AddScoped(typeof(ICyclistDetectionPublisher), typeof(CyclistDetectionPublisher));
-        services.AddScoped<CyclistDetectionConsumer>();
+        services.AddScoped(typeof(IPriorityPublisher), typeof(PriorityPublisher));
+        services.AddScoped(typeof(ITrafficLightControlPublisher), typeof(TrafficLightControlPublisher));
+        services.AddScoped(typeof(ITrafficLogPublisher), typeof(TrafficLogPublisher));
+
+        //services.AddScoped<PriorityConsumer>();
 
         services.AddMassTransit(x =>
         {

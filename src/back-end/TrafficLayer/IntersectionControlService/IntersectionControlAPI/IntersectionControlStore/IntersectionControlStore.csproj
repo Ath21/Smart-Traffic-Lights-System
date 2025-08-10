@@ -21,8 +21,4 @@
     <ProjectReference Include="../../../TrafficMessages/TrafficMessages.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Publishers/LogPub/" />
-  </ItemGroup>
-
 </Project>
