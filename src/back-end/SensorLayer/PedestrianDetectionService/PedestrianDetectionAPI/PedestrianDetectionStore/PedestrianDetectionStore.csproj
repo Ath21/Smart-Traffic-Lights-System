@@ -28,7 +28,6 @@
     <Folder Include="Middleware/" />
     <Folder Include="Models/" />
     <Folder Include="Publishers/" />
-    <Folder Include="Repositories/" />
     <Folder Include="Workers/" />
   </ItemGroup>
 
