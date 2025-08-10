@@ -8,6 +8,7 @@ using PedestrianDetectionStore.Consumers;
 using PedestrianDetectionStore.Middleware;
 using PedestrianDetectionStore.Publishers;
 using PedestrianDetectionStore.Repositories;
+using PedestrianDetectionStore.Workers;
 using RabbitMQ.Client;
 using SensorMessages.Data;
 using SensorMessages.Logs;
