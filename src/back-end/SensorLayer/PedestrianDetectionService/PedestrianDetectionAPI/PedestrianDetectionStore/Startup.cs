@@ -13,7 +13,7 @@ using RabbitMQ.Client;
 using SensorMessages.Data;
 using SensorMessages.Logs;
 
-namespace PublicTransportDetectionStore;
+namespace PedestrianDetectionStore;
 
 public class Startup
 {
