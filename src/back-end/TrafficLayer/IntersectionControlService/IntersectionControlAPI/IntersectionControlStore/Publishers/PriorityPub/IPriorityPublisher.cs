@@ -1,4 +1,5 @@
 using System;
+using IntersectionControlStore.Models;
 
 namespace IntersectionControlStore.Publishers.PriorityPub;
 
@@ -8,5 +9,6 @@ public interface IPriorityPublisher
     Task PublishPriorityPublicTransportAsync(string intersectionId, bool priority, DateTime updatedAt);
     Task PublishPriorityPedestrianAsync(string intersectionId, bool priority, DateTime updatedAt);
     Task PublishPriorityCyclistAsync(string intersectionId, bool priority, DateTime updatedAt);
+    Task PublishPrioritiesAsync(IntersectionPriorityStatus status);
 }
 

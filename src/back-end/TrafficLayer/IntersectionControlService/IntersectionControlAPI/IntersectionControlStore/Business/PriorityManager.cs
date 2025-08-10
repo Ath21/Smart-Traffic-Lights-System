@@ -1,158 +1,134 @@
 using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using IntersectionControlStore.Models;
 using MassTransit;
 using SensorMessages.Data;
 using TrafficMessages.Priority;
+using IntersectionControlStore.Publishers.PriorityPub;
 
-namespace IntersectionControlStore.Business;
-
-public class PriorityManager : IPriorityManager
+namespace IntersectionControlStore.Business
 {
-    private readonly IBus _bus;
-    private readonly Dictionary<Guid, IntersectionPriorityStatus> _priorityStates = new();
-
-    public PriorityManager(IBus bus)
+    public class PriorityManager : IPriorityManager
     {
-        _bus = bus;
-    }
+        private readonly IPriorityPublisher _priorityPublisher;
+        private readonly Dictionary<Guid, IntersectionPriorityStatus> _priorityStates = new();
 
-    public IntersectionPriorityStatus? GetPriorityStatus(Guid intersectionId)
-    {
-        _priorityStates.TryGetValue(intersectionId, out var status);
-        return status;
-    }
-
-    public async Task OverridePriorityAsync(Guid intersectionId, IntersectionPriorityStatus overrideStatus, int durationSeconds)
-    {
-        if (_priorityStates.TryGetValue(intersectionId, out var existingStatus))
+        public PriorityManager(IPriorityPublisher priorityPublisher)
         {
-            existingStatus.OverrideCancellationTokenSource?.Cancel(); // cancel previous override if any
-        }
-        else
-        {
-            existingStatus = new IntersectionPriorityStatus { IntersectionId = intersectionId };
-            _priorityStates[intersectionId] = existingStatus;
+            _priorityPublisher = priorityPublisher;
         }
 
-        existingStatus.PriorityEmergencyVehicle = overrideStatus.PriorityEmergencyVehicle;
-        existingStatus.PriorityPublicTransport = overrideStatus.PriorityPublicTransport;
-        existingStatus.PriorityPedestrian = overrideStatus.PriorityPedestrian;
-        existingStatus.PriorityCyclist = overrideStatus.PriorityCyclist;
-        existingStatus.UpdatedAt = DateTime.UtcNow;
-
-        var cts = new CancellationTokenSource();
-        existingStatus.OverrideCancellationTokenSource = cts;
-
-        // Publish updated priorities immediately
-        await PublishPrioritiesAsync(existingStatus);
-
-        _ = Task.Run(async () =>
+        public IntersectionPriorityStatus? GetPriorityStatus(Guid intersectionId)
         {
-            try
+            _priorityStates.TryGetValue(intersectionId, out var status);
+            return status;
+        }
+
+        public async Task OverridePriorityAsync(Guid intersectionId, IntersectionPriorityStatus overrideStatus, int durationSeconds)
+        {
+            if (_priorityStates.TryGetValue(intersectionId, out var existingStatus))
             {
-                await Task.Delay(durationSeconds * 1000, cts.Token);
-                if (!cts.Token.IsCancellationRequested)
+                existingStatus.OverrideCancellationTokenSource?.Cancel(); // cancel previous override if any
+            }
+            else
+            {
+                existingStatus = new IntersectionPriorityStatus { IntersectionId = intersectionId };
+                _priorityStates[intersectionId] = existingStatus;
+            }
+
+            existingStatus.PriorityEmergencyVehicle = overrideStatus.PriorityEmergencyVehicle;
+            existingStatus.PriorityPublicTransport = overrideStatus.PriorityPublicTransport;
+            existingStatus.PriorityPedestrian = overrideStatus.PriorityPedestrian;
+            existingStatus.PriorityCyclist = overrideStatus.PriorityCyclist;
+            existingStatus.UpdatedAt = DateTime.UtcNow;
+
+            var cts = new CancellationTokenSource();
+            existingStatus.OverrideCancellationTokenSource = cts;
+
+            // Publish updated priorities immediately via publisher
+            await _priorityPublisher.PublishPrioritiesAsync(existingStatus);
+
+            _ = Task.Run(async () =>
+            {
+                try
                 {
-                    // After override duration expires, clear override and reset to default (e.g., no priorities)
-                    existingStatus.PriorityEmergencyVehicle = false;
-                    existingStatus.PriorityPublicTransport = false;
-                    existingStatus.PriorityPedestrian = false;
-                    existingStatus.PriorityCyclist = false;
-                    existingStatus.UpdatedAt = DateTime.UtcNow;
-                    existingStatus.OverrideCancellationTokenSource = null;
+                    await Task.Delay(durationSeconds * 1000, cts.Token);
+                    if (!cts.Token.IsCancellationRequested)
+                    {
+                        // After override duration expires, clear override and reset to default (e.g., no priorities)
+                        existingStatus.PriorityEmergencyVehicle = false;
+                        existingStatus.PriorityPublicTransport = false;
+                        existingStatus.PriorityPedestrian = false;
+                        existingStatus.PriorityCyclist = false;
+                        existingStatus.UpdatedAt = DateTime.UtcNow;
+                        existingStatus.OverrideCancellationTokenSource = null;
 
-                    await PublishPrioritiesAsync(existingStatus);
+                        await _priorityPublisher.PublishPrioritiesAsync(existingStatus);
+                    }
                 }
-            }
-            catch (TaskCanceledException)
-            {
-                // Override was canceled by a new override, do nothing
-            }
-        });
-    }
-
-    public async Task ProcessSensorMessageAsync(object sensorMessage)
-    {
-        switch (sensorMessage)
-        {
-            case EmergencyVehicleDetectionMessage evm:
-                await UpdatePriority(evm.IntersectionId, priorityEmergencyVehicle: true);
-                break;
-
-            case PedestrianDetectionMessage pdm:
-                await UpdatePriority(pdm.IntersectionId, priorityPedestrian: pdm.PedestrianCount > 0);
-                break;
-
-            case PublicTransportDetectionMessage ptm:
-                await UpdatePriority(ptm.IntersectionId, priorityPublicTransport: ptm.PassengerCount > 0);
-                break;
-
-            case CyclistDetectionMessage cdm:
-                await UpdatePriority(cdm.IntersectionId, priorityCyclist: cdm.CyclistCount > 0);
-                break;
-
-            // Add more sensor types as needed
-
-            default:
-                break;
-        }
-    }
-
-    private async Task UpdatePriority(Guid intersectionId,
-        bool? priorityEmergencyVehicle = null,
-        bool? priorityPublicTransport = null,
-        bool? priorityPedestrian = null,
-        bool? priorityCyclist = null)
-    {
-        if (!_priorityStates.TryGetValue(intersectionId, out var status))
-        {
-            status = new IntersectionPriorityStatus
-            {
-                IntersectionId = intersectionId,
-                UpdatedAt = DateTime.UtcNow
-            };
-            _priorityStates[intersectionId] = status;
+                catch (TaskCanceledException)
+                {
+                    // Override was canceled by a new override, do nothing
+                }
+            });
         }
 
-        // Skip update if overridden manually
-        if (status.OverrideCancellationTokenSource != null)
-            return;
+        public async Task ProcessSensorMessageAsync(object sensorMessage)
+        {
+            switch (sensorMessage)
+            {
+                case EmergencyVehicleDetectionMessage evm:
+                    await UpdatePriority(evm.IntersectionId, priorityEmergencyVehicle: true);
+                    break;
 
-        if (priorityEmergencyVehicle.HasValue) status.PriorityEmergencyVehicle = priorityEmergencyVehicle.Value;
-        if (priorityPublicTransport.HasValue) status.PriorityPublicTransport = priorityPublicTransport.Value;
-        if (priorityPedestrian.HasValue) status.PriorityPedestrian = priorityPedestrian.Value;
-        if (priorityCyclist.HasValue) status.PriorityCyclist = priorityCyclist.Value;
-        status.UpdatedAt = DateTime.UtcNow;
+                case PedestrianDetectionMessage pdm:
+                    await UpdatePriority(pdm.IntersectionId, priorityPedestrian: pdm.PedestrianCount > 0);
+                    break;
 
-        await PublishPrioritiesAsync(status);
-    }
+                case PublicTransportDetectionMessage ptm:
+                    await UpdatePriority(ptm.IntersectionId, priorityPublicTransport: ptm.PassengerCount > 0);
+                    break;
 
-    private async Task PublishPrioritiesAsync(IntersectionPriorityStatus status)
-    {
-        var intersectionIdString = status.IntersectionId.ToString();
+                case CyclistDetectionMessage cdm:
+                    await UpdatePriority(cdm.IntersectionId, priorityCyclist: cdm.CyclistCount > 0);
+                    break;
 
-        await _bus.Publish(new PriorityEmergencyVehicle(
-            intersectionIdString,
-            status.PriorityEmergencyVehicle,
-            status.UpdatedAt
-        ));
+                // Add more sensor types as needed
 
-        await _bus.Publish(new PriorityPublicTransport(
-            intersectionIdString,
-            status.PriorityPublicTransport,
-            status.UpdatedAt
-        ));
+                default:
+                    break;
+            }
+        }
 
-        await _bus.Publish(new PriorityPedestrian(
-            intersectionIdString,
-            status.PriorityPedestrian,
-            status.UpdatedAt
-        ));
+        private async Task UpdatePriority(Guid intersectionId,
+            bool? priorityEmergencyVehicle = null,
+            bool? priorityPublicTransport = null,
+            bool? priorityPedestrian = null,
+            bool? priorityCyclist = null)
+        {
+            if (!_priorityStates.TryGetValue(intersectionId, out var status))
+            {
+                status = new IntersectionPriorityStatus
+                {
+                    IntersectionId = intersectionId,
+                    UpdatedAt = DateTime.UtcNow
+                };
+                _priorityStates[intersectionId] = status;
+            }
 
-        await _bus.Publish(new PriorityCyclist(
-            intersectionIdString,
-            status.PriorityCyclist,
-            status.UpdatedAt
-        ));
+            // Skip update if overridden manually
+            if (status.OverrideCancellationTokenSource != null)
+                return;
+
+            if (priorityEmergencyVehicle.HasValue) status.PriorityEmergencyVehicle = priorityEmergencyVehicle.Value;
+            if (priorityPublicTransport.HasValue) status.PriorityPublicTransport = priorityPublicTransport.Value;
+            if (priorityPedestrian.HasValue) status.PriorityPedestrian = priorityPedestrian.Value;
+            if (priorityCyclist.HasValue) status.PriorityCyclist = priorityCyclist.Value;
+            status.UpdatedAt = DateTime.UtcNow;
+
+            await _priorityPublisher.PublishPrioritiesAsync(status);
+        }
     }
 }

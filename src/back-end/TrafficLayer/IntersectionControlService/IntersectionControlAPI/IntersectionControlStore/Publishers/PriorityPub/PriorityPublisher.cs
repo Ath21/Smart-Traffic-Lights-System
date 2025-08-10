@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using IntersectionControlStore.Models;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -64,6 +65,17 @@ namespace IntersectionControlStore.Publishers.PriorityPub
             var message = new PriorityCyclist(intersectionId, priority, updatedAt);
             return PublishAsync(message, routingKey, "Cyclist Priority");
         }
+
+        public async Task PublishPrioritiesAsync(IntersectionPriorityStatus status)
+        {
+            var intersectionId = status.IntersectionId.ToString();
+
+            await PublishPriorityEmergencyVehicleAsync(intersectionId, status.PriorityEmergencyVehicle, status.UpdatedAt);
+            await PublishPriorityPublicTransportAsync(intersectionId, status.PriorityPublicTransport, status.UpdatedAt);
+            await PublishPriorityPedestrianAsync(intersectionId, status.PriorityPedestrian, status.UpdatedAt);
+            await PublishPriorityCyclistAsync(intersectionId, status.PriorityCyclist, status.UpdatedAt);
+        }
+
 
         private string BuildRoutingKey(string routingKeyBase, string intersectionId)
         {
