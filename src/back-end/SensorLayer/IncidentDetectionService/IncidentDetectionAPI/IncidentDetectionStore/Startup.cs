@@ -1,5 +1,6 @@
 using DetectionData;
 using IncidentDetectionStore.Business;
+using IncidentDetectionStore.Consumers;
 using IncidentDetectionStore.Middleware;
 using IncidentDetectionStore.Publishers;
 using IncidentDetectionStore.Repositories;
