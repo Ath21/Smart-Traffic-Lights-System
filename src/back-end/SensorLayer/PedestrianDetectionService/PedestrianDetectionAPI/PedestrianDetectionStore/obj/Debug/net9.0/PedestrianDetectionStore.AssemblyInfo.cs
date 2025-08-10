@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PedestrianDetectionStore")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+76b18e7a8c5975a9e5e996d7e376c46dc1e87377")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b9651495b9b5057db9f08ce3765985327cc9f83b")]
 [assembly: System.Reflection.AssemblyProductAttribute("PedestrianDetectionStore")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PedestrianDetectionStore")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
