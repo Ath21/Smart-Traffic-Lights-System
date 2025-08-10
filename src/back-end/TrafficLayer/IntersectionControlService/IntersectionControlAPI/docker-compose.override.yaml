@@ -1,0 +1,39 @@
+services:
+  intersection_control_api:
+    ports:
+      - '5190:8080' # Optional if you want metrics/health endpoints exposed
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+
+      # RabbitMQ Config
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Port: 5672
+      RabbitMQ__Username: admin
+      RabbitMQ__Password: admin123
+
+      # RabbitMQ Exchanges
+      RabbitMQ__Exchange__SensorDataExchange: sensor.data.exchange
+      RabbitMQ__Exchange__TrafficControlExchange: traffic.control.exchange
+      RabbitMQ__Exchange__LogStoreExchange: log.store.exchange
+
+      # RabbitMQ Queues
+      RabbitMQ__Queue__SensorVehicleCountQueue: sensor.vehicle_detection.vehicle_count.queue
+      RabbitMQ__Queue__SensorEmergencyVehicleQueue: sensor.emergency_vehicle_detection.detection.queue
+      RabbitMQ__Queue__SensorPublicTransportQueue: sensor.public_transport_detection.detection.queue
+      RabbitMQ__Queue__SensorPedestrianQueue: sensor.pedestrian_detection.request.queue
+      RabbitMQ__Queue__SensorCyclistQueue: sensor.cyclist_detection.request.queue
+      RabbitMQ__Queue__SensorIncidentQueue: sensor.incident_detection.report.queue
+      RabbitMQ__Queue__TrafficLightStateUpdateQueue: traffic.light_coordination.update.queue
+      RabbitMQ__Queue__SensorLogsAuditQueue: sensor.logs.audit.queue
+      RabbitMQ__Queue__SensorLogsErrorQueue: sensor.logs.error.queue
+
+      # RabbitMQ Routing Keys
+      RabbitMQ__RoutingKey__SensorVehicleCount: sensor.vehicle_detection.vehicle_count.*
+      RabbitMQ__RoutingKey__SensorEmergencyVehicle: sensor.emergency_vehicle_detection.detection.*
+      RabbitMQ__RoutingKey__SensorPublicTransport: sensor.public_transport_detection.detection.*
+      RabbitMQ__RoutingKey__SensorPedestrian: sensor.pedestrian_detection.request.*
+      RabbitMQ__RoutingKey__SensorCyclist: sensor.cyclist_detection.request.*
+      RabbitMQ__RoutingKey__SensorIncident: sensor.incident_detection.report.*
+      RabbitMQ__RoutingKey__TrafficLightCoordinationUpdate: traffic.light_coordination.update.*
+      RabbitMQ__RoutingKey__SensorLogsAuditKey: sensor.incident_detection.logs.audit
+      RabbitMQ__RoutingKey__SensorLogsErrorKey: sensor.incident_detection.logs.error
