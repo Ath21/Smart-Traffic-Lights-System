@@ -1,5 +1,6 @@
 using System;
 using CyclistDetectionStore.Business;
+using CyclistDetectionStore.Middleware;
 using CyclistDetectionStore.Repositories;
 using DetectionData;
 using MassTransit;

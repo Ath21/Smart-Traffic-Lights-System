@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CyclistDetectionStore")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b678e8bd3c878526e1aa96944ddbe08c04b20d10")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bcb50feaf4986edcbcef4584f0b5f47e164f8240")]
 [assembly: System.Reflection.AssemblyProductAttribute("CyclistDetectionStore")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CyclistDetectionStore")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
