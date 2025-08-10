@@ -106,10 +106,5 @@ namespace CyclistDetectionStore.Repositories
 
         private string FormatDate(DateTime dateTime) =>
             dateTime.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ");
-
-        Task ICyclistDetectionRepository.InsertAsync(CyclistDetection detection)
-        {
-            return InsertAsync(detection);
-        }
     }
 }
