@@ -24,7 +24,6 @@
   <ItemGroup>
     <Folder Include="Consumers/" />
     <Folder Include="Controllers/" />
-    <Folder Include="Publishers/" />
     <Folder Include="Workers/" />
   </ItemGroup>
 

@@ -1,5 +1,6 @@
 using System;
 using System.Net;
+using IncidentDetectionStore.Publishers;
 using InfluxDB.Client.Core.Exceptions;
 
 namespace IncidentDetectionStore.Middleware;
