@@ -1,5 +1,6 @@
 using System;
 using System.Net;
+using CyclistDetectionStore.Publishers;
 using InfluxDB.Client.Core.Exceptions;
 
 namespace CyclistDetectionStore.Middleware;
