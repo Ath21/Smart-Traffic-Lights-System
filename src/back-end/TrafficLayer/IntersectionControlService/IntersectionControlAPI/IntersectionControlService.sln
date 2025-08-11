@@ -1,0 +1,62 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrafficMessages", "..\..\TrafficMessages\TrafficMessages.csproj", "{F9FA91D4-9CD4-41F2-A22E-378473445FFC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SensorMessages", "..\..\..\SensorLayer\SensorMessages\SensorMessages.csproj", "{1A6F1FB9-9DE4-4D51-96AC-D3D171FB13EE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntersectionControlStore", "IntersectionControlStore\IntersectionControlStore.csproj", "{DCCB2D73-6317-4235-978C-EFC4614033C5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F9FA91D4-9CD4-41F2-A22E-378473445FFC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F9FA91D4-9CD4-41F2-A22E-378473445FFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F9FA91D4-9CD4-41F2-A22E-378473445FFC}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F9FA91D4-9CD4-41F2-A22E-378473445FFC}.Debug|x64.Build.0 = Debug|Any CPU
+		{F9FA91D4-9CD4-41F2-A22E-378473445FFC}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F9FA91D4-9CD4-41F2-A22E-378473445FFC}.Debug|x86.Build.0 = Debug|Any CPU
+		{F9FA91D4-9CD4-41F2-A22E-378473445FFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F9FA91D4-9CD4-41F2-A22E-378473445FFC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F9FA91D4-9CD4-41F2-A22E-378473445FFC}.Release|x64.ActiveCfg = Release|Any CPU
+		{F9FA91D4-9CD4-41F2-A22E-378473445FFC}.Release|x64.Build.0 = Release|Any CPU
+		{F9FA91D4-9CD4-41F2-A22E-378473445FFC}.Release|x86.ActiveCfg = Release|Any CPU
+		{F9FA91D4-9CD4-41F2-A22E-378473445FFC}.Release|x86.Build.0 = Release|Any CPU
+		{1A6F1FB9-9DE4-4D51-96AC-D3D171FB13EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A6F1FB9-9DE4-4D51-96AC-D3D171FB13EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A6F1FB9-9DE4-4D51-96AC-D3D171FB13EE}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1A6F1FB9-9DE4-4D51-96AC-D3D171FB13EE}.Debug|x64.Build.0 = Debug|Any CPU
+		{1A6F1FB9-9DE4-4D51-96AC-D3D171FB13EE}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1A6F1FB9-9DE4-4D51-96AC-D3D171FB13EE}.Debug|x86.Build.0 = Debug|Any CPU
+		{1A6F1FB9-9DE4-4D51-96AC-D3D171FB13EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A6F1FB9-9DE4-4D51-96AC-D3D171FB13EE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A6F1FB9-9DE4-4D51-96AC-D3D171FB13EE}.Release|x64.ActiveCfg = Release|Any CPU
+		{1A6F1FB9-9DE4-4D51-96AC-D3D171FB13EE}.Release|x64.Build.0 = Release|Any CPU
+		{1A6F1FB9-9DE4-4D51-96AC-D3D171FB13EE}.Release|x86.ActiveCfg = Release|Any CPU
+		{1A6F1FB9-9DE4-4D51-96AC-D3D171FB13EE}.Release|x86.Build.0 = Release|Any CPU
+		{DCCB2D73-6317-4235-978C-EFC4614033C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DCCB2D73-6317-4235-978C-EFC4614033C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DCCB2D73-6317-4235-978C-EFC4614033C5}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DCCB2D73-6317-4235-978C-EFC4614033C5}.Debug|x64.Build.0 = Debug|Any CPU
+		{DCCB2D73-6317-4235-978C-EFC4614033C5}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DCCB2D73-6317-4235-978C-EFC4614033C5}.Debug|x86.Build.0 = Debug|Any CPU
+		{DCCB2D73-6317-4235-978C-EFC4614033C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DCCB2D73-6317-4235-978C-EFC4614033C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DCCB2D73-6317-4235-978C-EFC4614033C5}.Release|x64.ActiveCfg = Release|Any CPU
+		{DCCB2D73-6317-4235-978C-EFC4614033C5}.Release|x64.Build.0 = Release|Any CPU
+		{DCCB2D73-6317-4235-978C-EFC4614033C5}.Release|x86.ActiveCfg = Release|Any CPU
+		{DCCB2D73-6317-4235-978C-EFC4614033C5}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

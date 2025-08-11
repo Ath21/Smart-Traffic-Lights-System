@@ -20,7 +20,7 @@ declare -A SERVICES_PATHS=(
     [traffic_data_analytics_api]="./TrafficLayer/TrafficDataAnalyticsService/TrafficDataAnalyticsAPI"
     [traffic_light_control_api]="./TrafficLayer/TrafficLightControlService/TrafficLightControlAPI"
     [traffic_light_coordination_api]="./TrafficLayer/TrafficLightCoordinationService/TrafficLightCoordinationAPI"
-    [intersection_controller_api]="./TrafficLayer/IntersectionControllerService/IntersectionControllerAPI"
+    [intersection_control_api]="./TrafficLayer/IntersectionControlService/IntersectionControlAPI"
 
     # Sensor Layer
     [vehicle_detection_api]="./SensorLayer/VehicleDetectionService/VehicleDetectionAPI"
@@ -196,9 +196,10 @@ main()
 
         user)
             case "$TARGET_SERVICE" in
+                "") check_and_build_missing_images user_api notification_api ;;
                 UserService) check_and_build_missing_images user_api ;;
                 NotificationService) check_and_build_missing_images notification_api ;;
-                *) check_and_build_missing_images user_api notification_api ;;
+                *) echo "❌ Unknown service: $TARGET_SERVICE"; exit 1 ;;
             esac
             start_user_layer --service="$TARGET_SERVICE"
             ;;
@@ -206,18 +207,12 @@ main()
         traffic)
             services_to_build=()
             case "$TARGET_SERVICE" in
+                "") services_to_build+=(traffic_data_analytics_api traffic_light_control_api traffic_light_coordination_api intersection_control_api) ;;
                 TrafficDataAnalyticsService) services_to_build+=(traffic_data_analytics_api) ;;
                 TrafficLightControlService) services_to_build+=(traffic_light_control_api) ;;
                 TrafficLightCoordinationService) services_to_build+=(traffic_light_coordination_api) ;;
-                IntersectionControllerService) services_to_build+=(intersection_controller_api) ;;
-                *)
-                    services_to_build+=(
-                        traffic_data_analytics_api
-                        traffic_light_control_api
-                        traffic_light_coordination_api
-                        intersection_controller_api
-                    )
-                    ;;
+                IntersectionControlService) services_to_build+=(intersection_control_api) ;;
+                *) echo "❌ Unknown traffic service: $TARGET_SERVICE"; exit 1 ;;
             esac
             check_and_build_missing_images "${services_to_build[@]}"
             start_traffic_layer --service="$TARGET_SERVICE"
@@ -226,22 +221,14 @@ main()
         sensor)
             services_to_build=()
             case "$TARGET_SERVICE" in
+                "") services_to_build+=(vehicle_detection_api emergency_vehicle_detection_api public_transport_detection_api pedestrian_detection_api cyclist_detection_api incident_detection_api) ;;
                 VehicleDetectionService) services_to_build+=(vehicle_detection_api) ;;
                 EmergencyVehicleDetectionService) services_to_build+=(emergency_vehicle_detection_api) ;;
                 PublicTransportDetectionService) services_to_build+=(public_transport_detection_api) ;;
                 PedestrianDetectionService) services_to_build+=(pedestrian_detection_api) ;;
                 CyclistDetectionService) services_to_build+=(cyclist_detection_api) ;;
                 IncidentDetectionService) services_to_build+=(incident_detection_api) ;;
-                *)
-                    services_to_build+=(
-                        vehicle_detection_api
-                        emergency_vehicle_detection_api
-                        public_transport_detection_api
-                        pedestrian_detection_api
-                        cyclist_detection_api
-                        incident_detection_api
-                    )
-                    ;;
+                *) echo "❌ Unknown sensor service: $TARGET_SERVICE"; exit 1 ;;
             esac
             check_and_build_missing_images "${services_to_build[@]}"
             start_sensor_layer --service="$TARGET_SERVICE"

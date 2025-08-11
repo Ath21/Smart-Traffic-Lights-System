@@ -1,0 +1,52 @@
+services:
+  intersection_control_api:
+    ports:
+      - '5190:8080'
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+
+      # RabbitMQ Config
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Port: 5672
+      RabbitMQ__Username: admin
+      RabbitMQ__Password: admin123
+
+      # RabbitMQ Exchanges
+      RabbitMQ__Exchange__PriorityExchange: traffic.priority.exchange
+      RabbitMQ__Exchange__TrafficControlExchange: traffic.control.exchange
+      RabbitMQ__Exchange__SensorDataExchange: sensor.data.exchange
+      RabbitMQ__Exchange__LogStoreExchange: traffic.logs.exchange
+
+      # RabbitMQ Queues (subscribe to sensor data queues)
+      RabbitMQ__Queue__VehicleCountQueue: sensor.data.vehicle_count.queue
+      RabbitMQ__Queue__EmergencyVehicleQueue: sensor.data.emergency_vehicle.queue
+      RabbitMQ__Queue__PublicTransportQueue: sensor.data.public_transport.queue
+      RabbitMQ__Queue__PedestrianRequestQueue: sensor.data.pedestrian_request.queue
+      RabbitMQ__Queue__CyclistRequestQueue: sensor.data.cyclist_request.queue
+      RabbitMQ__Queue__IncidentQueue: sensor.data.incident.queue
+
+      # RabbitMQ Queues (for commands and priority messages)
+      RabbitMQ__Queue__TrafficLightControlQueue: traffic.light.control.queue
+      RabbitMQ__Queue__PriorityEmergencyVehicleQueue: priority.emergency.vehicle.queue
+      RabbitMQ__Queue__PriorityPublicTransportQueue: priority.public.transport.queue
+      RabbitMQ__Queue__PriorityPedestrianQueue: priority.pedestrian.queue
+      RabbitMQ__Queue__PriorityCyclistQueue: priority.cyclist.queue
+
+      # RabbitMQ Routing Keys for subscribing (sensor data)
+      RabbitMQ__RoutingKey__VehicleCount: sensor.data.vehicle_count.*
+      RabbitMQ__RoutingKey__EmergencyVehicle: sensor.data.emergency_vehicle.*
+      RabbitMQ__RoutingKey__PublicTransport: sensor.data.public_transport.*
+      RabbitMQ__RoutingKey__PedestrianRequest: sensor.data.pedestrian_request.*
+      RabbitMQ__RoutingKey__CyclistRequest: sensor.data.cyclist_request.*
+      RabbitMQ__RoutingKey__Incident: sensor.data.incident.*
+
+      # RabbitMQ Routing Keys for publishing (priority and light control)
+      RabbitMQ__RoutingKey__PriorityEmergencyVehicle: priority.emergency.vehicle.*
+      RabbitMQ__RoutingKey__PriorityPublicTransport: priority.public.transport.*
+      RabbitMQ__RoutingKey__PriorityPedestrian: priority.pedestrian.*
+      RabbitMQ__RoutingKey__PriorityCyclist: priority.cyclist.*
+      RabbitMQ__RoutingKey__TrafficLightControl: traffic.light.control.*
+
+      # Logs
+      RabbitMQ__RoutingKey__TrafficLogsAudit: traffic.logs.audit
+      RabbitMQ__RoutingKey__TrafficLogsError: traffic.logs.error
