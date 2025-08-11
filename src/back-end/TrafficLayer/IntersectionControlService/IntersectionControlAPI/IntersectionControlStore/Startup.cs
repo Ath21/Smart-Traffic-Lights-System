@@ -17,6 +17,7 @@ using TrafficLightControlService.Consumers;
 using TrafficMessages.Priority;
 using TrafficMessages.Light;
 using SensorMessages.Data;
+using IntersectionControlStore.Business;
 
 namespace IntersectionControlStore
 {
@@ -40,173 +41,157 @@ namespace IntersectionControlStore
 
             /******* [3] Services ********/
             // Register any domain services here:
-            // services.AddScoped<IYourService, YourService>();
+            services.AddScoped(typeof(IPriorityManager), typeof(PriorityManager));
 
             /******* [4] AutoMapper ********/
             // services.AddAutoMapper(typeof(YourMappingProfile));
 
             /******* [5] Publishers ********/
-            services.AddScoped<IPriorityPublisher, PriorityPublisher>();
-            services.AddScoped<ITrafficLightControlPublisher, TrafficLightControlPublisher>();
-            services.AddScoped<ITrafficLogPublisher, TrafficLogPublisher>();
+            services.AddScoped(typeof(IPriorityPublisher), typeof(PriorityPublisher));
+            services.AddScoped(typeof(ITrafficLightControlPublisher), typeof(TrafficLightControlPublisher));
+            services.AddScoped(typeof(ITrafficLogPublisher), typeof(TrafficLogPublisher));
 
             /******* [6] Consumers ********/
             // Register your consumers for MassTransit here:
-            services.AddScoped<TrafficLightStateUpdateConsumer>();
-            services.AddScoped<SensorDataConsumer>();
+            services.AddScoped(typeof(TrafficLightStateUpdateConsumer));
+            services.AddScoped(typeof(SensorDataConsumer));
             // Add other consumers as needed
 
             /******* [7] MassTransit & RabbitMQ Config ********/
-            services.AddMassTransit(x =>
+            /******* [7] MassTransit & RabbitMQ Config ********/
+services.AddMassTransit(x =>
+{
+    x.AddConsumer<SensorDataConsumer>();
+    x.AddConsumer<TrafficLightStateUpdateConsumer>();
+
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host(_configuration["RabbitMQ:Host"], "/", h =>
+        {
+            h.Username(_configuration["RabbitMQ:Username"]);
+            h.Password(_configuration["RabbitMQ:Password"]);
+        });
+
+        /* ------------------- SENSOR DATA ------------------- */
+        string sensorExchange = _configuration["RabbitMQ:Exchange:SensorDataExchange"];
+
+        cfg.Message<VehicleCountMessage>(m => m.SetEntityName(sensorExchange));
+        cfg.Message<EmergencyVehicleDetectionMessage>(m => m.SetEntityName(sensorExchange));
+        cfg.Message<PublicTransportDetectionMessage>(m => m.SetEntityName(sensorExchange));
+        cfg.Message<PedestrianDetectionMessage>(m => m.SetEntityName(sensorExchange));
+        cfg.Message<CyclistDetectionMessage>(m => m.SetEntityName(sensorExchange));
+        cfg.Message<IncidentDetectionMessage>(m => m.SetEntityName(sensorExchange));
+
+        cfg.Publish<VehicleCountMessage>(m => m.ExchangeType = ExchangeType.Topic);
+        cfg.Publish<EmergencyVehicleDetectionMessage>(m => m.ExchangeType = ExchangeType.Topic);
+        cfg.Publish<PublicTransportDetectionMessage>(m => m.ExchangeType = ExchangeType.Topic);
+        cfg.Publish<PedestrianDetectionMessage>(m => m.ExchangeType = ExchangeType.Topic);
+        cfg.Publish<CyclistDetectionMessage>(m => m.ExchangeType = ExchangeType.Topic);
+        cfg.Publish<IncidentDetectionMessage>(m => m.ExchangeType = ExchangeType.Topic);
+
+        // Subscribe to sensor data queues
+        cfg.ReceiveEndpoint(_configuration["RabbitMQ:Queue:VehicleCountQueue"], e =>
+        {
+            e.Bind(sensorExchange, s =>
             {
-                x.AddConsumer<SensorDataConsumer>();
-                x.AddConsumer<TrafficLightStateUpdateConsumer>();
-
-                x.UsingRabbitMq((context, cfg) =>
-                {
-                    cfg.Host(_configuration["RabbitMQ:Host"], "/", h =>
-                    {
-                        h.Username(_configuration["RabbitMQ:Username"]);
-                        h.Password(_configuration["RabbitMQ:Password"]);
-                    });
-
-                    // Sensor Data Exchange setup
-                    cfg.Message<VehicleCountMessage>(m =>
-                    {
-                        m.SetEntityName(_configuration["RabbitMQ:Exchange:SensorDataExchange"]);
-                    });
-                    cfg.Message<EmergencyVehicleDetectionMessage>(m =>
-                    {
-                        m.SetEntityName(_configuration["RabbitMQ:Exchange:SensorDataExchange"]);
-                    });
-                    cfg.Message<PublicTransportDetectionMessage>(m =>
-                    {
-                        m.SetEntityName(_configuration["RabbitMQ:Exchange:SensorDataExchange"]);
-                    });
-                    cfg.Message<PedestrianDetectionMessage>(m =>
-                    {
-                        m.SetEntityName(_configuration["RabbitMQ:Exchange:SensorDataExchange"]);
-                    });
-                    cfg.Message<CyclistDetectionMessage>(m =>
-                    {
-                        m.SetEntityName(_configuration["RabbitMQ:Exchange:SensorDataExchange"]);
-                    });
-                    cfg.Message<IncidentDetectionMessage>(m =>
-                    {
-                        m.SetEntityName(_configuration["RabbitMQ:Exchange:SensorDataExchange"]);
-                    });
-
-                    // Publish exchange type for all sensor messages
-                    cfg.Publish<VehicleCountMessage>(m => m.ExchangeType = ExchangeType.Topic);
-                    cfg.Publish<EmergencyVehicleDetectionMessage>(m => m.ExchangeType = ExchangeType.Topic);
-                    cfg.Publish<PublicTransportDetectionMessage>(m => m.ExchangeType = ExchangeType.Topic);
-                    cfg.Publish<PedestrianDetectionMessage>(m => m.ExchangeType = ExchangeType.Topic);
-                    cfg.Publish<CyclistDetectionMessage>(m => m.ExchangeType = ExchangeType.Topic);
-                    cfg.Publish<IncidentDetectionMessage>(m => m.ExchangeType = ExchangeType.Topic);
-
-                    // Receive endpoints - one per sensor data queue + routing key
-
-                    cfg.ReceiveEndpoint(_configuration["RabbitMQ:Queue:SensorVehicleCountQueue"], e =>
-                    {
-                        e.Bind(_configuration["RabbitMQ:Exchange:SensorDataExchange"], s =>
-                        {
-                            s.RoutingKey = _configuration["RabbitMQ:RoutingKey:SensorVehicleCount"];
-                            s.ExchangeType = ExchangeType.Topic;
-                        });
-                        e.ConfigureConsumer<SensorDataConsumer>(context);
-                    });
-
-                    cfg.ReceiveEndpoint(_configuration["RabbitMQ:Queue:SensorEmergencyVehicleQueue"], e =>
-                    {
-                        e.Bind(_configuration["RabbitMQ:Exchange:SensorDataExchange"], s =>
-                        {
-                            s.RoutingKey = _configuration["RabbitMQ:RoutingKey:SensorEmergencyVehicle"];
-                            s.ExchangeType = ExchangeType.Topic;
-                        });
-                        e.ConfigureConsumer<SensorDataConsumer>(context);
-                    });
-
-                    cfg.ReceiveEndpoint(_configuration["RabbitMQ:Queue:SensorPublicTransportQueue"], e =>
-                    {
-                        e.Bind(_configuration["RabbitMQ:Exchange:SensorDataExchange"], s =>
-                        {
-                            s.RoutingKey = _configuration["RabbitMQ:RoutingKey:SensorPublicTransport"];
-                            s.ExchangeType = ExchangeType.Topic;
-                        });
-                        e.ConfigureConsumer<SensorDataConsumer>(context);
-                    });
-
-                    cfg.ReceiveEndpoint(_configuration["RabbitMQ:Queue:SensorPedestrianQueue"], e =>
-                    {
-                        e.Bind(_configuration["RabbitMQ:Exchange:SensorDataExchange"], s =>
-                        {
-                            s.RoutingKey = _configuration["RabbitMQ:RoutingKey:SensorPedestrian"];
-                            s.ExchangeType = ExchangeType.Topic;
-                        });
-                        e.ConfigureConsumer<SensorDataConsumer>(context);
-                    });
-
-                    cfg.ReceiveEndpoint(_configuration["RabbitMQ:Queue:SensorCyclistQueue"], e =>
-                    {
-                        e.Bind(_configuration["RabbitMQ:Exchange:SensorDataExchange"], s =>
-                        {
-                            s.RoutingKey = _configuration["RabbitMQ:RoutingKey:SensorCyclist"];
-                            s.ExchangeType = ExchangeType.Topic;
-                        });
-                        e.ConfigureConsumer<SensorDataConsumer>(context);
-                    });
-
-                    cfg.ReceiveEndpoint(_configuration["RabbitMQ:Queue:SensorIncidentQueue"], e =>
-                    {
-                        e.Bind(_configuration["RabbitMQ:Exchange:SensorDataExchange"], s =>
-                        {
-                            s.RoutingKey = _configuration["RabbitMQ:RoutingKey:SensorIncident"];
-                            s.ExchangeType = ExchangeType.Topic;
-                        });
-                        e.ConfigureConsumer<SensorDataConsumer>(context);
-                    });
-
-                    // Traffic Light Coordination Exchange & Consumer
-
-                    cfg.Message<TrafficLightStateUpdate>(m =>
-                    {
-                        m.SetEntityName(_configuration["RabbitMQ:Exchange:TrafficControlExchange"]);
-                    });
-                    cfg.Publish<TrafficLightStateUpdate>(m =>
-                    {
-                        m.ExchangeType = ExchangeType.Topic;
-                    });
-
-                    cfg.ReceiveEndpoint(_configuration["RabbitMQ:Queue:TrafficLightStateUpdateQueue"], e =>
-                    {
-                        e.Bind(_configuration["RabbitMQ:Exchange:TrafficControlExchange"], s =>
-                        {
-                            s.RoutingKey = _configuration["RabbitMQ:RoutingKey:TrafficLightCoordinationUpdate"];
-                            s.ExchangeType = ExchangeType.Topic;
-                        });
-                        e.ConfigureConsumer<TrafficLightStateUpdateConsumer>(context);
-                    });
-
-                    // Logs exchange setup (optional)
-
-                    cfg.Message<AuditLogMessage>(m =>
-                    {
-                        m.SetEntityName(_configuration["RabbitMQ:Exchange:LogStoreExchange"]);
-                    });
-                    cfg.Publish<AuditLogMessage>(m =>
-                    {
-                        m.ExchangeType = ExchangeType.Direct;
-                    });
-                    cfg.Message<ErrorLogMessage>(m =>
-                    {
-                        m.SetEntityName(_configuration["RabbitMQ:Exchange:LogStoreExchange"]);
-                    });
-                    cfg.Publish<ErrorLogMessage>(m =>
-                    {
-                        m.ExchangeType = ExchangeType.Direct;
-                    });
-                });
+                s.RoutingKey = _configuration["RabbitMQ:RoutingKey:VehicleCount"];
+                s.ExchangeType = ExchangeType.Topic;
             });
+            e.ConfigureConsumer<SensorDataConsumer>(context);
+        });
+
+        cfg.ReceiveEndpoint(_configuration["RabbitMQ:Queue:EmergencyVehicleQueue"], e =>
+        {
+            e.Bind(sensorExchange, s =>
+            {
+                s.RoutingKey = _configuration["RabbitMQ:RoutingKey:EmergencyVehicle"];
+                s.ExchangeType = ExchangeType.Topic;
+            });
+            e.ConfigureConsumer<SensorDataConsumer>(context);
+        });
+
+        cfg.ReceiveEndpoint(_configuration["RabbitMQ:Queue:PublicTransportQueue"], e =>
+        {
+            e.Bind(sensorExchange, s =>
+            {
+                s.RoutingKey = _configuration["RabbitMQ:RoutingKey:PublicTransport"];
+                s.ExchangeType = ExchangeType.Topic;
+            });
+            e.ConfigureConsumer<SensorDataConsumer>(context);
+        });
+
+        cfg.ReceiveEndpoint(_configuration["RabbitMQ:Queue:PedestrianRequestQueue"], e =>
+        {
+            e.Bind(sensorExchange, s =>
+            {
+                s.RoutingKey = _configuration["RabbitMQ:RoutingKey:PedestrianRequest"];
+                s.ExchangeType = ExchangeType.Topic;
+            });
+            e.ConfigureConsumer<SensorDataConsumer>(context);
+        });
+
+        cfg.ReceiveEndpoint(_configuration["RabbitMQ:Queue:CyclistRequestQueue"], e =>
+        {
+            e.Bind(sensorExchange, s =>
+            {
+                s.RoutingKey = _configuration["RabbitMQ:RoutingKey:CyclistRequest"];
+                s.ExchangeType = ExchangeType.Topic;
+            });
+            e.ConfigureConsumer<SensorDataConsumer>(context);
+        });
+
+        cfg.ReceiveEndpoint(_configuration["RabbitMQ:Queue:IncidentQueue"], e =>
+        {
+            e.Bind(sensorExchange, s =>
+            {
+                s.RoutingKey = _configuration["RabbitMQ:RoutingKey:Incident"];
+                s.ExchangeType = ExchangeType.Topic;
+            });
+            e.ConfigureConsumer<SensorDataConsumer>(context);
+        });
+
+        /* ------------------- PRIORITY & TRAFFIC LIGHT CONTROL ------------------- */
+        string trafficControlExchange = _configuration["RabbitMQ:Exchange:TrafficControlExchange"];
+
+        // Messages published by intersection control (priority & control)
+        cfg.Message<PriorityEmergencyVehicle>(m => m.SetEntityName(trafficControlExchange));
+        cfg.Message<PriorityPublicTransport>(m => m.SetEntityName(trafficControlExchange));
+        cfg.Message<PriorityPedestrian>(m => m.SetEntityName(trafficControlExchange));
+        cfg.Message<PriorityCyclist>(m => m.SetEntityName(trafficControlExchange));
+        cfg.Message<TrafficLightControl>(m => m.SetEntityName(trafficControlExchange));
+        cfg.Message<TrafficLightStateUpdate>(m => m.SetEntityName(trafficControlExchange));
+
+        cfg.Publish<PriorityEmergencyVehicle>(m => m.ExchangeType = ExchangeType.Topic);
+        cfg.Publish<PriorityPublicTransport>(m => m.ExchangeType = ExchangeType.Topic);
+        cfg.Publish<PriorityPedestrian>(m => m.ExchangeType = ExchangeType.Topic);
+        cfg.Publish<PriorityCyclist>(m => m.ExchangeType = ExchangeType.Topic);
+        cfg.Publish<TrafficLightControl>(m => m.ExchangeType = ExchangeType.Topic);
+        cfg.Publish<TrafficLightStateUpdate>(m => m.ExchangeType = ExchangeType.Topic);
+
+        // Receive traffic light state updates
+        cfg.ReceiveEndpoint(_configuration["RabbitMQ:Queue:TrafficLightControlQueue"], e =>
+        {
+            e.Bind(trafficControlExchange, s =>
+            {
+                s.RoutingKey = _configuration["RabbitMQ:RoutingKey:TrafficLightControl"];
+                s.ExchangeType = ExchangeType.Topic;
+            });
+            e.ConfigureConsumer<TrafficLightStateUpdateConsumer>(context);
+        });
+
+        /* ------------------- LOGGING ------------------- */
+        string logExchange = _configuration["RabbitMQ:Exchange:LogStoreExchange"];
+
+        cfg.Message<AuditLogMessage>(m => m.SetEntityName(logExchange));
+        cfg.Message<ErrorLogMessage>(m => m.SetEntityName(logExchange));
+
+        cfg.Publish<AuditLogMessage>(m => m.ExchangeType = ExchangeType.Direct);
+        cfg.Publish<ErrorLogMessage>(m => m.ExchangeType = ExchangeType.Direct);
+
+        // Assuming logs are only published, no subscription needed here for intersection control
+    });
+});
+
 
 
 

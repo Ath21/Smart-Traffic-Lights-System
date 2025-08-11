@@ -7,8 +7,8 @@ services:
       - rabbitmq_network
 
 networks:
-  detection_network:
-    name: detection_network
+  intersection_network:
+    name: intersection_network
     driver: bridge
     external: true
   rabbitmq_network:

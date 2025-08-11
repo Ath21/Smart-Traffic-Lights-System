@@ -12,16 +12,16 @@ namespace IntersectionControlStore.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly ILogger<ExceptionMiddleware> _logger;
-        private readonly ITrafficLogPublisher _logPublisher;
+        private readonly IServiceScopeFactory _scopeFactory;
 
         public ExceptionMiddleware(
             RequestDelegate next,
             ILogger<ExceptionMiddleware> logger,
-            ITrafficLogPublisher logPublisher)
+            IServiceScopeFactory scopeFactory)
         {
             _next = next;
             _logger = logger;
-            _logPublisher = logPublisher;
+            _scopeFactory = scopeFactory;
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -100,9 +100,10 @@ namespace IntersectionControlStore.Middleware
         {
             _logger.LogError(ex, message);
 
-            var serviceName = "IntersectionControlService"; // You can customize or read this from config
+            using var scope = _scopeFactory.CreateScope();
+            var logPublisher = scope.ServiceProvider.GetRequiredService<ITrafficLogPublisher>();
 
-            await _logPublisher.PublishErrorLogAsync(serviceName, message, ex);
+            await logPublisher.PublishErrorLogAsync("IntersectionControlService", message, ex);
 
             context.Response.StatusCode = (int)statusCode;
             context.Response.ContentType = "application/json";

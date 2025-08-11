@@ -31,7 +31,7 @@ namespace IntersectionControlStore.Publishers.PriorityPub
 
             _trafficControlExchange = _configuration["RabbitMQ:Exchange:TrafficControlExchange"] ?? "traffic.control.exchange";
 
-            // routing keys have a trailing .* pattern, we'll trim and append intersectionId dynamically
+            // Routing keys with trailing ".*" trimmed dynamically
             _priorityEmergencyVehicleRoutingKeyBase = _configuration["RabbitMQ:RoutingKey:PriorityEmergencyVehicle"] ?? "traffic.intersection_control.priority.emergency_vehicle.*";
             _priorityPublicTransportRoutingKeyBase = _configuration["RabbitMQ:RoutingKey:PriorityPublicTransport"] ?? "traffic.intersection_control.priority.public_transport.*";
             _priorityPedestrianRoutingKeyBase = _configuration["RabbitMQ:RoutingKey:PriorityPedestrian"] ?? "traffic.intersection_control.priority.pedestrian.*";
@@ -75,7 +75,6 @@ namespace IntersectionControlStore.Publishers.PriorityPub
             await PublishPriorityPedestrianAsync(intersectionId, status.PriorityPedestrian, status.UpdatedAt);
             await PublishPriorityCyclistAsync(intersectionId, status.PriorityCyclist, status.UpdatedAt);
         }
-
 
         private string BuildRoutingKey(string routingKeyBase, string intersectionId)
         {

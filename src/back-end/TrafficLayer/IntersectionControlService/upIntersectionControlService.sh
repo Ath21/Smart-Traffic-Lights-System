@@ -3,7 +3,7 @@
 # ================================
 # 🔧 Configuration
 # ================================
-NETWORK="intersection_network"
+NETWORK_NAME="intersection_network"
 
 INTERSECTION_API_DIR="./TrafficLayer/IntersectionControlService/IntersectionControlAPI"
 
@@ -13,16 +13,15 @@ DOCKER_COMPOSE_OVERRIDE="docker-compose.override.yaml"
 # ================================
 # 🌐 Create Docker Networks
 # ================================
-create_networks() 
+create_network() 
 {
-    for network in "${NETWORKS[@]}"; do
-        if docker network ls | grep -q "$network"; then
-            echo "🔄 Docker network '$network' already exists."
-        else
-            echo "🌐 Creating Docker network '$network'..."
-            docker network create "$network"
-        fi
-    done
+    if docker network ls --format '{{.Name}}' | grep -wq "$NETWORK_NAME"; then
+        echo "🔄 Docker network '$NETWORK_NAME' already exists."
+    else
+        echo "🌐 Creating Docker network '$NETWORK_NAME'..."
+        docker network create "$NETWORK_NAME"
+        echo "✅ Network '$NETWORK_NAME' created."
+    fi
 }
 
 # ================================
@@ -46,7 +45,7 @@ start_containers()
 # ================================
 main() 
 {
-    create_networks
+    create_network
     start_containers
     exit 0
 }

@@ -3,7 +3,7 @@
 # ================================
 # 🔧 Configuration
 # ================================
-NETWORK="intersection_network"
+NETWORK_NAME="intersection_network"
 
 INTERSECTION_API_DIR="./TrafficLayer/IntersectionControlService/IntersectionControlAPI"
 
@@ -29,17 +29,15 @@ stop_containers()
 # ================================
 # 🔌 Remove Docker Networks
 # ================================
-remove_networks() 
+remove_network() 
 {
-    for network in "${NETWORKS[@]}"; do
-        if docker network ls | grep -q "$network"; then
-            echo "🔌 Removing Docker network '$network'..."
-            docker network rm "$network"
-            echo "✅ Network '$network' removed."
-        else
-            echo "⚠️ Docker network '$network' not found. Skipping."
-        fi
-    done
+    if docker network ls --format '{{.Name}}' | grep -wq "$NETWORK_NAME"; then
+        echo "🔌 Removing Docker network '$NETWORK_NAME'..."
+        docker network rm "$NETWORK_NAME"
+        echo "✅ Network '$NETWORK_NAME' removed."
+    else
+        echo "⚠️ Docker network '$NETWORK_NAME' not found. Skipping."
+    fi
 }
 
 # ================================
@@ -48,7 +46,7 @@ remove_networks()
 main() 
 {
     stop_containers
-    remove_networks
+    remove_network
     exit 0
 }
 

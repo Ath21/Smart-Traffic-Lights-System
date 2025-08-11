@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using IntersectionControlStore.Publishers.LogPub;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -15,8 +14,8 @@ namespace IntersectionControlStore.Publishers.LogPub
         private readonly IConfiguration _configuration;
 
         private readonly string _logStoreExchange;
-        private readonly string _auditRoutingKey;
-        private readonly string _errorRoutingKey;
+        private readonly string _auditRoutingKeyBase;
+        private readonly string _errorRoutingKeyBase;
 
         public TrafficLogPublisher(
             IBus bus,
@@ -28,38 +27,61 @@ namespace IntersectionControlStore.Publishers.LogPub
             _configuration = configuration;
 
             _logStoreExchange = _configuration["RabbitMQ:Exchange:LogStoreExchange"] ?? "log.store.exchange";
-            _auditRoutingKey = _configuration["RabbitMQ:RoutingKey:TrafficLogsAuditKey"] ?? "traffic.*.logs.audit";
-            _errorRoutingKey = _configuration["RabbitMQ:RoutingKey:TrafficLogsErrorKey"] ?? "traffic.*.logs.error";
+
+            // Expect routing keys with trailing wildcard to append intersection or service id dynamically
+            _auditRoutingKeyBase = _configuration["RabbitMQ:RoutingKey:TrafficLogsAuditKey"] ?? "traffic.*.logs.audit";
+            _errorRoutingKeyBase = _configuration["RabbitMQ:RoutingKey:TrafficLogsErrorKey"] ?? "traffic.*.logs.error";
         }
 
-        public async Task PublishAuditLogAsync(string serviceName, string message)
+        public async Task PublishAuditLogAsync(string serviceName, string message, string intersectionId = null)
         {
-            _logger.LogInformation("[TRAFFIC AUDIT] Publishing audit log to '{RoutingKey}'", _auditRoutingKey);
+            var routingKey = BuildRoutingKey(_auditRoutingKeyBase, intersectionId ?? "general");
+
+            _logger.LogInformation("[TRAFFIC AUDIT] Publishing audit log to '{RoutingKey}'", routingKey);
 
             var logMessage = new AuditLogMessage(serviceName, message, DateTime.UtcNow);
 
             var sendEndpoint = await _bus.GetSendEndpoint(new Uri($"exchange:{_logStoreExchange}"));
             await sendEndpoint.Send(logMessage, context =>
             {
-                context.SetRoutingKey(_auditRoutingKey);
+                context.SetRoutingKey(routingKey);
             });
 
             _logger.LogInformation("[TRAFFIC AUDIT] Audit log published");
         }
 
-        public async Task PublishErrorLogAsync(string serviceName, string message, Exception exception)
+        public async Task PublishErrorLogAsync(string serviceName, string message, Exception exception, string intersectionId = null)
         {
-            _logger.LogInformation("[TRAFFIC ERROR] Publishing error log to '{RoutingKey}'", _errorRoutingKey);
+            var routingKey = BuildRoutingKey(_errorRoutingKeyBase, intersectionId ?? "general");
+
+            _logger.LogInformation("[TRAFFIC ERROR] Publishing error log to '{RoutingKey}'", routingKey);
 
             var logMessage = new ErrorLogMessage(serviceName, message, exception.ToString(), DateTime.UtcNow);
 
             var sendEndpoint = await _bus.GetSendEndpoint(new Uri($"exchange:{_logStoreExchange}"));
             await sendEndpoint.Send(logMessage, context =>
             {
-                context.SetRoutingKey(_errorRoutingKey);
+                context.SetRoutingKey(routingKey);
             });
 
             _logger.LogInformation("[TRAFFIC ERROR] Error log published");
+        }
+
+        public Task PublishErrorLogAsync(string serviceName, string message, Exception exception)
+        {
+            throw new NotImplementedException();
+        }
+
+        private string BuildRoutingKey(string routingKeyBase, string id)
+        {
+            // Replace wildcard * or trim it and append id
+            if (routingKeyBase.Contains("*"))
+            {
+                return routingKeyBase.Replace("*", id);
+            }
+
+            var baseKey = routingKeyBase.TrimEnd('*').TrimEnd('.');
+            return $"{baseKey}.{id}";
         }
     }
 }
