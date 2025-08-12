@@ -1,7 +1,7 @@
 using System;
 using MassTransit;
 
-namespace TrafficLightControlStore.Publishers;
+namespace TrafficLightControlStore.Publishers.Light;
 
 public class TrafficLightUpdatePublisher : ITrafficLightUpdatePublisher
 {

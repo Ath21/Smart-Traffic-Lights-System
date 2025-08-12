@@ -1,6 +1,6 @@
 using System;
 
-namespace TrafficLightControlStore.Publishers;
+namespace TrafficLightControlStore.Publishers.Light;
 
 public interface ITrafficLightUpdatePublisher
 {

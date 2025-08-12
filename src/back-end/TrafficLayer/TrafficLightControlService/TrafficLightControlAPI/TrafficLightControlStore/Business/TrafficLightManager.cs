@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using TrafficLightControlStore.Publishers;
+using TrafficLightControlStore.Publishers.Light;
 using TrafficMessages.Light;
 
 namespace TrafficLightControlStore.Business;
