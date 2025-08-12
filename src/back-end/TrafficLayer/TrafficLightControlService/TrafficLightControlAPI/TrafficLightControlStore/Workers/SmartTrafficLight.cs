@@ -1,16 +1,17 @@
 using System;
 using System.Collections.Concurrent;
+using TrafficLightControlStore.Publishers.Light;
 using TrafficMessages.Light;
 
 namespace TrafficLightControlStore.Workers;
 
- public class TrafficLightWorker : ITrafficLigh
+ public class SmartTrafficLight : ISmartTrafficLight
     {
         private readonly ITrafficLightUpdatePublisher _updatePublisher;
-        private readonly ILogger<TrafficLightWorker> _logger;
+        private readonly ILogger<SmartTrafficLight> _logger;
         private static readonly ConcurrentDictionary<string, (string Pattern, DateTime UpdatedAt, CancellationTokenSource Cts)> _lights = new();
 
-        public TrafficLightWorker(ITrafficLightUpdatePublisher updatePublisher, ILogger<TrafficLightWorker> logger)
+        public SmartTrafficLight(ITrafficLightUpdatePublisher updatePublisher, ILogger<SmartTrafficLight> logger)
         {
             _updatePublisher = updatePublisher;
             _logger = logger;
