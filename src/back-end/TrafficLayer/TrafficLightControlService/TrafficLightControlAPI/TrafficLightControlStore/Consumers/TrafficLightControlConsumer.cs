@@ -1,31 +1,29 @@
 using MassTransit;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Threading.Tasks;
 using TrafficMessages.Light;
-using TrafficLightControlService.Services;
+using TrafficLightControlStore.Business;
 
 namespace TrafficLightControlService.Consumers
 {
     public class TrafficLightControlConsumer : IConsumer<TrafficLightControl>
     {
-        private readonly ITrafficLightWorker _worker;
+        private readonly ITrafficLightManager _manager;
         private readonly ILogger<TrafficLightControlConsumer> _logger;
 
-        public TrafficLightControlConsumer(ITrafficLightWorker worker, ILogger<TrafficLightControlConsumer> logger)
+        public TrafficLightControlConsumer(ITrafficLightManager manager, ILogger<TrafficLightControlConsumer> logger)
         {
-            _worker = worker;
+            _manager = manager;
             _logger = logger;
         }
 
         public async Task Consume(ConsumeContext<TrafficLightControl> context)
         {
             var msg = context.Message;
-            _logger.LogInformation(
-                "[CONTROL RECEIVED] Intersection {IntersectionId} pattern {Pattern} for {Duration}s triggered by {TriggeredBy}",
+            _logger.LogInformation("[CONTROL RECEIVED] {IntersectionId} -> {Pattern} for {Duration}s by {TriggeredBy}",
                 msg.IntersectionId, msg.ControlPattern, msg.DurationSeconds, msg.TriggeredBy);
 
-            await _worker.ApplyControlAsync(msg);
+            await _manager.ApplyControlAsync(msg);
         }
     }
 }
