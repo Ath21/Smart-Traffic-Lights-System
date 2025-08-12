@@ -8,15 +8,14 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using RabbitMQ.Client;
 using TrafficLightControlService.Consumers;
-using TrafficLightControlService.Publishers;
-using TrafficLightControlService.Services;
+using TrafficLightControlService.Middleware;
 using TrafficLightControlStore.Business;
 using TrafficLightControlStore.Publishers.Light;
 using TrafficLightControlStore.Publishers.Logs;
 using TrafficMessages.Light;
 using TrafficMessages.Logs;
 
-namespace TrafficLightControlService
+namespace TrafficLightControlStore
 {
     public class Startup
     {

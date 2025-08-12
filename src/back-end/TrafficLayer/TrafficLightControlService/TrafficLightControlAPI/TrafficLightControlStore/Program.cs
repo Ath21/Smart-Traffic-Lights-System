@@ -1,7 +1,7 @@
-using IntersectionControlStore;
+using TrafficLightControlStore;
 
 
-namespace IntersectionControlStore
+namespace TrafficLightControlStore
 {
     public class Program
     {
