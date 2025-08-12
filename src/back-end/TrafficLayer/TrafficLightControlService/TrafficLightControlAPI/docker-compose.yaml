@@ -1,14 +1,14 @@
 services:
-  intersection_control_api:
-    image: ath21/stls:intersection_control_api
-    container_name: intersection_control_api_container
+  traffic_light_control_api:
+    image: ath21/stls:traffic_light_control_api
+    container_name: traffic_light_control_api_container
     networks:
-      - intersection_network
+      - traffic_light_network
       - rabbitmq_network
 
 networks:
-  intersection_network:
-    name: intersection_network
+  traffic_light_network:
+    name: traffic_light_network
     driver: bridge
     external: true
   rabbitmq_network:
