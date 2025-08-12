@@ -1,0 +1,29 @@
+services:
+  traffic_light_control_api:
+    ports:
+      - '5261:8080'
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+
+      # RabbitMQ Config
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Port: 5672
+      RabbitMQ__Username: admin
+      RabbitMQ__Password: admin123
+
+      # RabbitMQ Exchanges
+      RabbitMQ__Exchange__TrafficControlExchange: traffic.control.exchange
+      RabbitMQ__Exchange__LogStoreExchange: traffic.logs.exchange
+
+      # RabbitMQ Queues (for commands)
+      RabbitMQ__Queue__TrafficLightControlQueue: traffic.light.control.queue
+
+      # RabbitMQ Routing Keys for subscribing (commands from intersection controller)
+      RabbitMQ__RoutingKey__TrafficLightControl: traffic.light.control.*
+
+      # RabbitMQ Routing Keys for publishing (light status updates)
+      RabbitMQ__RoutingKey__TrafficLightUpdate: traffic.light.update.*
+
+      # Logs
+      RabbitMQ__RoutingKey__TrafficLogsAudit: traffic.logs.audit
+      RabbitMQ__RoutingKey__TrafficLogsError: traffic.logs.error
