@@ -6,16 +6,11 @@ namespace TrafficLightCoordinatorData.Entities;
 
 public class TrafficLight
 {
-    [Key] public Guid LightId { get; set; }
+    public Guid Id { get; set; }                      // light_id (PK)
+    public Guid IntersectionId { get; set; }          // (FK)
+    public string CurrentState { get; set; } = "red"; // free text/state machine key
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
-    [ForeignKey(nameof(Intersection))]
-    public Guid IntersectionId { get; set; }
-
-    [Required, MaxLength(32)]
-    public string CurrentState { get; set; } = "Red"; // e.g., Red/Amber/Green
-
-    public DateTime UpdatedAt { get; set; }
-
-    // Navigation
+    // Nav
     public Intersection? Intersection { get; set; }
 }

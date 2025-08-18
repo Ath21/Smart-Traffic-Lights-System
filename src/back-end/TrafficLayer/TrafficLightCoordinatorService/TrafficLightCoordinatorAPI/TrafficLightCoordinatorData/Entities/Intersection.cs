@@ -6,22 +6,14 @@ namespace TrafficLightCoordinatorData.Entities;
 
 public class Intersection
 {
-    [Key] public Guid IntersectionId { get; set; }
-
-    [Required, MaxLength(200)]
+    public Guid Id { get; set; }                      // intersection_id (PK)
     public string Name { get; set; } = string.Empty;
-
-    // GEOGRAPHY(Point, 4326). If you prefer JSON instead, see DbContext note below.
-    public Point? Location { get; set; }
-
+    public Point? Location { get; set; }              // GEOGRAPHY(Point,4326) or null
     public string? Description { get; set; }
+    public DateTime? InstalledAt { get; set; }
+    public string Status { get; set; } = "active";
 
-    public DateTime InstalledAt { get; set; }
-
-    [Required, MaxLength(50)]
-    public string Status { get; set; } = "inactive";
-
-    // Navigation
+    // Nav
     public ICollection<TrafficLight> TrafficLights { get; set; } = new List<TrafficLight>();
-    public ICollection<TrafficConfiguration> TrafficConfigurations { get; set; } = new List<TrafficConfiguration>();
+    public ICollection<TrafficConfiguration> Configurations { get; set; } = new List<TrafficConfiguration>();
 }

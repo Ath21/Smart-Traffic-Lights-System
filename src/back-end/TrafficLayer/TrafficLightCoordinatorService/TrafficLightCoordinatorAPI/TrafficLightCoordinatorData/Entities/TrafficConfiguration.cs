@@ -7,16 +7,11 @@ namespace TrafficLightCoordinatorData.Entities;
 
 public class TrafficConfiguration
 {
-    [Key] public Guid ConfigId { get; set; }
+    public Guid Id { get; set; }                        // config_id (PK)
+    public Guid IntersectionId { get; set; }            // (FK)
+    public JsonDocument Pattern { get; set; } = JsonDocument.Parse("{}"); // jsonb
+    public DateTime EffectiveFrom { get; set; } = DateTime.UtcNow;
 
-    [ForeignKey(nameof(Intersection))]
-    public Guid IntersectionId { get; set; }
-
-    // JSON (jsonb) storing the plan/pattern (phases, timings, groups)
-    public JsonDocument Pattern { get; set; } = JsonDocument.Parse("{}");
-
-    public DateTime EffectiveFrom { get; set; }
-
-    // Navigation
+    // Nav
     public Intersection? Intersection { get; set; }
 }
