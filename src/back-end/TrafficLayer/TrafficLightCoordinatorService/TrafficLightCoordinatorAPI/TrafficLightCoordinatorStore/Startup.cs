@@ -2,6 +2,10 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using TrafficLightCoordinatorData;
 using TrafficLightCoordinatorData.Entities;
+using TrafficLightCoordinatorStore.Business.Coordination;
+using TrafficLightCoordinatorStore.Repositories.Intersections;
+using TrafficLightCoordinatorStore.Repositories.Light;
+using TrafficLightCoordinatorStore.Repositories.TrafficConfig;
 
 
 
@@ -28,40 +32,17 @@ public class Startup
 
         /******* [2] Repositories ********/
 
-        services.AddScoped(typeof(IAuditLogRepository), typeof(AuditLogRepository));
-        services.AddScoped(typeof(IUserRepository), typeof(UserRepository));
-        services.AddScoped(typeof(ISessionRepository), typeof(SessionRepository));
+        services.AddScoped(typeof(ITrafficConfigurationRepository), typeof(TrafficConfigurationRepository));
+        services.AddScoped(typeof(IIntersectionRepository), typeof(IntersectionRepository));
+        services.AddScoped(typeof(ITrafficLightRepository), typeof(TrafficLightRepository));
 
         /******* [3] Services ********/
 
-        services.AddScoped(typeof(IPasswordHasher), typeof(PasswordHasher));
-        services.AddScoped(typeof(ITokenService), typeof(TokenService));
-        services.AddScoped(typeof(IUsrService), typeof(UsrService));
+        services.AddScoped(typeof(IScheduleService), typeof(ScheduleService));
 
         /******* [4] AutoMapper ********/
 
-        services.AddAutoMapper(typeof(UserStoreProfile));
-
-        /******* [5] Jwt Config ********/
-
-        var jwtSettings = _configuration.GetSection("Jwt");
-        var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]);
-
-        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddJwtBearer(options =>
-            {
-                options.RequireHttpsMetadata = false;
-                options.SaveToken = true;
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidIssuer = jwtSettings["Issuer"],
-                    ValidateAudience = true,
-                    ValidAudience = jwtSettings["Audience"],
-                    ValidateLifetime = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key)
-                };
-            });
+        services.AddAutoMapper(typeof(TrafficLightCoordinatorStoreProfile));
 
         /******* [6] MassTransit ********/
 
