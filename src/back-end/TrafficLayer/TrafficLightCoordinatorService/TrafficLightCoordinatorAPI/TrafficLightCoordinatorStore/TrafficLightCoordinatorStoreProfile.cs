@@ -1,8 +1,7 @@
 using AutoMapper;
-using NetTopologySuite.Geometries;
-using System.Text.Json;
 using TrafficLightCoordinatorData.Entities;
 using TrafficLightCoordinatorStore.Models;
+using System.Text.Json;
 
 namespace TrafficLightCoordinatorStore;
 
@@ -10,48 +9,38 @@ public class TrafficLightCoordinatorStoreProfile : Profile
 {
     public TrafficLightCoordinatorStoreProfile()
     {
-        //
-        // LatLng <-> Point
-        //
-        CreateMap<Point, LatLngDto>()
-            .ConvertUsing(p => p == null ? null : new LatLngDto { Lat = p.Y, Lng = p.X });
+        CreateMap<TrafficConfiguration, GetScheduleResponseDto>()
+            .ForCtorParam("Intersection_Id", opt => opt.MapFrom(src => src.IntersectionId))
+            .ForCtorParam("Schedule_Pattern", opt => opt.MapFrom(src =>
+                ParsePattern(src.Pattern, src.UpdatedAt)));
 
-        CreateMap<LatLngDto, Point>()
-            .ConvertUsing(d => d == null ? null : new Point(d.Lng, d.Lat) { SRID = 4326 });
+        // helper conversions
+        CreateMap<UpdateScheduleRequestDto, TrafficConfiguration>()
+            .ForMember(d => d.Pattern, o => o.MapFrom(s => JsonSerializer.Serialize(
+                new { phases = s.Schedule_Pattern.Phases, updated_at = DateTimeOffset.UtcNow })))
+            .ForMember(d => d.UpdatedAt, o => o.MapFrom(_ => DateTimeOffset.UtcNow));
+    }
 
-        //
-        // Entities -> DTOs
-        //
-        CreateMap<IntersectionEntity, IntersectionReadDto>();
-        CreateMap<TrafficLightEntity, TrafficLightReadDto>();
-        CreateMap<TrafficConfigurationEntity, TrafficConfigurationReadDto>()
-            .ConvertUsing(s => new TrafficConfigurationReadDto
+    private static SchedulePatternDto ParsePattern(string json, DateTimeOffset updatedAt)
+    {
+        try
+        {
+            var doc = JsonDocument.Parse(string.IsNullOrWhiteSpace(json) ? "{}" : json);
+            var phases = new List<PhaseDto>();
+            if (doc.RootElement.TryGetProperty("phases", out var arr) && arr.ValueKind == JsonValueKind.Array)
             {
-                Id = s.Id,
-                IntersectionId = s.IntersectionId,
-                Pattern = s.Pattern == null
-                    ? JsonDocument.Parse("{}").RootElement
-                    : s.Pattern.RootElement,
-                EffectiveFrom = s.EffectiveFrom
-            });
-
-        //
-        // DTOs -> Entities
-        //
-        CreateMap<IntersectionCreateDto, IntersectionEntity>()
-            .ForMember(e => e.Id, opt => opt.Ignore())
-            .ForMember(e => e.Location, opt => opt.Ignore())
-            .AfterMap((src, dest) =>
-            {
-                if (src.Lat.HasValue && src.Lng.HasValue)
+                foreach (var p in arr.EnumerateArray())
                 {
-                    dest.Location = new Point(src.Lng.Value, src.Lat.Value) { SRID = 4326 };
+                    phases.Add(new PhaseDto(
+                        p.GetProperty("phase").GetString() ?? "Unknown",
+                        p.GetProperty("duration").GetInt32()));
                 }
-            });
-
-        CreateMap<TrafficConfigurationCreateDto, TrafficConfiguration>()
-            .ForMember(e => e.Id, opt => opt.Ignore())
-            .ForMember(e => e.Pattern, opt => opt.MapFrom(src =>
-                JsonDocument.Parse(src.Pattern.GetRawText())));
+            }
+            return new SchedulePatternDto(phases, updatedAt);
+        }
+        catch
+        {
+            return new SchedulePatternDto(new(), updatedAt);
+        }
     }
 }
