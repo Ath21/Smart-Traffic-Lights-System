@@ -2,6 +2,7 @@ using System;
 using System.Text.Json;
 using AutoMapper;
 using TrafficLightCoordinatorStore.Models;
+using TrafficLightCoordinatorStore.Publishers.Update;
 using TrafficLightCoordinatorStore.Repositories.Intersections;
 using TrafficLightCoordinatorStore.Repositories.TrafficConfig;
 
@@ -43,28 +44,28 @@ public class ScheduleService : IScheduleService
         var saved = await _configRepo.UpsertAsync(intersectionId, json, ct);
         var dto = _mapper.Map<GetScheduleResponseDto>(saved);
 
-        // Publish coordinated update
-        await _publisher.PublishAsync(intersectionId, dto.Schedule_Pattern, ct);
+        // NEW: build "currentPattern" string and publish using string intersection id
+        var currentPattern = BuildPatternString(dto.Schedule_Pattern);
+        await _publisher.PublishAsync(intersectionId.ToString(), currentPattern, ct);
 
         return dto;
     }
 
     public async Task<GetScheduleResponseDto?> ApplyPriorityAsync(Guid intersectionId, string priorityType, CancellationToken ct)
     {
-        // get base schedule or default
-        var current = await GetScheduleAsync(intersectionId, ct);
-        if (current is null)
-        {
-            // default fallback pattern
-            current = new GetScheduleResponseDto(
-                intersectionId,
-                new SchedulePatternDto(
-                    new() { new PhaseDto("NS_Green", 30), new PhaseDto("EW_Green", 30) },
-                    DateTimeOffset.UtcNow));
-        }
+        var current = await GetScheduleAsync(intersectionId, ct)
+                     ?? new GetScheduleResponseDto(
+                            intersectionId,
+                            new SchedulePatternDto(
+                                new() { new PhaseDto("NS_Green", 30), new PhaseDto("EW_Green", 30) },
+                                DateTimeOffset.UtcNow));
 
         var recalculated = CoordinationEngine.Recalculate(current.Schedule_Pattern.Phases, priorityType);
         var result = await UpdateScheduleAsync(intersectionId, recalculated, ct);
         return result;
     }
+
+    // Helper to format phases like "NS_Green(30)->EW_Green(30)"
+    private static string BuildPatternString(SchedulePatternDto schedule) =>
+        string.Join("->", schedule.Phases.Select(p => $"{p.Phase}({p.Duration})"));
 }

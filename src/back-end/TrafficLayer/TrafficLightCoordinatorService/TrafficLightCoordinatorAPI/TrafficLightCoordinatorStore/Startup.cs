@@ -6,6 +6,7 @@ using TrafficLightCoordinatorData;
 using TrafficLightCoordinatorData.Entities;
 using TrafficLightCoordinatorStore.Business.Coordination;
 using TrafficLightCoordinatorStore.Consumers;
+using TrafficLightCoordinatorStore.Middleware;
 using TrafficLightCoordinatorStore.Publishers.Logs;
 using TrafficLightCoordinatorStore.Publishers.Update;
 using TrafficLightCoordinatorStore.Repositories.Intersections;

@@ -12,3 +12,5 @@
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficLightCoordinatorService/TrafficLightCoordinatorAPI/TrafficLightCoordinatorData/obj/Debug/net9.0/refint/TrafficLightCoordinatorData.dll
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficLightCoordinatorService/TrafficLightCoordinatorAPI/TrafficLightCoordinatorData/obj/Debug/net9.0/TrafficLightCoordinatorData.pdb
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficLightCoordinatorService/TrafficLightCoordinatorAPI/TrafficLightCoordinatorData/obj/Debug/net9.0/ref/TrafficLightCoordinatorData.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficLightCoordinatorService/TrafficLightCoordinatorAPI/TrafficLightCoordinatorData/bin/Debug/net9.0/TrafficLightCoordinatorData.runtimeconfig.json
+/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficLightCoordinatorService/TrafficLightCoordinatorAPI/TrafficLightCoordinatorData/obj/Debug/net9.0/TrafficLightCoordinatorData.genruntimeconfig.cache
