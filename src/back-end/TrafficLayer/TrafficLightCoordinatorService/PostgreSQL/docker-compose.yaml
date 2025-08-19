@@ -1,0 +1,12 @@
+services:
+  traffic_light_coordinator_postgres:
+    image: postgres:16
+    container_name: traffic_light_coordinator_postgres
+    networks:
+      - traffic_light_coordinator_network
+
+networks:
+  traffic_light_coordinator_network:
+    name: traffic_light_coordinator_network
+    driver: bridge
+    external: true
