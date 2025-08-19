@@ -14,7 +14,7 @@ COORD_DB_DIR="./TrafficLayer/TrafficLightCoordinatorService/PostgreSQL"
 DOCKER_COMPOSE_FILE="docker-compose.yaml"
 DOCKER_COMPOSE_OVERRIDE="docker-compose.override.yaml"
 
-PROJECT_NAME="traffic_coordinator_service"
+PROJECT_NAME="traffic_light_coordinator_service"
 
 # ================================
 # 🛑 Stop Coordinator Service

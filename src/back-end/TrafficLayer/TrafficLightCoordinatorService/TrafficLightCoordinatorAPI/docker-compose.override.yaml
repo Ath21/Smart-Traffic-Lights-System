@@ -8,7 +8,7 @@ services:
 
       # ---- DB connection (PostgreSQL) ----
       # Matches our code: ConnectionStrings:TrafficLightDb
-      ConnectionStrings__TrafficLightDb: Host=traffic_light_coordinator_postgres;Port=5432;Database=TrafficLightDb;Username=traffic;Password=traffic;Include Error Detail=true
+      ConnectionStrings__DefaultConnection: Host=traffic_light_coordinator_postgres;Port=5432;Database=TrafficLightDb;Username=traffic;Password=traffic;Include Error Detail=true
 
       # ---- RabbitMQ connection ----
       RabbitMQ__Host: rabbitmq

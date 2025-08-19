@@ -1,11 +1,18 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using TrafficLightCoordinatorData.Entities;
 
 namespace TrafficLightCoordinatorData;
 
 public class TrafficLightCoordinatorDbContext : DbContext
 {
-    public TrafficLightCoordinatorDbContext(DbContextOptions<TrafficLightCoordinatorDbContext> options) : base(options) { }
+    private readonly IConfiguration _configuration;
+
+    public TrafficLightCoordinatorDbContext(DbContextOptions<TrafficLightCoordinatorDbContext> options, IConfiguration configuration) 
+        : base(options)
+    {
+        _configuration = configuration;
+    }
 
     public DbSet<Intersection> Intersections => Set<Intersection>();
     public DbSet<TrafficLight> TrafficLights => Set<TrafficLight>();
@@ -24,5 +31,14 @@ public class TrafficLightCoordinatorDbContext : DbContext
         modelBuilder.Entity<Intersection>().HasIndex(i => i.Status);
         modelBuilder.Entity<TrafficLight>().HasIndex(l => new { l.IntersectionId, l.UpdatedAt });
         modelBuilder.Entity<TrafficConfiguration>().HasIndex(c => new { c.IntersectionId, c.UpdatedAt });
+    }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        if (!optionsBuilder.IsConfigured)
+        {
+            var connectionString = _configuration.GetConnectionString("DefaultConnection");
+            optionsBuilder.UseNpgsql(connectionString, npgsqlOptions => npgsqlOptions.UseNetTopologySuite());
+        }
     }
 }

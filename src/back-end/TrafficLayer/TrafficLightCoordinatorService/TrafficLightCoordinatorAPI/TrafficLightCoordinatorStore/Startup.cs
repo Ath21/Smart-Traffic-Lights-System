@@ -32,11 +32,7 @@ public class Startup
     {
         /******* [1] ORM ********/
 
-        services.AddDbContext<TrafficLightCoordinatorDbContext>(opt =>
-        {
-            opt.UseNpgsql(_configuration.GetConnectionString("DefaultConnection"),
-                npgsqlOptions => npgsqlOptions.UseNetTopologySuite());
-        });
+        services.AddDbContext<TrafficLightCoordinatorDbContext>();
 
         /******* [2] Repositories ********/
 
@@ -62,53 +58,46 @@ public class Startup
         services.AddScoped<PriorityCyclistConsumer>();
         services.AddScoped<TrafficCongestionAlertConsumer>();
 
-        services.AddMassTransit(x =>
+services.AddMassTransit(x =>
+{
+    x.AddConsumer<PriorityEmergencyVehicleConsumer>();
+    x.AddConsumer<PriorityPublicTransportConsumer>();
+    x.AddConsumer<PriorityPedestrianConsumer>();
+    x.AddConsumer<PriorityCyclistConsumer>();
+    x.AddConsumer<TrafficCongestionAlertConsumer>();
+
+    x.UsingRabbitMq((ctx, cfg) =>
+    {
+        var rmq = _configuration.GetSection("RabbitMQ");
+        cfg.Host(rmq["Host"] ?? "localhost", "/", h =>
         {
-            x.AddConsumer<PriorityEmergencyVehicleConsumer>();
-            x.AddConsumer<PriorityPublicTransportConsumer>();
-            x.AddConsumer<PriorityPedestrianConsumer>();
-            x.AddConsumer<PriorityCyclistConsumer>();
-            x.AddConsumer<TrafficCongestionAlertConsumer>();
-
-            x.UsingRabbitMq((ctx, cfg) =>
-            {
-                var rmq = _configuration.GetSection("RabbitMQ");
-                cfg.Host(rmq["Host"] ?? "localhost", "/", h =>
-                {
-                    h.Username(rmq["Username"] ?? "guest");
-                    h.Password(rmq["Password"] ?? "guest");
-                });
-
-                cfg.ReceiveEndpoint(rmq["Queue:TrafficCoordinationQueue"] ?? "traffic.light.coordination", e =>
-                {
-                    e.ConfigureConsumeTopology = false;
-
-                    e.Bind<PriorityEmergencyVehicle>(b => { b.ExchangeType = "topic"; b.RoutingKey = rmq["RoutingKey:PriorityEmergencyKey"] ?? "*"; });
-                    e.Bind<PriorityPublicTransport>(b => { b.ExchangeType = "topic"; b.RoutingKey = rmq["RoutingKey:PriorityPublicKey"] ?? "*"; });
-                    e.Bind<PriorityPedestrian>(b => { b.ExchangeType = "topic"; b.RoutingKey = rmq["RoutingKey:PriorityPedestrianKey"] ?? "*"; });
-                    e.Bind<PriorityCyclist>(b => { b.ExchangeType = "topic"; b.RoutingKey = rmq["RoutingKey:PriorityCyclistKey"] ?? "*"; });
-
-                    e.Consumer<PriorityEmergencyVehicleConsumer>(ctx);
-                    e.Consumer<PriorityPublicTransportConsumer>(ctx);
-                    e.Consumer<PriorityPedestrianConsumer>(ctx);
-                    e.Consumer<PriorityCyclistConsumer>(ctx);
-                });
-                
-                cfg.ReceiveEndpoint(rmq["Queue:TrafficCoordinationQueue"] ?? "traffic.light.coordination", e =>
-                {
-                    e.ConfigureConsumeTopology = false;
-
-                    // existing binds...
-                    e.Bind<TrafficCongestionAlert>(b =>
-                    {
-                        b.ExchangeType = "topic";
-                        b.RoutingKey = rmq["RoutingKey:TrafficAnalyticsCongestionKey"] ?? "*";
-                    });
-
-                    e.Consumer<TrafficCongestionAlertConsumer>(ctx);
-                });
-            });
+            h.Username(rmq["Username"] ?? "guest");
+            h.Password(rmq["Password"] ?? "guest");
         });
+
+        var queueName = rmq["Queue:TrafficCoordinationQueue"] ?? "traffic.light.coordination";
+
+        cfg.ReceiveEndpoint(queueName, e =>
+        {
+            e.ConfigureConsumeTopology = false;
+
+            // Topic bindings
+            e.Bind<PriorityEmergencyVehicle>(b => { b.ExchangeType = "topic"; b.RoutingKey = rmq["RoutingKey:PriorityEmergencyKey"] ?? "*"; });
+            e.Bind<PriorityPublicTransport>(b => { b.ExchangeType = "topic"; b.RoutingKey = rmq["RoutingKey:PriorityPublicKey"] ?? "*"; });
+            e.Bind<PriorityPedestrian>(b => { b.ExchangeType = "topic"; b.RoutingKey = rmq["RoutingKey:PriorityPedestrianKey"] ?? "*"; });
+            e.Bind<PriorityCyclist>(b => { b.ExchangeType = "topic"; b.RoutingKey = rmq["RoutingKey:PriorityCyclistKey"] ?? "*"; });
+            e.Bind<TrafficCongestionAlert>(b => { b.ExchangeType = "topic"; b.RoutingKey = rmq["RoutingKey:TrafficAnalyticsCongestionKey"] ?? "*"; });
+
+            // Consumers
+            e.Consumer<PriorityEmergencyVehicleConsumer>(ctx);
+            e.Consumer<PriorityPublicTransportConsumer>(ctx);
+            e.Consumer<PriorityPedestrianConsumer>(ctx);
+            e.Consumer<PriorityCyclistConsumer>(ctx);
+            e.Consumer<TrafficCongestionAlertConsumer>(ctx);
+        });
+    });
+});
+
 
 
         /******* [7] Controllers ********/
