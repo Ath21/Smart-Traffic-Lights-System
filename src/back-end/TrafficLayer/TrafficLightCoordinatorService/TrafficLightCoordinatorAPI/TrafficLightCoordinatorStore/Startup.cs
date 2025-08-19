@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using TrafficLightCoordinatorData;
 using TrafficLightCoordinatorData.Entities;
 using TrafficLightCoordinatorStore.Business.Coordination;
+using TrafficLightCoordinatorStore.Publishers.Logs;
+using TrafficLightCoordinatorStore.Publishers.Update;
 using TrafficLightCoordinatorStore.Repositories.Intersections;
 using TrafficLightCoordinatorStore.Repositories.Light;
 using TrafficLightCoordinatorStore.Repositories.TrafficConfig;
@@ -46,7 +48,8 @@ public class Startup
 
         /******* [6] MassTransit ********/
 
-        services.AddScoped(typeof(IUserLogPublisher), typeof(UserLogPublisher));
+        services.AddScoped(typeof(ILightUpdatePublisher), typeof(LightUpdatePublisher));
+        services.AddScoped(typeof(ITrafficLogPublisher), typeof(TrafficLogPublisher));
 
         services.AddMassTransit(x =>
         {
