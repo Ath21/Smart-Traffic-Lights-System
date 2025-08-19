@@ -19,7 +19,7 @@ declare -A SERVICES_PATHS=(
     # Traffic Layer
     [traffic_data_analytics_api]="./TrafficLayer/TrafficDataAnalyticsService/TrafficDataAnalyticsAPI"
     [traffic_light_control_api]="./TrafficLayer/TrafficLightControlService/TrafficLightControlAPI"
-    [traffic_light_coordination_api]="./TrafficLayer/TrafficLightCoordinationService/TrafficLightCoordinationAPI"
+    [traffic_light_coordinator_api]="./TrafficLayer/TrafficLightCoordinatorService/TrafficLightCoordinatorAPI"
     [intersection_control_api]="./TrafficLayer/IntersectionControlService/IntersectionControlAPI"
 
     # Sensor Layer
@@ -207,10 +207,10 @@ main()
         traffic)
             services_to_build=()
             case "$TARGET_SERVICE" in
-                "") services_to_build+=(traffic_data_analytics_api traffic_light_control_api traffic_light_coordination_api intersection_control_api) ;;
+                "") services_to_build+=(traffic_data_analytics_api traffic_light_control_api traffic_light_coordinator_api intersection_control_api) ;;
                 TrafficDataAnalyticsService) services_to_build+=(traffic_data_analytics_api) ;;
                 TrafficLightControlService) services_to_build+=(traffic_light_control_api) ;;
-                TrafficLightCoordinationService) services_to_build+=(traffic_light_coordination_api) ;;
+                TrafficLightCoordinatorService) services_to_build+=(traffic_light_coordinator_api) ;;
                 IntersectionControlService) services_to_build+=(intersection_control_api) ;;
                 *) echo "❌ Unknown traffic service: $TARGET_SERVICE"; exit 1 ;;
             esac
