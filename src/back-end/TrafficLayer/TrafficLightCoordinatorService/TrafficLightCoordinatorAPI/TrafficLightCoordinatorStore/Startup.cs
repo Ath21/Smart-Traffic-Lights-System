@@ -1,13 +1,17 @@
 using System.Text;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 using TrafficLightCoordinatorData;
 using TrafficLightCoordinatorData.Entities;
 using TrafficLightCoordinatorStore.Business.Coordination;
+using TrafficLightCoordinatorStore.Consumers;
 using TrafficLightCoordinatorStore.Publishers.Logs;
 using TrafficLightCoordinatorStore.Publishers.Update;
 using TrafficLightCoordinatorStore.Repositories.Intersections;
 using TrafficLightCoordinatorStore.Repositories.Light;
 using TrafficLightCoordinatorStore.Repositories.TrafficConfig;
+using TrafficMessages.Priority;
 
 
 
@@ -50,35 +54,40 @@ public class Startup
 
         services.AddScoped(typeof(ILightUpdatePublisher), typeof(LightUpdatePublisher));
         services.AddScoped(typeof(ITrafficLogPublisher), typeof(TrafficLogPublisher));
-
+        
         services.AddMassTransit(x =>
         {
-            x.UsingRabbitMq((context, cfg) =>
-            {
-                var rabbitmqSettings = _configuration.GetSection("RabbitMQ");
+            x.AddConsumer<PriorityEmergencyVehicleConsumer>();
+            x.AddConsumer<PriorityPublicTransportConsumer>();
+            x.AddConsumer<PriorityPedestrianConsumer>();
+            x.AddConsumer<PriorityCyclistConsumer>();
 
-                cfg.Host(rabbitmqSettings["Host"], "/", h =>
+            x.UsingRabbitMq((ctx, cfg) =>
+            {
+                var rmq = _configuration.GetSection("RabbitMQ");
+                cfg.Host(rmq["Host"] ?? "localhost", "/", h =>
                 {
-                    h.Username(rabbitmqSettings["Username"]);
-                    h.Password(rabbitmqSettings["Password"]);
+                    h.Username(rmq["Username"] ?? "guest");
+                    h.Password(rmq["Password"] ?? "guest");
                 });
 
-                // Publisher for LogInfo
-                cfg.Message<LogInfo>(e => { e.SetEntityName(rabbitmqSettings["UserLogsExchange"]); }); 
-                cfg.Publish<LogInfo>(e => { e.ExchangeType = ExchangeType.Direct; });
+                cfg.ReceiveEndpoint(rmq["Queue:TrafficCoordinationQueue"] ?? "traffic.light.coordination", e =>
+                {
+                    e.ConfigureConsumeTopology = false;
 
-                cfg.Message<LogAudit>(e => { e.SetEntityName(rabbitmqSettings["UserLogsExchange"]); });
-                cfg.Publish<LogAudit>(e => { e.ExchangeType = ExchangeType.Direct;});
+                    e.Bind<PriorityEmergencyVehicle>(b => { b.ExchangeType = "topic"; b.RoutingKey = rmq["RoutingKey:PriorityEmergencyKey"] ?? "*"; });
+                    e.Bind<PriorityPublicTransport>(b => { b.ExchangeType = "topic"; b.RoutingKey = rmq["RoutingKey:PriorityPublicKey"] ?? "*"; });
+                    e.Bind<PriorityPedestrian>(b =>   { b.ExchangeType = "topic"; b.RoutingKey = rmq["RoutingKey:PriorityPedestrianKey"] ?? "*"; });
+                    e.Bind<PriorityCyclist>(b =>      { b.ExchangeType = "topic"; b.RoutingKey = rmq["RoutingKey:PriorityCyclistKey"] ?? "*"; });
 
-                cfg.Message<LogError>(e => { e.SetEntityName(rabbitmqSettings["UserLogsExchange"]); });
-                cfg.Publish<LogError>(e => { e.ExchangeType = ExchangeType.Direct; });
-
-                cfg.Message<NotificationRequest>(e => { e.SetEntityName(rabbitmqSettings["UserNotificationsExchange"]); });
-                cfg.Publish<NotificationRequest>(e => { e.ExchangeType = ExchangeType.Direct; });
-
-                cfg.ConfigureEndpoints(context);
+                    e.Consumer<PriorityEmergencyVehicleConsumer>(ctx);
+                    e.Consumer<PriorityPublicTransportConsumer>(ctx);
+                    e.Consumer<PriorityPedestrianConsumer>(ctx);
+                    e.Consumer<PriorityCyclistConsumer>(ctx);
+                });
             });
         });
+
 
         /******* [7] Controllers ********/
 
@@ -91,7 +100,7 @@ public class Startup
 
         services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "User Service API", Version = "v1.0" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Traffic Light Coordinator Service API", Version = "v1.0" });
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     In = ParameterLocation.Header,
@@ -125,7 +134,7 @@ public class Startup
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "User Service API");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Traffic Light Coordinator Service API");
             });
         }
 
