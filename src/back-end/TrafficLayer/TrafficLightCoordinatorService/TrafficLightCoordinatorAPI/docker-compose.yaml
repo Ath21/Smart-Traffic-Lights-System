@@ -1,0 +1,17 @@
+services:
+  traffic_light_coordinator_api:
+    image: ath21/stls:traffic_light_coordinator_api
+    container_name: traffic_light_coordinator_api_container
+    networks:
+      - traffic_light_coordinator_network
+      - rabbitmq_network
+
+networks:
+  traffic_light_coordinator_network:
+    name: traffic_light_coordinator_network
+    driver: bridge
+    external: true
+  rabbitmq_network:
+    name: rabbitmq_network
+    driver: bridge
+    external: true
