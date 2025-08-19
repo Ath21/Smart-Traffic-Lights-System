@@ -1,19 +1,30 @@
-// src/Coordinator.Infrastructure/Entities/IntersectionEntity.cs
 using System.ComponentModel.DataAnnotations;
-using NetTopologySuite.Geometries;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TrafficLightCoordinatorData.Entities;
 
+[Table("intersections")]
 public class Intersection
 {
-    public Guid Id { get; set; }                      // intersection_id (PK)
-    public string Name { get; set; } = string.Empty;
-    public Point? Location { get; set; }              // GEOGRAPHY(Point,4326) or null
-    public string? Description { get; set; }
-    public DateTime? InstalledAt { get; set; }
-    public string Status { get; set; } = "active";
+    [Key, Column("intersection_id")]
+    public Guid IntersectionId { get; set; }
 
-    // Nav
-    public ICollection<TrafficLight> TrafficLights { get; set; } = new List<TrafficLight>();
+    [Column("name"), MaxLength(255)]
+    public string Name { get; set; } = string.Empty;
+
+    // Store as JSON in Postgres
+    [Column("location", TypeName = "jsonb")]
+    public string? Location { get; set; }
+
+    [Column("description")]
+    public string? Description { get; set; }
+
+    [Column("installed_at")]
+    public DateTimeOffset? InstalledAt { get; set; }
+
+    [Column("status"), MaxLength(50)]
+    public string Status { get; set; } = "Active";
+
+    public ICollection<TrafficLight> Lights { get; set; } = new List<TrafficLight>();
     public ICollection<TrafficConfiguration> Configurations { get; set; } = new List<TrafficConfiguration>();
 }

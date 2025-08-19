@@ -1,16 +1,22 @@
-// src/Coordinator.Infrastructure/Entities/TrafficLightEntity.cs
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TrafficLightCoordinatorData.Entities;
 
+[Table("traffic_lights")]
 public class TrafficLight
 {
-    public Guid Id { get; set; }                      // light_id (PK)
-    public Guid IntersectionId { get; set; }          // (FK)
-    public string CurrentState { get; set; } = "red"; // free text/state machine key
-    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    [Key, Column("light_id")]
+    public Guid LightId { get; set; }
 
-    // Nav
+    [Column("intersection_id")]
+    public Guid IntersectionId { get; set; }
+
     public Intersection? Intersection { get; set; }
+
+    [Column("current_state"), MaxLength(50)]
+    public string CurrentState { get; set; } = "RED";
+
+    [Column("updated_at")]
+    public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
 }

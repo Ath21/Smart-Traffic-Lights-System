@@ -1,17 +1,23 @@
-// src/Coordinator.Infrastructure/Entities/TrafficConfigurationEntity.cs
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json;
 
 namespace TrafficLightCoordinatorData.Entities;
 
+[Table("traffic_configurations")]
 public class TrafficConfiguration
 {
-    public Guid Id { get; set; }                        // config_id (PK)
-    public Guid IntersectionId { get; set; }            // (FK)
-    public JsonDocument Pattern { get; set; } = JsonDocument.Parse("{}"); // jsonb
-    public DateTime EffectiveFrom { get; set; } = DateTime.UtcNow;
+    [Key, Column("config_id")]
+    public Guid ConfigId { get; set; }
 
-    // Nav
+    [Column("intersection_id")]
+    public Guid IntersectionId { get; set; }
+
     public Intersection? Intersection { get; set; }
+
+    // JSON schedule pattern { phases: [...], updated_at: ... }
+    [Column("pattern", TypeName = "jsonb")]
+    public string Pattern { get; set; } = """{ "phases": [], "updated_at": null }""";
+
+    [Column("updated_at")]
+    public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
 }
