@@ -1,10 +1,9 @@
-/* Map container size */
 .leaflet-container {
   height: 100%;
   width: 100%;
 }
 
-/* Traffic light circle styles */
+/* traffic light circle */
 .traffic-light {
   width: 18px;
   height: 18px;
@@ -14,9 +13,9 @@
 }
 
 .traffic-light.green {
-  background: #00c853; /* green light */
+  background: #00c853; /* bright green */
 }
 
 .traffic-light.red {
-  background: #d50000; /* red light */
+  background: #d50000; /* deep red */
 }

@@ -3,36 +3,56 @@ import { onMounted, ref } from 'vue'
 import L from 'leaflet'
 import '../assets/map.css'
 
-
 const mapEl = ref(null)
 
+// === Updated coordinates ===
 const sites = [
   {
-    name: 'Left Intersection — Edessis',
+    name: 'Edessis',
     points: [
-      [38.00152733622807, 23.67372816002177],
-      [38.00165837717111, 23.673722795604068],
-      [38.00162456017597, 23.673620871667698],
+      [38.001555631630424, 23.67370752082095], // E
+      [38.00161242321305, 23.673639242930516], // W
+      [38.0016348409309, 23.673686658132205],  // N
     ],
   },
   {
-    name: 'Mid Intersection — Dimitsanas Gate',
+    name: 'West Gate',
     points: [
-      [38.002491943770984, 23.674363239694117],
-      [38.002686388980045, 23.674508078972114],
-      [38.002610019425525, 23.674544473009455],
+      [38.00263542684669, 23.674509442640147], // E
+      [38.00267363798658, 23.6744970376112],   // N
+      [38.0026247632692, 23.674456439334644],  // S
+    ],
+  },
+  {
+    name: 'Dimitsanas',
+    points: [
+      [38.004671829254214, 23.676075006015218], // S
+      [38.00467538368099, 23.67613928661976],   // E
+    ],
+  },
+  {
+    name: 'Central Gate',
+    points: [
+      [38.00445589750435, 23.676479861054602], // S
+      [38.00445856333231, 23.67653399209],     // E
+    ],
+  },
+  {
+    name: 'East Gate',
+    points: [
+      [38.00366275759531, 23.67771229700096], // E
     ],
   },
 ]
 
-// custom traffic light icon with CSS classes
+// Custom CSS-based traffic light icons
 function trafficIcon(color = 'green') {
   return L.divIcon({
     html: `<div class="traffic-light ${color}"></div>`,
     className: '',
-    iconSize: [24, 24],
-    iconAnchor: [12, 12],
-    popupAnchor: [0, -12],
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
+    popupAnchor: [0, -10],
   })
 }
 
@@ -48,12 +68,14 @@ onMounted(() => {
 
   sites.forEach(site => {
     site.points.forEach((p, idx) => {
+      // Alternate red / green for demo
       L.marker(p, { icon: trafficIcon(idx % 2 === 0 ? 'green' : 'red') })
         .addTo(group)
         .bindPopup(`<b>${site.name}</b><br/>Point ${idx + 1}<br/>${p[0].toFixed(6)}, ${p[1].toFixed(6)}`)
     })
   })
 
+  // Fit to all
   const all = sites.flatMap(s => s.points)
   map.fitBounds(L.latLngBounds(all), { padding: [40, 40] })
 })
@@ -62,26 +84,3 @@ onMounted(() => {
 <template>
   <div ref="mapEl" class="w-full h-[calc(100vh-56px)] border-t border-gray-300 shadow-inner"></div>
 </template>
-
-<style>
-.leaflet-container {
-  height: 100%;
-  width: 100%;
-}
-
-.traffic-light {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  border: 2px solid white;
-  box-shadow: 0 0 6px rgba(0, 0, 0, 0.5);
-}
-
-.traffic-light.green {
-  background: #00c853;
-}
-
-.traffic-light.red {
-  background: #d50000;
-}
-</style>
