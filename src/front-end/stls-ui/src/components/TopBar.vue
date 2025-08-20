@@ -1,8 +1,13 @@
 <template>
-    <header class="flex items-center justify-between p-3 bg-white shadow">
-        <h1 class="font-semibold">STLS</h1>
-        <nav class="flex gap-2 items-center">
-            <slot />
-        </nav>
-    </header>
+  <header class="topbar">
+    <h1>UNIWA <span>STLS</span></h1>
+    <nav>
+      <RouterLink class="login" to="/login">Login</RouterLink>
+      <RouterLink class="register" to="/register">Register</RouterLink>
+    </nav>
+  </header>
 </template>
+
+<script setup>
+import '../assets/topbar.css'
+</script>
