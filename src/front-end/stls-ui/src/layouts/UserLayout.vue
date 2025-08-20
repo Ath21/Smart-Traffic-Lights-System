@@ -14,7 +14,10 @@ alert('Alerts enabled for incidents (demo).')
 <template>
 <div class="h-screen flex flex-col">
 <TopBar>
-<span class="text-sm text-gray-600">Logged in as {{ auth.user?.email }}</span>
+<<span class="text-sm text-gray-600">
+  Logged in as {{ (auth.user?.username || auth.user?.email) }}
+</span>
+
 <button class="px-3 py-1 rounded bg-blue-600 text-white" @click="alertMe">Alert me</button>
 <RouterLink class="px-3 py-1 rounded bg-gray-100" to="/">Viewer</RouterLink>
 </TopBar>
