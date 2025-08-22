@@ -7,6 +7,7 @@ services:
       Jwt__Issuer: http://localhost:5055/API/User
       Jwt__Audience: http://localhost:5055/API/User
       Jwt__Key: Nn7kLa8Rzv1XHt9UwMqP4YbFdJxVt2Km
+      
       ASPNETCORE_ENVIRONMENT: Development
 
       RabbitMQ__Host: rabbitmq
@@ -14,13 +15,26 @@ services:
       RabbitMQ__Username: admin
       RabbitMQ__Password: admin123
 
-      RabbitMQ__UserLogsExchange: user.logs.exchange
-      RabbitMQ__RoutingKeys__Error: user.logs.error
-      RabbitMQ__RoutingKeys__Audit: user.logs.audit
-      RabbitMQ__RoutingKeys__Info: user.logs.info
+      # Exchanges 
+      RabbitMQ__Exchanges__Logs: log.exchange
+      RabbitMQ__Exchanges__User: user.exchange
+      RabbitMQ__Exchanges__Traffic: traffic.exchange
 
-      RabbitMQ__UserNotificationsExchange: user.notifications.exchange
-      RabbitMQ__RoutingKeys__NotificationsRequest: user.notifications.request
+      # Queues
+      RabbitMQ__Queues__Logs: user.log_service.queue
+      RabbitMQ__Queues__User: user.user_service.queue
+      RabbitMQ__Queues__Traffic: traffic.user_service.queue
+
+      RabbitMQ__RoutingKeys__Error: log.user.user_service.error
+      RabbitMQ__RoutingKeys__Audit: log.user.user_service.audit
+
+      RabbitMQ__RoutingKeys__NotificationRequest: user.notification.request
+      RabbitMQ__RoutingKeys__NotificationPublic: notification.event.public_notice
+      RabbitMQ__RoutingKeys__NotificationAlert: user.notification.alert
+
+      RabbitMQ__RoutingKeys__TrafficCongestion: traffic.analytics.congestion.<intersection_id>
+      RabbitMQ__RoutingKeys__TrafficSummary: traffic.analytics.summary.<intersection_id>
+      RabbitMQ__RoutingKeys__TrafficIncident: traffic.analytics.incident.<intersection_id>
 
     depends_on:
       user_mssql:

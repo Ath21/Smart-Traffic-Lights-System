@@ -76,6 +76,12 @@ public class Startup
 
         services.AddMassTransit(x =>
         {
+            x.AddConsumer<TrafficCongestionConsumer>();
+            x.AddConsumer<TrafficSummaryConsumer>();
+            x.AddConsumer<TrafficIncidentConsumer>();
+            x.AddConsumer<UserAlertConsumer>();
+            x.AddConsumer<PublicNoticeConsumer>();
+
             x.UsingRabbitMq((context, cfg) =>
             {
                 var rabbitmqSettings = _configuration.GetSection("RabbitMQ");
@@ -86,22 +92,79 @@ public class Startup
                     h.Password(rabbitmqSettings["Password"]);
                 });
 
-                // Publisher for LogInfo
-                cfg.Message<LogInfo>(e => { e.SetEntityName(rabbitmqSettings["UserLogsExchange"]); }); 
-                cfg.Publish<LogInfo>(e => { e.ExchangeType = ExchangeType.Direct; });
+                // =========================
+                // 🔹 LOGS (Publish)
+                // =========================
+                cfg.Message<LogAudit>(e => e.SetEntityName(rabbitmqSettings["Exchanges:Logs"]));
+                cfg.Publish<LogAudit>(e => e.ExchangeType = ExchangeType.Direct);
 
-                cfg.Message<LogAudit>(e => { e.SetEntityName(rabbitmqSettings["UserLogsExchange"]); });
-                cfg.Publish<LogAudit>(e => { e.ExchangeType = ExchangeType.Direct;});
+                cfg.Message<LogError>(e => e.SetEntityName(rabbitmqSettings["Exchanges:Logs"]));
+                cfg.Publish<LogError>(e => e.ExchangeType = ExchangeType.Direct);
 
-                cfg.Message<LogError>(e => { e.SetEntityName(rabbitmqSettings["UserLogsExchange"]); });
-                cfg.Publish<LogError>(e => { e.ExchangeType = ExchangeType.Direct; });
+                // =========================
+                // 🔹 USER NOTIFICATIONS (Publish)
+                // =========================
+                cfg.Message<NotificationRequest>(e => e.SetEntityName(rabbitmqSettings["Exchanges:User"]));
+                cfg.Publish<NotificationRequest>(e => e.ExchangeType = ExchangeType.Direct);
 
-                cfg.Message<NotificationRequest>(e => { e.SetEntityName(rabbitmqSettings["UserNotificationsExchange"]); });
-                cfg.Publish<NotificationRequest>(e => { e.ExchangeType = ExchangeType.Direct; });
+                cfg.Message<NotificationAlert>(e => e.SetEntityName(rabbitmqSettings["Exchanges:User"]));
+                cfg.Publish<NotificationAlert>(e => e.ExchangeType = ExchangeType.Direct);
+
+                cfg.Message<PublicNotice>(e => e.SetEntityName(rabbitmqSettings["Exchanges:User"]));
+                cfg.Publish<PublicNotice>(e => e.ExchangeType = ExchangeType.Direct);
+
+                // =========================
+                // 🔹 TRAFFIC EVENTS (Consume)
+                // =========================
+                cfg.ReceiveEndpoint(rabbitmqSettings["Queues:Traffic"], e =>
+                {
+                    e.ConfigureConsumeTopology = false; // we bind manually
+                    e.Bind(rabbitmqSettings["Exchanges:Traffic"], s =>
+                    {
+                        s.RoutingKey = rabbitmqSettings["RoutingKeys:TrafficCongestion"];
+                        s.ExchangeType = ExchangeType.Topic;
+                    });
+                    e.Bind(rabbitmqSettings["Exchanges:Traffic"], s =>
+                    {
+                        s.RoutingKey = rabbitmqSettings["RoutingKeys:TrafficSummary"];
+                        s.ExchangeType = ExchangeType.Topic;
+                    });
+                    e.Bind(rabbitmqSettings["Exchanges:Traffic"], s =>
+                    {
+                        s.RoutingKey = rabbitmqSettings["RoutingKeys:TrafficIncident"];
+                        s.ExchangeType = ExchangeType.Topic;
+                    });
+
+                    e.ConfigureConsumer<TrafficCongestionConsumer>(context);
+                    e.ConfigureConsumer<TrafficSummaryConsumer>(context);
+                    e.ConfigureConsumer<TrafficIncidentConsumer>(context);
+                });
+
+                // =========================
+                // 🔹 USER ALERTS & PUBLIC NOTICES (Consume)
+                // =========================
+                cfg.ReceiveEndpoint(rabbitmqSettings["Queues:User"], e =>
+                {
+                    e.ConfigureConsumeTopology = false;
+                    e.Bind(rabbitmqSettings["Exchanges:User"], s =>
+                    {
+                        s.RoutingKey = rabbitmqSettings["RoutingKeys:NotificationAlert"];
+                        s.ExchangeType = ExchangeType.Direct;
+                    });
+                    e.Bind(rabbitmqSettings["Exchanges:User"], s =>
+                    {
+                        s.RoutingKey = rabbitmqSettings["RoutingKeys:NotificationPublic"];
+                        s.ExchangeType = ExchangeType.Direct;
+                    });
+
+                    e.ConfigureConsumer<UserAlertConsumer>(context);
+                    e.ConfigureConsumer<PublicNoticeConsumer>(context);
+                });
 
                 cfg.ConfigureEndpoints(context);
             });
         });
+
 
         /******* [7] Controllers ********/
 
@@ -114,7 +177,7 @@ public class Startup
 
         services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "User Service API", Version = "v1.0" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "User API", Version = "v2.0" });
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     In = ParameterLocation.Header,
@@ -148,7 +211,7 @@ public class Startup
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "User Service API");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "User API");
             });
         }
 
