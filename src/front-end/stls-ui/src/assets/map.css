@@ -1,0 +1,21 @@
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+}
+
+/* traffic light circle */
+.traffic-light {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.5);
+}
+
+.traffic-light.green {
+  background: #00c853; /* bright green */
+}
+
+.traffic-light.red {
+  background: #d50000; /* deep red */
+}

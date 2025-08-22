@@ -1,26 +1,3 @@
-/*
- * UserStore.Startup
- *
- * This class is responsible for configuring the services and middleware for the UserStore application.
- * It contains methods for setting up the dependency injection container, configuring authentication,
- * setting up MassTransit for message queuing, and configuring Swagger for API documentation.
- * The ConfigureServices method is used to register services with the dependency injection container.
- * It includes the following sections:
- *      1. ORM: Configures the Entity Framework Core DbContext for database access.
- *      2. Repositories: Registers the repositories for data access.
- *      3. Services: Registers the business logic services for user management.
- *      4. AutoMapper: Configures AutoMapper for object-to-object mapping.
- *      5. Jwt Config: Configures JWT authentication for securing API endpoints.
- *      6. MassTransit: Configures MassTransit for message queuing with RabbitMQ.
- *      7. Controllers: Configures the API controllers and JSON serialization options.
- *      8. Swagger: Configures Swagger for API documentation and testing.
- * The Configure method is used to set up the middleware pipeline for the application.
- * It includes middleware for exception handling, HTTPS redirection, authentication, and authorization.
- * The method also sets up the Swagger UI for API documentation.
- * The Startup class is typically used in the UserService layer of the application.
- * It is part of the UserStore project, which is responsible for managing user-related operations
- * and services.
- */
 using System.Text;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;

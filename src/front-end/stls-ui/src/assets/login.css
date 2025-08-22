@@ -1,0 +1,126 @@
+/* ================================
+   Login Page Background
+================================ */
+.login-page {
+  position: relative;
+  min-height: 100vh;
+  background: url('/Login-Page.jpg') center center / cover no-repeat;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+/* ================================
+   Login Card
+================================ */
+.login-card {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  margin: 2rem;
+
+  background: url('/Login-Card.png') center/cover no-repeat;
+
+  border-radius: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  z-index: 1;
+}
+
+.login-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  z-index: 0;
+}
+
+.card-content {
+  position: relative;
+  z-index: 1;
+  padding: 3rem 2.5rem;
+}
+
+/* Title */
+.title {
+  font-size: 2rem;
+  font-weight: 800;
+  text-align: center;
+  color: #fff;
+  margin-bottom: 1.8rem;
+}
+
+/* Form */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.input {
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: none;
+  font-size: 1rem;
+  background: #fff;
+  color: #111;
+  transition: box-shadow 0.2s, transform 0.2s;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.input:focus {
+  outline: none;
+  box-shadow: 0 4px 10px rgba(20, 184, 166, 0.3);
+  transform: translateY(-1px);
+}
+
+/* Submit Button */
+.submit-btn {
+  background: linear-gradient(to right, #14b8a6, #06b6d4);
+  color: white;
+  font-size: 1.1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 12px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s, background 0.3s ease;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+}
+
+.submit-btn:hover {
+  background: linear-gradient(to right, #0d9488, #0891b2);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.35);
+}
+
+.submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Footer */
+.footer-text {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 0.95rem;
+  color: #eee;
+}
+
+.register-link {
+  color: #38d0c4;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.register-link:hover {
+  text-decoration: underline;
+}
