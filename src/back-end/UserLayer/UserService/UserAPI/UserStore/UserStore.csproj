@@ -26,4 +26,8 @@
     <ProjectReference Include="..\..\..\UserMessages\UserMessages.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Consumers/" />
+  </ItemGroup>
+
 </Project>
