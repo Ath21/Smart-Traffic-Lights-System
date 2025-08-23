@@ -1,30 +1,10 @@
-/*
- * UserStore.Middleware.ExceptionMiddleware
- *
- * This class is part of the UserStore project, which is responsible for managing user-related operations
- * and services. The ExceptionMiddleware class is a custom middleware component that handles exceptions
- * that occur during the processing of HTTP requests in the UserStore application. It is designed to
- * catch specific exceptions, log them, and return appropriate HTTP responses to the client.
- * The middleware uses MassTransit to publish error logs to a message broker for further processing.
- * The middleware is typically registered in the ASP.NET Core pipeline to ensure that it is executed
- * for every incoming HTTP request.
- * The ExceptionMiddleware class contains the following key components:
- * - Constructor: Initializes the middleware with a request delegate and a logger.
- * - InvokeAsync: The main method that processes the HTTP request and handles exceptions.
- * - PublishError: A private method that publishes error logs to a message broker using MassTransit.
- * The middleware handles the following exceptions:
- * - UnauthorizedAccessException: Catches unauthorized access exceptions and returns a 401 Unauthorized response.
- * - KeyNotFoundException: Catches key not found exceptions and returns a 404 Not Found response.
- * - InvalidOperationException: Catches invalid operation exceptions and returns a 400 Bad Request response.
- * - Exception: Catches all other unhandled exceptions and returns a 500 Internal Server Error response.
- * The middleware also logs the exceptions using the provided logger and publishes error logs to a message broker
- * for further processing.
- * The ExceptionMiddleware class is typically used in the UserService layer of the application.
- * It is part of the UserStore project, which is responsible for managing user-related operations
- * and services.
- */
 using System.Net;
+using LogMessages;
+using MassTransit;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using UserStore.Publishers;
+using UserStore.Publishers.Logs;
 
 namespace UserStore.Middleware;
 
@@ -49,51 +29,87 @@ public class ExceptionMiddleware
         }
         catch (UnauthorizedAccessException ex)
         {
-            _logger.LogWarning(ex, "Unauthorized access");
-
-            // Publish the error log using IUserLogPublisher
-            var logPublisher = context.RequestServices.GetRequiredService<IUserLogPublisher>();
-            await logPublisher.PublishErrorAsync("Unauthorized access", ex);
-
-            context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
-            context.Response.ContentType = "application/json";
-            await context.Response.WriteAsJsonAsync(new { error = ex.Message });
+            await HandleErrorAsync(context, HttpStatusCode.Unauthorized, "Unauthorized access", "AUTH_ERROR", ex);
         }
         catch (KeyNotFoundException ex)
         {
-            _logger.LogWarning(ex, "Resource not found");
-
-            // Publish the error log using IUserLogPublisher
-            var logPublisher = context.RequestServices.GetRequiredService<IUserLogPublisher>();
-            await logPublisher.PublishErrorAsync("Resource not found", ex);
-
-            context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-            context.Response.ContentType = "application/json";
-            await context.Response.WriteAsJsonAsync(new { error = ex.Message });
+            await HandleErrorAsync(context, HttpStatusCode.NotFound, "Resource not found", "NOT_FOUND", ex);
         }
         catch (InvalidOperationException ex)
         {
-            _logger.LogWarning(ex, "Invalid operation");
-
-            // Publish the error log using IUserLogPublisher
-            var logPublisher = context.RequestServices.GetRequiredService<IUserLogPublisher>();
-            await logPublisher.PublishErrorAsync("Invalid operation", ex);
-
-            context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-            context.Response.ContentType = "application/json";
-            await context.Response.WriteAsJsonAsync(new { error = ex.Message });
+            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid operation", "INVALID_OPERATION", ex);
+        }
+        catch (ArgumentNullException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Missing required parameter", "ARGUMENT_NULL", ex);
+        }
+        catch (ArgumentException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid parameter", "ARGUMENT_ERROR", ex);
+        }
+        catch (FormatException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid data format", "FORMAT_ERROR", ex);
+        }
+        catch (TimeoutException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.RequestTimeout, "Operation timed out", "TIMEOUT", ex);
+        }
+        catch (HttpRequestException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.BadGateway, "External service unavailable", "HTTP_REQUEST_ERROR", ex);
+        }
+        catch (TaskCanceledException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.RequestTimeout, "Operation canceled or timed out", "TASK_CANCELED", ex);
+        }
+        catch (MassTransit.RequestTimeoutException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.RequestTimeout, "Message broker timeout", "BROKER_TIMEOUT", ex);
+        }
+        catch (DbUpdateException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.Conflict, "Database update failed", "DB_UPDATE_ERROR", ex);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unhandled exception occurred");
-
-            // Publish the error log using IUserLogPublisher
-            var logPublisher = context.RequestServices.GetRequiredService<IUserLogPublisher>();
-            await logPublisher.PublishErrorAsync("Unhandled exception", ex);
-
-            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-            context.Response.ContentType = "application/json";
-            await context.Response.WriteAsJsonAsync(new { error = "An unexpected error occurred" });
+            await HandleErrorAsync(context, HttpStatusCode.InternalServerError, "An unexpected error occurred", "UNEXPECTED", ex);
         }
+    }
+
+    private async Task HandleErrorAsync(
+        HttpContext context,
+        HttpStatusCode statusCode,
+        string userMessage,
+        string errorType,
+        Exception ex)
+    {
+        _logger.LogError(ex, "{Message}", userMessage);
+
+        try
+        {
+            // Publish the error log via RabbitMQ
+            var publisher = context.RequestServices.GetRequiredService<IUserLogPublisher>();
+            await publisher.PublishErrorAsync(errorType, ex.Message, new
+            {
+                Path = context.Request.Path,
+                Method = context.Request.Method,
+                TraceId = context.TraceIdentifier
+            });
+        }
+        catch (Exception pubEx)
+        {
+            _logger.LogError(pubEx, "Failed to publish error log to broker");
+        }
+
+        context.Response.StatusCode = (int)statusCode;
+        context.Response.ContentType = "application/json";
+
+        await context.Response.WriteAsJsonAsync(new
+        {
+            error = userMessage,
+            details = ex.Message,
+            traceId = context.TraceIdentifier
+        });
     }
 }
