@@ -8,8 +8,10 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
-# Copy all necessary folders
+# Copy required project folders
 COPY UserLayer UserLayer/
+COPY TrafficLayer/TrafficMessages TrafficLayer/TrafficMessages/
+COPY LogLayer/LogMessages LogLayer/LogMessages/
 
 # Restore dependencies
 RUN dotnet restore UserLayer/UserService/UserAPI/UserStore/UserStore.csproj

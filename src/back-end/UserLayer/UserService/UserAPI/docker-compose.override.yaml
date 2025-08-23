@@ -24,7 +24,7 @@ services:
       RabbitMQ__Exchanges__Traffic: TRAFFIC.EXCHANGE
 
       # Queues (only those user service consumes)
-      RabbitMQ__Queues__User: use.user_service.queue
+      RabbitMQ__Queues__User: user.user_service.queue
       RabbitMQ__Queues__Traffic: traffic.user_service.queue
 
       # Routing keys

@@ -9,6 +9,7 @@
       "UserStore/1.0.0": {
         "dependencies": {
           "AutoMapper.Extensions.Microsoft.DependencyInjection": "12.0.1",
+          "LogMessages": "1.0.0",
           "MassTransit": "8.4.1",
           "MassTransit.RabbitMQ": "8.4.1",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "9.0.3",
@@ -17,6 +18,7 @@
           "Microsoft.EntityFrameworkCore.SqlServer": "9.0.4",
           "Microsoft.EntityFrameworkCore.Tools": "9.0.4",
           "Swashbuckle.AspNetCore": "8.0.0",
+          "TrafficMessages": "1.0.0",
           "UserData": "1.0.0",
           "UserMessages": "1.0.0"
         },
@@ -1220,6 +1222,22 @@
           }
         }
       },
+      "LogMessages/1.0.0": {
+        "runtime": {
+          "LogMessages.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "TrafficMessages/1.0.0": {
+        "runtime": {
+          "TrafficMessages.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
       "UserData/1.0.0": {
         "dependencies": {
           "AutoMapper.Extensions.Microsoft.DependencyInjection": "12.0.1",
@@ -1957,6 +1975,16 @@
       "sha512": "sha512-IXoJOXIqc39AIe+CIR7koBtRGMiCt/LPM3lI+PELtDIy9XdyeSrwXFdWV9dzJ2Awl0paLWUaknLxFQ5HpHZUog==",
       "path": "system.windows.extensions/6.0.0",
       "hashPath": "system.windows.extensions.6.0.0.nupkg.sha512"
+    },
+    "LogMessages/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "TrafficMessages/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
     },
     "UserData/1.0.0": {
       "type": "project",

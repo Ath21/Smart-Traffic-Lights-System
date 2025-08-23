@@ -76,18 +76,27 @@ stop_all_layers() {
 
 stop_single_service() {
     local target="$1"
-    local key="${target,,}_api" # convert to lowercase + "_api"
 
-    if [[ -v SERVICES_PATHS["$key"] ]]; then
-        local service_dir="${SERVICES_PATHS[$key]}"
-        echo "🛑 Stopping container and volumes for $target..."
-        docker compose -f "$service_dir/docker-compose.yaml" down
-        echo "✅ $target stopped."
-    else
-        echo "❌ Unknown service: $target"
-        exit 1
-    fi
+    case "$MODE" in
+        user)
+            bash ./UserLayer/downUserLayer.sh --service="$target"
+            ;;
+        log)
+            bash ./LogLayer/downLogLayer.sh --service="$target"
+            ;;
+        traffic)
+            bash ./TrafficLayer/downTrafficLayer.sh --service="$target"
+            ;;
+        sensor)
+            bash ./SensorLayer/downSensorLayer.sh --service="$target"
+            ;;
+        *)
+            echo "❌ Unknown mode for service: $MODE"
+            exit 1
+            ;;
+    esac
 }
+
 
 # ================================
 # 🐇 Stop RabbitMQ

@@ -8,10 +8,10 @@ services:
     ports:
       - '1433:1433'
     volumes:
-      - user_data:/var/opt/mssql
+      - user_mssql_data:/var/opt/mssql
     restart: always
 
 volumes:
-  user_data:
-    name: user_data
+  user_mssql_data:
+    name: user_mssql_data
     driver: local

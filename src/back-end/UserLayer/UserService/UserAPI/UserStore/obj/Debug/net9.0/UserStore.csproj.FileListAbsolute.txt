@@ -181,3 +181,7 @@
 /home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserService/UserAPI/UserStore/obj/Debug/net9.0/rjimswa.dswa.cache.json
 /home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserService/UserAPI/UserStore/obj/Debug/net9.0/rjsmrazor.dswa.cache.json
 /home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserService/UserAPI/UserStore/obj/Debug/net9.0/rjsmcshtml.dswa.cache.json
+/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserService/UserAPI/UserStore/bin/Debug/net9.0/LogMessages.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserService/UserAPI/UserStore/bin/Debug/net9.0/TrafficMessages.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserService/UserAPI/UserStore/bin/Debug/net9.0/LogMessages.pdb
+/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserService/UserAPI/UserStore/bin/Debug/net9.0/TrafficMessages.pdb
