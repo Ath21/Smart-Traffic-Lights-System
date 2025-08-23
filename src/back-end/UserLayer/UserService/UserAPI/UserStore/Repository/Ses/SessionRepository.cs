@@ -1,18 +1,4 @@
-/*
- * UserStore.Repository.Ses.SessionRepository
- *
- * This class implements the ISessionRepository interface and provides methods for managing Session entities.
- * It uses Entity Framework Core to interact with the database.
- * The methods include:
- * - CreateSessionAsync: Creates a new Session entity in the database.
- * - GetSessionByTokenAsync: Retrieves a Session entity by its unique token.
- * - DeleteSessionAsync: Deletes a Session entity by its unique token.
- * - DeleteSessionsByUserIdAsync: Deletes all Session entities associated with a specific UserId.
- * The class uses the UserDbContext to interact with the database and perform the necessary operations.
- * The SessionRepository class is typically used in the UserService layer of the application.
- * It is part of the UserStore project, which is responsible for managing user-related operations
- * and services.
- */
+using Microsoft.EntityFrameworkCore;
 using UserData;
 using UserData.Entities;
 
@@ -27,39 +13,34 @@ public class SessionRepository : ISessionRepository
         _dbContext = dbContext;
     }
 
-    public Task CreateSessionAsync(Session session)
+    public async Task AddAsync(Session session)
     {
-        _dbContext.Sessions.Add(session);
-        return _dbContext.SaveChangesAsync();
+        await _dbContext.Sessions.AddAsync(session);
+        await _dbContext.SaveChangesAsync();
     }
 
-    public Task DeleteSessionAsync(string token)
+    public async Task DeleteByTokenAsync(string token)
     {
-        var session = _dbContext.Sessions.FirstOrDefault(s => s.Token == token);
+        var session = await _dbContext.Sessions.FirstOrDefaultAsync(s => s.Token == token);
         if (session != null)
         {
             _dbContext.Sessions.Remove(session);
-            return _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync();
         }
-
-        return Task.CompletedTask;
     }
 
-    public Task DeleteSessionsByUserIdAsync(Guid userId)
+    public async Task DeleteByUserIdAsync(Guid userId)
     {
-        var sessions = _dbContext.Sessions.Where(s => s.UserId == userId).ToList();
+        var sessions = await _dbContext.Sessions.Where(s => s.UserId == userId).ToListAsync();
         if (sessions.Any())
         {
             _dbContext.Sessions.RemoveRange(sessions);
-            return _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync();
         }
-
-        return Task.CompletedTask;
     }
 
-    public Task<Session> GetSessionByTokenAsync(string token)
+    public async Task<Session?> GetByTokenAsync(string token)
     {
-        var session = _dbContext.Sessions.FirstOrDefault(s => s.Token == token);
-        return Task.FromResult(session);
+        return await _dbContext.Sessions.FirstOrDefaultAsync(s => s.Token == token);
     }
 }

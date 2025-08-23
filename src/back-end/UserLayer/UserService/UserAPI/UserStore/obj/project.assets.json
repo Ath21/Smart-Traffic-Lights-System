@@ -1987,6 +1987,26 @@
           }
         }
       },
+      "LogMessages/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "compile": {
+          "bin/placeholder/LogMessages.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/LogMessages.dll": {}
+        }
+      },
+      "TrafficMessages/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "compile": {
+          "bin/placeholder/TrafficMessages.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/TrafficMessages.dll": {}
+        }
+      },
       "UserData/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
@@ -5665,6 +5685,16 @@
         "useSharedDesignerContext.txt"
       ]
     },
+    "LogMessages/1.0.0": {
+      "type": "project",
+      "path": "../../../../LogLayer/LogMessages/LogMessages.csproj",
+      "msbuildProject": "../../../../LogLayer/LogMessages/LogMessages.csproj"
+    },
+    "TrafficMessages/1.0.0": {
+      "type": "project",
+      "path": "../../../../TrafficLayer/TrafficMessages/TrafficMessages.csproj",
+      "msbuildProject": "../../../../TrafficLayer/TrafficMessages/TrafficMessages.csproj"
+    },
     "UserData/1.0.0": {
       "type": "project",
       "path": "../UserData/UserData.csproj",
@@ -5679,6 +5709,7 @@
   "projectFileDependencyGroups": {
     "net9.0": [
       "AutoMapper.Extensions.Microsoft.DependencyInjection >= 12.0.1",
+      "LogMessages >= 1.0.0",
       "MassTransit >= 8.4.1",
       "MassTransit.RabbitMQ >= 8.4.1",
       "Microsoft.AspNetCore.Authentication.JwtBearer >= 9.0.3",
@@ -5687,6 +5718,7 @@
       "Microsoft.EntityFrameworkCore.SqlServer >= 9.0.4",
       "Microsoft.EntityFrameworkCore.Tools >= 9.0.4",
       "Swashbuckle.AspNetCore >= 8.0.0",
+      "TrafficMessages >= 1.0.0",
       "UserData >= 1.0.0",
       "UserMessages >= 1.0.0"
     ]
@@ -5716,6 +5748,12 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogMessages/LogMessages.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogMessages/LogMessages.csproj"
+            },
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficMessages/TrafficMessages.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficMessages/TrafficMessages.csproj"
+            },
             "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserMessages/UserMessages.csproj": {
               "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserMessages/UserMessages.csproj"
             },
