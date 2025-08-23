@@ -31,7 +31,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { loginApi } from '../services/fakeAuthApi'
+import { loginApi } from '../services/authApi'
 import { useAuth } from '../stores/auth'
 import { useRouter } from 'vue-router'
 import '../assets/login.css'

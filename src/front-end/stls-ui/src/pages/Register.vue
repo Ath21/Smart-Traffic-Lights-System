@@ -32,7 +32,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { registerApi } from '../services/fakeAuthApi'
+import { registerApi } from '../services/authApi'
 import { useAuth } from '../stores/auth'
 import { useRouter } from 'vue-router'
 import '../assets/register.css'
