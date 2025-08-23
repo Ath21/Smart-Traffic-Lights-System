@@ -17,6 +17,7 @@ using UserMessages;
 using UserStore.Publishers.Logs;
 using UserStore.Publishers.Notifications;
 using UserStore.Publishers.Traffic;
+using UserStore.Consumers;
 
 
 namespace UserStore;
@@ -73,11 +74,21 @@ public class Startup
                 };
             });
 
-        /******* [6] MassTransit ********/
+        /******* [6] Publishers ********/
 
         services.AddScoped(typeof(IUserLogPublisher), typeof(UserLogPublisher));
         services.AddScoped(typeof(IUserNotificationPublisher), typeof(UserNotificationPublisher));
         services.AddScoped(typeof(ITrafficPublisher), typeof(TrafficPublisher));
+
+        /******* [7] Consumers ********/
+
+        services.AddScoped<UserNotificationAlertConsumer>();
+        services.AddScoped<PublicNoticeConsumer>();
+        services.AddScoped<TrafficCongestionConsumer>();
+        services.AddScoped<TrafficSummaryConsumer>();
+        services.AddScoped<TrafficIncidentConsumer>();
+
+        /******* [8] MassTransit ********/
 
         services.AddMassTransit(x =>
         {
@@ -171,14 +182,14 @@ public class Startup
         });
 
 
-        /******* [7] Controllers ********/
+        /******* [9] Controllers ********/
 
         services.AddControllers()
             .AddJsonOptions(
                 options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
         services.AddEndpointsApiExplorer();
 
-        /******* [8] Swagger ********/
+        /******* [10] Swagger ********/
 
         services.AddSwaggerGen(c =>
             {
