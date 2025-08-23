@@ -1,13 +1,3 @@
-/*
- * UserStore.Business.Token.TokenService
- *
- * This class implements the ITokenService interface and provides functionality for generating JWT tokens
- * for users in the UserStore application. It uses the Microsoft IdentityModel library to create and sign
- * the tokens. The generated tokens include claims such as user ID, email, username, role, and status.
- * The TokenService class is typically used in the UserService layer of the application.
- * It is part of the UserStore project, which is responsible for managing user-related operations
- * and services.
- */
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
