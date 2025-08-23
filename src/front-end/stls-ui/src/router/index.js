@@ -9,6 +9,9 @@ const AdminLayout = () => import('../layouts/AdminLayout.vue')
 const Login = () => import('../pages/Login.vue')
 const Register = () => import('../pages/Register.vue')
 
+// NEW
+const Account = () => import('../pages/Account.vue')
+
 const ROLE_ORDER = ['viewer', 'user', 'operator', 'admin']
 function canAccess(requiredRole, userRole) {
   return ROLE_ORDER.indexOf(userRole) >= ROLE_ORDER.indexOf(requiredRole)
@@ -22,6 +25,9 @@ const routes = [
   { path: '/app', name: 'user', component: UserLayout, meta: { role: 'user' } },
   { path: '/operator', name: 'operator', component: OperatorLayout, meta: { role: 'operator' } },
   { path: '/admin', name: 'admin', component: AdminLayout, meta: { role: 'admin' } },
+
+  // NEW Account page (accessible to any logged-in user)
+  { path: '/account', name: 'account', component: Account, meta: { role: 'user' } },
 ]
 
 const router = createRouter({ history: createWebHistory(), routes })

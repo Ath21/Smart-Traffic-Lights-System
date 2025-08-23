@@ -100,8 +100,8 @@ public class Startup
             {
                 policy.WithOrigins("http://localhost:5173")   // Vue dev server
                     .AllowAnyHeader()
-                    .AllowAnyMethod()
-                    .AllowCredentials();
+                    .AllowAnyMethod();
+
             });
         });
 

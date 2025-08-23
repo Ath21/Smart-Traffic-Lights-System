@@ -1,8 +1,7 @@
-// src/stores/auth.js
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { getProfile } from '../services/authApi'
 
+// helper to decode JWT payload
 function parseJwt(token) {
   try {
     const base64Url = token.split('.')[1]
@@ -32,24 +31,16 @@ export const useAuth = defineStore('auth', () => {
     const decoded = parseJwt(newToken)
     if (decoded) {
       console.log("✅ Decoded JWT payload:", decoded)
-      console.log("   userId:", decoded.sub)
-      console.log("   email:", decoded.email)
-      console.log("   username:", decoded.username || decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"])
-      console.log("   role:", decoded.role || decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"])
-      console.log("   status:", decoded.status)
-      console.log("   exp:", decoded.exp ? new Date(decoded.exp * 1000).toISOString() : "(no exp claim)")
-
       user.value = {
-        userId: decoded.sub || null,
-        email: decoded.email || null,
-        username: decoded.username || decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] || null,
-        role: decoded.role || decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || null,
-        status: decoded.status || null
+        userId: decoded.sub,
+        email: decoded.email,
+        username: decoded.username || decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"],
+        role: decoded.role || decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"],
+        status: decoded.status
       }
     }
 
     startLogoutTimer()
-    await fetchProfile()
     return user.value?.role?.toLowerCase() || 'viewer'
   }
 
@@ -59,25 +50,8 @@ export const useAuth = defineStore('auth', () => {
     user.value = null
     localStorage.removeItem('token')
     localStorage.removeItem('expiresAt')
-    if (logoutTimer) {
-      clearTimeout(logoutTimer)
-      logoutTimer = null
-    }
+    if (logoutTimer) clearTimeout(logoutTimer)
     console.log("👋 Logged out")
-  }
-
-  async function fetchProfile() {
-    if (!token.value) return
-    try {
-      const profile = await getProfile(token.value)
-      if (profile) {
-        console.log("🌐 Profile from server:", profile)
-        user.value = profile
-      }
-    } catch (err) {
-      console.error('❌ Failed to fetch profile', err)
-      logout()
-    }
   }
 
   function startLogoutTimer() {
@@ -95,35 +69,51 @@ export const useAuth = defineStore('auth', () => {
         logout()
       }, timeout)
     } else {
-      console.warn("⚠️ Token already expired")
       logout()
     }
   }
 
   async function bootstrap() {
-    if (token.value) {
+    if (token.value && !user.value) {
       const decoded = parseJwt(token.value)
       if (decoded) {
         console.log("🔄 Bootstrap decode:", decoded)
-        console.log("   userId:", decoded.sub)
-        console.log("   email:", decoded.email)
-        console.log("   username:", decoded.username || decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"])
-        console.log("   role:", decoded.role || decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"])
-        console.log("   status:", decoded.status)
-        console.log("   exp:", decoded.exp ? new Date(decoded.exp * 1000).toISOString() : "(no exp claim)")
-
         user.value = {
-          userId: decoded.sub || null,
-          email: decoded.email || null,
-          username: decoded.username || decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] || null,
-          role: decoded.role || decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || null,
-          status: decoded.status || null
+          userId: decoded.sub,
+          email: decoded.email,
+          username: decoded.username || decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"],
+          role: decoded.role || decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"],
+          status: decoded.status
         }
       }
       startLogoutTimer()
-      await fetchProfile()
     }
   }
 
-  return { token, expiresAt, user, login, logout, fetchProfile, bootstrap, isAuthenticated }
+  /**
+   * Centralized API fetch with Authorization header
+   */
+  async function apiFetch(url, options = {}) {
+    if (!token.value) {
+      throw new Error("No auth token available")
+    }
+
+    const res = await fetch(url, {
+      ...options,
+      headers: {
+        ...(options.headers || {}),
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token.value}`
+      }
+    })
+
+    if (res.status === 401) {
+      console.warn("⚠️ Unauthorized, logging out...")
+      logout()
+    }
+
+    return res
+  }
+
+  return { token, expiresAt, user, login, logout, bootstrap, isAuthenticated, apiFetch }
 })
