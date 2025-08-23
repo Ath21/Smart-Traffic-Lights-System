@@ -14,6 +14,9 @@ using UserStore.Repository.Usr;
 using RabbitMQ.Client;
 using UserStore.Publishers;
 using UserMessages;
+using UserStore.Publishers.Logs;
+using UserStore.Publishers.Notifications;
+using UserStore.Publishers.Traffic;
 
 
 namespace UserStore;
@@ -73,6 +76,8 @@ public class Startup
         /******* [6] MassTransit ********/
 
         services.AddScoped(typeof(IUserLogPublisher), typeof(UserLogPublisher));
+        services.AddScoped(typeof(IUserNotificationPublisher), typeof(UserNotificationPublisher));
+        services.AddScoped(typeof(ITrafficPublisher), typeof(TrafficPublisher));
 
         services.AddMassTransit(x =>
         {

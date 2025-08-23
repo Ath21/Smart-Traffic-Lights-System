@@ -1,30 +1,3 @@
-/*
- * UserStore.Business.Usr.UsrService
- *
- * This class implements the IUsrService interface and provides methods for user-related operations
- * such as registration, login, profile management, password reset, and logout.
- * The UsrService class is typically used in the UserService layer of the application.
- * It is part of the UserStore project, which is responsible for managing user-related operations
- * and services.
- *
- * Dependencies:
- *   - IUserRepository: Interface for user data access operations.
- *   - IAuditLogRepository: Interface for audit log data access operations.
- *   - ISessionRepository: Interface for session data access operations.
- *   - ITokenService: Interface for generating JWT tokens.
- *   - IPasswordHasher: Interface for hashing and verifying passwords.
- *   - IMapper: Interface for object mapping (e.g., AutoMapper).
- *   - IPublishEndpoint: Interface for publishing messages to a message broker (e.g., MassTransit).
- *
- * Methods:
- *   - Task<UserProfileDto> GetProfileAsync(Guid userId): Retrieves the user's profile information.
- *   - Task<LoginResponseDto> LoginAsync(LoginRequestDto request): Authenticates the user and generates a JWT token.
- *   - Task LogoutAsync(string token): Logs out the user by invalidating the session.
- *   - Task<RegisterResponseDto> RegisterAsync(RegisterRequestDto request): Registers a new user.
- *   - Task ResetPasswordAsync(ResetPasswordRequestDto resetPasswordRequestDto): Resets the user's password.
- *   - Task UpdateProfileAsync(Guid userId, UpdateProfileRequestDto updateUserProfileDto): Updates the user's profile information.
- *   - Task SendNotificationRequestAsync(Guid userId, string message, string type): Sends a notification request to the user.
- */
 using AutoMapper;
 using UserData.Entities;
 using UserStore.Business.Password;
