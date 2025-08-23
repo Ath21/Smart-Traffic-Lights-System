@@ -2,7 +2,7 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: 'http://localhost:5055/api/user', // backend base URL
+  baseURL: 'http://localhost:5055/api/users', // backend base URL
 })
 
 // Register a new user

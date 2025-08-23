@@ -92,14 +92,27 @@ public class Startup
 
         services.AddUserServiceMassTransit(_configuration);
 
-        /******* [9] Controllers ********/
+        /******* [9] CORS Policy ********/
+
+        services.AddCors(options =>
+        {
+            options.AddPolicy("AllowFrontend", policy =>
+            {
+                policy.WithOrigins("http://localhost:5173")   // Vue dev server
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials();
+            });
+        });
+
+        /******* [10] Controllers ********/
 
         services.AddControllers()
             .AddJsonOptions(
                 options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
         services.AddEndpointsApiExplorer();
 
-        /******* [10] Swagger ********/
+        /******* [11] Swagger ********/
 
         services.AddSwaggerGen(c =>
             {
@@ -144,6 +157,8 @@ public class Startup
         app.UseHttpsRedirection();
 
         app.UseMiddleware<ExceptionMiddleware>();
+
+        app.UseCors("AllowFrontend");
 
         app.UseAuthentication();
         app.UseAuthorization();
