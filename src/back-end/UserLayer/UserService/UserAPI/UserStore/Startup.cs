@@ -95,7 +95,7 @@ public class Startup
             x.AddConsumer<TrafficCongestionConsumer>();
             x.AddConsumer<TrafficSummaryConsumer>();
             x.AddConsumer<TrafficIncidentConsumer>();
-            x.AddConsumer<UserAlertConsumer>();
+            x.AddConsumer<UserNotificationAlertConsumer>();
             x.AddConsumer<PublicNoticeConsumer>();
 
             x.UsingRabbitMq((context, cfg) =>

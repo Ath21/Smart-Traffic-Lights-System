@@ -6,8 +6,8 @@ using UserStore.Models;
 
 namespace UserStore.Controllers;
 
-[Route("api/users")]
 [ApiController]
+[Route("api/users")]
 public class UserController : ControllerBase
 {
     private readonly IUsrService _userService;
@@ -48,7 +48,7 @@ public class UserController : ControllerBase
     // GET: api/users/me
     [HttpGet("me")]
     [Authorize]
-    public async Task<ActionResult<UserDto>> GetProfile()
+    public async Task<ActionResult<UserProfileDto>> GetProfile()
     {
         var userId = GetUserId();
         var profile = await _userService.GetProfileAsync(userId);
@@ -77,7 +77,7 @@ public class UserController : ControllerBase
     // POST: api/users/send-notification
     [HttpPost("send-notification")]
     [Authorize]
-    public async Task<IActionResult> SendNotificationRequest([FromBody] NotificationRequestDto request)
+    public async Task<IActionResult> SendNotification([FromBody] NotificationRequestDto request)
     {
         var userId = GetUserId();
         await _userService.SendNotificationRequestAsync(userId, request.Message, request.Type);
