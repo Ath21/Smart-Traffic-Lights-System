@@ -1,21 +1,3 @@
-/*
- * UserData.UserDbContext
- *
- * This class represents the database context for the UserData layer.
- * It inherits from DbContext and is responsible for managing the database connection
- * and the entity sets for the application.
- * It contains DbSet properties for the User, Session, and AuditLog entities.
- * The OnConfiguring method sets up the database connection string from the configuration.
- * The OnModelCreating method configures the entity properties and relationships.
- * The UserDbContext constructor takes DbContextOptions and IConfiguration as parameters.
- * The DbContextOptions are used to configure the context, and the IConfiguration is used
- * to retrieve the connection string from the appsettings.json file.
-    * The UserDbContext class is used to interact with the database and perform CRUD operations
-    * on the User, Session, and AuditLog entities.
-    * It is typically used in the UserService layer of the application.
-    * The UserDbContext class is part of the UserData layer, which is responsible for data access
-    * and management of user-related entities.
- */
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using UserData.Entities;

@@ -1,7 +1,6 @@
 namespace LogMessages;
 
-public record ErrorLogMessage
-(
+public record ErrorLogMessage(
     Guid LogId,
     string ServiceName,
     string ErrorType,

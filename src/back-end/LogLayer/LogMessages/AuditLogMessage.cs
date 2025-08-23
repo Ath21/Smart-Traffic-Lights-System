@@ -1,11 +1,10 @@
 namespace LogMessages;
 
-public record AuditLogMessage
-(
+public record AuditLogMessage(
     Guid LogId,
     string ServiceName,
     string Action,
-    string Message,
+    string Details,
     DateTime Timestamp,
     object? Metadata
 );

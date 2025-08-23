@@ -1,15 +1,3 @@
-/*
- * UserData.Entities.Session
- *
- * This class represents a session entity in the system.
- * It contains properties for session details, including:
- * - SessionId: Unique identifier for the session
- * - UserId: Identifier for the user associated with the session
- * - User: Navigation property to the User entity
- * - Token: The session token for authentication
- * - ExpiresAt: Timestamp of when the session expires
- *
- */
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
