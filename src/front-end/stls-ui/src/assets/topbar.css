@@ -1,3 +1,29 @@
+/* === LOGO + TITLE GROUP === */
+.brand-block {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: 0; /* stick to left */
+}
+
+
+.brand-block img.logo {
+  height: 45px;
+  width: auto;
+}
+
+.brand-block h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 1px;
+}
+
+.brand-block h1 span {
+  color: #06b6d4;
+}
+
 /* === TOPBAR === */
 .topbar {
   display: flex;

@@ -1,15 +1,14 @@
 <template>
   <header class="topbar">
-    <!-- Left side: App Title -->
-    <h1>UNIWA <span>STLS</span></h1>
-
-    <!-- Center: Welcome message -->
-    <div v-if="auth.isAuthenticated" class="welcome-msg">
-      Welcome, {{ auth.user?.username }}
+    <!-- Brand block: logos + title -->
+    <div class="brand-block">
+      <img src="/PADA.png" alt="PADA Logo" class="logo" />
+      <h1>UNIWA <span>STLS</span></h1>
+      <img src="/SmartCityLog.png" alt="Smart City Logo" class="logo" />
     </div>
 
     <!-- Right side -->
-    <nav v-if="!auth.isAuthenticated">
+    <nav v-if="!auth.isAuthenticated" class="flex gap-2">
       <RouterLink class="login" to="/login">Login</RouterLink>
       <RouterLink class="register" to="/register">Register</RouterLink>
     </nav>
@@ -29,9 +28,7 @@
             fill="currentColor"
             viewBox="0 0 20 20"
           >
-            <path
-              d="M10 10a4 4 0 100-8 4 4 0 000 8zm-7 8a7 7 0 1114 0H3z"
-            />
+            <path d="M10 10a4 4 0 100-8 4 4 0 000 8zm-7 8a7 7 0 1114 0H3z" />
           </svg>
         </button>
 
@@ -74,7 +71,6 @@ function handleClickOutside(e) {
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
 })
-
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
 })
