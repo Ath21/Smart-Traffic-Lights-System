@@ -12,10 +12,19 @@ export async function registerApi({ email, username, password }) {
 }
 
 // Login user
-export async function loginApi({ username, password }) {
-  const response = await api.post('/login', { username, password })
-  return response.data
+// Login user
+export async function loginApi({ email, password }) {
+  const response = await api.post('/login', { email, password })
+
+  // backend sends { Token, ExpiresAt }
+  return {
+    token: response.data.Token,        // the real JWT
+    expiresAt: response.data.ExpiresAt // optional expiry
+  }
 }
+
+
+
 
 // Logout user
 export async function logoutApi(token) {
