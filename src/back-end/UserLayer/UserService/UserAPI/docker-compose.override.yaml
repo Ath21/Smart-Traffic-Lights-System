@@ -4,37 +4,41 @@ services:
       - '5055:8080'
     environment:
       ConnectionStrings__DefaultConnection: Server=user_mssql,1433;Database=UserDb;User Id=sa;Password=MyPass@word;TrustServerCertificate=True
-      Jwt__Issuer: http://localhost:5055/API/User
-      Jwt__Audience: http://localhost:5055/API/User
+
+      # JWT
+      Jwt__Issuer: http://user_api:8080
+      Jwt__Audience: http://user_api:8080
       Jwt__Key: Nn7kLa8Rzv1XHt9UwMqP4YbFdJxVt2Km
-      
+
       ASPNETCORE_ENVIRONMENT: Development
 
+      # RabbitMQ connection
       RabbitMQ__Host: rabbitmq
       RabbitMQ__Port: 5672
       RabbitMQ__Username: admin
       RabbitMQ__Password: admin123
 
-      # Exchanges 
-      RabbitMQ__Exchanges__Logs: log.exchange
-      RabbitMQ__Exchanges__User: user.exchange
-      RabbitMQ__Exchanges__Traffic: traffic.exchange
+      # Exchanges
+      RabbitMQ__Exchanges__Logs: LOG.EXCHANGE
+      RabbitMQ__Exchanges__User: USER.EXCHANGE
+      RabbitMQ__Exchanges__Traffic: TRAFFIC.EXCHANGE
 
-      # Queues
-      RabbitMQ__Queues__Logs: user.log_service.queue
-      RabbitMQ__Queues__User: user.user_service.queue
+      # Queues (only those user service consumes)
+      RabbitMQ__Queues__User: use.user_service.queue
       RabbitMQ__Queues__Traffic: traffic.user_service.queue
 
-      RabbitMQ__RoutingKeys__Error: log.user.user_service.error
+      # Routing keys
       RabbitMQ__RoutingKeys__Audit: log.user.user_service.audit
+      RabbitMQ__RoutingKeys__Error: log.user.user_service.error
 
       RabbitMQ__RoutingKeys__NotificationRequest: user.notification.request
-      RabbitMQ__RoutingKeys__NotificationPublic: notification.event.public_notice
       RabbitMQ__RoutingKeys__NotificationAlert: user.notification.alert
+      RabbitMQ__RoutingKeys__NotificationPublic: notification.event.public_notice
 
-      RabbitMQ__RoutingKeys__TrafficCongestion: traffic.analytics.congestion.<intersection_id>
-      RabbitMQ__RoutingKeys__TrafficSummary: traffic.analytics.summary.<intersection_id>
-      RabbitMQ__RoutingKeys__TrafficIncident: traffic.analytics.incident.<intersection_id>
+      # Traffic analytics prefixes (dynamic IDs appended in code)
+      RabbitMQ__RoutingKeys__TrafficCongestionPrefix: traffic.analytics.congestion
+      RabbitMQ__RoutingKeys__TrafficSummaryPrefix: traffic.analytics.summary
+      RabbitMQ__RoutingKeys__TrafficIncidentPrefix: traffic.analytics.incident
 
     depends_on:
       user_mssql:

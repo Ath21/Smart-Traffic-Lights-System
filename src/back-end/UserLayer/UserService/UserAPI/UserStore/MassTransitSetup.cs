@@ -1,7 +1,5 @@
-using LogMessages;
 using MassTransit;
 using RabbitMQ.Client;
-using UserMessages;
 using UserStore.Consumers;
 
 namespace UserStore;
@@ -16,8 +14,8 @@ public static class MassTransitSetup
             x.AddConsumer<UserNotificationAlertConsumer>();
             x.AddConsumer<PublicNoticeConsumer>();
             x.AddConsumer<TrafficCongestionConsumer>();
-            x.AddConsumer<TrafficSummaryConsumer>();
             x.AddConsumer<TrafficIncidentConsumer>();
+            x.AddConsumer<TrafficSummaryConsumer>();
 
             x.UsingRabbitMq((context, cfg) =>
             {
@@ -30,19 +28,19 @@ public static class MassTransitSetup
                 });
 
                 // =========================
-                // 🔹 LOGS (Publish)
+                // LOGS (Publish only)
                 // =========================
-                cfg.Message<AuditLogMessage>(e => e.SetEntityName("USER.LOGS.EXCHANGE"));
-                cfg.Publish<AuditLogMessage>(e => e.ExchangeType = ExchangeType.Direct);
+                cfg.Message<LogMessages.AuditLogMessage>(e => e.SetEntityName("LOG.EXCHANGE"));
+                cfg.Publish<LogMessages.AuditLogMessage>(e => e.ExchangeType = ExchangeType.Direct);
 
-                cfg.Message<ErrorLogMessage>(e => e.SetEntityName("USER.LOGS.EXCHANGE"));
-                cfg.Publish<ErrorLogMessage>(e => e.ExchangeType = ExchangeType.Direct);
+                cfg.Message<LogMessages.ErrorLogMessage>(e => e.SetEntityName("LOG.EXCHANGE"));
+                cfg.Publish<LogMessages.ErrorLogMessage>(e => e.ExchangeType = ExchangeType.Direct);
 
                 // =========================
-                // 🔹 USER NOTIFICATIONS (Publish + Consume)
+                // USER NOTIFICATIONS
                 // =========================
-                cfg.Message<UserNotificationRequest>(e => e.SetEntityName("USER.EXCHANGE"));
-                cfg.Publish<UserNotificationRequest>(e => e.ExchangeType = ExchangeType.Direct);
+                cfg.Message<UserMessages.UserNotificationRequest>(e => e.SetEntityName("USER.EXCHANGE"));
+                cfg.Publish<UserMessages.UserNotificationRequest>(e => e.ExchangeType = ExchangeType.Direct);
 
                 cfg.ReceiveEndpoint("use.user_service.queue", e =>
                 {
@@ -65,7 +63,7 @@ public static class MassTransitSetup
                 });
 
                 // =========================
-                // 🔹 TRAFFIC EVENTS (Consume)
+                // TRAFFIC EVENTS
                 // =========================
                 cfg.ReceiveEndpoint("traffic.user_service.queue", e =>
                 {
