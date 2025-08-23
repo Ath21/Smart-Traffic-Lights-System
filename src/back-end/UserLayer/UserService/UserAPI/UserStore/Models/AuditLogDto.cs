@@ -1,0 +1,11 @@
+using System;
+
+namespace UserStore.Models;
+
+public class AuditLogDto
+{
+    public Guid LogId { get; set; }
+    public string Action { get; set; } = string.Empty;
+    public DateTime Timestamp { get; set; }
+    public string? Details { get; set; }
+}
