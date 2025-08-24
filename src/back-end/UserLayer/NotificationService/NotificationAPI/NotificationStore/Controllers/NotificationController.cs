@@ -1,69 +1,76 @@
-/*
- * NotificationStore.Controllers.NotificationController
- *
- * This file is part of the NotificationStore project, which defines the NotificationController class.
- * The NotificationController class is an ASP.NET Core API controller that handles HTTP requests related to notifications.
- * It provides endpoints for sending notifications, retrieving all notifications, and getting notifications by recipient email.
- * The controller uses the INotificationService to encapsulate the business logic for notifications,
- * allowing for separation of concerns between the API layer and the business logic layer.
- * It includes these endpoints:
- * - POST: /API/Notification/SendNotification: Sends a notification to a recipient.
- * - GET: /API/Notification/GetAllNotifications: Retrieves all notifications.
- * - GET: /API/Notification/GetNotificationsByRecipientEmail?recipientEmail={recipientEmail}: Retrieves notifications for a specific recipient email.
- */  
 using Microsoft.AspNetCore.Mvc;
 using NotificationStore.Business.Notify;
 using NotificationStore.Models;
 
-namespace NotificationStore.Controllers
+namespace NotificationStore.Controllers;
+
+[Route("api/[controller]")]
+[ApiController]
+public class NotificationController : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class NotificationController : ControllerBase
+    private readonly INotificationService _notificationService;
+
+    public NotificationController(INotificationService notificationService)
     {
-        private readonly INotificationService _notificationService;
+        _notificationService = notificationService;
+    }
 
-        public NotificationController(INotificationService notificationService)
+    // POST: /api/notifications/send
+    [HttpPost("send")]
+    public async Task<IActionResult> SendUserNotification([FromBody] SendNotificationRequest request)
+    {
+        if (request == null ||
+            string.IsNullOrWhiteSpace(request.Message) ||
+            string.IsNullOrWhiteSpace(request.Type) ||
+            request.UserId == Guid.Empty ||
+            string.IsNullOrWhiteSpace(request.RecipientEmail))
         {
-            _notificationService = notificationService;
+            return BadRequest("UserId, RecipientEmail, Type, and Message are required.");
         }
 
-        // POST: API/Notification/SendNotification
-        [HttpPost("SendNotification")]
-        public async Task<IActionResult> SendNotification([FromBody] NotificationDto notification)
+        await _notificationService.SendUserNotificationAsync(
+            request.UserId,
+            request.RecipientEmail,
+            request.Message,
+            request.Type
+        );
+
+        return Ok(new
         {
-            if (string.IsNullOrWhiteSpace(notification.RecipientEmail) ||
-                string.IsNullOrWhiteSpace(notification.Message) ||
-                string.IsNullOrWhiteSpace(notification.Type))
-            {
-                return BadRequest("Type, Message, and RecipientEmail are required fields.");
-            }
+            status = "sent",
+            recipient = request.RecipientEmail,
+            type = request.Type
+        });
+    }
 
-            await _notificationService.SendNotificationAsync(notification);
 
-            return Ok(new { status = "sent", recipient = notification.RecipientEmail });
+    // POST: /api/notifications/public-notice
+    [HttpPost("public-notice")]
+    public async Task<IActionResult> SendPublicNotice([FromBody] PublicNoticeRequest request)
+    {
+        if (request == null ||
+            string.IsNullOrWhiteSpace(request.Title) ||
+            string.IsNullOrWhiteSpace(request.Message) ||
+            string.IsNullOrWhiteSpace(request.TargetAudience))
+        {
+            return BadRequest("Title, Message, and TargetAudience are required.");
         }
 
-        // GET: API/Notification/GetAllNotifications
-        [HttpGet("GetAllNotifications")]
-        public async Task<IActionResult> GetAll()
+        await _notificationService.SendPublicNoticeAsync(request.Title, request.Message, request.TargetAudience);
+
+        return Ok(new { status = "published", audience = request.TargetAudience });
+    }
+
+    // GET: /api/notifications/history/{userId}
+    [HttpGet("history/{userId:guid}")]
+    public async Task<IActionResult> GetUserHistory(Guid userId)
+    {
+        if (userId == Guid.Empty)
         {
-            var notifications = await _notificationService.GetAllNotificationsAsync();
-            return Ok(notifications);
+            return BadRequest("UserId is required.");
         }
 
-        // GET: API/Notification/GetNotificationsByRecipientEmail?recipientEmail={recipientEmail}
-        [HttpGet("GetNotificationsByRecipientEmail")]
-        public async Task<IActionResult> GetByRecipientEmail([FromQuery] string recipientEmail)
-        {
-            if (string.IsNullOrWhiteSpace(recipientEmail))
-            {
-                return BadRequest("RecipientEmail is required.");
-            }
-
-            var notifications = await _notificationService.GetNotificationsByRecipientEmailAsync(recipientEmail);
-            return Ok(notifications);
-        }
-        
+        var logs = await _notificationService.GetDeliveryHistoryAsync(userId);
+        return Ok(logs);
     }
 }

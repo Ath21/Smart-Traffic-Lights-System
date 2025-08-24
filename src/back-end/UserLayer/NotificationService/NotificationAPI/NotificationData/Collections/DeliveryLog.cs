@@ -1,4 +1,3 @@
-using System;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
@@ -10,8 +9,15 @@ public class DeliveryLog
     [BsonRepresentation(BsonType.String)]
     public Guid DeliveryId { get; set; }
 
+    [BsonElement("notification_id")]
     public Guid NotificationId { get; set; }
-    public string Recipient { get; set; }
-    public string Status { get; set; }
-    public DateTime SentAt { get; set; }
+
+    [BsonElement("recipient")]
+    public string Recipient { get; set; } = string.Empty;
+
+    [BsonElement("status")]
+    public string Status { get; set; } = "Pending";
+
+    [BsonElement("sent_at")]
+    public DateTime SentAt { get; set; } = DateTime.UtcNow;
 }
