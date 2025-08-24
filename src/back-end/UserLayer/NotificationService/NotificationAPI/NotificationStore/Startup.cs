@@ -6,6 +6,8 @@ using NotificationStore.Business.Notify;
 using NotificationStore.Consumers;
 using NotificationStore.Middleware;
 using NotificationStore.Models;
+using NotificationStore.Repositories.DeliveryLogs;
+using NotificationStore.Repositories.Notifications;
 using NotificationStore.Repository;
 using RabbitMQ.Client;
 using UserMessages;
@@ -33,6 +35,7 @@ public class Startup
         /******* [2] Repositories ********/
 
         services.AddScoped(typeof(INotificationRepository), typeof(NotificationRepository));
+        services.AddScoped(typeof(IDeliveryLogRepository), typeof(DeliveryLogRepository));
 
         /******* [3] Services ********/
        
