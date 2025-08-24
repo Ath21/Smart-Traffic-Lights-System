@@ -8,18 +8,14 @@
     </div>
 
     <!-- Right side -->
-    <!-- Case 1: Auth/account-related pages -->
-    <div v-if="isAuthPage" class="right-nav">
-      <RouterLink class="home-btn" :to="homePath">Home</RouterLink>
-    </div>
-
-    <!-- Case 2: Normal topbar -->
-    <template v-else>
+    <div class="flex items-center gap-3 relative">
+      <!-- If NOT logged in -->
       <nav v-if="!auth.isAuthenticated" class="flex gap-2">
         <RouterLink class="login" to="/login">Login</RouterLink>
         <RouterLink class="register" to="/register">Register</RouterLink>
       </nav>
 
+      <!-- If logged in -->
       <div v-else class="flex items-center gap-3 relative">
         <!-- Alert Me button -->
         <button class="login" @click="alertMe">
@@ -44,36 +40,34 @@
             <div class="dropdown-header">
               {{ auth.user?.email }}
             </div>
+
+            <!-- Keep Home only inside dropdown -->
+            <RouterLink :to="homePath" class="dropdown-item">Home</RouterLink>
             <RouterLink to="/account" class="dropdown-item">Account</RouterLink>
             <RouterLink to="/notifications" class="dropdown-item">Notification Status</RouterLink>
-            <RouterLink to="/settings" class="dropdown-item">Settings</RouterLink>
+            <RouterLink to="/update" class="dropdown-item">Update Profile</RouterLink>
+            
             <button @click="logout" class="dropdown-item logout">Logout</button>
           </div>
         </div>
       </div>
-    </template>
+    </div>
   </header>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useAuth } from '../stores/auth'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
 import '../assets/topbar.css'
 
 const auth = useAuth()
 const router = useRouter()
-const route = useRoute()
 
 const showMenu = ref(false)
 const menuRef = ref(null)
 
-// --- Detect if current page is auth/account related ---
-const isAuthPage = computed(() =>
-  ['/login', '/register', '/reset-password', '/account'].includes(route.path)
-)
-
-// --- Home path depends on user role ---
+// Home path depends on user role
 const homePath = computed(() =>
   auth.user?.role?.toLowerCase() === 'user' ? '/app' : '/'
 )

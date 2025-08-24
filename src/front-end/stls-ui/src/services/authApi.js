@@ -40,3 +40,22 @@ export async function resetPasswordApi(email, newPassword) {
   )
   return response.data
 }
+
+// 📝 Update profile API
+export async function updateProfileApi(token, { email, username, password, status, role }) {
+  const payload = {
+    Username: username,
+    Email: email,
+    Password: password || '',
+    Status: status || 'active',
+    Role: role || 'user'
+  }
+
+  const response = await api.put(
+    '/update',
+    payload,
+    { headers: { Authorization: `Bearer ${token}` } }
+  )
+
+  return response.data
+}

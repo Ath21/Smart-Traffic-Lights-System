@@ -9,7 +9,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import Topbar from './components/Topbar.vue'
+import Topbar from './components/TopBar.vue'
 
 const route = useRoute()
 
@@ -20,7 +20,8 @@ const topbarPages = [
   '/login',
   '/register',
   '/reset-password',
-  '/account'
+  '/account',
+  '/update'
 ]
 
 const showTopbar = computed(() => topbarPages.includes(route.path))

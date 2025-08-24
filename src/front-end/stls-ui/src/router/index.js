@@ -9,9 +9,11 @@ const AdminLayout = () => import('../layouts/AdminLayout.vue')
 const Login = () => import('../pages/Login.vue')
 const Register = () => import('../pages/Register.vue')
 const ResetPassword = () => import('../pages/ResetPassword.vue')
+  
 
 // NEW
 const Account = () => import('../pages/Account.vue')
+const UpdateProfile = () => import('../pages/UpdateProfile.vue')
 
 const ROLE_ORDER = ['viewer', 'user', 'operator', 'admin']
 function canAccess(requiredRole, userRole) {
@@ -32,6 +34,9 @@ const routes = [
 
   // Reset password page
   { path: '/reset-password', name: 'reset-password', component: ResetPassword, meta: { public: true } },
+
+  // Update profile page
+  { path: '/update', name: 'update', component: UpdateProfile, meta: { role: 'user' } }
 ]
 
 const router = createRouter({ history: createWebHistory(), routes })
