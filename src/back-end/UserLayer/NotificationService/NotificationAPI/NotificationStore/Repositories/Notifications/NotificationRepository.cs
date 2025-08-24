@@ -28,4 +28,9 @@ public class NotificationRepository : INotificationRepository
         var update = Builders<Notification>.Update.Set(n => n.Status, status);
         await _context.Notifications.UpdateOneAsync(n => n.NotificationId == notificationId, update);
     }
+
+    public async Task<IEnumerable<Notification>> GetByRecipientEmailAsync(string recipientEmail) =>
+        await _context.Notifications
+            .Find(n => n.TargetAudience == recipientEmail || n.Title.Contains(recipientEmail))
+            .ToListAsync();
 }

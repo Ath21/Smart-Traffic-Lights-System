@@ -1,15 +1,3 @@
-/*
- * NotificationStore.Business.Email.EmailService
- *
- * This file is part of the NotificationStore project, which implements the EmailService class.
- * The EmailService class provides functionality to send emails using SMTP.
- * It implements the IEmailService interface and uses MailKit for email operations.
- * The class is responsible for constructing email messages and sending them to specified recipients.
- * It retrieves email settings from the configuration and uses them to connect to the SMTP server.
- * The EmailService class is typically used in the NotificationService layer of the application.
- * It is part of the NotificationStore project, which is responsible for managing notifications
- * and related operations in the system.
- */
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Options;

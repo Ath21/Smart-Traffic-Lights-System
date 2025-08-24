@@ -1,103 +1,119 @@
-/*
- * NotificationStore.Business.Notify.NotificationService
- *
- * This file is part of the NotificationStore project, which implements the NotificationService class.
- * The NotificationService class provides methods for creating notifications, retrieving all notifications,
- * and getting notifications by recipient email.
- * It uses the INotificationRepository to interact with the data store and the IEmailService to send emails.
- * The class is responsible for encapsulating the business logic related to notifications,
- * allowing for separation of concerns between the API layer and the business logic layer.
- * It includes these methods:
- * - SendNotificationAsync: Creates a new notification and sends an email to the recipient.
- * - GetAllNotificationsAsync: Retrieves all notifications from the data store.
- * - GetNotificationsByRecipientEmailAsync: Retrieves notifications for a specific recipient email.
- */
 using AutoMapper;
 using NotificationData.Collections;
 using NotificationStore.Business.Email;
 using NotificationStore.Models;
-using NotificationStore.Repository;
+using NotificationStore.Publishers;
+using NotificationStore.Publishers.Notifications;
+using NotificationStore.Repositories.DeliveryLogs;
+using NotificationStore.Repositories.Notifications;
 
 namespace NotificationStore.Business.Notify;
 
 public class NotificationService : INotificationService
 {
-    private readonly INotificationRepository _repository;
+    private readonly INotificationRepository _notificationRepository;
+    private readonly IDeliveryLogRepository _deliveryLogRepository;
     private readonly IEmailService _emailService;
+    private readonly INotificationPublisher _publisher;
     private readonly IMapper _mapper;
 
     public NotificationService(
-        INotificationRepository repository,
+        INotificationRepository notificationRepository,
+        IDeliveryLogRepository deliveryLogRepository,
         IMapper mapper,
-        IEmailService emailService)
+        IEmailService emailService,
+        INotificationPublisher publisher)
     {
-        _repository = repository;
+        _notificationRepository = notificationRepository;
+        _deliveryLogRepository = deliveryLogRepository;
         _mapper = mapper;
         _emailService = emailService;
+        _publisher = publisher;
     }
 
-    // POST: /API/Notification/SendNotification
+    // Legacy API (still useful internally)
     public async Task SendNotificationAsync(NotificationDto notification)
     {
-        var notificationModel = _mapper.Map<Notification>(notification);
+        var entity = _mapper.Map<Notification>(notification);
 
-        string subject;
-        string body;
+        // Save initial record
+        await _notificationRepository.InsertAsync(entity);
 
-        switch (notification.Type?.ToUpperInvariant())
+        // Send email if provided
+        if (!string.IsNullOrWhiteSpace(notification.TargetAudience))
         {
-            case "ALERT":
-                subject = "⚠️ Traffic Congestion Alert";
-                body = $"A congestion event was detected:\n\n{notification.Message}\n\nTimestamp: {notification.Timestamp.ToLocalTime()}";
-                break;
-
-            case "SUMMARY":
-                subject = "📊 Daily Traffic Summary";
-                body = $"Your daily summary is ready:\n\n{notification.Message}\n\nGenerated on: {notification.Timestamp.ToLocalTime()}";
-                break;
-
-            default:
-                subject = $"[Notification] PADA Smart Traffic Lights";
-                body = $"We received your message:\n\n{notification.Message}\n\nTime: {notification.Timestamp.ToLocalTime()}";
-                break;
+            await _emailService.SendEmailAsync(
+                notification.TargetAudience,
+                $"[Notification] {notification.Type}",
+                notification.Message
+            );
         }
 
-        await _emailService.SendEmailAsync(notification.RecipientEmail, subject, body);
-
-        notificationModel.Status = "Sent";
-
-        await _repository.InsertAsync(notificationModel);
+        // Mark sent
+        entity.Status = "Sent";
+        await _notificationRepository.UpdateStatusAsync(entity.NotificationId, "Sent");
     }
 
-    // GET: /API/Notification/GetAllNotifications
     public async Task<IEnumerable<NotificationDto>> GetAllNotificationsAsync()
     {
-        var notifications = await _repository.GetAllAsync();
-
+        var notifications = await _notificationRepository.GetAllAsync();
         return _mapper.Map<IEnumerable<NotificationDto>>(notifications);
     }
 
-    // GET: /API/Notification/GetNotificationsByRecipientEmail?recipientEmail={recipientEmail}
     public async Task<IEnumerable<NotificationDto>> GetNotificationsByRecipientEmailAsync(string recipientEmail)
     {
-        var notifications = await _repository.GetByRecipientEmailAsync(recipientEmail);
-
+        var notifications = await _notificationRepository.GetByRecipientEmailAsync(recipientEmail);
         return _mapper.Map<IEnumerable<NotificationDto>>(notifications);
     }
 
-    public async Task CreateAsync(NotificationDto dto)
+    // ================================
+    // 🔹 API-driven business methods
+    // ================================
+
+    public async Task SendUserNotificationAsync(Guid userId, string email, string message, string type)
     {
-        var entity = new Notification
+        var dto = new NotificationDto
         {
-            Id = Guid.NewGuid().ToString(),
-            Type = dto.Type,
-            RecipientId = dto.RecipientId,
-            RecipientEmail = dto.RecipientEmail,
-            Message = dto.Message,
-            Status = "UNREAD",
-            Timestamp = dto.Timestamp
+            NotificationId = Guid.NewGuid(),
+            Type = type,
+            Title = $"{type} Notification",
+            Message = message,
+            TargetAudience = userId.ToString(),
+            Status = "Pending",
+            CreatedAt = DateTime.UtcNow
         };
 
-        await _repository.InsertAsync(entity);
+        // Save in DB
+        var entity = _mapper.Map<Notification>(dto);
+        await _notificationRepository.InsertAsync(entity);
+
+        // Publish to RabbitMQ
+        await _publisher.PublishUserAlertAsync(userId, email, type, message);
+
+        // Log delivery
+        var log = new DeliveryLog
+        {
+            DeliveryId = Guid.NewGuid(),
+            NotificationId = dto.NotificationId,
+            Recipient = email,
+            Status = "Sent",
+            SentAt = DateTime.UtcNow
+        };
+        await _deliveryLogRepository.InsertAsync(log);
+
+        // Send email (optional)
+        if (!string.IsNullOrWhiteSpace(email))
+            await _emailService.SendEmailAsync(email, $"[Notification] {type}", message);
+    }
+
+    public async Task SendPublicNoticeAsync(string title, string message, string audience)
+    {
+        await _publisher.PublishPublicNoticeAsync(Guid.NewGuid(), title, message, audience);
+    }
+
+    public async Task<IEnumerable<DeliveryLogDto>> GetDeliveryHistoryAsync(Guid userId)
+    {
+        var logs = await _deliveryLogRepository.GetByRecipientAsync(userId.ToString());
+        return _mapper.Map<IEnumerable<DeliveryLogDto>>(logs);
     }
 }
