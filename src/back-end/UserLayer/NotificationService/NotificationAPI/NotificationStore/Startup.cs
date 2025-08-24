@@ -10,7 +10,6 @@ using NotificationStore.Publishers.Logs;
 using NotificationStore.Publishers.Notifications;
 using NotificationStore.Repositories.DeliveryLogs;
 using NotificationStore.Repositories.Notifications;
-using NotificationStore.Repository;
 using RabbitMQ.Client;
 using UserMessages;
 
@@ -64,54 +63,11 @@ public class Startup
         services.AddScoped<TrafficCongestionConsumer>();
         services.AddScoped<TrafficSummaryConsumer>();
 
-        /******* [5] MassTransit ********/
+        /******* [7] MassTransit ********/
 
-        services.AddMassTransit(x =>
-        {
-            x.AddConsumer<NotificationRequestConsumer>();
+        services.AddNotificationServiceMassTransit(_configuration);
 
-            x.UsingRabbitMq((context, cfg) =>
-            {
-                var rabbitmqSettings = _configuration.GetSection("RabbitMQ");
-
-                // Configure RabbitMQ connection settings
-                cfg.Host(rabbitmqSettings["Host"], "/", h =>
-                {
-                    h.Username(rabbitmqSettings["Username"]);
-                    h.Password(rabbitmqSettings["Password"]);
-            
-                });
-
-                // user.notifications.request
-                cfg.Message<NotificationRequest>(e =>
-                {
-                    e.SetEntityName(rabbitmqSettings["UserNotificationsExchange"]);
-                });
-                cfg.Publish<NotificationRequest>(e =>
-                {
-                    e.ExchangeType = ExchangeType.Direct;
-                });
-            
-                cfg.ReceiveEndpoint("user.notifications.request.queue", e =>
-                {
-                    e.ConfigureConsumer<NotificationRequestConsumer>(context);
-                    e.PrefetchCount = 16;
-                    e.UseConcurrencyLimit(4);
-
-                    e.Bind(rabbitmqSettings["UserNotificationsExchange"], x =>
-                    {
-                        x.ExchangeType = ExchangeType.Direct;
-                        x.RoutingKey = rabbitmqSettings["RoutingKeys:UserNotifications:Request"];
-                    });
-
-                });
-
-                cfg.ConfigureEndpoints(context);
-
-            });
-        });
-
-        /******* [6] Controllers ********/
+        /******* [8] Controllers ********/
 
         services.AddControllers()
             .AddJsonOptions(
@@ -122,7 +78,7 @@ public class Startup
 
         services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Notification Service API", Version = "v1.0" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Notification API", Version = "v2.0" });
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     In = ParameterLocation.Header,
@@ -156,7 +112,7 @@ public class Startup
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Notification Service API");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Notification API");
             });
         }
 
