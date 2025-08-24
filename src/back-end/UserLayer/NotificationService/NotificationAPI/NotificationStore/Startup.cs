@@ -57,6 +57,13 @@ public class Startup
         services.AddScoped(typeof(INotificationPublisher), typeof(NotificationPublisher));
         services.AddScoped(typeof(ILogPublisher), typeof(LogPublisher));
 
+        /******* [6] Consumers ********/
+
+        services.AddScoped<NotificationRequestConsumer>();
+        services.AddScoped<TrafficIncidentConsumer>();
+        services.AddScoped<TrafficCongestionConsumer>();
+        services.AddScoped<TrafficSummaryConsumer>();
+
         /******* [5] MassTransit ********/
 
         services.AddMassTransit(x =>
