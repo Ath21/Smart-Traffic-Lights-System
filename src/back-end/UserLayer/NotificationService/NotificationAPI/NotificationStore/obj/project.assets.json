@@ -713,6 +713,16 @@
           "lib/net7.0/ZstdSharp.dll": {}
         }
       },
+      "LogMessages/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "compile": {
+          "bin/placeholder/LogMessages.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/LogMessages.dll": {}
+        }
+      },
       "NotificationData/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
@@ -1999,6 +2009,11 @@
         "zstdsharp.port.nuspec"
       ]
     },
+    "LogMessages/1.0.0": {
+      "type": "project",
+      "path": "../../../../LogLayer/LogMessages/LogMessages.csproj",
+      "msbuildProject": "../../../../LogLayer/LogMessages/LogMessages.csproj"
+    },
     "NotificationData/1.0.0": {
       "type": "project",
       "path": "../NotificationData/NotificationData.csproj",
@@ -2018,6 +2033,7 @@
   "projectFileDependencyGroups": {
     "net9.0": [
       "AutoMapper.Extensions.Microsoft.DependencyInjection >= 12.0.1",
+      "LogMessages >= 1.0.0",
       "MailKit >= 4.12.1",
       "MassTransit >= 8.5.0",
       "MassTransit.RabbitMQ >= 8.5.0",
@@ -2056,6 +2072,9 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogMessages/LogMessages.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogMessages/LogMessages.csproj"
+            },
             "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficMessages/TrafficMessages.csproj": {
               "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficMessages/TrafficMessages.csproj"
             },

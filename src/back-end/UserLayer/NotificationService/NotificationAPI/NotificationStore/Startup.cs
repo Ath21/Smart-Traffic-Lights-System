@@ -6,6 +6,8 @@ using NotificationStore.Business.Notify;
 using NotificationStore.Consumers;
 using NotificationStore.Middleware;
 using NotificationStore.Models;
+using NotificationStore.Publishers.Logs;
+using NotificationStore.Publishers.Notifications;
 using NotificationStore.Repositories.DeliveryLogs;
 using NotificationStore.Repositories.Notifications;
 using NotificationStore.Repository;
@@ -49,6 +51,11 @@ public class Startup
         /******* [4] AutoMapper ********/
 
         services.AddAutoMapper(typeof(NotificationStoreProfile));
+
+        /******* [5] Publishers ********/
+
+        services.AddScoped(typeof(INotificationPublisher), typeof(NotificationPublisher));
+        services.AddScoped(typeof(ILogPublisher), typeof(LogPublisher));
 
         /******* [5] MassTransit ********/
 

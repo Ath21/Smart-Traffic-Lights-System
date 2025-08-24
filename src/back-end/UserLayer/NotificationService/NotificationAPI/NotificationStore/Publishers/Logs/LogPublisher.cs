@@ -1,0 +1,54 @@
+using LogMessages;
+using MassTransit;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+
+namespace NotificationStore.Publishers.Logs;
+
+public class LogPublisher : ILogPublisher
+{
+    private readonly IBus _bus;
+    private readonly ILogger<LogPublisher> _logger;
+    private readonly string _serviceName;
+    private readonly string _auditKey;
+    private readonly string _errorKey;
+
+    public LogPublisher(IConfiguration configuration, ILogger<LogPublisher> logger, IBus bus)
+    {
+        _logger = logger;
+        _bus = bus;
+        _serviceName = "notification_service"; // Could also read from config/env
+        _auditKey = configuration["RabbitMQ:RoutingKeys:AuditLog"] ?? "log.user.notification_service.audit";
+        _errorKey = configuration["RabbitMQ:RoutingKeys:ErrorLog"] ?? "log.user.notification_service.error";
+    }
+
+    public async Task PublishAuditLogAsync(string action, string details, object? metadata = null)
+    {
+        var log = new AuditLogMessage(
+            Guid.NewGuid(),
+            _serviceName,
+            action,
+            details,
+            DateTime.UtcNow,
+            metadata
+        );
+
+        await _bus.Publish(log, ctx => ctx.SetRoutingKey(_auditKey));
+        _logger.LogInformation("Audit log published: {Action}", action);
+    }
+
+    public async Task PublishErrorLogAsync(string errorType, string message, object? metadata = null, Exception? ex = null)
+    {
+        var log = new ErrorLogMessage(
+            Guid.NewGuid(),
+            _serviceName,
+            errorType,
+            message,
+            DateTime.UtcNow,
+            metadata
+        );
+
+        await _bus.Publish(log, ctx => ctx.SetRoutingKey(_errorKey));
+        _logger.LogError(ex, "Error log published: {ErrorType}", errorType);
+    }
+}
