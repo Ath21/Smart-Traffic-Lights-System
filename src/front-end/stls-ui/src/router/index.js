@@ -8,6 +8,7 @@ const AdminLayout = () => import('../layouts/AdminLayout.vue')
 
 const Login = () => import('../pages/Login.vue')
 const Register = () => import('../pages/Register.vue')
+const ResetPassword = () => import('../pages/ResetPassword.vue')
 
 // NEW
 const Account = () => import('../pages/Account.vue')
@@ -28,6 +29,9 @@ const routes = [
 
   // NEW Account page (accessible to any logged-in user)
   { path: '/account', name: 'account', component: Account, meta: { role: 'user' } },
+
+  // Reset password page
+  { path: '/reset-password', name: 'reset-password', component: ResetPassword, meta: { public: true } },
 ]
 
 const router = createRouter({ history: createWebHistory(), routes })

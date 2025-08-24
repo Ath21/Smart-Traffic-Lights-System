@@ -34,7 +34,6 @@
 
             <!-- Eye toggle -->
             <span class="toggle-eye" @click="toggleShowPassword">
-              <!-- Hidden = eye with slash -->
               <svg v-if="!showPassword" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="eye-icon">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 
@@ -43,8 +42,6 @@
                          9.97 0 01-4.132 5.411M15 12a3 3 0 11-6 0 3 3 0 
                          016 0zM3 3l18 18" />
               </svg>
-
-              <!-- Visible = normal eye -->
               <svg v-else xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="eye-icon">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -61,6 +58,12 @@
           <transition name="fade">
             <p v-if="capsLockOn" class="caps-warning">⚠ Caps Lock is ON</p>
           </transition>
+
+          <!-- Forgot password link -->
+          <p class="forgot-link" @click="forgotPassword"></p>
+          <router-link to="/reset-password" class="forgot-link">
+            Forgot password?
+          </router-link>
 
           <button :disabled="loading" class="submit-btn">
             {{ loading ? 'Logging in…' : 'LOGIN' }}
@@ -82,6 +85,7 @@ import { ref } from 'vue'
 import { loginApi } from '../services/authApi'
 import { useAuth } from '../stores/auth'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
 import '../assets/login.css'
 
 const email = ref('')
@@ -105,16 +109,30 @@ async function submit() {
   if (loading.value) return
   loading.value = true
   try {
-const { token, expiresAt } = await loginApi({
-  email: email.value,
-  password: password.value,
-})
-auth.login(token)   // save the full JWT
-
-
+    const { token, expiresAt } = await loginApi({
+      email: email.value,
+      password: password.value,
+    })
+    auth.login(token, expiresAt)
     router.push('/app')
   } finally {
     loading.value = false
+  }
+}
+
+// Forgot password
+async function forgotPassword() {
+  if (!email.value) {
+    alert("Please enter your email first.")
+    return
+  }
+  try {
+    await axios.post('http://localhost:5055/api/users/forgot-password', {
+      email: email.value
+    })
+    alert("📧 Password reset instructions have been sent to your email.")
+  } catch (err) {
+    alert("❌ Failed to send reset email: " + (err.response?.data?.message || err.message))
   }
 }
 </script>

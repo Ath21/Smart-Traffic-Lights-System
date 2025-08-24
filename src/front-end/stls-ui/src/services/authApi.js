@@ -14,7 +14,6 @@ export async function registerApi({ email, username, password }) {
 // Login user
 export async function loginApi({ email, password }) {
   const response = await api.post('/login', { email, password })
-
   return {
     token: response.data.Token,        // full JWT from server
     expiresAt: response.data.ExpiresAt // expiry timestamp
@@ -28,4 +27,16 @@ export async function logoutApi(token) {
     {},
     { headers: { Authorization: `Bearer ${token}` } }
   )
+}
+
+// 🔑 Reset password API
+export async function resetPasswordApi(email, newPassword) {
+  const response = await api.post(
+    '/reset-password',
+    {
+      UsernameOrEmail: email,
+      NewPassword: newPassword,
+    }
+  )
+  return response.data
 }

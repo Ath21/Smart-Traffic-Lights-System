@@ -175,3 +175,17 @@
 .fade-enter-from, .fade-leave-to {
   opacity: 0;
 }
+
+.forgot-link {
+  font-size: 0.9rem;
+  color: #38d0c4;
+  text-align: right;
+  margin-top: -0.5rem;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.forgot-link:hover {
+  text-decoration: underline;
+}

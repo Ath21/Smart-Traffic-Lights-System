@@ -157,3 +157,25 @@
   color: #dc2626; /* red */
 }
 
+/* === RIGHT NAVIGATION === */
+/* === RIGHT NAVIGATION === */
+.right-nav {
+  display: flex;
+  align-items: center;
+}
+
+.home-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.25s ease-in-out;
+  cursor: pointer;
+  background: #06b6d4; /* cyan */
+  color: white;
+}
+
+.home-btn:hover {
+  background: #0891b2;
+}
+
