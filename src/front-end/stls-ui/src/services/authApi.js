@@ -59,3 +59,19 @@ export async function updateProfileApi(token, { email, username, password, statu
 
   return response.data
 }
+
+
+// 🚨 Send Notification
+export async function sendNotificationApi(token, { message, type }) {
+  const response = await api.post(
+    '/send-notification',
+    {
+      Message: message,
+      Type: type,
+    },
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  )
+  return response.data
+}

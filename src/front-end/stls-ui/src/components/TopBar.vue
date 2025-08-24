@@ -9,20 +9,27 @@
 
     <!-- Right side -->
     <div class="flex items-center gap-3 relative">
-      <!-- If NOT logged in -->
-      <nav v-if="!auth.isAuthenticated" class="flex gap-2">
+      <!-- Case 1: Login/Register pages → show Home -->
+      <RouterLink
+        v-if="isLoginOrRegister"
+        :to="homePath"
+        class="home-btn"
+      >
+        Home
+      </RouterLink>
+
+      <!-- Case 2: Not logged in (but not login/register) → show Login/Register -->
+      <nav v-else-if="!auth.isAuthenticated" class="flex gap-2">
         <RouterLink class="login" to="/login">Login</RouterLink>
         <RouterLink class="register" to="/register">Register</RouterLink>
       </nav>
 
-      <!-- If logged in -->
+      <!-- Case 3: Logged in → Alert Me + dropdown -->
       <div v-else class="flex items-center gap-3 relative">
-        <!-- Alert Me button -->
         <button class="login" @click="alertMe">
           Alert Me
         </button>
 
-        <!-- User menu toggle -->
         <div class="relative" ref="menuRef">
           <button class="user-btn" @click="toggleMenu">
             <svg
@@ -40,13 +47,9 @@
             <div class="dropdown-header">
               {{ auth.user?.email }}
             </div>
-
-            <!-- Keep Home only inside dropdown -->
-            <RouterLink :to="homePath" class="dropdown-item">Home</RouterLink>
             <RouterLink to="/account" class="dropdown-item">Account</RouterLink>
             <RouterLink to="/notifications" class="dropdown-item">Notification Status</RouterLink>
             <RouterLink to="/update" class="dropdown-item">Update Profile</RouterLink>
-            
             <button @click="logout" class="dropdown-item logout">Logout</button>
           </div>
         </div>
@@ -58,14 +61,20 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useAuth } from '../stores/auth'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import '../assets/topbar.css'
 
 const auth = useAuth()
 const router = useRouter()
+const route = useRoute()
 
 const showMenu = ref(false)
 const menuRef = ref(null)
+
+// Show Home button only on login/register pages
+const isLoginOrRegister = computed(() =>
+  ['/login', '/register'].includes(route.path)
+)
 
 // Home path depends on user role
 const homePath = computed(() =>
@@ -89,8 +98,22 @@ onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
 })
 
-function alertMe() {
-  alert('Alerts enabled for incidents (demo).')
+async function alertMe() {
+  try {
+    const res = await auth.apiFetch("http://localhost:5055/api/users/send-notification", {
+      method: "POST",
+      body: JSON.stringify({
+        Message: "User subscribed to traffic alerts",
+        Type: "Traffic"
+      })
+    })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    await res.json()
+    alert("✅ Notification request sent!")
+  } catch (err) {
+    console.error("❌ Failed to send alert:", err)
+    alert("❌ Failed to send notification")
+  }
 }
 
 function logout() {
