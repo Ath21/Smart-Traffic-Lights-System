@@ -1,11 +1,10 @@
-/*
- * NotificationStore.Middleware.ExceptionMiddleware
- *
- * This file is part of the NotificationStore project, which defines the ExceptionMiddleware class.
- * The ExceptionMiddleware class is a custom middleware for handling exceptions in the NotificationStore API.
- * It intercepts HTTP requests and catches various types of exceptions, logging them and returning appropriate HTTP status codes and messages.
- * The middleware is designed to provide a consistent error handling mechanism across the API.
- */
+using System.Net;
+using MassTransit;
+using Microsoft.Extensions.Logging;
+using MongoDB.Driver;
+using NotificationStore.Publishers;
+using NotificationStore.Publishers.Logs;
+
 namespace NotificationStore.Middleware;
 
 public class ExceptionMiddleware
@@ -25,35 +24,99 @@ public class ExceptionMiddleware
         {
             await _next(context);
         }
+        // 🔹 Authentication / Authorization
         catch (UnauthorizedAccessException ex)
         {
-            _logger.LogError(ex, "Unauthorized access error occurred.");
-            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-            await context.Response.WriteAsync("Unauthorized access.");
+            await HandleErrorAsync(context, HttpStatusCode.Unauthorized, "Unauthorized access", "AUTH_ERROR", ex);
         }
+
+        // 🔹 Not found / bad usage
         catch (KeyNotFoundException ex)
         {
-            _logger.LogError(ex, "Key not found error occurred.");
-            context.Response.StatusCode = StatusCodes.Status404NotFound;
-            await context.Response.WriteAsync("Resource not found.");
+            await HandleErrorAsync(context, HttpStatusCode.NotFound, "Resource not found", "NOT_FOUND", ex);
         }
         catch (InvalidOperationException ex)
         {
-            _logger.LogError(ex, "Invalid operation error occurred.");
-            context.Response.StatusCode = StatusCodes.Status409Conflict;
-            await context.Response.WriteAsync("Conflict occurred while processing the request.");
+            await HandleErrorAsync(context, HttpStatusCode.Conflict, "Invalid operation", "INVALID_OPERATION", ex);
+        }
+        catch (ArgumentNullException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Missing required parameter", "ARGUMENT_NULL", ex);
         }
         catch (ArgumentException ex)
         {
-            _logger.LogError(ex, "Invalid argument error occurred.");
-            context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            await context.Response.WriteAsync("Invalid argument provided.");
+            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid argument provided", "ARGUMENT_ERROR", ex);
         }
+        catch (FormatException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid data format", "FORMAT_ERROR", ex);
+        }
+
+        // 🔹 Network / Messaging
+        catch (TaskCanceledException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.RequestTimeout, "Request canceled or timed out", "TASK_CANCELED", ex);
+        }
+        catch (MassTransit.RequestTimeoutException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.RequestTimeout, "Message broker timeout", "BROKER_TIMEOUT", ex);
+        }
+
+        // 🔹 MongoDB
+        catch (MongoWriteException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.Conflict, "Mongo write error", "MONGO_WRITE", ex);
+        }
+        catch (MongoConnectionException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.ServiceUnavailable, "Mongo connection error", "MONGO_CONNECTION", ex);
+        }
+
+        // 🔹 Fallback
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An unexpected error occurred.");
-            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-            await context.Response.WriteAsync("An unexpected error occurred.");
+            await HandleErrorAsync(context, HttpStatusCode.InternalServerError, "An unexpected error occurred", "UNEXPECTED", ex);
         }
+    }
+
+    private async Task HandleErrorAsync(
+        HttpContext context,
+        HttpStatusCode statusCode,
+        string userMessage,
+        string errorType,
+        Exception ex)
+    {
+        _logger.LogError(ex, "{Message}", userMessage);
+
+        try
+        {
+            // publish structured log
+            var publisher = context.RequestServices.GetRequiredService<ILogPublisher>();
+            await publisher.PublishErrorLogAsync(
+                errorType,
+                ex.Message,
+                new
+                {
+                    Path = context.Request.Path,
+                    Method = context.Request.Method,
+                    TraceId = context.TraceIdentifier
+                },
+                ex
+            );
+        }
+        catch (Exception pubEx)
+        {
+            _logger.LogError(pubEx, "Failed to publish error log to broker");
+        }
+
+        context.Response.StatusCode = (int)statusCode;
+        context.Response.ContentType = "application/json";
+
+        await context.Response.WriteAsJsonAsync(new
+        {
+            error = userMessage,
+            details = ex.Message,
+            traceId = context.TraceIdentifier
+        });
     }
 }
