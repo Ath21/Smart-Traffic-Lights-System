@@ -1,18 +1,17 @@
+using System;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace NotificationData.Collections;
 
-public class Notification
+public class DeliveryLog
 {
     [BsonId]
     [BsonRepresentation(BsonType.String)]
+    public Guid DeliveryId { get; set; }
+
     public Guid NotificationId { get; set; }
-        
-    public string Type { get; set; }
-    public string Title { get; set; }
-    public string Message { get; set; }
-    public string TargetAudience { get; set; }
+    public string Recipient { get; set; }
     public string Status { get; set; }
-    public DateTime CreatedAt { get; set; }
+    public DateTime SentAt { get; set; }
 }

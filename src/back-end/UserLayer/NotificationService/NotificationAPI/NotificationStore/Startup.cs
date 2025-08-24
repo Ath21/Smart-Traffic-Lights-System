@@ -1,27 +1,3 @@
-/*
- * NotificationStore.Startup
- *
- * This class is part of the Notification Store service, which is responsible for handling notifications
- * in the system. It configures the services and middleware for the Notification Store application.
- * The Startup class includes methods for configuring services, such as MongoDB, repositories, services,
- * AutoMapper, MassTransit for message queuing, and Swagger for API documentation.
- * It includes the following sections:
- *      1. MongoDb Config: Configures the MongoDB connection settings for the Notification Store service.
- *      2. Repositories: Registers the repositories for data access, specifically the NotificationRepository.
- *      3. Services: Registers the business logic services, including EmailService and NotificationService.
- *      4. AutoMapper: Configures AutoMapper for object-to-object mapping, using the NotificationStoreProfile.
- *      5. MassTransit: Configures MassTransit for message queuing with RabbitMQ,
- *         including the NotificationRequestConsumer for handling notification requests.
- *      6. Controllers: Configures the API controllers and JSON serialization options.
- *      7. Swagger: Configures Swagger for API documentation and testing, including security definitions
- *         for JWT authentication.
- * The Configure method sets up the middleware pipeline for the application, including exception handling,
- * HTTPS redirection, authentication, and authorization. It also sets up the Swagger UI for API
- * documentation.
- * The Startup class is typically used in the NotificationService layer of the application.
- * It is part of the NotificationStore project, which is responsible for managing notifications
- * and related operations in the system.
- */
 using MassTransit;
 using Microsoft.OpenApi.Models;
 using NotificationData;

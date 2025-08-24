@@ -1,10 +1,3 @@
-/*
- * NotificationData.NotificationDbContext
- *
- * This class provides the context for accessing the MongoDB database used by the Notification Service.
- * It initializes the connection to the database and provides access to the notifications collection.
- * It uses the MongoDB.Driver package to interact with the database.
- */
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using NotificationData.Collections;
@@ -13,19 +6,18 @@ namespace NotificationData;
 
 public class NotificationDbContext
 {
-    private readonly IMongoCollection<Notification> _notificationsCollection; 
+    private readonly IMongoDatabase _database;
 
     public NotificationDbContext(IOptions<NotificationDbSettings> notificationDbSettings)
     {
-        var mongoClient = new MongoClient(
-            notificationDbSettings.Value.ConnectionString);
+        var mongoClient = new MongoClient(notificationDbSettings.Value.ConnectionString);
+        _database = mongoClient.GetDatabase(notificationDbSettings.Value.DatabaseName);
 
-        var mongoDatabase = mongoClient.GetDatabase(
-            notificationDbSettings.Value.DatabaseName);
-
-        _notificationsCollection = mongoDatabase.GetCollection<Notification>(
-            notificationDbSettings.Value.NotificationsCollectionName);
+        Notifications = _database.GetCollection<Notification>(notificationDbSettings.Value.NotificationsCollectionName);
+        DeliveryLogs = _database.GetCollection<DeliveryLog>(notificationDbSettings.Value.DeliveryLogsCollectionName);
     }
 
-    public IMongoCollection<Notification> NotificationsCollection => _notificationsCollection;
+    // Exposed collections
+    public IMongoCollection<Notification> Notifications { get; }
+    public IMongoCollection<DeliveryLog> DeliveryLogs { get; }
 }
