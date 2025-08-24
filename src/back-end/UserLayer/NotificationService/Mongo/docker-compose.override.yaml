@@ -1,13 +1,15 @@
 services:
-  
   notification_mongo:
     ports:
       - '27018:27017'
     volumes:
-      - notification_data:/data/db
+      - notification_mongodb_data:/data/db
     restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
 
 volumes:
-  notification_data:
-    name: notification_data
+  notification_mongodb_data:
+    name: notification_mongodb_data
     driver: local

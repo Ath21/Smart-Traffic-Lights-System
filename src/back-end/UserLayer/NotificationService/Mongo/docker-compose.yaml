@@ -1,5 +1,4 @@
 services:
-  
   notification_mongo:
     image: mongo:6.0
     container_name: notification_mongo_container

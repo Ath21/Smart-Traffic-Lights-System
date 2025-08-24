@@ -1,32 +1,49 @@
 services:
   notification_api:
     ports:
-      - '5087:8080'
+      - "5087:8080"
     environment:
-      
       ASPNETCORE_ENVIRONMENT: Development
 
       # MongoDB
       DefaultConnection__ConnectionString: mongodb://notification_mongo:27017
       DefaultConnection__DatabaseName: NotificationDb
-      DefaultConnection__NotificationsCollectionName: Notifications
+      DefaultConnection__NotificationsCollectionName: notifications
+      DefaultConnection__DeliveryLogsCollectionName: delivery_logs
 
-      # RabbitMQ
+      # RabbitMQ base config
       RabbitMQ__Host: rabbitmq
       RabbitMQ__Port: 5672
       RabbitMQ__Username: admin
       RabbitMQ__Password: admin123
-      
-      RabbitMQ__UserNotificationsExchange: user.notifications.exchange
-      RabbitMQ__RoutingKeys__UserNotifications__Request: user.notifications.request
 
-      # Email settings
+      # RabbitMQ exchanges
+      RabbitMQ__Exchanges__Logs: LOGS.EXCHANGE
+      RabbitMQ__Exchanges__User: USER.EXCHANGE
+      RabbitMQ__Exchanges__Traffic: TRAFFIC.EXCHANGE
+
+      # RabbitMQ queues
+      RabbitMQ__Queues__UserNotification: user.notification_service.queue
+      RabbitMQ__Queues__TrafficNotification: traffic.notification_service.queue
+
+      # RabbitMQ routing keys
+      RabbitMQ__RoutingKeys__Audit: log.user.notification_service.audit
+      RabbitMQ__RoutingKeys__Error: log.user.notification_service.error
+      RabbitMQ__RoutingKeys__NotificationRequest: user.notification.request
+      RabbitMQ__RoutingKeys__NotificationAlert: user.notification.alert
+      RabbitMQ__RoutingKeys__NotificationPublic: notification.event.public_notice
+      RabbitMQ__RoutingKeys__TrafficCongestionPrefix: traffic.analytics.congestion
+      RabbitMQ__RoutingKeys__TrafficSummaryPrefix: traffic.analytics.summary
+      RabbitMQ__RoutingKeys__TrafficIncidentPrefix: traffic.analytics.incident
+
+      # Email settings (⚠️ password should be moved to secrets/.env for production)
       EmailSettings__SmtpServer: smtp.gmail.com
       EmailSettings__Port: 587
-      EmailSettings__SenderName: PADA Smart Traffic Lights System
+      EmailSettings__SenderName: UNIWA STLS
       EmailSettings__SenderEmail: ice19390005@gmail.com
       EmailSettings__Username: ice19390005@gmail.com
       EmailSettings__Password: ezqz txge ayyf smzv
+
     depends_on:
       notification_mongo:
         condition: service_started
