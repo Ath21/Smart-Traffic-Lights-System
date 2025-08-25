@@ -7,9 +7,14 @@
       <img src="/SmartCityLog.png" alt="Smart City Logo" class="logo" />
     </div>
 
+    <!-- Center welcome message -->
+    <div v-if="auth.isAuthenticated" class="welcome-msg">
+      Welcome, {{ username }}
+    </div>
+
     <!-- Right side -->
-    <div class="flex items-center gap-3 relative">
-      <!-- Case 1: Login/Register pages → show Home -->
+    <div class="flex items-center gap-3 relative right-nav">
+      <!-- Case: Login/Register pages (not authenticated) → show Home -->
       <RouterLink
         v-if="isLoginOrRegister"
         :to="homePath"
@@ -18,13 +23,13 @@
         Home
       </RouterLink>
 
-      <!-- Case 2: Not logged in (but not login/register) → show Login/Register -->
+      <!-- Case: Not logged in (but not login/register) → show Login/Register -->
       <nav v-else-if="!auth.isAuthenticated" class="flex gap-2">
         <RouterLink class="login" to="/login">Login</RouterLink>
         <RouterLink class="register" to="/register">Register</RouterLink>
       </nav>
 
-      <!-- Case 3: Logged in → Alert Me + dropdown -->
+      <!-- Case: Logged in → Alert Me + dropdown -->
       <div v-else class="flex items-center gap-3 relative">
         <button class="login" @click="alertMe">
           Alert Me
@@ -45,8 +50,9 @@
           <!-- Dropdown -->
           <div v-if="showMenu" class="dropdown">
             <div class="dropdown-header">
-              {{ auth.user?.email }}
+              {{ username }}
             </div>
+            <RouterLink :to="homePath" class="dropdown-item">Home</RouterLink>
             <RouterLink to="/account" class="dropdown-item">Account</RouterLink>
             <RouterLink to="/notifications" class="dropdown-item">Notification Status</RouterLink>
             <RouterLink to="/update" class="dropdown-item">Update Profile</RouterLink>
@@ -71,15 +77,26 @@ const route = useRoute()
 const showMenu = ref(false)
 const menuRef = ref(null)
 
-// Show Home button only on login/register pages
+// Show Home button only on login/register pages (for non-authenticated users)
 const isLoginOrRegister = computed(() =>
   ['/login', '/register'].includes(route.path)
 )
 
 // Home path depends on user role
-const homePath = computed(() =>
-  auth.user?.role?.toLowerCase() === 'user' ? '/app' : '/'
-)
+const homePath = computed(() => {
+  const role = auth.user?.role?.toLowerCase()
+  if (role === 'user') return '/app'
+  if (role === 'operator') return '/operator'
+  if (role === 'admin') return '/admin'
+  return '/' // viewer fallback
+})
+
+// Username extraction (prefer explicit username, fallback to email prefix)
+const username = computed(() => {
+  if (auth.user?.username) return auth.user.username
+  if (auth.user?.email) return auth.user.email.split('@')[0]
+  return 'Guest'
+})
 
 function toggleMenu() {
   showMenu.value = !showMenu.value
