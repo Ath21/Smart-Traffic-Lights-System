@@ -9,11 +9,13 @@ const AdminLayout = () => import('../layouts/AdminLayout.vue')
 const Login = () => import('../pages/Login.vue')
 const Register = () => import('../pages/Register.vue')
 const ResetPassword = () => import('../pages/ResetPassword.vue')
-  
 
 // NEW
 const Account = () => import('../pages/Account.vue')
 const UpdateProfile = () => import('../pages/UpdateProfile.vue')
+
+// NEW Notifications
+const NotificationStatus = () => import('../pages/NotificationStatus.vue')
 
 const ROLE_ORDER = ['viewer', 'user', 'operator', 'admin']
 function canAccess(requiredRole, userRole) {
@@ -31,6 +33,9 @@ const routes = [
 
   // NEW Account page (accessible to any logged-in user)
   { path: '/account', name: 'account', component: Account, meta: { role: 'user' } },
+
+  // NEW Notifications page
+  { path: '/notifications', name: 'notifications', component: NotificationStatus, meta: { role: 'user' } },
 
   // Reset password page
   { path: '/reset-password', name: 'reset-password', component: ResetPassword, meta: { public: true } },

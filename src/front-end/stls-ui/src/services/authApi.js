@@ -1,9 +1,17 @@
 // src/services/authApi.js
 import axios from 'axios'
 
+// === USERS API ===
 const api = axios.create({
   baseURL: 'http://localhost:5055/api/users',
 })
+
+// === NOTIFICATIONS API ===
+const notificationApi = axios.create({
+  baseURL: 'http://localhost:5055/api/notifications',
+})
+
+// ==================== USERS ====================
 
 // Register a new user
 export async function registerApi({ email, username, password }) {
@@ -60,14 +68,41 @@ export async function updateProfileApi(token, { email, username, password, statu
   return response.data
 }
 
+// ==================== NOTIFICATIONS ====================
 
-// 🚨 Send Notification
-export async function sendNotificationApi(token, { message, type }) {
-  const response = await api.post(
-    '/send-notification',
+// 🚨 Send User Notification
+export async function sendNotificationApi(token, { userId, recipientEmail, message, type }) {
+  const response = await notificationApi.post(
+    '/send',
     {
+      UserId: userId,
+      RecipientEmail: recipientEmail,
       Message: message,
       Type: type,
+    },
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  )
+  return response.data
+}
+
+// 📜 Get user notification history
+export async function getUserNotificationsApi(token, userId) {
+  const response = await notificationApi.get(`/history/${userId}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+  return response.data
+}
+
+// 📢 Send a public notice (admin use)
+export async function sendPublicNoticeApi(token, { title, message, targetAudience }) {
+  const response = await notificationApi.post(
+    '/public-notice',
+    {
+      Title: title,
+      Message: message,
+      TargetAudience: targetAudience,
     },
     {
       headers: { Authorization: `Bearer ${token}` },
