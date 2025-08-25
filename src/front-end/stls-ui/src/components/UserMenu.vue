@@ -20,7 +20,7 @@
       <div v-if="showMenu" class="dropdown">
         <div class="dropdown-header">{{ username }}</div>
         <RouterLink :to="homePath" class="dropdown-item">Home</RouterLink>
-        <RouterLink to="/account" class="dropdown-item">Account</RouterLink>
+        <RouterLink to="/profile" class="dropdown-item">Profile</RouterLink>
         <RouterLink to="/notifications" class="dropdown-item">
           Notification Status
           <NotificationBadge :count="notificationCount" inline />

@@ -115,6 +115,9 @@ public class UsrService : IUsrService
         if (await _userRepository.ExistsAsync(request.Username, request.Email))
             throw new InvalidOperationException("Username or email already exists");
 
+        if (request.Password != request.ConfirmPassword)   // ✅ new check
+            throw new ArgumentException("Passwords do not match");
+
         var user = _mapper.Map<User>(request);
         user.UserId = Guid.NewGuid();
         user.PasswordHash = _passwordHasher.HashPassword(request.Password);
@@ -139,9 +142,13 @@ public class UsrService : IUsrService
         return _mapper.Map<UserDto>(user);
     }
 
+
     // RESET PASSWORD
     public async Task ResetPasswordAsync(ResetPasswordRequestDto request)
     {
+        if (request.NewPassword != request.ConfirmPassword)  // ✅ ensure match
+            throw new ArgumentException("Passwords do not match");
+
         var user = await _userRepository.GetByUsernameOrEmailAsync(request.UsernameOrEmail);
         if (user == null)
             throw new KeyNotFoundException("User not found");
@@ -162,6 +169,7 @@ public class UsrService : IUsrService
 
         await _userLogPublisher.PublishAuditAsync("RESET_PASSWORD", $"User {user.Username} reset password", new { user.UserId });
     }
+
 
     public async Task SendNotificationRequestAsync(Guid userId, string message, string type)
     {

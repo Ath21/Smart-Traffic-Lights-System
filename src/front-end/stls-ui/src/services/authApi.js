@@ -14,10 +14,16 @@ const notificationApi = axios.create({
 // ==================== USERS ====================
 
 // Register a new user
-export async function registerApi({ email, username, password }) {
-  const response = await api.post('/register', { email, username, password })
+export async function registerApi({ email, username, password, confirmPassword }) {
+  const response = await api.post('/register', { 
+    email, 
+    username, 
+    password, 
+    confirmPassword    // ✅ add if backend requires it
+  })
   return response.data
 }
+
 
 // Login user
 export async function loginApi({ email, password }) {
@@ -38,16 +44,18 @@ export async function logoutApi(token) {
 }
 
 // 🔑 Reset password API
-export async function resetPasswordApi(email, newPassword) {
+export async function resetPasswordApi(email, newPassword, confirmPassword) {
   const response = await api.post(
     '/reset-password',
     {
       UsernameOrEmail: email,
       NewPassword: newPassword,
+      ConfirmPassword: confirmPassword,   // ✅ added
     }
   )
   return response.data
 }
+
 
 // 📝 Update profile API
 export async function updateProfileApi(token, { email, username, password, status, role }) {

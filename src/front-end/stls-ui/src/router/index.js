@@ -11,7 +11,7 @@ const Register = () => import('../pages/Register.vue')
 const ResetPassword = () => import('../pages/ResetPassword.vue')
 
 // NEW
-const Account = () => import('../pages/Account.vue')
+const Profile = () => import('../pages/Profile.vue')
 const UpdateProfile = () => import('../pages/UpdateProfile.vue')
 
 // NEW Notifications
@@ -31,8 +31,8 @@ const routes = [
   { path: '/operator', name: 'operator', component: OperatorLayout, meta: { role: 'operator' } },
   { path: '/admin', name: 'admin', component: AdminLayout, meta: { role: 'admin' } },
 
-  // NEW Account page (accessible to any logged-in user)
-  { path: '/account', name: 'account', component: Account, meta: { role: 'user' } },
+  // NEW Profile page (accessible to any logged-in user)
+  { path: '/profile', name: 'profile', component: Profile, meta: { role: 'user' } },
 
   // NEW Notifications page
   { path: '/notifications', name: 'notifications', component: NotificationStatus, meta: { role: 'user' } },

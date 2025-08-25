@@ -34,22 +34,27 @@
 
             <!-- Eye toggle -->
             <span class="toggle-eye" @click="toggleShowPassword">
-              <svg v-if="!showPassword" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="eye-icon">
+              <svg v-if="!showPassword" xmlns="http://www.w3.org/2000/svg" fill="none"
+                   viewBox="0 0 24 24" stroke="currentColor" class="eye-icon">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 
-                         0-8.268-2.943-9.542-7a9.97 9.97 0 012.19-3.568m3.287-2.57A9.956 
-                         9.956 0 0112 5c4.477 0 8.268 2.943 9.542 7a9.97 
-                         9.97 0 01-4.132 5.411M15 12a3 3 0 11-6 0 3 3 0 
-                         016 0zM3 3l18 18" />
+                         0-8.268-2.943-9.542-7a9.97 9.97 0 
+                         012.19-3.568m3.287-2.57A9.956 
+                         9.956 0 0112 5c4.477 0 8.268 2.943 
+                         9.542 7a9.97 9.97 0 
+                         01-4.132 5.411M15 12a3 3 0 
+                         11-6 0 3 3 0 016 0zM3 3l18 18" />
               </svg>
-              <svg v-else xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="eye-icon">
+              <svg v-else xmlns="http://www.w3.org/2000/svg" fill="none"
+                   viewBox="0 0 24 24" stroke="currentColor" class="eye-icon">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 
-                         0 8.268 2.943 9.542 7-1.274 
-                         4.057-5.064 7-9.542 7-4.477 
-                         0-8.268-2.943-9.542-7z" />
+                      d="M2.458 12C3.732 7.943 7.523 5 
+                         12 5c4.478 0 8.268 2.943 
+                         9.542 7-1.274 
+                         4.057-5.064 7-9.542 
+                         7-4.477 0-8.268-2.943-9.542-7z" />
               </svg>
             </span>
           </div>
@@ -60,7 +65,6 @@
           </transition>
 
           <!-- Forgot password link -->
-          <p class="forgot-link" @click="forgotPassword"></p>
           <router-link to="/reset-password" class="forgot-link">
             Forgot password?
           </router-link>
@@ -69,6 +73,11 @@
             {{ loading ? 'Logging in…' : 'LOGIN' }}
           </button>
         </form>
+
+        <!-- Feedback message -->
+        <p v-if="message" :class="['message', { error: isError, success: isSuccess }]">
+          {{ message }}
+        </p>
 
         <!-- Footer link -->
         <p class="footer-text">
@@ -94,6 +103,10 @@ const loading = ref(false)
 const showPassword = ref(false)
 const capsLockOn = ref(false)
 
+const message = ref('')
+const isError = ref(false)
+const isSuccess = ref(false)
+
 const auth = useAuth()
 const router = useRouter()
 
@@ -108,31 +121,47 @@ function checkCapsLock(event) {
 async function submit() {
   if (loading.value) return
   loading.value = true
+  message.value = ''
   try {
     const { token, expiresAt } = await loginApi({
       email: email.value,
       password: password.value,
     })
     auth.login(token, expiresAt)
+    isSuccess.value = true
+    isError.value = false
+    message.value = "✅ Login successful!"
     router.push('/app')
+  } catch (err) {
+    const details = err.response?.data?.details || err.response?.data?.error || err.message
+    message.value = "❌ " + details
+    isError.value = true
+    isSuccess.value = false
   } finally {
     loading.value = false
   }
 }
 
+
 // Forgot password
 async function forgotPassword() {
   if (!email.value) {
-    alert("Please enter your email first.")
+    message.value = "⚠ Please enter your email first."
+    isError.value = true
+    isSuccess.value = false
     return
   }
   try {
     await axios.post('http://localhost:5055/api/users/forgot-password', {
       email: email.value
     })
-    alert("📧 Password reset instructions have been sent to your email.")
+    message.value = "📧 Password reset instructions have been sent to your email."
+    isSuccess.value = true
+    isError.value = false
   } catch (err) {
-    alert("❌ Failed to send reset email: " + (err.response?.data?.message || err.message))
+    message.value = "❌ Failed to send reset email: " + (err.response?.data?.message || err.message)
+    isError.value = true
+    isSuccess.value = false
   }
 }
 </script>

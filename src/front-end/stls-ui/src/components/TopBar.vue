@@ -44,8 +44,9 @@ const notificationsStore = useNotifications()
 const { notifications } = storeToRefs(notificationsStore)
 
 const isLoginOrRegister = computed(() =>
-  ['/login', '/register'].includes(route.path)
+  ['/login', '/register', '/reset-password'].includes(route.path)
 )
+
 
 const homePath = computed(() => {
   const role = auth.user?.role?.toLowerCase()

@@ -1,6 +1,6 @@
 <template>
   <div class="account-page p-6 max-w-lg mx-auto">
-    <h2 class="text-2xl font-bold mb-4">My Account</h2>
+    <h2 class="text-2xl font-bold mb-4">My Profile</h2>
 
     <div v-if="loading" class="text-gray-500">Loading...</div>
     <div v-else-if="error" class="text-red-600">Error: {{ error }}</div>

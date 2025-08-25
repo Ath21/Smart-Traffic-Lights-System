@@ -22,9 +22,23 @@ public class UserController : ControllerBase
     [AllowAnonymous]
     public async Task<ActionResult<UserDto>> Register([FromBody] RegisterUserDto request)
     {
+        if (string.IsNullOrWhiteSpace(request.Username) ||
+            string.IsNullOrWhiteSpace(request.Email) ||
+            string.IsNullOrWhiteSpace(request.Password) ||
+            string.IsNullOrWhiteSpace(request.ConfirmPassword))
+        {
+            return BadRequest("All fields are required.");
+        }
+
+        if (request.Password != request.ConfirmPassword)
+        {
+            return BadRequest("Passwords do not match.");
+        }
+
         var result = await _userService.RegisterAsync(request);
-        return CreatedAtAction(nameof(GetProfile), new { }, result);
+        return CreatedAtAction(nameof(GetProfile), new { id = result.UserId }, result);
     }
+
 
     // POST: api/users/login
     [HttpPost("login")]
@@ -70,9 +84,13 @@ public class UserController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestDto request)
     {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
         await _userService.ResetPasswordAsync(request);
         return NoContent();
     }
+
 
     // POST: api/users/send-notification
     [HttpPost("send-notification")]
