@@ -16,18 +16,30 @@ public class UserNotificationPublisher : IUserNotificationPublisher
         _bus = bus;
         _notificationKey = configuration["RabbitMQ:RoutingKeys:NotificationsRequest"] ?? "user.notification.request";
     }
-
-    public async Task PublishNotificationAsync(Guid userId, string requestType, string targetAudience)
+    
+    public async Task PublishNotificationAsync(
+        Guid userId,
+        string recipientEmail,
+        string type,
+        string message,
+        string targetAudience)
     {
-        var message = new UserNotificationRequest(
+        var notification = new UserNotificationRequest(
             userId,
-            requestType,
+            recipientEmail,
+            type,
+            message,
             targetAudience,
             DateTime.UtcNow
         );
 
-        await _bus.Publish(message, ctx => ctx.SetRoutingKey(_notificationKey));
+        await _bus.Publish(notification, ctx => ctx.SetRoutingKey(_notificationKey));
 
-        _logger.LogInformation("Notification request published for {UserId}, type {RequestType}", userId, requestType);
+        _logger.LogInformation(
+            "Notification published for {UserId}, type {Type}, email {Email}, audience {Audience}",
+            userId, type, recipientEmail, targetAudience
+        );
     }
+
+
 }

@@ -62,6 +62,12 @@ public static class MassTransitSetup
                 cfg.Message<UserMessages.UserNotificationRequest>(e => e.SetEntityName(userExchange));
                 cfg.Publish<UserMessages.UserNotificationRequest>(e => e.ExchangeType = ExchangeType.Direct);
 
+                cfg.Message<UserMessages.UserNotificationAlert>(e => e.SetEntityName(userExchange));
+                cfg.Publish<UserMessages.UserNotificationAlert>(e => e.ExchangeType = ExchangeType.Direct);
+
+                cfg.Message<UserMessages.PublicNoticeEvent>(e => e.SetEntityName(userExchange));
+                cfg.Publish<UserMessages.PublicNoticeEvent>(e => e.ExchangeType = ExchangeType.Direct);
+
                 cfg.ReceiveEndpoint(userQueue, e =>
                 {
                     e.ConfigureConsumeTopology = false;

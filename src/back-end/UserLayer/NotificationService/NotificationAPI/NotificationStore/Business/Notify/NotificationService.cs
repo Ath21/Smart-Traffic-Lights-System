@@ -40,10 +40,10 @@ public class NotificationService : INotificationService
         await _notificationRepository.InsertAsync(entity);
 
         // Send email if provided
-        if (!string.IsNullOrWhiteSpace(notification.TargetAudience))
+        if (!string.IsNullOrWhiteSpace(notification.RecipientEmail))
         {
             await _emailService.SendEmailAsync(
-                notification.TargetAudience,
+                notification.RecipientEmail,
                 $"[Notification] {notification.Type}",
                 notification.Message
             );

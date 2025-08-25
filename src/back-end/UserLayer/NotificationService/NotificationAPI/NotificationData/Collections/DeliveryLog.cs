@@ -10,6 +10,7 @@ public class DeliveryLog
     public Guid DeliveryId { get; set; }
 
     [BsonElement("notification_id")]
+    [BsonRepresentation(BsonType.String)]
     public Guid NotificationId { get; set; }
 
     [BsonElement("recipient")]

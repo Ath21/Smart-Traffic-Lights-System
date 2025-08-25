@@ -20,17 +20,20 @@ public class NotificationRequestConsumer : IConsumer<UserNotificationRequest>
     {
         var dto = new NotificationDto
         {
-            Type = context.Message.RequestType,
-            Message = $"User Notification Request: {context.Message.RequestType}",
-            TargetAudience = context.Message.TargetAudience,
+            Type = context.Message.Type,
+            Message = context.Message.Message,               // correct message text
+            TargetAudience = context.Message.TargetAudience, // "User"
+            RecipientEmail = context.Message.RecipientEmail, // actual email
             CreatedAt = DateTime.UtcNow,
             Status = "Pending"
         };
 
         _logger.LogInformation(
-            "NotificationRequestConsumer: Received request {RequestType} for user {UserId}, target {TargetAudience}",
-            context.Message.RequestType, context.Message.UserId, context.Message.TargetAudience);
+            "NotificationRequestConsumer: Received {Type} for user {UserId}, email {Email}, message: {Message}",
+            dto.Type, context.Message.UserId, dto.RecipientEmail, dto.Message);
 
         await _notificationService.SendNotificationAsync(dto);
     }
+
+
 }

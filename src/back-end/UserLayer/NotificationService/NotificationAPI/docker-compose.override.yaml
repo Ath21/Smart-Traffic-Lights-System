@@ -6,7 +6,7 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
 
       # MongoDB
-      DefaultConnection__ConnectionString: mongodb://notification_mongo:27017
+      DefaultConnection__ConnectionString: mongodb://admin:admin123@notification_mongo:27017
       DefaultConnection__DatabaseName: NotificationDb
       DefaultConnection__NotificationsCollectionName: notifications
       DefaultConnection__DeliveryLogsCollectionName: delivery_logs
@@ -18,7 +18,7 @@ services:
       RabbitMQ__Password: admin123
 
       # RabbitMQ exchanges
-      RabbitMQ__Exchanges__Logs: LOGS.EXCHANGE
+      RabbitMQ__Exchanges__Logs: LOG.EXCHANGE
       RabbitMQ__Exchanges__User: USER.EXCHANGE
       RabbitMQ__Exchanges__Traffic: TRAFFIC.EXCHANGE
 
@@ -42,7 +42,7 @@ services:
       EmailSettings__SenderName: UNIWA STLS
       EmailSettings__SenderEmail: ice19390005@gmail.com
       EmailSettings__Username: ice19390005@gmail.com
-      EmailSettings__Password: ezqz txge ayyf smzv
+      EmailSettings__Password: waqr ilfj fxpu banq
 
     depends_on:
       notification_mongo:
