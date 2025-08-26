@@ -1,7 +1,11 @@
 // src/stores/notifications.js
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { getUserNotificationsApi, markAsReadApi, markAllAsReadApi } from '../services/notificationApi'
+import { 
+  getUserNotificationsApi, 
+  markAsReadApi, 
+  markAllAsReadApi 
+} from '../services/notificationApi'
 import { useAuth } from './users'
 
 export const useNotifications = defineStore('notifications', () => {
@@ -18,7 +22,20 @@ export const useNotifications = defineStore('notifications', () => {
     error.value = null
 
     try {
-      notifications.value = await getUserNotificationsApi(auth.token, auth.user.email)
+      const data = await getUserNotificationsApi(auth.token, auth.user.email)
+
+      // normalize backend PascalCase → frontend camelCase
+      notifications.value = data.map(n => ({
+        id: n.NotificationId,       // ✅ normalized
+        type: n.Type,
+        title: n.Title,
+        message: n.Message,
+        targetAudience: n.TargetAudience,
+        recipientEmail: n.RecipientEmail,
+        status: n.Status,
+        createdAt: n.CreatedAt,
+        isRead: n.Status === "Read"
+      }))
     } catch (err) {
       console.error("❌ Failed to fetch notifications:", err)
       error.value = err.message || "Failed to load"
@@ -27,16 +44,18 @@ export const useNotifications = defineStore('notifications', () => {
     }
   }
 
+  // ✅ Mark one notification as read
   async function markAsRead(notificationId) {
     try {
       await markAsReadApi(auth.token, notificationId)
-      const note = notifications.value.find(n => n.notificationId === notificationId)
+      const note = notifications.value.find(n => n.id === notificationId)
       if (note) note.isRead = true
     } catch (err) {
       console.error("❌ Failed to mark as read:", err)
     }
   }
 
+  // ✅ Mark all as read
   async function markAllAsRead() {
     try {
       await markAllAsReadApi(auth.token)
@@ -45,6 +64,10 @@ export const useNotifications = defineStore('notifications', () => {
       console.error("❌ Failed to mark all as read:", err)
     }
   }
+
+  const unreadCount = computed(() =>
+    notifications.value.filter(n => !n.isRead).length
+  )
 
   function startPolling(intervalMs = 10000) {
     if (poller) clearInterval(poller)
@@ -57,19 +80,15 @@ export const useNotifications = defineStore('notifications', () => {
     poller = null
   }
 
-  const unreadCount = computed(() =>
-    notifications.value.filter(n => !n.isRead).length
-  )
-
-  return {
-    notifications,
-    isLoading,
-    error,
-    fetchNotifications,
-    startPolling,
-    stopPolling,
-    markAsRead,
-    markAllAsRead,
-    unreadCount
+  return { 
+    notifications, 
+    isLoading, 
+    error, 
+    fetchNotifications, 
+    startPolling, 
+    stopPolling, 
+    markAsRead, 
+    markAllAsRead, 
+    unreadCount 
   }
 })
