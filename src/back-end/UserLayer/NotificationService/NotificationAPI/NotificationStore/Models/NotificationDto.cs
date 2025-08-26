@@ -7,7 +7,7 @@ public class NotificationDto
     public string Title { get; set; } = string.Empty;
     public string Message { get; set; } = string.Empty;
     public string TargetAudience { get; set; } = string.Empty;
-    public string RecipientEmail { get; set; } = string.Empty;  // ✅ must exist
+    public string RecipientEmail { get; set; } = string.Empty;
     public string Status { get; set; } = "Pending";
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

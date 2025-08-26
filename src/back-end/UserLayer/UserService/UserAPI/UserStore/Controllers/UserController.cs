@@ -19,7 +19,7 @@ public class UserController : ControllerBase
 
     // POST: api/users/register
     [HttpPost("register")]
-    [AllowAnonymous]
+    [AllowAnonymous] // anyone can register
     public async Task<ActionResult<UserDto>> Register([FromBody] RegisterUserDto request)
     {
         if (string.IsNullOrWhiteSpace(request.Username) ||
@@ -39,10 +39,9 @@ public class UserController : ControllerBase
         return CreatedAtAction(nameof(GetProfile), new { id = result.UserId }, result);
     }
 
-
     // POST: api/users/login
     [HttpPost("login")]
-    [AllowAnonymous]
+    [AllowAnonymous] // anyone can login
     public async Task<ActionResult<LoginResponseDto>> Login([FromBody] LoginDto request)
     {
         var result = await _userService.LoginAsync(request);
@@ -51,7 +50,7 @@ public class UserController : ControllerBase
 
     // POST: api/users/logout
     [HttpPost("logout")]
-    [Authorize]
+    [Authorize] // any logged-in role
     public async Task<IActionResult> Logout()
     {
         var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
@@ -61,7 +60,7 @@ public class UserController : ControllerBase
 
     // GET: api/users/me
     [HttpGet("me")]
-    [Authorize]
+    [Authorize(Roles = "user,admin,operator")] // viewer cannot see profile
     public async Task<ActionResult<UserProfileDto>> GetProfile()
     {
         var userId = GetUserId();
@@ -71,17 +70,15 @@ public class UserController : ControllerBase
 
     // PUT: api/users/update
     [HttpPut("update")]
-    [Authorize]
+    [Authorize(Roles = "user,admin,operator")] // normal users can update their own, admin/operator can update others if allowed in service
     public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequestDto request)
     {
-        // basic required checks
         if (string.IsNullOrWhiteSpace(request.Username) ||
             string.IsNullOrWhiteSpace(request.Email))
         {
             return BadRequest("Username and Email are required.");
         }
 
-        // password optional, but if provided must match
         if (!string.IsNullOrEmpty(request.Password) &&
             request.Password != request.ConfirmPassword)
         {
@@ -93,10 +90,9 @@ public class UserController : ControllerBase
         return NoContent();
     }
 
-
     // POST: api/users/reset-password
     [HttpPost("reset-password")]
-    [AllowAnonymous]
+    [AllowAnonymous] // public endpoint (forgot password)
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestDto request)
     {
         if (!ModelState.IsValid)
@@ -106,10 +102,9 @@ public class UserController : ControllerBase
         return NoContent();
     }
 
-
     // POST: api/users/send-notification
     [HttpPost("send-notification")]
-    [Authorize]
+    [Authorize(Roles = "user,admin,operator")] // viewer cannot send
     public async Task<IActionResult> SendNotification([FromBody] NotificationRequestDto request)
     {
         var userId = GetUserId();

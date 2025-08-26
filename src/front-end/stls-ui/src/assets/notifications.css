@@ -1,0 +1,48 @@
+.notifications-page {
+  padding: 30px;
+  max-width: 700px;
+  margin: 0 auto;
+  background: #f9fafb;
+  min-height: calc(100vh - 60px);
+}
+
+.notifications-page h2 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.notifications-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.notifications-list li {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.note-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+  color: #374151;
+}
+
+.note-header strong {
+  color: #1e3a8a;
+}
+
+.notifications-page p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #111827;
+}

@@ -6,8 +6,8 @@ services:
       ConnectionStrings__DefaultConnection: Server=user_mssql,1433;Database=UserDb;User Id=sa;Password=MyPass@word;TrustServerCertificate=True
 
       # JWT
-      Jwt__Issuer: http://user_api:8080
-      Jwt__Audience: http://user_api:8080
+      Jwt__Issuer: http://stls_backend:8080
+      Jwt__Audience: http://stls_backend:8080
       Jwt__Key: Nn7kLa8Rzv1XHt9UwMqP4YbFdJxVt2Km
 
       ASPNETCORE_ENVIRONMENT: Development

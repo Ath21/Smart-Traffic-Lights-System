@@ -13,8 +13,12 @@ public class DeliveryLog
     [BsonRepresentation(BsonType.String)]
     public Guid NotificationId { get; set; }
 
-    [BsonElement("recipient")]
-    public string Recipient { get; set; } = string.Empty;
+    [BsonElement("user_id")]
+    [BsonRepresentation(BsonType.String)]
+    public Guid UserId { get; set; }   // ✅ new: track user by Guid
+
+    [BsonElement("recipient_email")]
+    public string RecipientEmail { get; set; } = string.Empty;  // ✅ new: explicit email
 
     [BsonElement("status")]
     public string Status { get; set; } = "Pending";

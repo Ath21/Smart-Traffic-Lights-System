@@ -1,7 +1,7 @@
 // src/stores/notifications.js
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { getUserNotificationsApi } from '../services/authApi'
+import { getUserNotificationsApi } from '../services/notificationApi'
 import { useAuth } from './auth'
 
 export const useNotifications = defineStore('notifications', () => {
@@ -12,7 +12,6 @@ export const useNotifications = defineStore('notifications', () => {
 
   const auth = useAuth()
 
-  // Fetch notifications from API
   async function fetchNotifications() {
     if (!auth.token || !auth.user?.userId) return
     isLoading.value = true
@@ -22,20 +21,18 @@ export const useNotifications = defineStore('notifications', () => {
       notifications.value = await getUserNotificationsApi(auth.token, auth.user.userId)
     } catch (err) {
       console.error("❌ Failed to fetch notifications:", err)
-      error.value = err
+      error.value = err.message || "Failed to load"
     } finally {
       isLoading.value = false
     }
   }
 
-  // Start auto-refresh (polling every X seconds)
   function startPolling(intervalMs = 10000) {
     if (poller) clearInterval(poller)
     fetchNotifications()
     poller = setInterval(fetchNotifications, intervalMs)
   }
 
-  // Stop polling
   function stopPolling() {
     if (poller) clearInterval(poller)
     poller = null

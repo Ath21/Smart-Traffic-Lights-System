@@ -23,6 +23,7 @@
 import { onMounted, onUnmounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useNotifications } from '../stores/notification'
+import '../assets/notifications.css'   // ✅ added
 
 const notificationsStore = useNotifications()
 const { notifications, isLoading, error } = storeToRefs(notificationsStore)

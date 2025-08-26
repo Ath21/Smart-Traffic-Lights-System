@@ -1,10 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NotificationStore.Business.Notify;
 using NotificationStore.Models;
 
 namespace NotificationStore.Controllers;
 
-[Route("api/[controller]")]
+[Route("api/notifications")]
 [ApiController]
 public class NotificationController : ControllerBase
 {
@@ -17,6 +18,7 @@ public class NotificationController : ControllerBase
 
     // POST: /api/notifications/send
     [HttpPost("send")]
+    [Authorize(Roles = "Admin,Operator")]
     public async Task<IActionResult> SendUserNotification([FromBody] SendNotificationRequest request)
     {
         if (request == null ||
@@ -46,6 +48,7 @@ public class NotificationController : ControllerBase
 
     // POST: /api/notifications/public-notice
     [HttpPost("public-notice")]
+    [Authorize(Roles = "Admin,Operator")]
     public async Task<IActionResult> SendPublicNotice([FromBody] PublicNoticeRequest request)
     {
         if (request == null ||
@@ -61,14 +64,33 @@ public class NotificationController : ControllerBase
         return Ok(new { status = "published", audience = request.TargetAudience });
     }
 
+    // GET: /api/notifications/user/{email}
+    [HttpGet("user/{email}")]
+    [Authorize(Roles = "User,Admin,Operator")]
+    public async Task<IActionResult> GetByRecipientEmail(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            return BadRequest("Email is required.");
+
+        // ensure normal users can only access their own email
+        if (User.IsInRole("user"))
+        {
+            var currentUserEmail = User.Identity?.Name; // or claim extraction
+            if (!string.Equals(currentUserEmail, email, StringComparison.OrdinalIgnoreCase))
+                return Forbid();
+        }
+
+        var notifications = await _notificationService.GetNotificationsByRecipientEmailAsync(email);
+        return Ok(notifications);
+    }
+    
     // GET: /api/notifications/history/{userId}
     [HttpGet("history/{userId:guid}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> GetUserHistory(Guid userId)
     {
         if (userId == Guid.Empty)
-        {
             return BadRequest("UserId is required.");
-        }
 
         var logs = await _notificationService.GetDeliveryHistoryAsync(userId);
         return Ok(logs);

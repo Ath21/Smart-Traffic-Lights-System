@@ -24,7 +24,7 @@
         <RouterLink :to="homePath" class="dropdown-item">Home</RouterLink>
         <RouterLink to="/profile" class="dropdown-item">Profile</RouterLink>
         <RouterLink to="/notifications" class="dropdown-item">
-          Notification Status
+          Notifications
           <NotificationBadge :count="notificationCount" inline />
         </RouterLink>
         <RouterLink to="/update" class="dropdown-item">Update Profile</RouterLink>

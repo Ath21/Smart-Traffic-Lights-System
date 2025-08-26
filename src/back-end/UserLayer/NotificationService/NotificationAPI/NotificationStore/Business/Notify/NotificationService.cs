@@ -62,9 +62,23 @@ public class NotificationService : INotificationService
 
     public async Task<IEnumerable<NotificationDto>> GetNotificationsByRecipientEmailAsync(string recipientEmail)
     {
-        var notifications = await _notificationRepository.GetByRecipientEmailAsync(recipientEmail);
+        // 1. Get delivery logs for this user
+        var logs = await _deliveryLogRepository.GetByRecipientEmailAsync(recipientEmail);
+        var notificationIds = logs.Select(l => l.NotificationId).Distinct();
+
+        // 2. Fetch notifications by those IDs
+        var notifications = new List<Notification>();
+        foreach (var id in notificationIds)
+        {
+            var notif = await _notificationRepository.GetByIdAsync(id);
+            if (notif != null)
+                notifications.Add(notif);
+        }
+
+        // 3. Map to DTO
         return _mapper.Map<IEnumerable<NotificationDto>>(notifications);
     }
+
 
     // ================================
     // 🔹 API-driven business methods
@@ -90,16 +104,17 @@ public class NotificationService : INotificationService
         // Publish to RabbitMQ
         await _publisher.PublishUserAlertAsync(userId, email, type, message);
 
-        // Log delivery
         var log = new DeliveryLog
         {
             DeliveryId = Guid.NewGuid(),
             NotificationId = dto.NotificationId,
-            Recipient = email,
+            UserId = userId,
+            RecipientEmail = email,
             Status = "Sent",
             SentAt = DateTime.UtcNow
         };
         await _deliveryLogRepository.InsertAsync(log);
+
 
         // Send email (optional)
         if (!string.IsNullOrWhiteSpace(email))
@@ -113,7 +128,9 @@ public class NotificationService : INotificationService
 
     public async Task<IEnumerable<DeliveryLogDto>> GetDeliveryHistoryAsync(Guid userId)
     {
-        var logs = await _deliveryLogRepository.GetByRecipientAsync(userId.ToString());
+        var logs = await _deliveryLogRepository.GetByUserIdAsync(userId);
         return _mapper.Map<IEnumerable<DeliveryLogDto>>(logs);
     }
+
+
 }

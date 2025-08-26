@@ -7,5 +7,6 @@ public interface IDeliveryLogRepository
 {
     Task InsertAsync(DeliveryLog newLog);
     Task<List<DeliveryLog>> GetByNotificationIdAsync(Guid notificationId);
-    Task<IEnumerable<DeliveryLog>> GetByRecipientAsync(string recipient);
+    Task<IEnumerable<DeliveryLog>> GetByRecipientEmailAsync(string email);
+    Task<IEnumerable<DeliveryLog>> GetByUserIdAsync(Guid userId);
 }

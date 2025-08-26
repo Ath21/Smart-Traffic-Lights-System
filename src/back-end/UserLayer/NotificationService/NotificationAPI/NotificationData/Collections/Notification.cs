@@ -21,6 +21,9 @@ public class Notification
     [BsonElement("target_audience")]
     public string TargetAudience { get; set; } = string.Empty;
 
+    [BsonElement("recipient_email")]
+    public string RecipientEmail { get; set; } = string.Empty;
+
     [BsonElement("status")]
     public string Status { get; set; } = "Pending";
 

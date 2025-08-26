@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("LogMessages")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a29401cebb1110a3927626aeef9eb7f49a039007")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c1cfaec73e4dd9032ac31c30f9353b98d6d45be8")]
 [assembly: System.Reflection.AssemblyProductAttribute("LogMessages")]
 [assembly: System.Reflection.AssemblyTitleAttribute("LogMessages")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

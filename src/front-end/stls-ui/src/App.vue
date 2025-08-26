@@ -21,7 +21,8 @@ const topbarPages = [
   '/register',
   '/reset-password',
   '/profile',
-  '/update'
+  '/update',
+  '/notifications'
 ]
 
 const showTopbar = computed(() => topbarPages.includes(route.path))
