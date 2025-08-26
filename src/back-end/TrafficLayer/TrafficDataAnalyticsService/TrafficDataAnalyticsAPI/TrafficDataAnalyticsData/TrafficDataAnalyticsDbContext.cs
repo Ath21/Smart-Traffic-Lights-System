@@ -1,18 +1,26 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using TrafficDataAnalyticsData.Entities;
 
 namespace TrafficDataAnalyticsData;
 
-public class TrafficDataDbContext : DbContext
+public class TrafficDataAnalyticsDbContext : DbContext
 {
-    public TrafficDataDbContext(DbContextOptions<TrafficDataDbContext> options)
-        : base(options) { }
+    private readonly IConfiguration _configuration;
+
+    public TrafficDataAnalyticsDbContext(DbContextOptions<TrafficDataAnalyticsDbContext> options, IConfiguration configuration)
+        : base(options)
+    {
+        _configuration = configuration;
+    }
 
     public DbSet<DailySummary> DailySummaries { get; set; }
     public DbSet<Alert> Alerts { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+
         // daily_summaries
         modelBuilder.Entity<DailySummary>(entity =>
         {
@@ -28,5 +36,14 @@ public class TrafficDataDbContext : DbContext
             entity.Property(e => e.Type)
                   .HasMaxLength(50);
         });
+    }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        if (!optionsBuilder.IsConfigured)
+        {
+            var connectionString = _configuration.GetConnectionString("DefaultConnection");
+            optionsBuilder.UseNpgsql(connectionString);
+        }
     }
 }
