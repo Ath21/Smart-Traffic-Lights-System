@@ -58,3 +58,28 @@
 .dropdown-item.logout {
   color: #dc2626; /* red */
 }
+
+/* === ALERT BUTTON === */
+.alert-btn {
+  background: #06b6d4;       /* cyan like other buttons */
+  color: white;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.2s, transform 0.1s;
+  margin-right: 10px;        /* ✅ move left from avatar */
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.alert-btn:hover {
+  background: #0891b2;
+  transform: scale(1.05);
+}
+
+.alert-btn:active {
+  transform: scale(0.97);
+}

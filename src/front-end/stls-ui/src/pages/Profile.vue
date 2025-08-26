@@ -1,11 +1,11 @@
 <template>
-  <div class="account-page p-6 max-w-lg mx-auto">
-    <h2 class="text-2xl font-bold mb-4">My Profile</h2>
+  <div class="account-page">
+    <h2>My Profile</h2>
 
-    <div v-if="loading" class="text-gray-500">Loading...</div>
-    <div v-else-if="error" class="text-red-600">Error: {{ error }}</div>
+    <div v-if="loading" class="loading">Loading...</div>
+    <div v-else-if="error" class="error">Error: {{ error }}</div>
 
-    <div v-else class="space-y-4 bg-white p-4 rounded shadow">
+    <div v-else class="profile-card">
       <p><strong>Username:</strong> {{ user.username }}</p>
       <p><strong>Email:</strong> {{ user.email }}</p>
       <p><strong>Role:</strong> {{ user.role }}</p>
@@ -19,9 +19,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useAuth } from '../stores/auth'
+import '../assets/profile.css'   // ✅ make sure this import is here
 
 const auth = useAuth()
-
 const user = ref(null)
 const loading = ref(true)
 const error = ref(null)
@@ -32,7 +32,6 @@ async function fetchUser() {
     if (!res.ok) throw new Error(`HTTP error ${res.status}`)
     const data = await res.json()
 
-    // normalize PascalCase to camelCase
     user.value = {
       userId: data.UserId,
       username: data.Username,

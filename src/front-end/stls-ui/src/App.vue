@@ -20,7 +20,7 @@ const topbarPages = [
   '/login',
   '/register',
   '/reset-password',
-  '/account',
+  '/profile',
   '/update'
 ]
 

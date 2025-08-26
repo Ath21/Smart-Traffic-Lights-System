@@ -1,9 +1,11 @@
 <template>
   <div class="flex items-center gap-3 relative">
     <!-- Alert Me -->
-    <button class="login" @click="$emit('alert')">
-      Alert Me
-    </button>
+<!-- Alert Me -->
+<button class="alert-btn" @click="$emit('alert')">
+  Alert Me
+</button>
+
 
     <!-- Dropdown -->
     <div class="relative" ref="menuRef">
