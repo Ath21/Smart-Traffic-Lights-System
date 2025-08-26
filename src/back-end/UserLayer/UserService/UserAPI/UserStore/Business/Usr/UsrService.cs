@@ -87,8 +87,7 @@ public class UsrService : IUsrService
         return new LoginResponse
         {
             Token = token,
-            ExpiresAt = expiresAt,
-            User = _mapper.Map<UserDto>(user)
+            ExpiresAt = expiresAt
         };
     }
 

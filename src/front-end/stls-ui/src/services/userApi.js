@@ -23,8 +23,8 @@ export async function registerApi({ email, username, password, confirmPassword }
 export async function loginApi({ email, password }) {
   const response = await api.post('/login', { email, password })
   return {
-    token: response.data.Token,
-    expiresAt: response.data.ExpiresAt,
+    token: response.data.token,
+    expiresAt: response.data.expiresAt,
   }
 }
 

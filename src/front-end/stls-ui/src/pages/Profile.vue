@@ -32,15 +32,17 @@ async function fetchUser() {
     if (!res.ok) throw new Error(`HTTP error ${res.status}`)
     const data = await res.json()
 
-    user.value = {
-      userId: data.UserId,
-      username: data.Username,
-      email: data.Email,
-      role: data.Role,
-      status: data.Status,
-      createdAt: data.CreatedAt,
-      updatedAt: data.UpdatedAt
-    }
+  user.value = {
+    userId: data.userId,
+    username: data.username,
+    email: data.email,
+    role: data.role,
+    status: data.status,
+    createdAt: data.createdAt,
+    updatedAt: data.updatedAt
+  }
+
+
   } catch (err) {
     error.value = err.message
   } finally {
