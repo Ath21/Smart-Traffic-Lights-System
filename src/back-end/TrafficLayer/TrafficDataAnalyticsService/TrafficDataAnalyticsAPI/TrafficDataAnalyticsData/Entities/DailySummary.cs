@@ -1,14 +1,29 @@
 using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TrafficDataAnalyticsData.Entities;
 
+[Table("daily_summaries")]
 public class DailySummary
 {
+    [Key]
+    [Column("summary_id")]
     public Guid SummaryId { get; set; }
-    public string IntersectionId { get; set; } = "";
+
+    [Column("intersection_id")]
+    public Guid IntersectionId { get; set; }
+
+    [Column("date")]
     public DateTime Date { get; set; }
 
-    public float AverageWaitTime { get; set; }
-    public String PeakHours { get; set; } = "{}"; // JSON string for peak hours
-    public int TotalVehicleCount { get; set; }
+    [Column("avg_speed")]
+    public float AvgSpeed { get; set; }
+
+    [Column("vehicle_count")]
+    public int VehicleCount { get; set; }
+
+    [Column("congestion_level")]
+    [MaxLength(50)]
+    public string CongestionLevel { get; set; } = string.Empty;
 }

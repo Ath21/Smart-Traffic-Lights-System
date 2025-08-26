@@ -3,7 +3,7 @@ services:
     ports:
       - '5055:8080'
     environment:
-      ConnectionStrings__DefaultConnection: Server=user_mssql,1433;Database=UserDb;User Id=sa;Password=MyPass@word;TrustServerCertificate=True
+      ConnectionStrings__DefaultConnection: Server=user_mssql,1433;Database=UserDb;User Id=sa;Password=mssql123!@#;TrustServerCertificate=True
 
       # JWT
       Jwt__Issuer: http://stls_backend:8080

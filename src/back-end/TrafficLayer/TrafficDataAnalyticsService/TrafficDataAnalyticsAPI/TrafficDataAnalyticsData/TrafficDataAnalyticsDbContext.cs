@@ -1,41 +1,32 @@
-﻿
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.EntityFrameworkCore;
 using TrafficDataAnalyticsData.Entities;
 
 namespace TrafficDataAnalyticsData;
 
-public class TrafficDataAnalyticsDbContext : DbContext
+public class TrafficDataDbContext : DbContext
 {
-    private readonly IConfiguration _configuration;
-
-    public TrafficDataAnalyticsDbContext(DbContextOptions<TrafficDataAnalyticsDbContext> options)
+    public TrafficDataDbContext(DbContextOptions<TrafficDataDbContext> options)
         : base(options) { }
 
-    public DbSet<VehicleCount> VehicleCounts { get; set; }
-    public DbSet<PedestrianCount> PedestrianCounts { get; set; }
-    public DbSet<CyclistCount> CyclistCounts { get; set; }
     public DbSet<DailySummary> DailySummaries { get; set; }
-    public DbSet<CongestionAlert> CongestionAlerts { get; set; }
-    public DbSet<Intersection> Intersections { get; set; }
+    public DbSet<Alert> Alerts { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<VehicleCount>().ToTable("vehicle_counts");
-        modelBuilder.Entity<PedestrianCount>().ToTable("pedestrian_counts");
-        modelBuilder.Entity<CyclistCount>().ToTable("cyclist_counts");
-        modelBuilder.Entity<DailySummary>().ToTable("daily_summaries");
-        modelBuilder.Entity<CongestionAlert>().ToTable("congestion_alerts");
-        modelBuilder.Entity<Intersection>().ToTable("intersections");
-    }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        if (!optionsBuilder.IsConfigured)
+        // daily_summaries
+        modelBuilder.Entity<DailySummary>(entity =>
         {
-            var connectionString = _configuration.GetConnectionString("DefaultConnection");
-            optionsBuilder.UseNpgsql(connectionString);
-        }
+            entity.HasKey(e => e.SummaryId);
+            entity.Property(e => e.CongestionLevel)
+                  .HasMaxLength(50);
+        });
+
+        // alerts
+        modelBuilder.Entity<Alert>(entity =>
+        {
+            entity.HasKey(e => e.AlertId);
+            entity.Property(e => e.Type)
+                  .HasMaxLength(50);
+        });
     }
 }
