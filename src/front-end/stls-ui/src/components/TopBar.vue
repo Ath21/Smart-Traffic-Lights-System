@@ -25,9 +25,9 @@
 
 <script setup>
 import { computed } from 'vue'
-import { useAuth } from '../stores/user'
+import { useAuth } from '../stores/users'
 import { useRoute, useRouter } from 'vue-router'
-import { useNotifications } from '../stores/notification'
+import { useNotifications } from '../stores/notifications'
 import { storeToRefs } from 'pinia'
 
 import BrandBlock from './BrandBlock.vue'

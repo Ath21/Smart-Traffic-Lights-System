@@ -46,3 +46,22 @@
   font-size: 0.95rem;
   color: #111827;
 }
+
+.notifications-list li.unread {
+  border-left: 4px solid #06b6d4;
+  background: #f0f9ff;
+}
+
+.mark-all-btn {
+  background: #06b6d4;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.mark-all-btn:hover {
+  background: #0891b2;
+}

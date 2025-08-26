@@ -30,6 +30,21 @@ export async function getUserNotificationsApi(token, email) {
   return response.data
 }
 
+export async function markAsReadApi(token, notificationId) {
+  const response = await notificationApi.patch(`/${notificationId}/read`, {}, {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+  return response.data
+}
+
+export async function markAllAsReadApi(token) {
+  const response = await notificationApi.patch('/read-all', {}, {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+  return response.data
+}
+
+
 
 // 📢 Send a public notice (admin use)
 export async function sendPublicNoticeApi(token, { title, message, targetAudience }) {

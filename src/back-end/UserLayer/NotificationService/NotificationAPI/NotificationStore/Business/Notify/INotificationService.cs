@@ -12,4 +12,6 @@ public interface INotificationService
     Task SendUserNotificationAsync(Guid userId, string email, string message, string type);
     Task SendPublicNoticeAsync(string title, string message, string audience);
     Task<IEnumerable<DeliveryLogDto>> GetDeliveryHistoryAsync(Guid userId);
+    Task MarkAsReadAsync(Guid notificationId, string email);
+    Task MarkAllAsReadAsync(string email);
 }

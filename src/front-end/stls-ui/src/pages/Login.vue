@@ -92,7 +92,7 @@
 <script setup>
 import { ref } from 'vue'
 import { loginApi } from '../services/userApi'
-import { useAuth } from '../stores/user'
+import { useAuth } from '../stores/users'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import '../assets/login.css'

@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuth } from '../stores/user'
+import { useAuth } from '../stores/users'
 
 const ViewerLayout = () => import('../layouts/ViewerLayout.vue')
 const UserLayout = () => import('../layouts/UserLayout.vue')

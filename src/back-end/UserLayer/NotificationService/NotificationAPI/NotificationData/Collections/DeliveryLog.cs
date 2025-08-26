@@ -25,4 +25,8 @@ public class DeliveryLog
 
     [BsonElement("sent_at")]
     public DateTime SentAt { get; set; } = DateTime.UtcNow;
+
+    [BsonElement("is_read")]
+    public bool IsRead { get; set; } = false;
+
 }

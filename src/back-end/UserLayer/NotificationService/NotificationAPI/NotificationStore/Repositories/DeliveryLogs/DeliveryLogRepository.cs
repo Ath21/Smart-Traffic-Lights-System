@@ -27,4 +27,20 @@ public class DeliveryLogRepository : IDeliveryLogRepository
     public async Task<IEnumerable<DeliveryLog>> GetByUserIdAsync(Guid userId) =>
         await _context.DeliveryLogs.Find(l => l.UserId == userId).ToListAsync();
 
+    public async Task MarkAsReadAsync(Guid notificationId, string email)
+    {
+        var filter = Builders<DeliveryLog>.Filter.Where(
+            l => l.NotificationId == notificationId && l.RecipientEmail == email
+        );
+        var update = Builders<DeliveryLog>.Update.Set(l => l.IsRead, true);
+        await _context.DeliveryLogs.UpdateOneAsync(filter, update);
+    }
+
+    public async Task MarkAllAsReadAsync(string email)
+    {
+        var filter = Builders<DeliveryLog>.Filter.Eq(l => l.RecipientEmail, email);
+        var update = Builders<DeliveryLog>.Update.Set(l => l.IsRead, true);
+        await _context.DeliveryLogs.UpdateManyAsync(filter, update);
+    }
+
 }

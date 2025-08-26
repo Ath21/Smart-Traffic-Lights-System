@@ -75,7 +75,7 @@ public class NotificationController : ControllerBase
         var notifications = await _notificationService.GetNotificationsByRecipientEmailAsync(email);
         return Ok(notifications);
     }
-    
+
     // GET: /api/notifications/history/{userId}
     [HttpGet("history/{userId:guid}")]
     [Authorize(Roles = "Admin")]
@@ -87,4 +87,32 @@ public class NotificationController : ControllerBase
         var logs = await _notificationService.GetDeliveryHistoryAsync(userId);
         return Ok(logs);
     }
+
+    // PATCH: /api/notifications/{notificationId}/read
+    [HttpPatch("{notificationId}/read")]
+    [Authorize(Roles = "User,Admin,Operator")]
+    public async Task<IActionResult> MarkAsRead(Guid notificationId)
+    {
+        var userEmail = User.Identity?.Name; // or claim
+        if (string.IsNullOrWhiteSpace(userEmail))
+            return Unauthorized();
+
+        await _notificationService.MarkAsReadAsync(notificationId, userEmail);
+        return Ok(new { status = "read", notificationId });
+    }
+    
+    // PATCH: /api/notifications/read-all
+    [HttpPatch("read-all")]
+    [Authorize(Roles = "User,Admin,Operator")]
+    public async Task<IActionResult> MarkAllAsRead()
+    {
+        var userEmail = User.Identity?.Name; // or claim
+        if (string.IsNullOrWhiteSpace(userEmail))
+            return Unauthorized();
+
+        await _notificationService.MarkAllAsReadAsync(userEmail);
+        return Ok(new { status = "all-read" });
+    }
+
+
 }

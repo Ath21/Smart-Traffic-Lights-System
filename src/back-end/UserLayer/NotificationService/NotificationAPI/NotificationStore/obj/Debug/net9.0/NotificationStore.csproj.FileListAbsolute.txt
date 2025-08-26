@@ -56,3 +56,15 @@
 /home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/NotificationService/NotificationAPI/NotificationStore/bin/Debug/net9.0/RabbitMQ.Client.dll
 /home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/NotificationService/NotificationAPI/NotificationStore/bin/Debug/net9.0/UserMessages.dll
 /home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/NotificationService/NotificationAPI/NotificationStore/bin/Debug/net9.0/UserMessages.pdb
+/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/NotificationService/NotificationAPI/NotificationStore/bin/Debug/net9.0/Microsoft.AspNetCore.Authentication.JwtBearer.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/NotificationService/NotificationAPI/NotificationStore/bin/Debug/net9.0/Microsoft.IdentityModel.Abstractions.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/NotificationService/NotificationAPI/NotificationStore/bin/Debug/net9.0/Microsoft.IdentityModel.JsonWebTokens.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/NotificationService/NotificationAPI/NotificationStore/bin/Debug/net9.0/Microsoft.IdentityModel.Logging.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/NotificationService/NotificationAPI/NotificationStore/bin/Debug/net9.0/Microsoft.IdentityModel.Protocols.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/NotificationService/NotificationAPI/NotificationStore/bin/Debug/net9.0/Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/NotificationService/NotificationAPI/NotificationStore/bin/Debug/net9.0/Microsoft.IdentityModel.Tokens.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/NotificationService/NotificationAPI/NotificationStore/bin/Debug/net9.0/System.IdentityModel.Tokens.Jwt.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/NotificationService/NotificationAPI/NotificationStore/bin/Debug/net9.0/LogMessages.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/NotificationService/NotificationAPI/NotificationStore/bin/Debug/net9.0/TrafficMessages.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/NotificationService/NotificationAPI/NotificationStore/bin/Debug/net9.0/LogMessages.pdb
+/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/NotificationService/NotificationAPI/NotificationStore/bin/Debug/net9.0/TrafficMessages.pdb

@@ -92,6 +92,17 @@ public class NotificationService : INotificationService
         return _mapper.Map<IEnumerable<NotificationDto>>(notifications);
     }
 
+    public async Task MarkAsReadAsync(Guid notificationId, string email)
+    {
+        await _deliveryLogRepository.MarkAsReadAsync(notificationId, email);
+    }
+
+    public async Task MarkAllAsReadAsync(string email)
+    {
+        await _deliveryLogRepository.MarkAllAsReadAsync(email);
+    }
+
+
 
     // ================================
     // 🔹 API-driven business methods

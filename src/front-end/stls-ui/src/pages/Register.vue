@@ -93,7 +93,7 @@
 <script setup>
 import { ref } from 'vue'
 import { registerApi } from '../services/userApi'
-import { useAuth } from '../stores/user'
+import { useAuth } from '../stores/users'
 import { useRouter } from 'vue-router'
 import '../assets/register.css'
 

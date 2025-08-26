@@ -10,4 +10,6 @@ public class DeliveryLogDto
 
     public string Status { get; set; } = "Pending";
     public DateTime SentAt { get; set; } = DateTime.UtcNow;
+    public bool IsRead { get; set; } = false;
+
 }
