@@ -63,18 +63,33 @@ public class NotificationService : INotificationService
         var logs = await _deliveryLogRepository.GetByRecipientEmailAsync(recipientEmail);
         var notificationIds = logs.Select(l => l.NotificationId).Distinct();
 
-        // 2. Fetch notifications by those IDs
-        var notifications = new List<Notification>();
+        var results = new List<NotificationDto>();
+
+        // 2. Fetch notifications and merge with logs
         foreach (var id in notificationIds)
         {
             var notif = await _notificationRepository.GetByIdAsync(id);
-            if (notif != null)
-                notifications.Add(notif);
+            var log = logs.FirstOrDefault(l => l.NotificationId == id);
+
+            if (notif != null && log != null)
+            {
+                results.Add(new NotificationDto
+                {
+                    NotificationId = notif.NotificationId,
+                    Type = notif.Type,
+                    Title = notif.Title,
+                    Message = notif.Message,
+                    RecipientEmail = notif.RecipientEmail,
+                    Status = notif.Status,
+                    CreatedAt = notif.CreatedAt,
+                    IsRead = log.IsRead  // ✅ pull from delivery log
+                });
+            }
         }
 
-        // 3. Map to DTO
-        return _mapper.Map<IEnumerable<NotificationDto>>(notifications);
+        return results;
     }
+
 
     public async Task<IEnumerable<DeliveryLogDto>> GetDeliveryHistoryAsync(Guid userId)
     {

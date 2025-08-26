@@ -95,8 +95,10 @@ public class NotificationController : ControllerBase
             Message = n.Message,
             RecipientEmail = n.RecipientEmail,
             Status = n.Status,
-            CreatedAt = n.CreatedAt
+            CreatedAt = n.CreatedAt,
+            IsRead = n.IsRead // <-- map from your entity
         }));
+
     }
 
     // GET: /api/notifications/history/{userId}

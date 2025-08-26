@@ -24,18 +24,26 @@ export const useNotifications = defineStore('notifications', () => {
     try {
       const data = await getUserNotificationsApi(auth.token, auth.user.email)
 
-      // Normalize server → client
-      notifications.value = data.map(n => ({
-        id: n.NotificationId,
-        type: n.Type,
-        title: n.Title,
-        message: n.Message,
-        targetAudience: n.TargetAudience,
-        recipientEmail: n.RecipientEmail,
-        status: n.Status,
-        createdAt: n.CreatedAt,
-        isRead: n.IsRead || n.Status === "Read" // ✅ handle both
-      }))
+      notifications.value = data.map(n => {
+        const existing = notifications.value.find(x => x.id === n.NotificationId)
+
+        return {
+          id: n.NotificationId,
+          type: n.Type,
+          title: n.Title,
+          message: n.Message,
+          targetAudience: n.TargetAudience,
+          recipientEmail: n.RecipientEmail,
+          status: n.Status,
+          createdAt: n.CreatedAt,
+
+          // ✅ Keep local state if already read, otherwise trust server
+          isRead:
+            existing?.isRead === true
+              ? true
+              : n.IsRead || n.Status === "Read"
+        }
+      })
     } catch (err) {
       console.error("❌ Failed to fetch notifications:", err)
       error.value = err.message || "Failed to load"
@@ -43,6 +51,7 @@ export const useNotifications = defineStore('notifications', () => {
       isLoading.value = false
     }
   }
+
 
   // ✅ Mark one as read
   async function markAsRead(notificationId) {
