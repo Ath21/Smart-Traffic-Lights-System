@@ -17,6 +17,7 @@ using TrafficDataAnalyticsStore.Publishers.Incident;
 using TrafficDataAnalyticsStore.Publishers.Summary;
 using TrafficDataAnalyticsStore.Publishers.Logs;
 using TrafficDataAnalyticsStore.Consumers;
+using TrafficDataAnalyticsStore.Business;
 
 namespace TrafficDataAnalyticsStore;
 
@@ -42,9 +43,8 @@ public class Startup
         
         /******* [3] Services ********/
 
-        services.AddScoped(typeof(IDailyAggregationService), typeof(DailyAggregationService));
-        services.AddScoped(typeof(ICongestionDetector), typeof(CongestionDetector));
-
+        services.AddScoped(typeof(ITrafficAnalyticsService), typeof(TrafficAnalyticsService));
+        
         /******* [4] AutoMapper ********/
 
         services.AddAutoMapper(typeof(TrafficDataAnalyticsStoreProfile));
