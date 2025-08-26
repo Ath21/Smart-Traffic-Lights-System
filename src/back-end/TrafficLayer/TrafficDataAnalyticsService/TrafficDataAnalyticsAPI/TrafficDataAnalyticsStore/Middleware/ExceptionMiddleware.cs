@@ -1,14 +1,9 @@
-/*
- * TrafficDataAnalyticsService.Middleware.ExceptionMiddleware
- *
- * Middleware για την καθολική διαχείριση εξαιρέσεων στο Traffic Data Analytics Service.
- * Καταγράφει εξαιρέσεις, αντιστοιχεί status codes σε γνωστά error types
- * και επιστρέφει JSON responses με κατάλληλα μηνύματα.
- */
-
 using System.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using LogMessages;
+using TrafficDataAnalyticsStore.Publishers.Logs;
+using Microsoft.EntityFrameworkCore;
 
 namespace TrafficDataAnalyticsService.Middleware;
 
@@ -16,11 +11,13 @@ public class ExceptionMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionMiddleware> _logger;
+    private readonly IAnalyticsLogPublisher _logPublisher;
 
-    public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
+    public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger, IAnalyticsLogPublisher logPublisher)
     {
         _next = next;
         _logger = logger;
+        _logPublisher = logPublisher;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -31,29 +28,61 @@ public class ExceptionMiddleware
         }
         catch (KeyNotFoundException ex)
         {
-            _logger.LogWarning(ex, "Resource not found");
-            await WriteErrorResponse(context, HttpStatusCode.NotFound, "Resource not found");
+            await HandleExceptionAsync(context, ex, HttpStatusCode.NotFound, "Resource not found", "NotFound");
         }
         catch (UnauthorizedAccessException ex)
         {
-            _logger.LogWarning(ex, "Unauthorized access attempt");
-            await WriteErrorResponse(context, HttpStatusCode.Unauthorized, "Unauthorized access");
+            await HandleExceptionAsync(context, ex, HttpStatusCode.Unauthorized, "Unauthorized access", "Unauthorized");
         }
         catch (InvalidOperationException ex)
         {
-            _logger.LogWarning(ex, "Invalid operation");
-            await WriteErrorResponse(context, HttpStatusCode.Conflict, "Conflict occurred");
+            await HandleExceptionAsync(context, ex, HttpStatusCode.Conflict, "Conflict occurred", "Conflict");
         }
         catch (ArgumentException ex)
         {
-            _logger.LogWarning(ex, "Bad request: invalid argument");
-            await WriteErrorResponse(context, HttpStatusCode.BadRequest, "Invalid request parameters");
+            await HandleExceptionAsync(context, ex, HttpStatusCode.BadRequest, "Invalid request parameters", "BadRequest");
+        }
+        catch (TimeoutException ex)
+        {
+            await HandleExceptionAsync(context, ex, HttpStatusCode.RequestTimeout, "Request timed out", "Timeout");
+        }
+        catch (OperationCanceledException ex)
+        {
+            await HandleExceptionAsync(context, ex, HttpStatusCode.RequestTimeout, "Operation cancelled", "Cancelled");
+        }
+        catch (DbUpdateException ex)
+        {
+            await HandleExceptionAsync(context, ex, HttpStatusCode.InternalServerError, "Database operation failed", "DatabaseError");
+        }
+        catch (HttpRequestException ex)
+        {
+            await HandleExceptionAsync(context, ex, HttpStatusCode.BadGateway, "External service unavailable", "HttpError");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unhandled exception occurred");
-            await WriteErrorResponse(context, HttpStatusCode.InternalServerError, "An unexpected error occurred");
+            await HandleExceptionAsync(context, ex, HttpStatusCode.InternalServerError, "An unexpected error occurred", "Unhandled");
         }
+    }
+
+    private async Task HandleExceptionAsync(HttpContext context, Exception ex, HttpStatusCode statusCode, string message, string errorType)
+    {
+        // log locally
+        _logger.LogError(ex, "{ErrorType} exception caught by middleware", errorType);
+
+        // publish error log
+        var errorLog = new ErrorLogMessage(
+            Guid.NewGuid(),
+            "TrafficDataAnalyticsService",
+            errorType,
+            ex.Message,
+            DateTime.UtcNow,
+            new { Path = context.Request.Path, Method = context.Request.Method, Trace = ex.StackTrace }
+        );
+
+        await _logPublisher.PublishErrorAsync(errorLog);
+
+        // return to client
+        await WriteErrorResponse(context, statusCode, message);
     }
 
     private static async Task WriteErrorResponse(HttpContext context, HttpStatusCode statusCode, string message)
