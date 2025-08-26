@@ -16,6 +16,7 @@ using TrafficDataAnalyticsStore.Publishers.Congestion;
 using TrafficDataAnalyticsStore.Publishers.Incident;
 using TrafficDataAnalyticsStore.Publishers.Summary;
 using TrafficDataAnalyticsStore.Publishers.Logs;
+using TrafficDataAnalyticsStore.Consumers;
 
 namespace TrafficDataAnalyticsStore;
 
@@ -55,8 +56,13 @@ public class Startup
         services.AddScoped(typeof(ITrafficSummaryPublisher), typeof(TrafficSummaryPublisher));
         services.AddScoped(typeof(IAnalyticsLogPublisher), typeof(AnalyticsLogPublisher));
 
-        /******* [7] MassTransit ********/
+        /******* [6] Consumers ********/
 
+        services.AddScoped(typeof(EmergencyVehicleConsumer));
+        services.AddScoped(typeof(PublicTransportConsumer));
+        services.AddScoped(typeof(PedestrianDetectionConsumer));
+        services.AddScoped(typeof(CyclistDetectionConsumer));
+        services.AddScoped(typeof(IncidentDetectionConsumer));
 
         services.AddMassTransit(x =>
         {
