@@ -4,7 +4,7 @@
 .login-page {
   position: relative;
   min-height: 100vh;
-  background: url('/Login-Page.jpg') center center / cover no-repeat;
+  background: url('/Register-Card.jpg') center center / cover no-repeat;
   display: flex;
   justify-content: center;
   align-items: center;

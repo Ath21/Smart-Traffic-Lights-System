@@ -1,0 +1,50 @@
+.update-profile-page {
+  display: flex;
+  justify-content: center;
+  padding: 40px;
+}
+
+.update-card {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  width: 400px;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.input {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 8px;
+}
+
+.btn {
+  background: #06b6d4;
+  color: white;
+  font-weight: bold;
+  padding: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: #0891b2;
+}
+
+.error-msg {
+  color: red;
+  font-size: 0.9rem;
+  margin-top: -4px;
+}

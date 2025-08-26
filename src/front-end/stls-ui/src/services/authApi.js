@@ -58,11 +58,12 @@ export async function resetPasswordApi(email, newPassword, confirmPassword) {
 
 
 // 📝 Update profile API
-export async function updateProfileApi(token, { email, username, password, status, role }) {
+export async function updateProfileApi(token, { email, username, password, confirmPassword, status, role }) {
   const payload = {
     Username: username,
     Email: email,
     Password: password || '',
+    ConfirmPassword: confirmPassword || '',   // ✅ added
     Status: status || 'active',
     Role: role || 'user'
   }
@@ -75,6 +76,7 @@ export async function updateProfileApi(token, { email, username, password, statu
 
   return response.data
 }
+
 
 // ==================== NOTIFICATIONS ====================
 
