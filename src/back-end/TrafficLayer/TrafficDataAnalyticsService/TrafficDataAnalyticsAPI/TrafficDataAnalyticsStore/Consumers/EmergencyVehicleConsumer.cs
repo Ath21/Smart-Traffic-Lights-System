@@ -1,32 +1,58 @@
 using MassTransit;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SensorMessages;
+using TrafficDataAnalyticsStore.Business;
+using TrafficDataAnalyticsStore.Models.Dtos;
+using TrafficDataAnalyticsStore.Publishers.Incident;
+using TrafficMessages;
 
 namespace TrafficDataAnalyticsStore.Consumers;
 
 public class EmergencyVehicleConsumer : IConsumer<EmergencyVehicleMessage>
 {
     private readonly ILogger<EmergencyVehicleConsumer> _logger;
-    private readonly string _queueName;
-    private readonly string _exchangeName;
-    private readonly string _routingKeyPattern;
+    private readonly ITrafficAnalyticsService _analyticsService;
+    private readonly ITrafficIncidentPublisher _incidentPublisher;
 
-    public EmergencyVehicleConsumer(ILogger<EmergencyVehicleConsumer> logger, IConfiguration configuration)
+    public EmergencyVehicleConsumer(
+        ILogger<EmergencyVehicleConsumer> logger,
+        ITrafficAnalyticsService analyticsService,
+        ITrafficIncidentPublisher incidentPublisher)
     {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _queueName = configuration["RabbitMQ:Queues:EmergencyVehicleQueue"] ?? "sensor.vehicle.emergency.queue";
-        _exchangeName = configuration["RabbitMQ:Exchanges:SensorExchange"] ?? "sensor.exchange";
-        _routingKeyPattern = configuration["RabbitMQ:RoutingKeys:EmergencyVehicle"] ?? "sensor.vehicle.emergency.*";
+        _logger = logger;
+        _analyticsService = analyticsService;
+        _incidentPublisher = incidentPublisher;
     }
 
-    public Task Consume(ConsumeContext<EmergencyVehicleMessage> context)
+    public async Task Consume(ConsumeContext<EmergencyVehicleMessage> context)
     {
         var msg = context.Message;
-        _logger.LogInformation(
-            "Emergency Vehicle {Detected} at Intersection {IntersectionId}",
-            msg.Detected ? "Detected" : "Not Detected", msg.IntersectionId);
 
-        return Task.CompletedTask;
+        _logger.LogInformation(
+            "Emergency vehicle {Detected} at Intersection {IntersectionId}",
+            msg.Detected ? "DETECTED" : "Not Detected", msg.IntersectionId);
+
+        if (msg.Detected)
+        {
+            var incidentDto = new IncidentDto
+            {
+                AlertId = msg.DetectionId,
+                IntersectionId = msg.IntersectionId,
+                Type = "EmergencyVehicle",
+                Message = "Emergency vehicle detected",
+                CreatedAt = msg.Timestamp
+            };
+
+            await _analyticsService.ReportIncidentAsync(incidentDto);
+
+            var incidentMessage = new TrafficIncidentMessage(
+                incidentDto.AlertId,
+                incidentDto.IntersectionId,
+                incidentDto.Message,
+                incidentDto.CreatedAt
+            );
+
+            await _incidentPublisher.PublishIncidentAsync(incidentMessage);
+        }
     }
 }

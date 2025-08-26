@@ -12,8 +12,8 @@ public class TrafficDataAnalyticsStoreProfile : Profile
     public TrafficDataAnalyticsStoreProfile()
     {
         // Entities → DTOs
-        CreateMap<DailySummary, SummaryDto>();
-        CreateMap<Alert, IncidentDto>();
+        CreateMap<DailySummary, SummaryDto>().ReverseMap();
+        CreateMap<Alert, IncidentDto>().ReverseMap();
 
         // DTOs → Responses
         CreateMap<SummaryDto, SummaryResponse>();

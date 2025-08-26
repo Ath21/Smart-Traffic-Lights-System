@@ -1,32 +1,57 @@
 using MassTransit;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SensorMessages;
+using TrafficDataAnalyticsStore.Models.Dtos;
+using TrafficMessages;
+using TrafficDataAnalyticsStore.Business;
+using TrafficDataAnalyticsStore.Publishers.Summary;
 
 namespace TrafficDataAnalyticsStore.Consumers;
 
 public class PublicTransportConsumer : IConsumer<PublicTransportMessage>
 {
     private readonly ILogger<PublicTransportConsumer> _logger;
-    private readonly string _queueName;
-    private readonly string _exchangeName;
-    private readonly string _routingKeyPattern;
+    private readonly ITrafficAnalyticsService _analyticsService;
+    private readonly ITrafficSummaryPublisher _summaryPublisher;
 
-    public PublicTransportConsumer(ILogger<PublicTransportConsumer> logger, IConfiguration configuration)
+    public PublicTransportConsumer(
+        ILogger<PublicTransportConsumer> logger,
+        ITrafficAnalyticsService analyticsService,
+        ITrafficSummaryPublisher summaryPublisher)
     {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _queueName = configuration["RabbitMQ:Queues:PublicTransportQueue"] ?? "sensor.public_transport.queue";
-        _exchangeName = configuration["RabbitMQ:Exchanges:SensorExchange"] ?? "sensor.exchange";
-        _routingKeyPattern = configuration["RabbitMQ:RoutingKeys:PublicTransport"] ?? "sensor.public_transport.request.*";
+        _logger = logger;
+        _analyticsService = analyticsService;
+        _summaryPublisher = summaryPublisher;
     }
 
-    public Task Consume(ConsumeContext<PublicTransportMessage> context)
+    public async Task Consume(ConsumeContext<PublicTransportMessage> context)
     {
         var msg = context.Message;
+
         _logger.LogInformation(
             "PublicTransport request at Intersection {IntersectionId}, Route {RouteId}",
             msg.IntersectionId, msg.RouteId ?? "N/A");
 
-        return Task.CompletedTask;
+        var dto = new SummaryDto
+        {
+            IntersectionId = msg.IntersectionId,
+            Date = msg.Timestamp.Date,
+            VehicleCount = 1,  // treat each request as one PT unit
+            AvgSpeed = 0,
+            CongestionLevel = "PublicTransport"
+        };
+
+        await _analyticsService.AddOrUpdateSummaryAsync(dto);
+
+        var summaryMessage = new TrafficSummaryMessage(
+            dto.SummaryId,
+            dto.IntersectionId,
+            dto.Date,
+            dto.AvgSpeed,
+            dto.VehicleCount,
+            dto.CongestionLevel
+        );
+
+        await _summaryPublisher.PublishSummaryAsync(summaryMessage);
     }
 }

@@ -1,26 +1,57 @@
 using MassTransit;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SensorMessages;
+using TrafficDataAnalyticsStore.Business;
+using TrafficDataAnalyticsStore.Models.Dtos;
+using TrafficDataAnalyticsStore.Publishers.Summary;
+using TrafficMessages;
 
 namespace TrafficDataAnalyticsStore.Consumers;
 
 public class CyclistDetectionConsumer : IConsumer<CyclistDetectionMessage>
 {
     private readonly ILogger<CyclistDetectionConsumer> _logger;
+    private readonly ITrafficAnalyticsService _analyticsService;
+    private readonly ITrafficSummaryPublisher _summaryPublisher;
 
-    public CyclistDetectionConsumer(ILogger<CyclistDetectionConsumer> logger, IConfiguration configuration)
+    public CyclistDetectionConsumer(
+        ILogger<CyclistDetectionConsumer> logger,
+        ITrafficAnalyticsService analyticsService,
+        ITrafficSummaryPublisher summaryPublisher)
     {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _logger = logger;
+        _analyticsService = analyticsService;
+        _summaryPublisher = summaryPublisher;
     }
 
-    public Task Consume(ConsumeContext<CyclistDetectionMessage> context)
+    public async Task Consume(ConsumeContext<CyclistDetectionMessage> context)
     {
         var msg = context.Message;
+
         _logger.LogInformation(
-            "Cyclist request at Intersection {IntersectionId}, Count {Count}",
+            "Cyclist detection at Intersection {IntersectionId}, Count {Count}",
             msg.IntersectionId, msg.Count);
 
-        return Task.CompletedTask;
+        var dto = new SummaryDto
+        {
+            IntersectionId = msg.IntersectionId,
+            Date = msg.Timestamp.Date,
+            VehicleCount = msg.Count, // treat as cyclist flow
+            AvgSpeed = 0,
+            CongestionLevel = "N/A"
+        };
+
+        await _analyticsService.AddOrUpdateSummaryAsync(dto);
+
+        var summaryMessage = new TrafficSummaryMessage(
+            dto.SummaryId,
+            dto.IntersectionId,
+            dto.Date,
+            dto.AvgSpeed,
+            dto.VehicleCount,
+            dto.CongestionLevel
+        );
+
+        await _summaryPublisher.PublishSummaryAsync(summaryMessage);
     }
 }

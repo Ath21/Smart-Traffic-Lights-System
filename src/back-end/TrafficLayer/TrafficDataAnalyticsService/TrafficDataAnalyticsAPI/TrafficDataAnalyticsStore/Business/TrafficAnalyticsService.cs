@@ -1,5 +1,6 @@
 using System;
 using AutoMapper;
+using TrafficDataAnalyticsData.Entities;
 using TrafficDataAnalyticsStore.Models.Dtos;
 using TrafficDataAnalyticsStore.Repository.Alerts;
 using TrafficDataAnalyticsStore.Repository.Summary;
@@ -21,6 +22,8 @@ public class TrafficAnalyticsService : ITrafficAnalyticsService
         _alertRepo = alertRepo;
         _mapper = mapper;
     }
+
+    // ----------------- Queries -----------------
 
     public async Task<CongestionDto?> GetCurrentCongestionAsync(Guid intersectionId)
     {
@@ -58,5 +61,36 @@ public class TrafficAnalyticsService : ITrafficAnalyticsService
 
         var todaySummaries = summaries.Where(s => s.Date.Date == today);
         return _mapper.Map<IEnumerable<SummaryDto>>(todaySummaries);
+    }
+
+    // ----------------- Commands -----------------
+
+    public async Task AddOrUpdateSummaryAsync(SummaryDto dto)
+    {
+        var existing = (await _summaryRepo.GetByIntersectionAsync(dto.IntersectionId, dto.Date)).FirstOrDefault();
+
+        if (existing == null)
+        {
+            var entity = _mapper.Map<DailySummary>(dto);
+            entity.SummaryId = Guid.NewGuid();
+            await _summaryRepo.AddAsync(entity);
+        }
+        else
+        {
+            existing.VehicleCount += dto.VehicleCount; // aggregate counts
+            existing.AvgSpeed = (existing.AvgSpeed + dto.AvgSpeed) / 2; // simple avg merge
+            existing.CongestionLevel = dto.CongestionLevel; // update latest level
+
+            await _summaryRepo.UpdateAsync(existing);
+        }
+    }
+
+    public async Task ReportIncidentAsync(IncidentDto dto)
+    {
+        var entity = _mapper.Map<Alert>(dto);
+        entity.AlertId = dto.AlertId != Guid.Empty ? dto.AlertId : Guid.NewGuid();
+        entity.CreatedAt = dto.CreatedAt == default ? DateTime.UtcNow : dto.CreatedAt;
+
+        await _alertRepo.AddAsync(entity);
     }
 }

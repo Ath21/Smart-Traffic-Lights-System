@@ -1,35 +1,81 @@
 using MassTransit;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SensorMessages;
+using TrafficDataAnalyticsStore.Models.Dtos;
+using TrafficMessages;
+using TrafficDataAnalyticsStore.Business;
+using TrafficDataAnalyticsStore.Publishers.Summary;
+using TrafficDataAnalyticsStore.Publishers.Congestion;
 
 namespace TrafficDataAnalyticsStore.Consumers;
 
 public class VehicleCountConsumer : IConsumer<VehicleCountMessage>
 {
     private readonly ILogger<VehicleCountConsumer> _logger;
-    private readonly string _queueName;
-    private readonly string _exchangeName;
-    private readonly string _routingKeyPattern;
+    private readonly ITrafficAnalyticsService _analyticsService;
+    private readonly ITrafficSummaryPublisher _summaryPublisher;
+    private readonly ITrafficCongestionPublisher _congestionPublisher;
 
-    public VehicleCountConsumer(ILogger<VehicleCountConsumer> logger, IConfiguration configuration)
+    public VehicleCountConsumer(
+        ILogger<VehicleCountConsumer> logger,
+        ITrafficAnalyticsService analyticsService,
+        ITrafficSummaryPublisher summaryPublisher,
+        ITrafficCongestionPublisher congestionPublisher)
     {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-
-        _queueName = configuration["RabbitMQ:Queues:VehicleCountQueue"] ?? "sensor.vehicle.count.queue";
-        _exchangeName = configuration["RabbitMQ:Exchanges:SensorExchange"] ?? "sensor.exchange";
-        _routingKeyPattern = configuration["RabbitMQ:RoutingKeys:VehicleCount"] ?? "sensor.vehicle.count.*";
+        _logger = logger;
+        _analyticsService = analyticsService;
+        _summaryPublisher = summaryPublisher;
+        _congestionPublisher = congestionPublisher;
     }
 
-    public Task Consume(ConsumeContext<VehicleCountMessage> context)
+    public async Task Consume(ConsumeContext<VehicleCountMessage> context)
     {
         var msg = context.Message;
+
         _logger.LogInformation(
-            "VehicleCount received at Intersection {IntersectionId} - Count {Count}, AvgSpeed {AvgSpeed}",
+            "VehicleCount received at Intersection {IntersectionId}: Count {Count}, AvgSpeed {Speed}",
             msg.IntersectionId, msg.VehicleCount, msg.AvgSpeed);
 
-        // TODO: aggregate into TrafficDataDbContext
+        var congestionLevel = InferCongestionLevel(msg.VehicleCount, msg.AvgSpeed);
 
-        return Task.CompletedTask;
+        var dto = new SummaryDto
+        {
+            IntersectionId = msg.IntersectionId,
+            Date = msg.Timestamp.Date,
+            AvgSpeed = msg.AvgSpeed,
+            VehicleCount = msg.VehicleCount,
+            CongestionLevel = congestionLevel
+        };
+
+        // Persist in DB
+        await _analyticsService.AddOrUpdateSummaryAsync(dto);
+
+        // Publish updated summary
+        var summaryMessage = new TrafficSummaryMessage(
+            dto.SummaryId,
+            dto.IntersectionId,
+            dto.Date,
+            dto.AvgSpeed,
+            dto.VehicleCount,
+            dto.CongestionLevel
+        );
+        await _summaryPublisher.PublishSummaryAsync(summaryMessage);
+
+        // Publish congestion alert
+        var congestionMessage = new TrafficCongestionMessage(
+            Guid.NewGuid(),
+            dto.IntersectionId,
+            dto.CongestionLevel,
+            $"Congestion {dto.CongestionLevel} at intersection {dto.IntersectionId}",
+            DateTime.UtcNow
+        );
+        await _congestionPublisher.PublishCongestionAsync(congestionMessage);
+    }
+
+    private static string InferCongestionLevel(int vehicleCount, float avgSpeed)
+    {
+        if (avgSpeed < 10 || vehicleCount > 100) return "High";
+        if (avgSpeed < 25 || vehicleCount > 50) return "Medium";
+        return "Low";
     }
 }

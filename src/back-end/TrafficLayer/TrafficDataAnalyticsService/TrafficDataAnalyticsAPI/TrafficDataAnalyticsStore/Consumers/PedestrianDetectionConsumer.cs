@@ -1,26 +1,57 @@
 using MassTransit;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SensorMessages;
+using TrafficDataAnalyticsStore.Business;
+using TrafficDataAnalyticsStore.Models.Dtos;
+using TrafficDataAnalyticsStore.Publishers.Summary;
+using TrafficMessages;
 
 namespace TrafficDataAnalyticsStore.Consumers;
 
 public class PedestrianDetectionConsumer : IConsumer<PedestrianDetectionMessage>
 {
     private readonly ILogger<PedestrianDetectionConsumer> _logger;
+    private readonly ITrafficAnalyticsService _analyticsService;
+    private readonly ITrafficSummaryPublisher _summaryPublisher;
 
-    public PedestrianDetectionConsumer(ILogger<PedestrianDetectionConsumer> logger, IConfiguration configuration)
+    public PedestrianDetectionConsumer(
+        ILogger<PedestrianDetectionConsumer> logger,
+        ITrafficAnalyticsService analyticsService,
+        ITrafficSummaryPublisher summaryPublisher)
     {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _logger = logger;
+        _analyticsService = analyticsService;
+        _summaryPublisher = summaryPublisher;
     }
 
-    public Task Consume(ConsumeContext<PedestrianDetectionMessage> context)
+    public async Task Consume(ConsumeContext<PedestrianDetectionMessage> context)
     {
         var msg = context.Message;
+
         _logger.LogInformation(
-            "Pedestrian request at Intersection {IntersectionId}, Count {Count}",
+            "Pedestrian detection at Intersection {IntersectionId}, Count {Count}",
             msg.IntersectionId, msg.Count);
 
-        return Task.CompletedTask;
+        var dto = new SummaryDto
+        {
+            IntersectionId = msg.IntersectionId,
+            Date = msg.Timestamp.Date,
+            VehicleCount = msg.Count, // treat as pedestrian flow
+            AvgSpeed = 0,             // not relevant
+            CongestionLevel = "N/A"
+        };
+
+        await _analyticsService.AddOrUpdateSummaryAsync(dto);
+
+        var summaryMessage = new TrafficSummaryMessage(
+            dto.SummaryId,
+            dto.IntersectionId,
+            dto.Date,
+            dto.AvgSpeed,
+            dto.VehicleCount,
+            dto.CongestionLevel
+        );
+
+        await _summaryPublisher.PublishSummaryAsync(summaryMessage);
     }
 }
