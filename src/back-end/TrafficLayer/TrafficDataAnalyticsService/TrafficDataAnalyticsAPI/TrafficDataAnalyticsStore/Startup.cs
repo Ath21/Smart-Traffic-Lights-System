@@ -12,6 +12,10 @@ using TrafficDataAnalyticsStore.Repository.Summary;
 using TrafficDataAnalyticsStore.Business.DailySum;
 using TrafficDataAnalyticsStore.Business.CongestionDetection;
 using TrafficDataAnalyticsStore.Repository.Alerts;
+using TrafficDataAnalyticsStore.Publishers.Congestion;
+using TrafficDataAnalyticsStore.Publishers.Incident;
+using TrafficDataAnalyticsStore.Publishers.Summary;
+using TrafficDataAnalyticsStore.Publishers.Logs;
 
 namespace TrafficDataAnalyticsStore;
 
@@ -44,9 +48,12 @@ public class Startup
 
         services.AddAutoMapper(typeof(TrafficDataAnalyticsStoreProfile));
 
-        /******* [6] Background Services ********/
-        
-        services.AddHostedService<DailyAggregationJob>();
+        /******* [5] Publishers ********/
+
+        services.AddScoped(typeof(ITrafficCongestionPublisher), typeof(TrafficCongestionPublisher));
+        services.AddScoped(typeof(ITrafficIncidentPublisher), typeof(TrafficIncidentPublisher));
+        services.AddScoped(typeof(ITrafficSummaryPublisher), typeof(TrafficSummaryPublisher));
+        services.AddScoped(typeof(IAnalyticsLogPublisher), typeof(AnalyticsLogPublisher));
 
         /******* [7] MassTransit ********/
 
