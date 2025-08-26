@@ -1,7 +1,9 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NotificationStore.Business.Notify;
-using NotificationStore.Models;
+using NotificationStore.Models.Requests;
+using NotificationStore.Models.Responses;
 
 namespace NotificationStore.Controllers;
 
@@ -19,7 +21,7 @@ public class NotificationController : ControllerBase
     // POST: /api/notifications/send
     [HttpPost("send")]
     [Authorize(Roles = "Admin,Operator")]
-    public async Task<IActionResult> SendUserNotification([FromBody] SendNotificationRequest request)
+    public async Task<ActionResult<NotificationResponse>> SendUserNotification([FromBody] SendNotificationRequest request)
     {
         if (request == null ||
             string.IsNullOrWhiteSpace(request.Message) ||
@@ -37,19 +39,22 @@ public class NotificationController : ControllerBase
             request.Type
         );
 
-        return Ok(new
+        return Ok(new NotificationResponse
         {
-            status = "sent",
-            recipient = request.RecipientEmail,
-            type = request.Type
+            NotificationId = Guid.NewGuid(), // generated in service (you could return it instead)
+            Type = request.Type,
+            Title = $"{request.Type} Notification",
+            Message = request.Message,
+            RecipientEmail = request.RecipientEmail,
+            Status = "Sent",
+            CreatedAt = DateTime.UtcNow
         });
     }
-
 
     // POST: /api/notifications/public-notice
     [HttpPost("public-notice")]
     [Authorize(Roles = "Admin,Operator")]
-    public async Task<IActionResult> SendPublicNotice([FromBody] PublicNoticeRequest request)
+    public async Task<ActionResult<NotificationResponse>> SendPublicNotice([FromBody] PublicNoticeRequest request)
     {
         if (request == null ||
             string.IsNullOrWhiteSpace(request.Title) ||
@@ -61,58 +66,82 @@ public class NotificationController : ControllerBase
 
         await _notificationService.SendPublicNoticeAsync(request.Title, request.Message, request.TargetAudience);
 
-        return Ok(new { status = "published", audience = request.TargetAudience });
+        return Ok(new NotificationResponse
+        {
+            NotificationId = Guid.NewGuid(), // generated in service
+            Type = "PublicNotice",
+            Title = request.Title,
+            Message = request.Message,
+            RecipientEmail = request.TargetAudience, // broadcast audience
+            Status = "Published",
+            CreatedAt = DateTime.UtcNow
+        });
     }
 
     // GET: /api/notifications/user/{email}
     [HttpGet("user/{email}")]
     [Authorize(Roles = "User,Admin,Operator")]
-    public async Task<IActionResult> GetByRecipientEmail(string email)
+    public async Task<ActionResult<IEnumerable<NotificationResponse>>> GetByRecipientEmail(string email)
     {
         if (string.IsNullOrWhiteSpace(email))
             return BadRequest("Email is required.");
 
         var notifications = await _notificationService.GetNotificationsByRecipientEmailAsync(email);
-        return Ok(notifications);
+        return Ok(notifications.Select(n => new NotificationResponse
+        {
+            NotificationId = n.NotificationId,
+            Type = n.Type,
+            Title = n.Title,
+            Message = n.Message,
+            RecipientEmail = n.RecipientEmail,
+            Status = n.Status,
+            CreatedAt = n.CreatedAt
+        }));
     }
 
     // GET: /api/notifications/history/{userId}
     [HttpGet("history/{userId:guid}")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> GetUserHistory(Guid userId)
+    public async Task<ActionResult<IEnumerable<DeliveryLogResponse>>> GetUserHistory(Guid userId)
     {
         if (userId == Guid.Empty)
             return BadRequest("UserId is required.");
 
         var logs = await _notificationService.GetDeliveryHistoryAsync(userId);
-        return Ok(logs);
+        return Ok(logs.Select(l => new DeliveryLogResponse
+        {
+            DeliveryId = l.DeliveryId,
+            NotificationId = l.NotificationId,
+            RecipientEmail = l.RecipientEmail,
+            Status = l.Status,
+            SentAt = l.SentAt,
+            IsRead = l.IsRead
+        }));
     }
 
     // PATCH: /api/notifications/{notificationId}/read
-    [HttpPatch("{notificationId}/read")]
+    [HttpPatch("{notificationId:guid}/read")]
     [Authorize(Roles = "User,Admin,Operator")]
-    public async Task<IActionResult> MarkAsRead(Guid notificationId)
+    public async Task<ActionResult> MarkAsRead(Guid notificationId)
     {
-        var userEmail = User.Identity?.Name; // or claim
-        if (string.IsNullOrWhiteSpace(userEmail))
-            return Unauthorized();
+        var email = User.FindFirstValue(ClaimTypes.Email);
+        if (string.IsNullOrWhiteSpace(email))
+            return Unauthorized("Email not found in token");
 
-        await _notificationService.MarkAsReadAsync(notificationId, userEmail);
+        await _notificationService.MarkAsReadAsync(notificationId, email);
         return Ok(new { status = "read", notificationId });
     }
-    
+
     // PATCH: /api/notifications/read-all
     [HttpPatch("read-all")]
     [Authorize(Roles = "User,Admin,Operator")]
-    public async Task<IActionResult> MarkAllAsRead()
+    public async Task<ActionResult> MarkAllAsRead()
     {
-        var userEmail = User.Identity?.Name; // or claim
-        if (string.IsNullOrWhiteSpace(userEmail))
-            return Unauthorized();
+        var email = User.FindFirstValue(ClaimTypes.Email);
+        if (string.IsNullOrWhiteSpace(email))
+            return Unauthorized("Email not found in token");
 
-        await _notificationService.MarkAllAsReadAsync(userEmail);
+        await _notificationService.MarkAllAsReadAsync(email);
         return Ok(new { status = "all-read" });
     }
-
-
 }

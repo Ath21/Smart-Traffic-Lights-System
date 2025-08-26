@@ -1,14 +1,16 @@
 using UserStore.Models;
+using UserStore.Models.Requests;
+using UserStore.Models.Responses;
 
 namespace UserStore.Business.Usr;
 
 public interface IUsrService
 {
-    public Task<UserProfileDto> GetProfileAsync(Guid userId);
-    public Task<LoginResponseDto> LoginAsync(LoginDto request);
-    public Task LogoutAsync(string token);
-    public Task<UserDto> RegisterAsync(RegisterUserDto request);
-    public Task ResetPasswordAsync(ResetPasswordRequestDto request);
-    public Task SendNotificationRequestAsync(Guid userId, string message, string type);
-    public Task<UserDto> UpdateProfileAsync(Guid userId, UpdateProfileRequestDto request);
+    Task<UserProfileResponse> GetProfileAsync(Guid userId);
+    Task<LoginResponse> LoginAsync(LoginRequest request);
+    Task LogoutAsync(string token);
+    Task<UserResponse> RegisterAsync(RegisterUserRequest request);
+    Task ResetPasswordAsync(ResetPasswordRequest request);
+    Task SendNotificationRequestAsync(Guid userId, string message, string type);
+    Task<UserResponse> UpdateProfileAsync(Guid userId, UpdateProfileRequest request);
 }

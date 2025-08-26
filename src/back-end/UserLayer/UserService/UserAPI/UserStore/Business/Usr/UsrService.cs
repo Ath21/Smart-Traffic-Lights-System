@@ -2,7 +2,9 @@ using AutoMapper;
 using UserData.Entities;
 using UserStore.Business.Password;
 using UserStore.Business.Token;
-using UserStore.Models;
+using UserStore.Models.Dtos;
+using UserStore.Models.Requests;
+using UserStore.Models.Responses;
 using UserStore.Publishers;
 using UserStore.Publishers.Logs;
 using UserStore.Publishers.Notifications;
@@ -44,17 +46,17 @@ public class UsrService : IUsrService
     }
 
     // GET profile
-    public async Task<UserProfileDto> GetProfileAsync(Guid userId)
+    public async Task<UserProfileResponse> GetProfileAsync(Guid userId)
     {
         var user = await _userRepository.GetByIdAsync(userId);
         if (user == null)
             throw new KeyNotFoundException("User not found");
 
-        return _mapper.Map<UserProfileDto>(user);
+        return _mapper.Map<UserProfileResponse>(user);
     }
 
     // LOGIN
-    public async Task<LoginResponseDto> LoginAsync(LoginDto request)
+    public async Task<LoginResponse> LoginAsync(LoginRequest request)
     {
         var user = await _userRepository.GetByUsernameOrEmailAsync(request.Email);
         if (user == null || !_passwordHasher.VerifyPassword(user.PasswordHash, request.Password))
@@ -82,10 +84,11 @@ public class UsrService : IUsrService
 
         await _userLogPublisher.PublishAuditAsync("LOGIN", $"User {user.Username} logged in", new { user.UserId });
 
-        return new LoginResponseDto
+        return new LoginResponse
         {
             Token = token,
-            ExpiresAt = expiresAt
+            ExpiresAt = expiresAt,
+            User = _mapper.Map<UserDto>(user)
         };
     }
 
@@ -110,18 +113,18 @@ public class UsrService : IUsrService
     }
 
     // REGISTER
-    public async Task<UserDto> RegisterAsync(RegisterUserDto request)
+    public async Task<UserResponse> RegisterAsync(RegisterUserRequest request)
     {
         if (await _userRepository.ExistsAsync(request.Username, request.Email))
             throw new InvalidOperationException("Username or email already exists");
 
-        if (request.Password != request.ConfirmPassword)   // ✅ new check
+        if (request.Password != request.ConfirmPassword)
             throw new ArgumentException("Passwords do not match");
 
         var user = _mapper.Map<User>(request);
         user.UserId = Guid.NewGuid();
         user.PasswordHash = _passwordHasher.HashPassword(request.Password);
-        user.Role = Enum.TryParse<UserRole>(request.Role ?? "User", true, out var role) ? role : UserRole.User;
+        user.Role = UserRole.User; // ή Admin/Operator αν θες conditional
         user.Status = "Active";
         user.CreatedAt = DateTime.UtcNow;
         user.UpdatedAt = DateTime.UtcNow;
@@ -139,17 +142,13 @@ public class UsrService : IUsrService
 
         await _userLogPublisher.PublishAuditAsync("REGISTER", $"User {user.Username} registered", new { user.UserId });
 
-        return _mapper.Map<UserDto>(user);
+        return _mapper.Map<UserResponse>(user);
     }
 
-
     // RESET PASSWORD
-    public async Task ResetPasswordAsync(ResetPasswordRequestDto request)
+    public async Task ResetPasswordAsync(ResetPasswordRequest request)
     {
-        if (request.NewPassword != request.ConfirmPassword)  // ✅ ensure match
-            throw new ArgumentException("Passwords do not match");
-
-        var user = await _userRepository.GetByUsernameOrEmailAsync(request.UsernameOrEmail);
+        var user = await _userRepository.GetByUsernameOrEmailAsync(request.Email);
         if (user == null)
             throw new KeyNotFoundException("User not found");
 
@@ -170,7 +169,7 @@ public class UsrService : IUsrService
         await _userLogPublisher.PublishAuditAsync("RESET_PASSWORD", $"User {user.Username} reset password", new { user.UserId });
     }
 
-
+    // SEND NOTIFICATION REQUEST
     public async Task SendNotificationRequestAsync(Guid userId, string message, string type)
     {
         var user = await _userRepository.GetByIdAsync(userId);
@@ -179,22 +178,20 @@ public class UsrService : IUsrService
 
         await _notificationPublisher.PublishNotificationAsync(
             user.UserId,
-            user.Email,   // ✅ recipient email
-            type,         // ✅ type of notification
-            message,      // ✅ message text
-            "User"        // ✅ audience (can be parameterized later)
+            user.Email,
+            type,
+            message,
+            "User"
         );
     }
 
-
     // UPDATE PROFILE
-    public async Task<UserDto> UpdateProfileAsync(Guid userId, UpdateProfileRequestDto request)
+    public async Task<UserResponse> UpdateProfileAsync(Guid userId, UpdateProfileRequest request)
     {
         var user = await _userRepository.GetByIdAsync(userId);
         if (user == null)
             throw new KeyNotFoundException("User not found");
 
-        // Update only provided fields
         user.Username = request.Username;
         user.Email = request.Email;
 
@@ -205,13 +202,6 @@ public class UsrService : IUsrService
 
             user.PasswordHash = _passwordHasher.HashPassword(request.Password);
         }
-
-        if (!string.IsNullOrEmpty(request.Status))
-            user.Status = request.Status;
-
-        if (!string.IsNullOrEmpty(request.Role) &&
-            Enum.TryParse<UserRole>(request.Role, true, out var role))
-            user.Role = role;
 
         user.UpdatedAt = DateTime.UtcNow;
 
@@ -228,7 +218,6 @@ public class UsrService : IUsrService
 
         await _userLogPublisher.PublishAuditAsync("UPDATE_PROFILE", $"User {user.Username} updated profile", new { user.UserId });
 
-        return _mapper.Map<UserDto>(user);
+        return _mapper.Map<UserResponse>(user);
     }
-
 }

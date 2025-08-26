@@ -1,6 +1,7 @@
 using MassTransit;
 using NotificationStore.Business.Notify;
 using NotificationStore.Models;
+using NotificationStore.Models.Dtos;
 using TrafficMessages;
 
 namespace NotificationStore.Consumers;

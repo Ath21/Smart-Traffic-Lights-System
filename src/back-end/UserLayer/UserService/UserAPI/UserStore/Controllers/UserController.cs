@@ -2,7 +2,9 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UserStore.Business.Usr;
-using UserStore.Models;
+using UserStore.Models.Dtos;
+using UserStore.Models.Requests;
+using UserStore.Models.Responses;
 
 namespace UserStore.Controllers;
 
@@ -19,8 +21,8 @@ public class UserController : ControllerBase
 
     // POST: api/users/register
     [HttpPost("register")]
-    [AllowAnonymous] // anyone can register
-    public async Task<ActionResult<UserDto>> Register([FromBody] RegisterUserDto request)
+    [AllowAnonymous]
+    public async Task<ActionResult<UserResponse>> Register([FromBody] RegisterUserRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Username) ||
             string.IsNullOrWhiteSpace(request.Email) ||
@@ -41,8 +43,8 @@ public class UserController : ControllerBase
 
     // POST: api/users/login
     [HttpPost("login")]
-    [AllowAnonymous] // anyone can login
-    public async Task<ActionResult<LoginResponseDto>> Login([FromBody] LoginDto request)
+    [AllowAnonymous]
+    public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
     {
         var result = await _userService.LoginAsync(request);
         return Ok(result);
@@ -60,8 +62,8 @@ public class UserController : ControllerBase
 
     // GET: api/users/me
     [HttpGet("me")]
-    [Authorize(Roles = "User,Admin,Operator")] // viewer cannot see profile
-    public async Task<ActionResult<UserProfileDto>> GetProfile()
+    [Authorize(Roles = "User,Admin,TrafficOperator")] // Viewer δεν βλέπει προφίλ
+    public async Task<ActionResult<UserProfileResponse>> GetProfile()
     {
         var userId = GetUserId();
         var profile = await _userService.GetProfileAsync(userId);
@@ -70,8 +72,8 @@ public class UserController : ControllerBase
 
     // PUT: api/users/update
     [HttpPut("update")]
-    [Authorize(Roles = "User,Admin,Operator")] // normal users can update their own, admin/operator can update others if allowed in service
-    public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequestDto request)
+    [Authorize(Roles = "User,Admin,TrafficOperator")]
+    public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Username) ||
             string.IsNullOrWhiteSpace(request.Email))
@@ -92,8 +94,8 @@ public class UserController : ControllerBase
 
     // POST: api/users/reset-password
     [HttpPost("reset-password")]
-    [AllowAnonymous] // public endpoint (forgot password)
-    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestDto request)
+    [AllowAnonymous]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
@@ -104,15 +106,14 @@ public class UserController : ControllerBase
 
     // POST: api/users/send-notification-request
     [HttpPost("send-notification-request")]
-    [Authorize(Roles = "User,Admin,Operator")]
-    public async Task<IActionResult> SendNotification([FromBody] NotificationRequestDto request)
+    [Authorize(Roles = "User,Admin,TrafficOperator")]
+    public async Task<IActionResult> SendNotification([FromBody] NotificationRequest request)
     {
         var userId = GetUserId();
         await _userService.SendNotificationRequestAsync(userId, request.Message, request.Type);
 
         return Ok(new { status = "sent", message = request.Message, type = request.Type });
     }
-
 
     private Guid GetUserId()
     {

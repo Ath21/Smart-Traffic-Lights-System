@@ -24,9 +24,9 @@ export const useNotifications = defineStore('notifications', () => {
     try {
       const data = await getUserNotificationsApi(auth.token, auth.user.email)
 
-      // normalize backend PascalCase → frontend camelCase
+      // Normalize server → client
       notifications.value = data.map(n => ({
-        id: n.NotificationId,       // ✅ normalized
+        id: n.NotificationId,
         type: n.Type,
         title: n.Title,
         message: n.Message,
@@ -34,7 +34,7 @@ export const useNotifications = defineStore('notifications', () => {
         recipientEmail: n.RecipientEmail,
         status: n.Status,
         createdAt: n.CreatedAt,
-        isRead: n.Status === "Read"
+        isRead: n.IsRead || n.Status === "Read" // ✅ handle both
       }))
     } catch (err) {
       console.error("❌ Failed to fetch notifications:", err)
@@ -44,7 +44,7 @@ export const useNotifications = defineStore('notifications', () => {
     }
   }
 
-  // ✅ Mark one notification as read
+  // ✅ Mark one as read
   async function markAsRead(notificationId) {
     try {
       await markAsReadApi(auth.token, notificationId)

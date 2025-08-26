@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace UserStore.Models
+namespace UserStore.Models.Requests
 {
-    public class UpdateProfileRequestDto
+    public class UpdateProfileRequest
     {
         [Required]
         public string Username { get; set; } = string.Empty;
@@ -15,8 +15,5 @@ namespace UserStore.Models
 
         [Compare("Password", ErrorMessage = "Passwords do not match.")]
         public string? ConfirmPassword { get; set; }
-
-        public string? Status { get; set; }
-        public string? Role { get; set; }
     }
 }

@@ -2,10 +2,10 @@
   <div class="notifications-page">
     <h2>🔔 Your Notifications</h2>
 
-    <button 
-      v-if="notifications.length > 0 && unreadCount > 0" 
+    <button
+      v-if="unreadCount > 0"
       class="mark-all-btn"
-      @click="notificationsStore.markAllAsRead"
+      @click="markAll"
     >
       Mark all as read
     </button>
@@ -16,17 +16,17 @@
     <ul v-else-if="notifications.length > 0" class="notifications-list">
       <li
         v-for="note in notifications"
-        :key="note.NotificationId"
+        :key="note.id"
         :class="{ unread: !note.isRead }"
-        @click="markRead(note)"
+        @click="markSingleRead(note.id)"
       >
         <div class="note-header">
-          <strong>{{ note.Type }}</strong>
-          <small>{{ formatDate(note.CreatedAt) }}</small>
+          <strong>{{ note.type }}</strong>
+          <small>{{ formatDate(note.createdAt) }}</small>
         </div>
-        <p>{{ note.Message }}</p>
+        <p>{{ note.message }}</p>
+        <small class="note-recipient">{{ note.recipientEmail }}</small>
       </li>
-
     </ul>
 
     <p v-else>No notifications found.</p>
@@ -34,23 +34,25 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted } from 'vue'
-import { storeToRefs } from 'pinia'
-import { useNotifications } from '../stores/notifications.js'
-import '../assets/notifications.css'   // ✅ external styles
+import { onMounted, onUnmounted } from "vue"
+import { storeToRefs } from "pinia"
+import { useNotifications } from "../stores/notifications"
+import "../assets/notifications.css"
 
 const notificationsStore = useNotifications()
-const { notifications, isLoading, error, unreadCount } = storeToRefs(notificationsStore)
+const { notifications, isLoading, error, unreadCount } =
+  storeToRefs(notificationsStore)
 
 function formatDate(dateStr) {
-  if (!dateStr) return "—"
   return new Date(dateStr).toLocaleString()
 }
 
-function markRead(note) {
-  if (!note.isRead) {
-    notificationsStore.markAsRead(note.notificationId)
-  }
+function markSingleRead(id) {
+  notificationsStore.markAsRead(id)
+}
+
+function markAll() {
+  notificationsStore.markAllAsRead()
 }
 
 onMounted(() => {

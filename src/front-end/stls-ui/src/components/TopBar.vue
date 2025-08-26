@@ -15,7 +15,7 @@
         v-if="auth.isAuthenticated"
         :username="username"
         :home-path="homePath"
-        :notification-count="notificationCount"
+        :notification-count="unreadCount"
         @logout="logout"
         @alert="alertMe"
       />
@@ -41,12 +41,11 @@ const auth = useAuth()
 const router = useRouter()
 const route = useRoute()
 const notificationsStore = useNotifications()
-const { notifications } = storeToRefs(notificationsStore)
+const { unreadCount } = storeToRefs(notificationsStore) // ✅ use unread count
 
 const isLoginOrRegister = computed(() =>
   ['/login', '/register', '/reset-password'].includes(route.path)
 )
-
 
 const homePath = computed(() => {
   const role = auth.user?.role?.toLowerCase()
@@ -61,8 +60,6 @@ const username = computed(() => {
   if (auth.user?.email) return auth.user.email.split('@')[0]
   return 'Guest'
 })
-
-const notificationCount = computed(() => notifications.value.length)
 
 async function alertMe() {
   try {
@@ -81,7 +78,6 @@ async function alertMe() {
     alert("❌ Failed to send notification")
   }
 }
-
 
 function logout() {
   auth.logout()

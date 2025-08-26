@@ -1,11 +1,11 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace UserStore.Models;
+namespace UserStore.Models.Requests;
 
-public class ResetPasswordRequestDto
+public class ResetPasswordRequest
 {
     [Required]
-    public string UsernameOrEmail { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
 
     [Required]
     public string NewPassword { get; set; } = string.Empty;

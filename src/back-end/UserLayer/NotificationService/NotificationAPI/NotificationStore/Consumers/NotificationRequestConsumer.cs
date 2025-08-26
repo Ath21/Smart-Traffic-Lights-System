@@ -1,6 +1,5 @@
 using MassTransit;
 using NotificationStore.Business.Notify;
-using NotificationStore.Models;
 using UserMessages;
 
 namespace NotificationStore.Consumers;
@@ -10,7 +9,9 @@ public class NotificationRequestConsumer : IConsumer<UserNotificationRequest>
     private readonly ILogger<NotificationRequestConsumer> _logger;
     private readonly INotificationService _notificationService;
 
-    public NotificationRequestConsumer(ILogger<NotificationRequestConsumer> logger, INotificationService notificationService)
+    public NotificationRequestConsumer(
+        ILogger<NotificationRequestConsumer> logger, 
+        INotificationService notificationService)
     {
         _notificationService = notificationService;
         _logger = logger;
@@ -18,22 +19,30 @@ public class NotificationRequestConsumer : IConsumer<UserNotificationRequest>
 
     public async Task Consume(ConsumeContext<UserNotificationRequest> context)
     {
-        var dto = new NotificationDto
-        {
-            Type = context.Message.Type,
-            Message = context.Message.Message,               // correct message text
-            TargetAudience = context.Message.TargetAudience, // "User"
-            RecipientEmail = context.Message.RecipientEmail, // actual email
-            CreatedAt = DateTime.UtcNow,
-            Status = "Pending"
-        };
+        var message = context.Message;
 
         _logger.LogInformation(
             "NotificationRequestConsumer: Received {Type} for user {UserId}, email {Email}, message: {Message}",
-            dto.Type, context.Message.UserId, dto.RecipientEmail, dto.Message);
+            message.Type, message.UserId, message.RecipientEmail, message.Message);
 
-        await _notificationService.SendNotificationAsync(dto);
+        if (message.UserId != Guid.Empty && !string.IsNullOrWhiteSpace(message.RecipientEmail))
+        {
+            // Targeted user notification
+            await _notificationService.SendUserNotificationAsync(
+                message.UserId,
+                message.RecipientEmail,
+                message.Message ?? string.Empty,
+                message.Type ?? "General"
+            );
+        }
+        else
+        {
+            // Public broadcast notice
+            await _notificationService.SendPublicNoticeAsync(
+                message.Type ?? "Notice",
+                message.Message ?? string.Empty,
+                message.TargetAudience ?? "All"
+            );
+        }
     }
-
-
 }

@@ -1,6 +1,6 @@
 using System;
 
-namespace NotificationStore.Models;
+namespace NotificationStore.Models.Requests;
 
 public class PublicNoticeRequest
 {

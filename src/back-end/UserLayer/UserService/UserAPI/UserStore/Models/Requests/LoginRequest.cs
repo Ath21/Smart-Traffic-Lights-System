@@ -1,8 +1,8 @@
 using System;
 
-namespace UserStore.Models;
+namespace UserStore.Models.Requests;
 
-public class LoginDto
+public class LoginRequest
 {
     public string Email { get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;

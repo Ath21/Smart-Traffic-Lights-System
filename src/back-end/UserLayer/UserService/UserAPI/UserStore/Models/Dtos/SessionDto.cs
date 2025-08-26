@@ -1,6 +1,4 @@
-using System;
-
-namespace UserStore.Models;
+namespace UserStore.Models.Dtos;
 
 public class SessionDto
 {
