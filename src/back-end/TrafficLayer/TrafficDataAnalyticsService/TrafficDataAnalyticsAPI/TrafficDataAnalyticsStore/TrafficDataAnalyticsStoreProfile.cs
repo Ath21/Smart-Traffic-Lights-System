@@ -2,6 +2,8 @@ using System;
 using AutoMapper;
 using TrafficDataAnalyticsData.Entities;
 using TrafficDataAnalyticsStore.Models;
+using TrafficDataAnalyticsStore.Models.Dtos;
+using TrafficDataAnalyticsStore.Models.Responses;
 
 namespace TrafficDataAnalyticsStore;
 
@@ -9,7 +11,13 @@ public class TrafficDataAnalyticsStoreProfile : Profile
 {
     public TrafficDataAnalyticsStoreProfile()
     {
-        CreateMap<DailySummary, DailySummaryDto>().ReverseMap();
-        CreateMap<CongestionAlert, CongestionAlertDto>().ReverseMap();
+        // Entities → DTOs
+        CreateMap<DailySummary, SummaryDto>();
+        CreateMap<Alert, IncidentDto>();
+
+        // DTOs → Responses
+        CreateMap<SummaryDto, SummaryResponse>();
+        CreateMap<IncidentDto, IncidentResponse>();
+        CreateMap<CongestionDto, CongestionResponse>();
     }
 }
