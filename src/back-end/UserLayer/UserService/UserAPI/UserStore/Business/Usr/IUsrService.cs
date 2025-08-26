@@ -10,5 +10,5 @@ public interface IUsrService
     public Task<UserDto> RegisterAsync(RegisterUserDto request);
     public Task ResetPasswordAsync(ResetPasswordRequestDto request);
     public Task SendNotificationRequestAsync(Guid userId, string message, string type);
-    public Task UpdateProfileAsync(Guid userId, UpdateProfileRequestDto request);
+    public Task<UserDto> UpdateProfileAsync(Guid userId, UpdateProfileRequestDto request);
 }

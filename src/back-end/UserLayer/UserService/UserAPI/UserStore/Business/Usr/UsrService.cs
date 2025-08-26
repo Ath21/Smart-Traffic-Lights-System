@@ -187,17 +187,31 @@ public class UsrService : IUsrService
     }
 
 
-
     // UPDATE PROFILE
-    public async Task UpdateProfileAsync(Guid userId, UpdateProfileRequestDto request)
+    public async Task<UserDto> UpdateProfileAsync(Guid userId, UpdateProfileRequestDto request)
     {
         var user = await _userRepository.GetByIdAsync(userId);
         if (user == null)
             throw new KeyNotFoundException("User not found");
 
-        _mapper.Map(request, user);
-        if (!string.IsNullOrWhiteSpace(request.Password))
+        // Update only provided fields
+        user.Username = request.Username;
+        user.Email = request.Email;
+
+        if (!string.IsNullOrEmpty(request.Password))
+        {
+            if (request.Password != request.ConfirmPassword)
+                throw new ArgumentException("Passwords do not match");
+
             user.PasswordHash = _passwordHasher.HashPassword(request.Password);
+        }
+
+        if (!string.IsNullOrEmpty(request.Status))
+            user.Status = request.Status;
+
+        if (!string.IsNullOrEmpty(request.Role) &&
+            Enum.TryParse<UserRole>(request.Role, true, out var role))
+            user.Role = role;
 
         user.UpdatedAt = DateTime.UtcNow;
 
@@ -213,5 +227,8 @@ public class UsrService : IUsrService
         });
 
         await _userLogPublisher.PublishAuditAsync("UPDATE_PROFILE", $"User {user.Username} updated profile", new { user.UserId });
+
+        return _mapper.Map<UserDto>(user);
     }
+
 }

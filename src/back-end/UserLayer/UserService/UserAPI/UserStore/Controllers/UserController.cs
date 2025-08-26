@@ -74,10 +74,25 @@ public class UserController : ControllerBase
     [Authorize]
     public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequestDto request)
     {
+        // basic required checks
+        if (string.IsNullOrWhiteSpace(request.Username) ||
+            string.IsNullOrWhiteSpace(request.Email))
+        {
+            return BadRequest("Username and Email are required.");
+        }
+
+        // password optional, but if provided must match
+        if (!string.IsNullOrEmpty(request.Password) &&
+            request.Password != request.ConfirmPassword)
+        {
+            return BadRequest("Passwords do not match.");
+        }
+
         var userId = GetUserId();
         await _userService.UpdateProfileAsync(userId, request);
         return NoContent();
     }
+
 
     // POST: api/users/reset-password
     [HttpPost("reset-password")]
