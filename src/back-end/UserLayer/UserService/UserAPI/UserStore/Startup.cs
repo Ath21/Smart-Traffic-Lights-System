@@ -108,9 +108,11 @@ public class Startup
         /******* [10] Controllers ********/
 
         services.AddControllers()
-            .AddJsonOptions(
-                options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
-        services.AddEndpointsApiExplorer();
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+            });
+
 
         /******* [11] Swagger ********/
 

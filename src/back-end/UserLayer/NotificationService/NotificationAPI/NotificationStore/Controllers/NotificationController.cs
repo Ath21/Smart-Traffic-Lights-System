@@ -20,7 +20,7 @@ public class NotificationController : ControllerBase
 
     // POST: /api/notifications/send
     [HttpPost("send")]
-    [Authorize(Roles = "Admin,Operator")]
+    [Authorize(Roles = "Admin,TrafficOperator")]
     public async Task<ActionResult<NotificationResponse>> SendUserNotification([FromBody] SendNotificationRequest request)
     {
         if (request == null ||
@@ -53,7 +53,7 @@ public class NotificationController : ControllerBase
 
     // POST: /api/notifications/public-notice
     [HttpPost("public-notice")]
-    [Authorize(Roles = "Admin,Operator")]
+    [Authorize(Roles = "Admin,TrafficOperator")]
     public async Task<ActionResult<NotificationResponse>> SendPublicNotice([FromBody] PublicNoticeRequest request)
     {
         if (request == null ||
@@ -80,7 +80,7 @@ public class NotificationController : ControllerBase
 
     // GET: /api/notifications/user/{email}
     [HttpGet("user/{email}")]
-    [Authorize(Roles = "User,Admin,Operator")]
+    [Authorize(Roles = "User,Admin,TrafficOperator")]
     public async Task<ActionResult<IEnumerable<NotificationResponse>>> GetByRecipientEmail(string email)
     {
         if (string.IsNullOrWhiteSpace(email))
@@ -121,7 +121,7 @@ public class NotificationController : ControllerBase
 
     // PATCH: /api/notifications/{notificationId}/read
     [HttpPatch("{notificationId:guid}/read")]
-    [Authorize(Roles = "User,Admin,Operator")]
+    [Authorize(Roles = "User,Admin,TrafficOperator")]
     public async Task<ActionResult> MarkAsRead(Guid notificationId)
     {
         var email = User.FindFirstValue(ClaimTypes.Email);
@@ -134,7 +134,7 @@ public class NotificationController : ControllerBase
 
     // PATCH: /api/notifications/read-all
     [HttpPatch("read-all")]
-    [Authorize(Roles = "User,Admin,Operator")]
+    [Authorize(Roles = "User,Admin,TrafficOperator")]
     public async Task<ActionResult> MarkAllAsRead()
     {
         var email = User.FindFirstValue(ClaimTypes.Email);
