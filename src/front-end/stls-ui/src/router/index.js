@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuth } from '../stores/auth'
+import { useAuth } from '../stores/user'
 
 const ViewerLayout = () => import('../layouts/ViewerLayout.vue')
 const UserLayout = () => import('../layouts/UserLayout.vue')
@@ -15,7 +15,7 @@ const Profile = () => import('../pages/Profile.vue')
 const UpdateProfile = () => import('../pages/UpdateProfile.vue')
 
 // NEW Notifications
-const NotificationStatus = () => import('../pages/NotificationStatus.vue')
+const NotificationStatus = () => import('../pages/Notification.vue')
 
 const ROLE_ORDER = ['viewer', 'user', 'operator', 'admin']
 function canAccess(requiredRole, userRole) {

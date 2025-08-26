@@ -96,7 +96,7 @@
 
 <script setup>
 import { ref } from "vue";
-import { resetPasswordApi } from "../services/authApi";
+import { resetPasswordApi } from "../services/userApi";
 import "../assets/reset-password.css";
 
 const email = ref("");

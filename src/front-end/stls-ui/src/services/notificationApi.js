@@ -2,7 +2,7 @@
 import axios from 'axios'
 
 const notificationApi = axios.create({
-  baseURL: 'http://localhost:5055/api/notifications',
+  baseURL: 'http://localhost:5087/api/notifications',
 })
 
 // 🚨 Send User Notification
@@ -23,12 +23,13 @@ export async function sendNotificationApi(token, { userId, recipientEmail, messa
 }
 
 // 📜 Get user notification history
-export async function getUserNotificationsApi(token, userId) {
-  const response = await notificationApi.get(`/history/${userId}`, {
+export async function getUserNotificationsApi(token, email) {
+  const response = await notificationApi.get(`/user/${email}`, {
     headers: { Authorization: `Bearer ${token}` },
   })
   return response.data
 }
+
 
 // 📢 Send a public notice (admin use)
 export async function sendPublicNoticeApi(token, { title, message, targetAudience }) {

@@ -25,7 +25,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { useAuth } from '../stores/auth'
+import { useAuth } from '../stores/user'
 import { useRoute, useRouter } from 'vue-router'
 import { useNotifications } from '../stores/notification'
 import { storeToRefs } from 'pinia'
@@ -66,18 +66,22 @@ const notificationCount = computed(() => notifications.value.length)
 
 async function alertMe() {
   try {
-    const res = await auth.apiFetch("http://localhost:5055/api/users/send-notification", {
+    const res = await auth.apiFetch("http://localhost:5055/api/users/send-notification-request", {
       method: "POST",
-      body: JSON.stringify({ Message: "User subscribed to traffic alerts", Type: "Traffic" })
+      body: JSON.stringify({
+        Message: "User subscribed to traffic alerts",
+        Type: "Traffic"
+      })
     })
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    await res.json()
-    alert("✅ Notification request sent!")
+    const data = await res.json()
+    alert(`✅ Notification request sent! (${data.type})`)
   } catch (err) {
     console.error("❌ Failed to send alert:", err)
     alert("❌ Failed to send notification")
   }
 }
+
 
 function logout() {
   auth.logout()

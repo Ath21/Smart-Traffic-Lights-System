@@ -60,7 +60,7 @@ public class UserController : ControllerBase
 
     // GET: api/users/me
     [HttpGet("me")]
-    [Authorize(Roles = "user,admin,operator")] // viewer cannot see profile
+    [Authorize(Roles = "User,Admin,Operator")] // viewer cannot see profile
     public async Task<ActionResult<UserProfileDto>> GetProfile()
     {
         var userId = GetUserId();
@@ -70,7 +70,7 @@ public class UserController : ControllerBase
 
     // PUT: api/users/update
     [HttpPut("update")]
-    [Authorize(Roles = "user,admin,operator")] // normal users can update their own, admin/operator can update others if allowed in service
+    [Authorize(Roles = "User,Admin,Operator")] // normal users can update their own, admin/operator can update others if allowed in service
     public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequestDto request)
     {
         if (string.IsNullOrWhiteSpace(request.Username) ||
@@ -102,15 +102,17 @@ public class UserController : ControllerBase
         return NoContent();
     }
 
-    // POST: api/users/send-notification
-    [HttpPost("send-notification")]
-    [Authorize(Roles = "user,admin,operator")] // viewer cannot send
+    // POST: api/users/send-notification-request
+    [HttpPost("send-notification-request")]
+    [Authorize(Roles = "User,Admin,Operator")]
     public async Task<IActionResult> SendNotification([FromBody] NotificationRequestDto request)
     {
         var userId = GetUserId();
         await _userService.SendNotificationRequestAsync(userId, request.Message, request.Type);
-        return NoContent();
+
+        return Ok(new { status = "sent", message = request.Message, type = request.Type });
     }
+
 
     private Guid GetUserId()
     {

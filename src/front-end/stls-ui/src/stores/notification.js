@@ -2,7 +2,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { getUserNotificationsApi } from '../services/notificationApi'
-import { useAuth } from './auth'
+import { useAuth } from './user'
 
 export const useNotifications = defineStore('notifications', () => {
   const notifications = ref([])
@@ -13,12 +13,12 @@ export const useNotifications = defineStore('notifications', () => {
   const auth = useAuth()
 
   async function fetchNotifications() {
-    if (!auth.token || !auth.user?.userId) return
+    if (!auth.token || !auth.user?.email) return
     isLoading.value = true
     error.value = null
 
     try {
-      notifications.value = await getUserNotificationsApi(auth.token, auth.user.userId)
+      notifications.value = await getUserNotificationsApi(auth.token, auth.user.email)
     } catch (err) {
       console.error("❌ Failed to fetch notifications:", err)
       error.value = err.message || "Failed to load"
@@ -26,6 +26,7 @@ export const useNotifications = defineStore('notifications', () => {
       isLoading.value = false
     }
   }
+
 
   function startPolling(intervalMs = 10000) {
     if (poller) clearInterval(poller)

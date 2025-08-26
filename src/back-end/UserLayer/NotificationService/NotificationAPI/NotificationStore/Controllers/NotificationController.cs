@@ -72,14 +72,6 @@ public class NotificationController : ControllerBase
         if (string.IsNullOrWhiteSpace(email))
             return BadRequest("Email is required.");
 
-        // ensure normal users can only access their own email
-        if (User.IsInRole("user"))
-        {
-            var currentUserEmail = User.Identity?.Name; // or claim extraction
-            if (!string.Equals(currentUserEmail, email, StringComparison.OrdinalIgnoreCase))
-                return Forbid();
-        }
-
         var notifications = await _notificationService.GetNotificationsByRecipientEmailAsync(email);
         return Ok(notifications);
     }

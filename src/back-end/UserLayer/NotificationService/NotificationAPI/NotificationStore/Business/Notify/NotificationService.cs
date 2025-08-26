@@ -47,12 +47,25 @@ public class NotificationService : INotificationService
                 $"[Notification] {notification.Type}",
                 notification.Message
             );
+
+            // ✅ Log delivery
+            var log = new DeliveryLog
+            {
+                DeliveryId = Guid.NewGuid(),
+                NotificationId = entity.NotificationId,
+                UserId = Guid.TryParse(notification.TargetAudience, out var uid) ? uid : Guid.Empty,
+                RecipientEmail = notification.RecipientEmail,
+                Status = "Sent",
+                SentAt = DateTime.UtcNow
+            };
+            await _deliveryLogRepository.InsertAsync(log);
         }
 
         // Mark sent
         entity.Status = "Sent";
         await _notificationRepository.UpdateStatusAsync(entity.NotificationId, "Sent");
     }
+
 
     public async Task<IEnumerable<NotificationDto>> GetAllNotificationsAsync()
     {
@@ -123,8 +136,23 @@ public class NotificationService : INotificationService
 
     public async Task SendPublicNoticeAsync(string title, string message, string audience)
     {
-        await _publisher.PublishPublicNoticeAsync(Guid.NewGuid(), title, message, audience);
+        var notifId = Guid.NewGuid();
+
+        await _publisher.PublishPublicNoticeAsync(notifId, title, message, audience);
+
+        // ✅ Create DeliveryLog entry for audit
+        var log = new DeliveryLog
+        {
+            DeliveryId = Guid.NewGuid(),
+            NotificationId = notifId,
+            UserId = Guid.Empty, // not tied to one user
+            RecipientEmail = audience, // "all", "operators", etc.
+            Status = "Broadcasted",
+            SentAt = DateTime.UtcNow
+        };
+        await _deliveryLogRepository.InsertAsync(log);
     }
+
 
     public async Task<IEnumerable<DeliveryLogDto>> GetDeliveryHistoryAsync(Guid userId)
     {

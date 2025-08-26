@@ -18,7 +18,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useAuth } from '../stores/auth'
+import { useAuth } from '../stores/user'
 import '../assets/profile.css'   // ✅ make sure this import is here
 
 const auth = useAuth()
