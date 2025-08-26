@@ -7,30 +7,48 @@ namespace TrafficDataAnalyticsStore.Repository.Summary;
 
 public class DailySummaryRepository : IDailySummaryRepository
 {
-        private readonly TrafficDataAnalyticsDbContext _context;
+    private readonly TrafficDataAnalyticsDbContext _context;
 
     public DailySummaryRepository(TrafficDataAnalyticsDbContext context)
     {
         _context = context;
     }
 
-    public async Task AddAsync(DailySummary entry)
+    public async Task<IEnumerable<DailySummary>> GetAllAsync() =>
+        await _context.DailySummaries.AsNoTracking().ToListAsync();
+
+    public async Task<DailySummary?> GetByIdAsync(Guid id) =>
+        await _context.DailySummaries.AsNoTracking().FirstOrDefaultAsync(d => d.SummaryId == id);
+
+    public async Task<IEnumerable<DailySummary>> GetByIntersectionAsync(Guid intersectionId, DateTime? date = null)
     {
-        await _context.DailySummaries.AddAsync(entry);
+        var query = _context.DailySummaries.AsQueryable().Where(d => d.IntersectionId == intersectionId);
+
+        if (date.HasValue)
+            query = query.Where(d => d.Date.Date == date.Value.Date);
+
+        return await query.AsNoTracking().ToListAsync();
+    }
+
+    public async Task AddAsync(DailySummary summary)
+    {
+        _context.DailySummaries.Add(summary);
         await _context.SaveChangesAsync();
     }
 
-    public async Task<List<DailySummary>> GetByIntersectionAndDateAsync(string intersectionId, DateTime date)
+    public async Task UpdateAsync(DailySummary summary)
     {
-        return await _context.DailySummaries
-            .Where(v => v.IntersectionId == intersectionId && v.Date == date)
-            .ToListAsync();
+        _context.DailySummaries.Update(summary);
+        await _context.SaveChangesAsync();
     }
 
-    public Task<List<DailySummary>> GetRangeByIntersectionAsync(string intersectionId, DateTime from, DateTime to)
+    public async Task DeleteAsync(Guid id)
     {
-    return _context.DailySummaries
-            .Where(v => v.IntersectionId == intersectionId && v.Date >= from && v.Date <= to)
-            .ToListAsync();
+        var summary = await _context.DailySummaries.FindAsync(id);
+        if (summary != null)
+        {
+            _context.DailySummaries.Remove(summary);
+            await _context.SaveChangesAsync();
+        }
     }
 }

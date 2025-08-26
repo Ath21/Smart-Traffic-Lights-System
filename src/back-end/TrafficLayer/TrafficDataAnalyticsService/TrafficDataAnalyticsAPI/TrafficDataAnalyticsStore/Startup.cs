@@ -8,13 +8,10 @@ using TrafficDataAnalyticsData;
 using TrafficDataAnalyticsService.Middleware;
 using TrafficDataAnalyticsStore.Repository;
 using TrafficMessages;
-using TrafficDataAnalyticsStore.Repository.Cyclist;
-using TrafficDataAnalyticsStore.Repository.Pedestrian;
-using TrafficDataAnalyticsStore.Repository.Vehicle;
-using TrafficDataAnalyticsStore.Repository.Congestion;
 using TrafficDataAnalyticsStore.Repository.Summary;
 using TrafficDataAnalyticsStore.Business.DailySum;
 using TrafficDataAnalyticsStore.Business.CongestionDetection;
+using TrafficDataAnalyticsStore.Repository.Alerts;
 
 namespace TrafficDataAnalyticsStore;
 
@@ -36,10 +33,7 @@ public class Startup
         /******* [2] Repositories ********/
 
         services.AddScoped(typeof(IDailySummaryRepository), typeof(DailySummaryRepository));
-        services.AddScoped(typeof(ICongestionAlertRepository), typeof(CongestionAlertRepository));
-        services.AddScoped(typeof(IVehicleCountRepository), typeof(VehicleCountRepository));
-        services.AddScoped(typeof(IPedestrianCountRepository), typeof(PedestrianCountRepository));
-        services.AddScoped(typeof(ICyclistCountRepository), typeof(CyclistCountRepository));
+        services.AddScoped(typeof(IAlertRepository), typeof(AlertRepository));
         
         /******* [3] Services ********/
 
