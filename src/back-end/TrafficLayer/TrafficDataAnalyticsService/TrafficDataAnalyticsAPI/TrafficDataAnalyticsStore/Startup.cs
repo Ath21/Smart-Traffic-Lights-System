@@ -64,35 +64,11 @@ public class Startup
         services.AddScoped(typeof(CyclistDetectionConsumer));
         services.AddScoped(typeof(IncidentDetectionConsumer));
 
-        services.AddMassTransit(x =>
-        {
-            //x.AddConsumer<NotificationRequestConsumer>();
+        /******* [7] MassTransit *******/
 
-            x.UsingRabbitMq((context, cfg) =>
-            {
-                var rabbitmqSettings = _configuration.GetSection("RabbitMQ");
+        services.AddTrafficAnalyticsMassTransit(_configuration);
 
-                // Configure RabbitMQ connection settings
-                cfg.Host(rabbitmqSettings["Host"], "/", h =>
-                {
-                    h.Username(rabbitmqSettings["Username"]);
-                    h.Password(rabbitmqSettings["Password"]);
-            
-                });
-
-                cfg.Message<TrafficDailySummary>(e => { e.SetEntityName(rabbitmqSettings["TrafficDataAnalyticsExchange"]); }); 
-                cfg.Publish<TrafficDailySummary>(e => { e.ExchangeType = ExchangeType.Direct; });
-
-                cfg.Message<TrafficCongestionAlert>(e => { e.SetEntityName(rabbitmqSettings["TrafficDataAnalyticsExchange"]); }); 
-                cfg.Publish<TrafficCongestionAlert>(e => { e.ExchangeType = ExchangeType.Direct; });
-
-                cfg.ConfigureEndpoints(context);
-
-            });
-        });
-        
-
-        /******* [7] Controllers ********/
+        /******* [8] Controllers ********/
 
         services.AddControllers()
             .AddJsonOptions(
