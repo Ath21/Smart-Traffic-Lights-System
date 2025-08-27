@@ -1,29 +1,30 @@
-# 🔹 Βάση runtime image (για το τελικό container)
+# Base runtime image for the final container
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 WORKDIR /app
 EXPOSE 8080
 
-# 🔹 Build stage
+# Build stage
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
-# 🔹 Αντιγραφή όλων των απαραίτητων φακέλων
-# ⚠️ Περιλαμβάνει ολόκληρο το UserLayer ώστε να πιάσει σωστά όλα τα relative paths
+# Copy required project folders
 COPY TrafficLayer TrafficLayer/
+COPY SensorLayer/SensorMessages SensorLayer/SensorMessages/
+COPY LogLayer/LogMessages LogLayer/LogMessages/
 
-# 🔹 Restore
+# Restore dependencies
 RUN dotnet restore TrafficLayer/TrafficDataAnalyticsService/TrafficDataAnalyticsAPI/TrafficDataAnalyticsStore/TrafficDataAnalyticsStore.csproj
 
-# 🔹 Build
+# Build the project
 RUN dotnet build TrafficLayer/TrafficDataAnalyticsService/TrafficDataAnalyticsAPI/TrafficDataAnalyticsStore/TrafficDataAnalyticsStore.csproj -c $BUILD_CONFIGURATION -o /app/build
 
-# 🔹 Publish
+# Publish the project
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
 RUN dotnet publish TrafficLayer/TrafficDataAnalyticsService/TrafficDataAnalyticsAPI/TrafficDataAnalyticsStore/TrafficDataAnalyticsStore.csproj -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
-# 🔹 Τελικό image
+# Final image
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
