@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using TrafficDataAnalyticsStore.Models.Responses;
 using TrafficDataAnalyticsStore.Business;
 
@@ -18,7 +19,9 @@ public class TrafficAnalyticsController : ControllerBase
         _mapper = mapper;
     }
 
+    // Viewers, Users, Admins, and TrafficOperators can all check congestion
     [HttpGet("congestion/{intersectionId}")]
+    [Authorize(Roles = "Viewer,User,Admin,TrafficOperator")]
     public async Task<IActionResult> GetCongestion(Guid intersectionId)
     {
         var dto = await _service.GetCurrentCongestionAsync(intersectionId);
@@ -28,7 +31,9 @@ public class TrafficAnalyticsController : ControllerBase
         return Ok(response);
     }
 
+    // Incidents can be accessed by Operators, Admins, and Users
     [HttpGet("incidents/{intersectionId}")]
+    [Authorize(Roles = "User,Admin,TrafficOperator")]
     public async Task<IActionResult> GetIncidents(Guid intersectionId)
     {
         var dtos = await _service.GetIncidentsAsync(intersectionId);
@@ -36,7 +41,9 @@ public class TrafficAnalyticsController : ControllerBase
         return Ok(responses);
     }
 
+    // Summaries can be accessed by Viewer, User, Admin, and TrafficOperator
     [HttpGet("summary/{intersectionId}/{date}")]
+    [Authorize(Roles = "Viewer,User,Admin,TrafficOperator")]
     public async Task<IActionResult> GetSummary(Guid intersectionId, DateTime date)
     {
         var dto = await _service.GetDailySummaryAsync(intersectionId, date);
@@ -46,7 +53,9 @@ public class TrafficAnalyticsController : ControllerBase
         return Ok(response);
     }
 
+    // Daily reports should only be accessible by Admins and TrafficOperators
     [HttpGet("reports/daily")]
+    [Authorize(Roles = "Admin,TrafficOperator")]
     public async Task<IActionResult> GetDailyReport()
     {
         var dtos = await _service.GetDailyReportsAsync();

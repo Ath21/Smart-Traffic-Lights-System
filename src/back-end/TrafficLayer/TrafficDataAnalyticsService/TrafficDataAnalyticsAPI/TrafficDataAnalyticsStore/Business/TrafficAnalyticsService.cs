@@ -2,8 +2,12 @@ using System;
 using AutoMapper;
 using TrafficDataAnalyticsData.Entities;
 using TrafficDataAnalyticsStore.Models.Dtos;
+using TrafficDataAnalyticsStore.Publishers.Congestion;
+using TrafficDataAnalyticsStore.Publishers.Incident;
+using TrafficDataAnalyticsStore.Publishers.Summary;
 using TrafficDataAnalyticsStore.Repository.Alerts;
 using TrafficDataAnalyticsStore.Repository.Summary;
+using TrafficMessages;
 
 namespace TrafficDataAnalyticsStore.Business;
 
@@ -13,14 +17,25 @@ public class TrafficAnalyticsService : ITrafficAnalyticsService
     private readonly IAlertRepository _alertRepo;
     private readonly IMapper _mapper;
 
+    // Publishers
+    private readonly ITrafficSummaryPublisher _summaryPublisher;
+    private readonly ITrafficCongestionPublisher _congestionPublisher;
+    private readonly ITrafficIncidentPublisher _incidentPublisher;
+
     public TrafficAnalyticsService(
         IDailySummaryRepository summaryRepo,
         IAlertRepository alertRepo,
-        IMapper mapper)
+        IMapper mapper,
+        ITrafficSummaryPublisher summaryPublisher,
+        ITrafficCongestionPublisher congestionPublisher,
+        ITrafficIncidentPublisher incidentPublisher)
     {
         _summaryRepo = summaryRepo;
         _alertRepo = alertRepo;
         _mapper = mapper;
+        _summaryPublisher = summaryPublisher;
+        _congestionPublisher = congestionPublisher;
+        _incidentPublisher = incidentPublisher;
     }
 
     // ----------------- Queries -----------------
@@ -74,14 +89,40 @@ public class TrafficAnalyticsService : ITrafficAnalyticsService
             var entity = _mapper.Map<DailySummary>(dto);
             entity.SummaryId = Guid.NewGuid();
             await _summaryRepo.AddAsync(entity);
+            dto.SummaryId = entity.SummaryId;
         }
         else
         {
-            existing.VehicleCount += dto.VehicleCount; // aggregate counts
-            existing.AvgSpeed = (existing.AvgSpeed + dto.AvgSpeed) / 2; // simple avg merge
-            existing.CongestionLevel = dto.CongestionLevel; // update latest level
-
+            existing.VehicleCount += dto.VehicleCount;
+            existing.AvgSpeed = (existing.AvgSpeed + dto.AvgSpeed) / 2;
+            existing.CongestionLevel = dto.CongestionLevel;
             await _summaryRepo.UpdateAsync(existing);
+
+            dto.SummaryId = existing.SummaryId;
+        }
+
+        // Publish summary
+        var summaryMessage = new TrafficSummaryMessage(
+            dto.SummaryId,
+            dto.IntersectionId,
+            dto.Date,
+            dto.AvgSpeed,
+            dto.VehicleCount,
+            dto.CongestionLevel
+        );
+        await _summaryPublisher.PublishSummaryAsync(summaryMessage);
+
+        // Publish congestion if applicable
+        if (dto.CongestionLevel is "High" or "Medium" or "Low")
+        {
+            var congestionMessage = new TrafficCongestionMessage(
+                Guid.NewGuid(),
+                dto.IntersectionId,
+                dto.CongestionLevel,
+                $"Congestion {dto.CongestionLevel} at intersection {dto.IntersectionId}",
+                DateTime.UtcNow
+            );
+            await _congestionPublisher.PublishCongestionAsync(congestionMessage);
         }
     }
 
@@ -92,5 +133,14 @@ public class TrafficAnalyticsService : ITrafficAnalyticsService
         entity.CreatedAt = dto.CreatedAt == default ? DateTime.UtcNow : dto.CreatedAt;
 
         await _alertRepo.AddAsync(entity);
+
+        // Publish incident
+        var incidentMessage = new TrafficIncidentMessage(
+            entity.AlertId,
+            entity.IntersectionId,
+            entity.Message,
+            entity.CreatedAt
+        );
+        await _incidentPublisher.PublishIncidentAsync(incidentMessage);
     }
 }

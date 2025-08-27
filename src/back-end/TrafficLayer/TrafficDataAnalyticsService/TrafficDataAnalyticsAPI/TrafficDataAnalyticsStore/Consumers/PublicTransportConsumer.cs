@@ -36,22 +36,11 @@ public class PublicTransportConsumer : IConsumer<PublicTransportMessage>
         {
             IntersectionId = msg.IntersectionId,
             Date = msg.Timestamp.Date,
-            VehicleCount = 1,  // treat each request as one PT unit
+            VehicleCount = 1,
             AvgSpeed = 0,
             CongestionLevel = "PublicTransport"
         };
 
         await _analyticsService.AddOrUpdateSummaryAsync(dto);
-
-        var summaryMessage = new TrafficSummaryMessage(
-            dto.SummaryId,
-            dto.IntersectionId,
-            dto.Date,
-            dto.AvgSpeed,
-            dto.VehicleCount,
-            dto.CongestionLevel
-        );
-
-        await _summaryPublisher.PublishSummaryAsync(summaryMessage);
     }
 }

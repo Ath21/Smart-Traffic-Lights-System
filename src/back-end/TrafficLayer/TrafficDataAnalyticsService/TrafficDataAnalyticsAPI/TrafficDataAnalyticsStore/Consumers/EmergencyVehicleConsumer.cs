@@ -24,6 +24,7 @@ public class EmergencyVehicleConsumer : IConsumer<EmergencyVehicleMessage>
         _incidentPublisher = incidentPublisher;
     }
 
+
     public async Task Consume(ConsumeContext<EmergencyVehicleMessage> context)
     {
         var msg = context.Message;
@@ -34,7 +35,7 @@ public class EmergencyVehicleConsumer : IConsumer<EmergencyVehicleMessage>
 
         if (msg.Detected)
         {
-            var incidentDto = new IncidentDto
+            var dto = new IncidentDto
             {
                 AlertId = msg.DetectionId,
                 IntersectionId = msg.IntersectionId,
@@ -43,16 +44,7 @@ public class EmergencyVehicleConsumer : IConsumer<EmergencyVehicleMessage>
                 CreatedAt = msg.Timestamp
             };
 
-            await _analyticsService.ReportIncidentAsync(incidentDto);
-
-            var incidentMessage = new TrafficIncidentMessage(
-                incidentDto.AlertId,
-                incidentDto.IntersectionId,
-                incidentDto.Message,
-                incidentDto.CreatedAt
-            );
-
-            await _incidentPublisher.PublishIncidentAsync(incidentMessage);
+            await _analyticsService.ReportIncidentAsync(dto);
         }
     }
 }

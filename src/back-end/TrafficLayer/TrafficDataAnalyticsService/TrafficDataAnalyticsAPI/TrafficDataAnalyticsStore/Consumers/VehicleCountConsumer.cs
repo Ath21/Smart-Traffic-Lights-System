@@ -36,41 +36,18 @@ public class VehicleCountConsumer : IConsumer<VehicleCountMessage>
             "VehicleCount received at Intersection {IntersectionId}: Count {Count}, AvgSpeed {Speed}",
             msg.IntersectionId, msg.VehicleCount, msg.AvgSpeed);
 
-        var congestionLevel = InferCongestionLevel(msg.VehicleCount, msg.AvgSpeed);
-
         var dto = new SummaryDto
         {
             IntersectionId = msg.IntersectionId,
             Date = msg.Timestamp.Date,
             AvgSpeed = msg.AvgSpeed,
             VehicleCount = msg.VehicleCount,
-            CongestionLevel = congestionLevel
+            CongestionLevel = InferCongestionLevel(msg.VehicleCount, msg.AvgSpeed)
         };
 
-        // Persist in DB
         await _analyticsService.AddOrUpdateSummaryAsync(dto);
-
-        // Publish updated summary
-        var summaryMessage = new TrafficSummaryMessage(
-            dto.SummaryId,
-            dto.IntersectionId,
-            dto.Date,
-            dto.AvgSpeed,
-            dto.VehicleCount,
-            dto.CongestionLevel
-        );
-        await _summaryPublisher.PublishSummaryAsync(summaryMessage);
-
-        // Publish congestion alert
-        var congestionMessage = new TrafficCongestionMessage(
-            Guid.NewGuid(),
-            dto.IntersectionId,
-            dto.CongestionLevel,
-            $"Congestion {dto.CongestionLevel} at intersection {dto.IntersectionId}",
-            DateTime.UtcNow
-        );
-        await _congestionPublisher.PublishCongestionAsync(congestionMessage);
     }
+
 
     private static string InferCongestionLevel(int vehicleCount, float avgSpeed)
     {

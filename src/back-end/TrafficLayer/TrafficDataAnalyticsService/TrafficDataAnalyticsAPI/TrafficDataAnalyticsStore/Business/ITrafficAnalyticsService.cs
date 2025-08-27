@@ -11,7 +11,7 @@ public interface ITrafficAnalyticsService
     Task<SummaryDto?> GetDailySummaryAsync(Guid intersectionId, DateTime date);
     Task<IEnumerable<SummaryDto>> GetDailyReportsAsync();
 
-    // Commands
+    // Commands (now also handle publishing)
     Task AddOrUpdateSummaryAsync(SummaryDto dto);
     Task ReportIncidentAsync(IncidentDto dto);
 }

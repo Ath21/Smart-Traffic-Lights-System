@@ -36,22 +36,11 @@ public class PedestrianDetectionConsumer : IConsumer<PedestrianDetectionMessage>
         {
             IntersectionId = msg.IntersectionId,
             Date = msg.Timestamp.Date,
-            VehicleCount = msg.Count, // treat as pedestrian flow
-            AvgSpeed = 0,             // not relevant
-            CongestionLevel = "N/A"
+            VehicleCount = msg.Count,
+            AvgSpeed = 0,
+            CongestionLevel = "PedestrianFlow"
         };
 
         await _analyticsService.AddOrUpdateSummaryAsync(dto);
-
-        var summaryMessage = new TrafficSummaryMessage(
-            dto.SummaryId,
-            dto.IntersectionId,
-            dto.Date,
-            dto.AvgSpeed,
-            dto.VehicleCount,
-            dto.CongestionLevel
-        );
-
-        await _summaryPublisher.PublishSummaryAsync(summaryMessage);
     }
 }
