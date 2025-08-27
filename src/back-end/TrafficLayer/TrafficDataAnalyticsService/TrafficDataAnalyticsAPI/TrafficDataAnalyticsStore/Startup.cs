@@ -1,16 +1,7 @@
-using System;
-using MassTransit;
-using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
-using RabbitMQ.Client;
-using Microsoft.EntityFrameworkCore;
 using TrafficDataAnalyticsData;
 using TrafficDataAnalyticsService.Middleware;
-using TrafficDataAnalyticsStore.Repository;
-using TrafficMessages;
 using TrafficDataAnalyticsStore.Repository.Summary;
-using TrafficDataAnalyticsStore.Business.DailySum;
-using TrafficDataAnalyticsStore.Business.CongestionDetection;
 using TrafficDataAnalyticsStore.Repository.Alerts;
 using TrafficDataAnalyticsStore.Publishers.Congestion;
 using TrafficDataAnalyticsStore.Publishers.Incident;
@@ -18,6 +9,9 @@ using TrafficDataAnalyticsStore.Publishers.Summary;
 using TrafficDataAnalyticsStore.Publishers.Logs;
 using TrafficDataAnalyticsStore.Consumers;
 using TrafficDataAnalyticsStore.Business;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 namespace TrafficDataAnalyticsStore;
 
@@ -68,6 +62,40 @@ public class Startup
 
         services.AddTrafficAnalyticsMassTransit(_configuration);
 
+        /******* [8] Jwt Config ********/
+
+        var jwtSettings = _configuration.GetSection("Jwt");
+        var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]);
+
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.RequireHttpsMetadata = false;
+                options.SaveToken = true;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidIssuer = jwtSettings["Issuer"],
+                    ValidateAudience = true,
+                    ValidAudience = jwtSettings["Audience"],
+                    ValidateLifetime = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key)
+                };
+            });
+
+        /******* [9] CORS Policy ********/
+
+        services.AddCors(options =>
+        {
+            options.AddPolicy("AllowFrontend", policy =>
+            {
+                policy.WithOrigins("http://localhost:5173")   // Vue dev server
+                    .AllowAnyHeader()
+                    .AllowAnyMethod();
+
+            });
+        });
+
         /******* [8] Controllers ********/
 
         services.AddControllers()
@@ -79,7 +107,7 @@ public class Startup
 
         services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Traffic Data Analytics API", Version = "v1.0" });
+                c.SwaggerDoc("v2", new OpenApiInfo { Title = "Traffic Data Analytics API", Version = "v2.0" });
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     In = ParameterLocation.Header,
@@ -120,6 +148,8 @@ public class Startup
         app.UseHttpsRedirection();
 
         app.UseMiddleware<ExceptionMiddleware>();
+
+        app.UseCors("AllowFrontend");
 
         app.UseAuthentication();
         app.UseAuthorization();
