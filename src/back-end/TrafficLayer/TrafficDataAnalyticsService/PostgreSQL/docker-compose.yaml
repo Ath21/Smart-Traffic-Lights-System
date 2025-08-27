@@ -1,5 +1,10 @@
 services:
-  
-  traffic_data_analytics_mongo:
-    image: mongo:6.0
-    container_name: traffic_data_analytics_container
+  traffic_analytics_postgres:
+    image: postgres:16
+    container_name: traffic_analytics_postgres_container
+    networks:
+      - traffic_analytics_network
+
+networks:
+  traffic_analytics_network:
+    driver: bridge

@@ -1,39 +1,50 @@
+version: "3.9"
+
 services:
-  traffic_data_analytics_api:
+  traffic_analytics_api:
     ports:
-      - '5208:8080'
+      - "5208:8080"
     environment:
-      # 🔵 MongoDB
-      DefaultConnection__ConnectionString: mongodb://traffic_data_analytics_mongo:27017
-      DefaultConnection__DatabaseName: TrafficDataDb
-      DefaultConnection__IntersectionsCollectionName: Intersections
-      DefaultConnection__VehicleCountsCollectionName: VehicleCounts
-      DefaultConnection__PedestrianCountsCollectionName: PedestrianCounts
-      DefaultConnection__CyclistCountsCollectionName: CyclistCounts
-      DefaultConnection__CongestionAlertsCollectionName: CongestionAlerts
-      DefaultConnection__DailySummaryCollectionName: DailySummaries
-
-      # 🟠 Redis
-      Redis_ConnectionString: traffic_data_analytics_redis:6379
-      Redis_Host: traffic_data_analytics_redis
-      Redis_Port: 6379
-
-      # 🌱 ASP.NET Core
+      # ASP.NET Core
       ASPNETCORE_ENVIRONMENT: Development
 
-      # 🟣 RabbitMQ
+      # PostgreSQL
+      ConnectionStrings__DefaultConnection: Host=traffic_analytics_postgres;Port=5432;Database=TrafficDataDb;Username=postgres;Password=postgres123!@#
+
+      # JWT
+      Jwt__Issuer: http://stls_backend:8080
+      Jwt__Audience: http://stls_backend:8080
+      Jwt__Key: Nn7kLa8Rzv1XHt9UwMqP4YbFdJxVt2Km
+
+      # RabbitMQ
       RabbitMQ__Host: rabbitmq
       RabbitMQ__Port: 5672
       RabbitMQ__Username: admin
       RabbitMQ__Password: admin123
-      RabbitMQ__TrafficDataAnalyticsExchange: traffic.data.analytics.exchange
-      RabbitMQ__RoutingKeys__Traffic__DailySummary: traffic.data.analytics.daily_summary
-      RabbitMQ__RoutingKeys__Traffic__CongestionAlert: traffic.data.analytics.congestion_alert
+
+      # Exchanges
+      RabbitMQ__Exchanges__Logs: logs.exchange
+      RabbitMQ__Exchanges__Sensor: sensor.exchange
+      RabbitMQ__Exchanges__Traffic: traffic.exchange
+
+      # Queues
+      RabbitMQ__Queues__Analytics: sensor.traffic_analytics_service.queue
+
+      # Routing Keys
+      RabbitMQ__RoutingKeys__VehicleCount: sensor.vehicle.count.*
+      RabbitMQ__RoutingKeys__EmergencyVehicle: sensor.vehicle.emergency.*
+      RabbitMQ__RoutingKeys__PublicTransport: sensor.public_transport.request.*
+      RabbitMQ__RoutingKeys__Pedestrian: sensor.pedestrian.request.*
+      RabbitMQ__RoutingKeys__Cyclist: sensor.cyclist.request.*
+      RabbitMQ__RoutingKeys__IncidentDetected: sensor.incident.detected.*
+      RabbitMQ__RoutingKeys__TrafficCongestionPrefix: traffic.analytics.congestion
+      RabbitMQ__RoutingKeys__TrafficIncidentPrefix: traffic.analytics.incident
+      RabbitMQ__RoutingKeys__TrafficSummaryPrefix: traffic.analytics.summary
 
     depends_on:
-      traffic_data_analytics_mongo:
+      traffic_analytics_postgres:
         condition: service_started
-      traffic_data_analytics_redis:
+      rabbitmq:
         condition: service_started
 
     restart: always

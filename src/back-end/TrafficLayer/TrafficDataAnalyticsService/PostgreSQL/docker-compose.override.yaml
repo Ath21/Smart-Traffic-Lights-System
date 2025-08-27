@@ -1,13 +1,16 @@
 services:
-  
-  traffic_data_analytics_mongo:
+  traffic_analytics_postgres:
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123!@#
+      POSTGRES_DB: TrafficDataDb
     ports:
-      - '27019:27017'
+      - "5432:5432"
     volumes:
-      - traffic_data_analytics_data:/data/db
-    restart: always
+      - traffic_analytics_pgdata:/var/lib/postgresql/data
 
 volumes:
-  traffic_data_analytics_data:
-    name: traffic_data_analytics_data
+  traffic_analytics_pgdata:
+    name: traffic_analytics_pgdata
     driver: local
+
