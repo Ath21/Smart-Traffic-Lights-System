@@ -1,7 +1,5 @@
 using LogMessages;
 using MassTransit;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 
 namespace NotificationStore.Publishers.Logs;
 
@@ -13,15 +11,22 @@ public class LogPublisher : ILogPublisher
     private readonly string _auditKey;
     private readonly string _errorKey;
 
+    private const string ServiceTag = "[" + nameof(LogPublisher) + "]";
+
     public LogPublisher(IConfiguration configuration, ILogger<LogPublisher> logger, IBus bus)
     {
         _logger = logger;
         _bus = bus;
-        _serviceName = "notification_service"; // Could also read from config/env
-        _auditKey = configuration["RabbitMQ:RoutingKeys:AuditLog"] ?? "log.user.notification_service.audit";
-        _errorKey = configuration["RabbitMQ:RoutingKeys:ErrorLog"] ?? "log.user.notification_service.error";
+
+        _serviceName = "notification_service";
+
+        _auditKey = configuration["RabbitMQ:RoutingKeys:Audit"] 
+                    ?? "log.user.notification_service.audit";
+        _errorKey = configuration["RabbitMQ:RoutingKeys:Error"] 
+                    ?? "log.user.notification_service.error";
     }
 
+    // log.user.notification_service.audit
     public async Task PublishAuditLogAsync(string action, string details, object? metadata = null)
     {
         var log = new AuditLogMessage(
@@ -34,9 +39,11 @@ public class LogPublisher : ILogPublisher
         );
 
         await _bus.Publish(log, ctx => ctx.SetRoutingKey(_auditKey));
-        _logger.LogInformation("Audit log published: {Action}", action);
+
+        _logger.LogInformation("{Tag} Audit log published: {Action}", ServiceTag, action);
     }
 
+    // log.user.notification_service.error
     public async Task PublishErrorLogAsync(string errorType, string message, object? metadata = null, Exception? ex = null)
     {
         var log = new ErrorLogMessage(
@@ -49,6 +56,7 @@ public class LogPublisher : ILogPublisher
         );
 
         await _bus.Publish(log, ctx => ctx.SetRoutingKey(_errorKey));
-        _logger.LogError(ex, "Error log published: {ErrorType}", errorType);
+
+        _logger.LogError(ex, "{Tag} Error log published: {ErrorType} - {Message}", ServiceTag, errorType, message);
     }
 }

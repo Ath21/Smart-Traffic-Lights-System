@@ -27,27 +27,27 @@ public static class MassTransitSetup
                 });
 
                 // Exchanges
-                var logsExchange = rabbit["Exchanges:Logs"];
-                var userExchange = rabbit["Exchanges:User"];
+                var logsExchange    = rabbit["Exchanges:Logs"];
+                var userExchange    = rabbit["Exchanges:User"];
                 var trafficExchange = rabbit["Exchanges:Traffic"];
 
                 // Queues
-                var userQueue = rabbit["Queues:UserNotification"];
-                var trafficQueue = rabbit["Queues:TrafficNotification"];
+                var userQueue    = rabbit["Queues:User"];
+                var trafficQueue = rabbit["Queues:Traffic"];
 
                 // Routing keys
-                var auditKey = rabbit["RoutingKeys:Audit"];
-                var errorKey = rabbit["RoutingKeys:Error"];
+                var auditKey        = rabbit["RoutingKeys:Audit"];
+                var errorKey        = rabbit["RoutingKeys:Error"];
                 var notifRequestKey = rabbit["RoutingKeys:NotificationRequest"];
-                var notifAlertKey = rabbit["RoutingKeys:NotificationAlert"];
-                var notifPublicKey = rabbit["RoutingKeys:NotificationPublic"];
+                var notifAlertKey   = rabbit["RoutingKeys:NotificationAlert"];
+                var notifPublicKey  = rabbit["RoutingKeys:NotificationPublic"];
 
-                var trafficCongestionPrefix = rabbit["RoutingKeys:TrafficCongestionPrefix"];
-                var trafficSummaryPrefix = rabbit["RoutingKeys:TrafficSummaryPrefix"];
-                var trafficIncidentPrefix = rabbit["RoutingKeys:TrafficIncidentPrefix"];
+                var trafficCongKey      = rabbit["RoutingKeys:TrafficCongestion"];
+                var trafficSummaryKey   = rabbit["RoutingKeys:TrafficSummary"];
+                var trafficIncidentKey  = rabbit["RoutingKeys:TrafficIncident"];
 
                 // =========================
-                // LOGS (Publish only)
+                // LOGS
                 // =========================
                 cfg.Message<LogMessages.AuditLogMessage>(e => e.SetEntityName(logsExchange));
                 cfg.Publish<LogMessages.AuditLogMessage>(e => e.ExchangeType = ExchangeType.Direct);
@@ -81,21 +81,22 @@ public static class MassTransitSetup
                 {
                     e.ConfigureConsumeTopology = false;
 
+                    // Replace {intersection_id} with * for wildcard binding
                     e.Bind(trafficExchange, s =>
                     {
-                        s.RoutingKey = $"{trafficCongestionPrefix}.*";
+                        s.RoutingKey = trafficCongKey.Replace("{intersection_id}", "*");
                         s.ExchangeType = ExchangeType.Topic;
                     });
 
                     e.Bind(trafficExchange, s =>
                     {
-                        s.RoutingKey = $"{trafficIncidentPrefix}.*";
+                        s.RoutingKey = trafficIncidentKey.Replace("{intersection_id}", "*");
                         s.ExchangeType = ExchangeType.Topic;
                     });
 
                     e.Bind(trafficExchange, s =>
                     {
-                        s.RoutingKey = $"{trafficSummaryPrefix}.*";
+                        s.RoutingKey = trafficSummaryKey.Replace("{intersection_id}", "*");
                         s.ExchangeType = ExchangeType.Topic;
                     });
 

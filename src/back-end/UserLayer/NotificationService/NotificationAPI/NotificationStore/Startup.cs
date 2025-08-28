@@ -1,5 +1,4 @@
 using System.Text;
-using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -13,8 +12,6 @@ using NotificationStore.Publishers.Logs;
 using NotificationStore.Publishers.Notifications;
 using NotificationStore.Repositories.DeliveryLogs;
 using NotificationStore.Repositories.Notifications;
-using RabbitMQ.Client;
-using UserMessages;
 
 namespace NotificationStore;
 

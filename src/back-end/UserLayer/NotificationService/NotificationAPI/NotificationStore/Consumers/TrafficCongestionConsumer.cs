@@ -1,6 +1,5 @@
 using MassTransit;
 using NotificationStore.Business.Notify;
-using NotificationStore.Models;
 using NotificationStore.Models.Dtos;
 using TrafficMessages;
 
@@ -10,6 +9,8 @@ public class TrafficCongestionConsumer : IConsumer<TrafficCongestionMessage>
 {
     private readonly ILogger<TrafficCongestionConsumer> _logger;
     private readonly INotificationService _notificationService;
+
+    private const string ServiceTag = "[" + nameof(TrafficCongestionConsumer) + "]";
 
     public TrafficCongestionConsumer(ILogger<TrafficCongestionConsumer> logger, INotificationService notificationService)
     {
@@ -30,8 +31,8 @@ public class TrafficCongestionConsumer : IConsumer<TrafficCongestionMessage>
         };
 
         _logger.LogInformation(
-            "TrafficCongestionConsumer: Congestion alert at intersection {IntersectionId} with level {Level}",
-            context.Message.IntersectionId, context.Message.CongestionLevel);
+            "{Tag} Congestion alert at intersection {IntersectionId} with level {Level}",
+            ServiceTag, context.Message.IntersectionId, context.Message.CongestionLevel);
 
         await _notificationService.SendNotificationAsync(dto);
     }

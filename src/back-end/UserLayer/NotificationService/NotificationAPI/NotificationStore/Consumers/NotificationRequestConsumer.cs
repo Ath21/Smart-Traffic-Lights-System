@@ -9,6 +9,8 @@ public class NotificationRequestConsumer : IConsumer<UserNotificationRequest>
     private readonly ILogger<NotificationRequestConsumer> _logger;
     private readonly INotificationService _notificationService;
 
+    private const string ServiceTag = "[" + nameof(NotificationRequestConsumer) + "]";
+
     public NotificationRequestConsumer(
         ILogger<NotificationRequestConsumer> logger, 
         INotificationService notificationService)
@@ -19,29 +21,27 @@ public class NotificationRequestConsumer : IConsumer<UserNotificationRequest>
 
     public async Task Consume(ConsumeContext<UserNotificationRequest> context)
     {
-        var message = context.Message;
+        var msg = context.Message;
 
         _logger.LogInformation(
-            "NotificationRequestConsumer: Received {Type} for user {UserId}, email {Email}, message: {Message}",
-            message.Type, message.UserId, message.RecipientEmail, message.Message);
+            "{Tag} Received {Type} for user {UserId}, email {Email}, message: {Message}",
+            ServiceTag, msg.Type, msg.UserId, msg.RecipientEmail, msg.Message);
 
-        if (message.UserId != Guid.Empty && !string.IsNullOrWhiteSpace(message.RecipientEmail))
+        if (msg.UserId != Guid.Empty && !string.IsNullOrWhiteSpace(msg.RecipientEmail))
         {
-            // Targeted user notification
             await _notificationService.SendUserNotificationAsync(
-                message.UserId,
-                message.RecipientEmail,
-                message.Message ?? string.Empty,
-                message.Type ?? "General"
+                msg.UserId,
+                msg.RecipientEmail,
+                msg.Message ?? string.Empty,
+                msg.Type ?? "General"
             );
         }
         else
         {
-            // Public broadcast notice
             await _notificationService.SendPublicNoticeAsync(
-                message.Type ?? "Notice",
-                message.Message ?? string.Empty,
-                message.TargetAudience ?? "All"
+                msg.Type ?? "Notice",
+                msg.Message ?? string.Empty,
+                msg.TargetAudience ?? "All"
             );
         }
     }

@@ -1,4 +1,3 @@
-using System;
 using NotificationData.Collections;
 
 namespace NotificationStore.Repositories.Notifications;

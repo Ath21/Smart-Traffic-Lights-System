@@ -23,10 +23,13 @@ public class ExceptionMiddleware
         {
             await _next(context);
         }
+        //  Authentication / Authorization
         catch (UnauthorizedAccessException ex)
         {
             await HandleErrorAsync(context, HttpStatusCode.Unauthorized, "Unauthorized access", "AUTH_ERROR", ex);
         }
+
+        //  Not found / bad usage
         catch (KeyNotFoundException ex)
         {
             await HandleErrorAsync(context, HttpStatusCode.NotFound, "Resource not found", "NOT_FOUND", ex);
@@ -47,6 +50,8 @@ public class ExceptionMiddleware
         {
             await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid data format", "FORMAT_ERROR", ex);
         }
+
+        //  Timeouts / Network
         catch (TimeoutException ex)
         {
             await HandleErrorAsync(context, HttpStatusCode.RequestTimeout, "Operation timed out", "TIMEOUT", ex);
@@ -63,10 +68,14 @@ public class ExceptionMiddleware
         {
             await HandleErrorAsync(context, HttpStatusCode.RequestTimeout, "Message broker timeout", "BROKER_TIMEOUT", ex);
         }
+
+        //  Database
         catch (DbUpdateException ex)
         {
             await HandleErrorAsync(context, HttpStatusCode.Conflict, "Database update failed", "DB_UPDATE_ERROR", ex);
         }
+
+        //  Fallback
         catch (Exception ex)
         {
             await HandleErrorAsync(context, HttpStatusCode.InternalServerError, "An unexpected error occurred", "UNEXPECTED", ex);
@@ -88,7 +97,7 @@ public class ExceptionMiddleware
 
             await publisher.PublishErrorAsync(
                 errorType,
-                ex.Message,
+                $"{ServiceTag} {ex.Message}",
                 new
                 {
                     Path = context.Request.Path,

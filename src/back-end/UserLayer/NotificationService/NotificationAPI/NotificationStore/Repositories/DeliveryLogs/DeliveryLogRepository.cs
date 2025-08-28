@@ -1,4 +1,3 @@
-using System;
 using MongoDB.Driver;
 using NotificationData;
 using NotificationData.Collections;

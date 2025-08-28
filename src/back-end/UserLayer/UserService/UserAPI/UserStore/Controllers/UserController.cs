@@ -51,7 +51,7 @@ public class UserController : ControllerBase
 
     // POST: api/users/logout
     [HttpPost("logout")]
-    [Authorize] // any logged-in role
+    [Authorize] 
     public async Task<IActionResult> Logout()
     {
         var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");

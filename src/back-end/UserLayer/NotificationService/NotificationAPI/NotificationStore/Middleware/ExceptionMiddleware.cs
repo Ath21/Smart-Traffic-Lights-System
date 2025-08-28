@@ -1,8 +1,6 @@
 using System.Net;
 using MassTransit;
-using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
-using NotificationStore.Publishers;
 using NotificationStore.Publishers.Logs;
 
 namespace NotificationStore.Middleware;
@@ -11,6 +9,8 @@ public class ExceptionMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionMiddleware> _logger;
+
+    private const string ServiceTag = "[" + nameof(ExceptionMiddleware) + "]";
 
     public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
     {
@@ -24,13 +24,13 @@ public class ExceptionMiddleware
         {
             await _next(context);
         }
-        // 🔹 Authentication / Authorization
+        //  Authentication / Authorization
         catch (UnauthorizedAccessException ex)
         {
             await HandleErrorAsync(context, HttpStatusCode.Unauthorized, "Unauthorized access", "AUTH_ERROR", ex);
         }
 
-        // 🔹 Not found / bad usage
+        //  Not found / bad usage
         catch (KeyNotFoundException ex)
         {
             await HandleErrorAsync(context, HttpStatusCode.NotFound, "Resource not found", "NOT_FOUND", ex);
@@ -52,17 +52,17 @@ public class ExceptionMiddleware
             await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid data format", "FORMAT_ERROR", ex);
         }
 
-        // 🔹 Network / Messaging
+        //  Network / Messaging
         catch (TaskCanceledException ex)
         {
             await HandleErrorAsync(context, HttpStatusCode.RequestTimeout, "Request canceled or timed out", "TASK_CANCELED", ex);
         }
-        catch (MassTransit.RequestTimeoutException ex)
+        catch (RequestTimeoutException ex)
         {
             await HandleErrorAsync(context, HttpStatusCode.RequestTimeout, "Message broker timeout", "BROKER_TIMEOUT", ex);
         }
 
-        // 🔹 MongoDB
+        //  MongoDB
         catch (MongoWriteException ex)
         {
             await HandleErrorAsync(context, HttpStatusCode.Conflict, "Mongo write error", "MONGO_WRITE", ex);
@@ -72,7 +72,7 @@ public class ExceptionMiddleware
             await HandleErrorAsync(context, HttpStatusCode.ServiceUnavailable, "Mongo connection error", "MONGO_CONNECTION", ex);
         }
 
-        // 🔹 Fallback
+        //  Fallback
         catch (Exception ex)
         {
             await HandleErrorAsync(context, HttpStatusCode.InternalServerError, "An unexpected error occurred", "UNEXPECTED", ex);
@@ -86,15 +86,14 @@ public class ExceptionMiddleware
         string errorType,
         Exception ex)
     {
-        _logger.LogError(ex, "{Message}", userMessage);
+        _logger.LogError(ex, "{Tag} {Message}", ServiceTag, userMessage);
 
         try
         {
-            // publish structured log
             var publisher = context.RequestServices.GetRequiredService<ILogPublisher>();
             await publisher.PublishErrorLogAsync(
                 errorType,
-                ex.Message,
+                $"{ServiceTag} {ex.Message}",
                 new
                 {
                     Path = context.Request.Path,
@@ -106,7 +105,7 @@ public class ExceptionMiddleware
         }
         catch (Exception pubEx)
         {
-            _logger.LogError(pubEx, "Failed to publish error log to broker");
+            _logger.LogError(pubEx, "{Tag} Failed to publish error log to broker", ServiceTag);
         }
 
         context.Response.StatusCode = (int)statusCode;

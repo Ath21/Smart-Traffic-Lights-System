@@ -1,6 +1,5 @@
 using MassTransit;
 using NotificationStore.Business.Notify;
-using NotificationStore.Models;
 using NotificationStore.Models.Dtos;
 using TrafficMessages;
 
@@ -10,6 +9,8 @@ public class TrafficSummaryConsumer : IConsumer<TrafficSummaryMessage>
 {
     private readonly ILogger<TrafficSummaryConsumer> _logger;
     private readonly INotificationService _notificationService;
+
+    private const string ServiceTag = "[" + nameof(TrafficSummaryConsumer) + "]";
 
     public TrafficSummaryConsumer(ILogger<TrafficSummaryConsumer> logger, INotificationService notificationService)
     {
@@ -30,8 +31,8 @@ public class TrafficSummaryConsumer : IConsumer<TrafficSummaryMessage>
         };
 
         _logger.LogInformation(
-            "TrafficSummaryConsumer: Summary received for intersection {IntersectionId} at {Date}",
-            context.Message.IntersectionId, context.Message.Date);
+            "{Tag} Summary received for intersection {IntersectionId} at {Date}",
+            ServiceTag, context.Message.IntersectionId, context.Message.Date);
 
         await _notificationService.SendNotificationAsync(dto);
     }

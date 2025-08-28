@@ -41,7 +41,7 @@ public class NotificationController : ControllerBase
 
         return Ok(new NotificationResponse
         {
-            NotificationId = Guid.NewGuid(), // generated in service (you could return it instead)
+            NotificationId = Guid.NewGuid(), 
             Type = request.Type,
             Title = $"{request.Type} Notification",
             Message = request.Message,
@@ -68,18 +68,18 @@ public class NotificationController : ControllerBase
 
         return Ok(new NotificationResponse
         {
-            NotificationId = Guid.NewGuid(), // generated in service
+            NotificationId = Guid.NewGuid(), 
             Type = "PublicNotice",
             Title = request.Title,
             Message = request.Message,
-            RecipientEmail = request.TargetAudience, // broadcast audience
+            RecipientEmail = request.TargetAudience, 
             Status = "Published",
             CreatedAt = DateTime.UtcNow
         });
     }
 
-    // GET: /api/notifications/user/{email}
-    [HttpGet("user/{email}")]
+    // GET: /api/notifications/recipient/{email}
+    [HttpGet("recipient/{email}")]
     [Authorize(Roles = "User,Admin,TrafficOperator")]
     public async Task<ActionResult<IEnumerable<NotificationResponse>>> GetByRecipientEmail(string email)
     {
@@ -96,7 +96,7 @@ public class NotificationController : ControllerBase
             RecipientEmail = n.RecipientEmail,
             Status = n.Status,
             CreatedAt = n.CreatedAt,
-            IsRead = n.IsRead // <-- map from your entity
+            IsRead = n.IsRead 
         }));
 
     }
