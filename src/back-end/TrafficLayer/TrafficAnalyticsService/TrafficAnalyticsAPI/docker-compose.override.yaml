@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   traffic_analytics_api:
     ports:
@@ -9,7 +7,7 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
 
       # PostgreSQL
-      ConnectionStrings__DefaultConnection: Host=traffic_analytics_postgres;Port=5432;Database=TrafficDataDb;Username=postgres;Password=postgres123!@#
+      ConnectionStrings__DefaultConnection: Host=traffic_analytics_postgres;Port=5432;Database=TrafficAnalyticsDb;Username=postgres;Password=postgres123
 
       # JWT
       Jwt__Issuer: http://stls_backend:8080
@@ -19,13 +17,13 @@ services:
       # RabbitMQ
       RabbitMQ__Host: rabbitmq
       RabbitMQ__Port: 5672
-      RabbitMQ__Username: admin
-      RabbitMQ__Password: admin123
+      RabbitMQ__Username: rabbitmq
+      RabbitMQ__Password: rabbitmq123
 
       # Exchanges
-      RabbitMQ__Exchanges__Logs: logs.exchange
-      RabbitMQ__Exchanges__Sensor: sensor.exchange
-      RabbitMQ__Exchanges__Traffic: traffic.exchange
+      RabbitMQ__Exchanges__Logs: LOG.EXCHANGE
+      RabbitMQ__Exchanges__Sensor: SENSOR.EXCHANGE
+      RabbitMQ__Exchanges__Traffic: TRAFFIC.EXCHANGE
 
       # Queues
       RabbitMQ__Queues__Analytics: sensor.traffic_analytics_service.queue
@@ -43,8 +41,6 @@ services:
 
     depends_on:
       traffic_analytics_postgres:
-        condition: service_started
-      rabbitmq:
         condition: service_started
 
     restart: always

@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TrafficAnalyticsStore")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+43ee0dcc90b43becde88284a7e932d6386849b75")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d98ad38de9c10401af670320a1a8d525341da90d")]
 [assembly: System.Reflection.AssemblyProductAttribute("TrafficAnalyticsStore")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TrafficAnalyticsStore")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

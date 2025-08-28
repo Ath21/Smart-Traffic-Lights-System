@@ -47,7 +47,7 @@ main()
         try_start "$SCRIPT_DIR/IntersectionControlService/upIntersectionControlService.sh"
         try_start "$SCRIPT_DIR/TrafficLightControlService/upTrafficLightControlService.sh"
         try_start "$SCRIPT_DIR/TrafficLightCoordinatorService/upTrafficLightCoordinatorService.sh"
-        try_start "$SCRIPT_DIR/TrafficDataAnalyticsService/upTrafficDataAnalyticsService.sh"
+        try_start "$SCRIPT_DIR/TrafficAnalyticsService/upTrafficAnalyticsService.sh"
     fi
 }
 

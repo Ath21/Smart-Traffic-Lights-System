@@ -5,9 +5,9 @@ services:
       - '15672:15672'
     environment:
       - RABBITMQ_DEFAULT_USER=rabbitmq
-      - RABBITMQ_DEFAULT_PASS=rabbitmq123!@#
+      - RABBITMQ_DEFAULT_PASS=rabbitmq123
     volumes:
-      - topics_data:/var/lib/rabbitmq
+      - topics_rabbitmq_data:/var/lib/rabbitmq
     restart: always
     healthcheck:
       test: ["CMD", "rabbitmqctl", "status"]
@@ -16,6 +16,6 @@ services:
       retries: 5
 
 volumes:
-  topics_data:
-    name: topics_data
+  topics_rabbitmq_data:
+    name: topics_rabbitmq_data
     driver: local

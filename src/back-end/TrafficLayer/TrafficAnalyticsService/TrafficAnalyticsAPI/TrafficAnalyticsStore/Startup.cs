@@ -107,7 +107,7 @@ public class Startup
 
         services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v2", new OpenApiInfo { Title = "Traffic Data Analytics API", Version = "v2.0" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Traffic Analytics API", Version = "v2.0" });
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     In = ParameterLocation.Header,
@@ -141,7 +141,7 @@ public class Startup
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Traffic Data Analytics API");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Traffic Analytics API");
             });
         }
 

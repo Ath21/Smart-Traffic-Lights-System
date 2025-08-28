@@ -12,7 +12,7 @@ public class TrafficAnalyticsDbContextFactory : IDesignTimeDbContextFactory<Traf
 
         // For design-time (migrations)
         // Replace with your actual PostgreSQL connection string
-        optionsBuilder.UseNpgsql("Host=traffic_analytics_postgres;Port=5432;Database=TrafficDataDb;Username=postgres;Password=postgres123!@#");
+        optionsBuilder.UseNpgsql("Host=traffic_analytics_postgres;Port=5432;Database=TrafficAnalyticsDb;Username=postgres;Password=postgres123");
 
         return new TrafficAnalyticsDbContext(optionsBuilder.Options, new ConfigurationBuilder().Build());
     }

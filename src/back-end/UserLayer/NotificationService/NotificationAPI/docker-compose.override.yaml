@@ -6,7 +6,7 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
 
       # MongoDB
-      DefaultConnection__ConnectionString: mongodb://mongo:mongo123!@#@notification_mongo:27017
+      DefaultConnection__ConnectionString: mongodb://mongo:mongo123@notification_mongo:27017
       DefaultConnection__DatabaseName: NotificationDb
       DefaultConnection__NotificationsCollectionName: notifications
       DefaultConnection__DeliveryLogsCollectionName: delivery_logs

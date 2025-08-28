@@ -2,15 +2,15 @@ services:
   traffic_analytics_postgres:
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres123!@#
-      POSTGRES_DB: TrafficDataDb
+      POSTGRES_PASSWORD: postgres123
+      POSTGRES_DB: TrafficAnalyticsDb
     ports:
       - "5432:5432"
     volumes:
-      - traffic_analytics_pgdata:/var/lib/postgresql/data
+      - traffic_analytics_postgres_data:/var/lib/postgresql/data
 
 volumes:
-  traffic_analytics_pgdata:
-    name: traffic_analytics_pgdata
+  traffic_analytics_postgres_data:
+    name: traffic_analytics_postgres_data
     driver: local
 
