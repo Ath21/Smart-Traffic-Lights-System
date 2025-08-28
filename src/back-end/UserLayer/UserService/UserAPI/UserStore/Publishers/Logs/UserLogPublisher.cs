@@ -11,6 +11,8 @@ public class UserLogPublisher : IUserLogPublisher
     private readonly string _auditKey;
     private readonly string _errorKey;
 
+    private const string ServiceTag = "[" + nameof(UserLogPublisher) + "]";
+
     public UserLogPublisher(IConfiguration configuration, ILogger<UserLogPublisher> logger, IBus bus)
     {
         _logger = logger;
@@ -21,6 +23,7 @@ public class UserLogPublisher : IUserLogPublisher
         _errorKey = section["Error"] ?? "log.user.user_service.error";
     }
 
+    // log.user.user_service.audit
     public async Task PublishAuditAsync(string action, string details, object? metadata = null)
     {
         var message = new AuditLogMessage(
@@ -34,9 +37,10 @@ public class UserLogPublisher : IUserLogPublisher
 
         await _bus.Publish(message, ctx => ctx.SetRoutingKey(_auditKey));
 
-        _logger.LogInformation("Audit log published: {Action}", action);
+        _logger.LogInformation("{Tag} Audit: {Action} -> {Details}", ServiceTag, action, details);
     }
 
+    // log.user.user_service.error
     public async Task PublishErrorAsync(string errorType, string messageText, object? metadata = null)
     {
         var message = new ErrorLogMessage(
@@ -50,6 +54,6 @@ public class UserLogPublisher : IUserLogPublisher
 
         await _bus.Publish(message, ctx => ctx.SetRoutingKey(_errorKey));
 
-        _logger.LogError("Error log published: {ErrorType} - {Message}", errorType, messageText);
+        _logger.LogError("{Tag} Error: {ErrorType} - {Message}", ServiceTag, errorType, messageText);
     }
 }

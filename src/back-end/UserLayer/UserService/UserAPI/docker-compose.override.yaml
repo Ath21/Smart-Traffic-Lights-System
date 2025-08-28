@@ -23,22 +23,26 @@ services:
       RabbitMQ__Exchanges__User: USER.EXCHANGE
       RabbitMQ__Exchanges__Traffic: TRAFFIC.EXCHANGE
 
-      # Queues (only those user service consumes)
-      RabbitMQ__Queues__User: user.user_service.queue
-      RabbitMQ__Queues__Traffic: traffic.user_service.queue
-
-      # Routing keys
+      # Publish to ...
+      ## User Exchange
+      RabbitMQ__RoutingKeys__NotificationRequest: user.notification.request
+      ## Traffic Exchange
+      RabbitMQ__RoutingKeys__LightControl: traffic.light.control.{intersection_id}.{light_id}
+      RabbitMQ__RoutingKeys__LightUpdate: traffic.light.update.{intersection_id}
+      ## Log Exchange
       RabbitMQ__RoutingKeys__Audit: log.user.user_service.audit
       RabbitMQ__RoutingKeys__Error: log.user.user_service.error
 
-      RabbitMQ__RoutingKeys__NotificationRequest: user.notification.request
+      # Consume from ...
+      ## User Exchange
+      RabbitMQ__Queues__User: user.user_service.queue
       RabbitMQ__RoutingKeys__NotificationAlert: user.notification.alert
       RabbitMQ__RoutingKeys__NotificationPublic: notification.event.public_notice
-
-      # Traffic analytics prefixes (dynamic IDs appended in code)
-      RabbitMQ__RoutingKeys__TrafficCongestionPrefix: traffic.analytics.congestion
-      RabbitMQ__RoutingKeys__TrafficSummaryPrefix: traffic.analytics.summary
-      RabbitMQ__RoutingKeys__TrafficIncidentPrefix: traffic.analytics.incident
+      ## Traffic Exchange
+      RabbitMQ__Queues__Traffic: traffic.user_service.queue
+      RabbitMQ__RoutingKeys__TrafficCongestion: traffic.analytics.congestion.{intersection_id}
+      RabbitMQ__RoutingKeys__TrafficSummary: traffic.analytics.summary.{intersection_id}
+      RabbitMQ__RoutingKeys__TrafficIncident: traffic.analytics.incident.{intersection_id}
 
     depends_on:
       user_mssql:

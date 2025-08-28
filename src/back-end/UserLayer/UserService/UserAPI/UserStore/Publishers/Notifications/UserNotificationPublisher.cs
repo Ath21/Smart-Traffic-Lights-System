@@ -1,4 +1,3 @@
-using System;
 using MassTransit;
 using UserMessages;
 
@@ -10,13 +9,18 @@ public class UserNotificationPublisher : IUserNotificationPublisher
     private readonly ILogger<UserNotificationPublisher> _logger;
     private readonly string _notificationKey;
 
+    private const string ServiceTag = "[" + nameof(UserNotificationPublisher) + "]";
+
     public UserNotificationPublisher(IConfiguration configuration, ILogger<UserNotificationPublisher> logger, IBus bus)
     {
         _logger = logger;
         _bus = bus;
-        _notificationKey = configuration["RabbitMQ:RoutingKeys:NotificationsRequest"] ?? "user.notification.request";
+
+        _notificationKey = configuration["RabbitMQ:RoutingKeys:NotificationRequest"] 
+                           ?? "user.notification.request";
     }
-    
+
+    // user.notification.request
     public async Task PublishNotificationAsync(
         Guid userId,
         string recipientEmail,
@@ -36,10 +40,8 @@ public class UserNotificationPublisher : IUserNotificationPublisher
         await _bus.Publish(notification, ctx => ctx.SetRoutingKey(_notificationKey));
 
         _logger.LogInformation(
-            "Notification published for {UserId}, type {Type}, email {Email}, audience {Audience}",
-            userId, type, recipientEmail, targetAudience
+            "{Tag} Published notification for {UserId}, type {Type}, email {Email}, audience {Audience}",
+            ServiceTag, userId, type, recipientEmail, targetAudience
         );
     }
-
-
 }

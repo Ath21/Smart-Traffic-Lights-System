@@ -61,7 +61,7 @@ public class UserController : ControllerBase
     }
 
     // GET: api/users/me
-    [HttpGet("me")]
+    [HttpGet("profile")]
     [Authorize(Roles = "User,Admin,TrafficOperator")] // Viewer δεν βλέπει προφίλ
     public async Task<ActionResult<UserProfileResponse>> GetProfile()
     {
