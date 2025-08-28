@@ -1,5 +1,4 @@
 using System.Text;
-using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -11,14 +10,12 @@ using UserStore.Middleware;
 using UserStore.Repository.Audit;
 using UserStore.Repository.Ses;
 using UserStore.Repository.Usr;
-using RabbitMQ.Client;
-using UserStore.Publishers;
-using UserMessages;
 using UserStore.Publishers.Logs;
 using UserStore.Publishers.Notifications;
 using UserStore.Publishers.Traffic;
-using UserStore.Consumers;
-
+using UserStore.Consumers.Traffic;
+using UserStore.Consumers.Usr;
+using UserStore.Business.Traffic;
 
 namespace UserStore;
 
@@ -48,6 +45,7 @@ public class Startup
         services.AddScoped(typeof(IPasswordHasher), typeof(PasswordHasher));
         services.AddScoped(typeof(ITokenService), typeof(TokenService));
         services.AddScoped(typeof(IUsrService), typeof(UsrService));
+        services.AddScoped(typeof(ITrafficService), typeof(TrafficService));
 
         /******* [4] AutoMapper ********/
 
@@ -98,7 +96,7 @@ public class Startup
         {
             options.AddPolicy("AllowFrontend", policy =>
             {
-                policy.WithOrigins("http://localhost:5173")   // Vue dev server
+                policy.WithOrigins("http://localhost:5173") 
                     .AllowAnyHeader()
                     .AllowAnyMethod();
 

@@ -10,21 +10,21 @@ public class UserStoreProfile : Profile
 {
     public UserStoreProfile()
     {
-        // Entity → DTOs
+        // Entity --> DTO
         CreateMap<User, UserDto>();
         CreateMap<User, UserProfileDto>();
         CreateMap<AuditLog, AuditLogDto>();
         CreateMap<Session, SessionDto>();
 
-        // Entity → Responses (direct mapping) ✅
+        /// Entity --> Response
         CreateMap<User, UserResponse>();
         CreateMap<User, UserProfileResponse>();
 
-        // DTO → Responses
+        // DTO --> Response
         CreateMap<UserDto, UserResponse>();
         CreateMap<UserProfileDto, UserProfileResponse>();
 
-        // Requests → Entities
+        // Request --> Entity
         CreateMap<RegisterUserRequest, User>()
             .ForMember(dest => dest.PasswordHash, opt => opt.Ignore())
             .ForMember(dest => dest.Role, opt => opt.Ignore());

@@ -2,7 +2,6 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UserStore.Business.Usr;
-using UserStore.Models.Dtos;
 using UserStore.Models.Requests;
 using UserStore.Models.Responses;
 

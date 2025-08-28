@@ -1,5 +1,3 @@
-using System;
-
 namespace UserStore.Models.Requests;
 
 public class LoginRequest

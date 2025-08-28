@@ -1,6 +1,6 @@
 namespace TrafficMessages;
 
-// traffic.analytics.congestion.<intersection_id>
+// traffic.analytics.congestion.{intersection_id}
 public record TrafficCongestionMessage(
     Guid AlertId,
     Guid IntersectionId,

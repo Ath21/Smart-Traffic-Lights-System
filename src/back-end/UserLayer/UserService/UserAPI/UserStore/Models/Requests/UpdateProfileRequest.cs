@@ -10,7 +10,6 @@ namespace UserStore.Models.Requests
         [Required, EmailAddress]
         public string Email { get; set; } = string.Empty;
 
-        // Optional password change
         public string? Password { get; set; }
 
         [Compare("Password", ErrorMessage = "Passwords do not match.")]

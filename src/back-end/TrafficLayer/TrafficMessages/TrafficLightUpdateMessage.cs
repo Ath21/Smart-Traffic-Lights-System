@@ -1,6 +1,6 @@
 namespace TrafficMessages;
 
-// traffic.light.update.<intersection_id>
+// traffic.light.update.{intersection_id}
 public record TrafficLightUpdateMessage(
     Guid IntersectionId,
     Guid LightId,

@@ -1,5 +1,3 @@
-using UserStore.Models.Dtos;
-
 namespace UserStore.Models.Responses;
 
 public class LoginResponse

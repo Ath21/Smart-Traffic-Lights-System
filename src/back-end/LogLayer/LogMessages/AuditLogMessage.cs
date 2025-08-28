@@ -1,5 +1,6 @@
 namespace LogMessages;
 
+// log.*.*.audit
 public record AuditLogMessage(
     Guid LogId,
     string ServiceName,

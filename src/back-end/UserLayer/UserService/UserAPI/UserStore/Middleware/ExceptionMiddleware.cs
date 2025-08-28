@@ -1,9 +1,5 @@
 using System.Net;
-using LogMessages;
-using MassTransit;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using UserStore.Publishers;
 using UserStore.Publishers.Logs;
 
 namespace UserStore.Middleware;
@@ -13,9 +9,9 @@ public class ExceptionMiddleware
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionMiddleware> _logger;
 
-    public ExceptionMiddleware(
-        RequestDelegate next,
-        ILogger<ExceptionMiddleware> logger)
+    private const string ServiceTag = "[" + nameof(ExceptionMiddleware) + "]";
+
+    public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
     {
         _next = next;
         _logger = logger;
@@ -84,22 +80,30 @@ public class ExceptionMiddleware
         string errorType,
         Exception ex)
     {
-        _logger.LogError(ex, "{Message}", userMessage);
+        _logger.LogError(ex, "{Tag} {Message}", ServiceTag, userMessage);
 
         try
         {
-            // Publish the error log via RabbitMQ
             var publisher = context.RequestServices.GetRequiredService<IUserLogPublisher>();
-            await publisher.PublishErrorAsync(errorType, ex.Message, new
-            {
-                Path = context.Request.Path,
-                Method = context.Request.Method,
-                TraceId = context.TraceIdentifier
-            });
+
+            await publisher.PublishErrorAsync(
+                errorType,
+                ex.Message,
+                new
+                {
+                    Path = context.Request.Path,
+                    Method = context.Request.Method,
+                    TraceId = context.TraceIdentifier,
+                    Exception = ex.GetType().Name,
+                    StackTrace = ex.StackTrace
+                }
+            );
+
+            _logger.LogInformation("{Tag} Error published to log exchange: {ErrorType}", ServiceTag, errorType);
         }
         catch (Exception pubEx)
         {
-            _logger.LogError(pubEx, "Failed to publish error log to broker");
+            _logger.LogError(pubEx, "{Tag} Failed to publish error log to broker", ServiceTag);
         }
 
         context.Response.StatusCode = (int)statusCode;
