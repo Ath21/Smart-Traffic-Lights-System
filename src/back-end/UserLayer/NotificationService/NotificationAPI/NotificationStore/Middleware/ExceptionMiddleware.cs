@@ -90,7 +90,7 @@ public class ExceptionMiddleware
 
         try
         {
-            var publisher = context.RequestServices.GetRequiredService<ILogPublisher>();
+            var publisher = context.RequestServices.GetRequiredService<INotificationLogPublisher>();
             await publisher.PublishErrorLogAsync(
                 errorType,
                 $"{ServiceTag} {ex.Message}",

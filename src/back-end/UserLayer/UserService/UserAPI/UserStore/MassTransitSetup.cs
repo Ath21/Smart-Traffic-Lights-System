@@ -71,13 +71,13 @@ public static class MassTransitSetup
 
                     e.Bind(userExchange, s =>
                     {
-                        s.RoutingKey = notifAlertKey;  // user.notification.alert
+                        s.RoutingKey = notifAlertKey;  
                         s.ExchangeType = ExchangeType.Direct;
                     });
 
                     e.Bind(userExchange, s =>
                     {
-                        s.RoutingKey = notifPublicKey; // notification.event.public_notice
+                        s.RoutingKey = notifPublicKey; 
                         s.ExchangeType = ExchangeType.Direct;
                     });
 

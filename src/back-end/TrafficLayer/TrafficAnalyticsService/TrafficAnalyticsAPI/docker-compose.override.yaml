@@ -22,22 +22,27 @@ services:
 
       # Exchanges
       RabbitMQ__Exchanges__Logs: LOG.EXCHANGE
-      RabbitMQ__Exchanges__Sensor: SENSOR.EXCHANGE
       RabbitMQ__Exchanges__Traffic: TRAFFIC.EXCHANGE
+      RabbitMQ__Exchanges__Sensor: SENSOR.EXCHANGE
 
-      # Queues
-      RabbitMQ__Queues__Analytics: sensor.traffic_analytics_service.queue
+      # Publish to ...
+      ## Traffic Exchange
+      RabbitMQ__RoutingKeys__TrafficCongestion: traffic.analytics.congestion.{intersection_id}
+      RabbitMQ__RoutingKeys__TrafficSummary: traffic.analytics.summary.{intersection_id}
+      RabbitMQ__RoutingKeys__TrafficIncident: traffic.analytics.incident.{intersection_id}
+      ## Log Exchange
+      RabbitMQ__RoutingKeys__Audit: log.traffic.analytics_service.audit
+      RabbitMQ__RoutingKeys__Error: log.traffic.analytics_service.error
 
-      # Routing Keys
-      RabbitMQ__RoutingKeys__VehicleCount: sensor.vehicle.count.*
-      RabbitMQ__RoutingKeys__EmergencyVehicle: sensor.vehicle.emergency.*
-      RabbitMQ__RoutingKeys__PublicTransport: sensor.public_transport.request.*
-      RabbitMQ__RoutingKeys__Pedestrian: sensor.pedestrian.request.*
-      RabbitMQ__RoutingKeys__Cyclist: sensor.cyclist.request.*
-      RabbitMQ__RoutingKeys__IncidentDetected: sensor.incident.detected.*
-      RabbitMQ__RoutingKeys__TrafficCongestionPrefix: traffic.analytics.congestion
-      RabbitMQ__RoutingKeys__TrafficIncidentPrefix: traffic.analytics.incident
-      RabbitMQ__RoutingKeys__TrafficSummaryPrefix: traffic.analytics.summary
+      # Consume from ...
+      ## Sensor Exchange
+      RabbitMQ__Queues__Sensor: sensor.traffic_analytics_service.queue
+      RabbitMQ__RoutingKeys__VehicleCount: sensor.vehicle.count.{intersection_id}
+      RabbitMQ__RoutingKeys__VehicleEmergency: sensor.vehicle.emergency.{intersection_id}
+      RabbitMQ__RoutingKeys__PublicTransportRequest: sensor.public_transport.request.{intersection_id}
+      RabbitMQ__RoutingKeys__CyclistRequest: sensor.cyclist.request.{intersection_id}
+      RabbitMQ__RoutingKeys__IncidentDetected: sensor.incident.detected.{intersection_id}
+
 
     depends_on:
       traffic_analytics_postgres:

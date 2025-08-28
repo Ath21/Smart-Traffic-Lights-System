@@ -1,10 +1,7 @@
 using MassTransit;
-using Microsoft.Extensions.Logging;
 using SensorMessages;
 using TrafficAnalyticsStore.Business;
 using TrafficAnalyticsStore.Models.Dtos;
-using TrafficAnalyticsStore.Publishers.Incident;
-using TrafficMessages;
 
 namespace TrafficAnalyticsStore.Consumers;
 
@@ -12,25 +9,25 @@ public class IncidentDetectionConsumer : IConsumer<IncidentDetectionMessage>
 {
     private readonly ILogger<IncidentDetectionConsumer> _logger;
     private readonly ITrafficAnalyticsService _analyticsService;
-    private readonly ITrafficIncidentPublisher _incidentPublisher;
+
+    private const string ServiceTag = "[" + nameof(IncidentDetectionConsumer) + "]";
 
     public IncidentDetectionConsumer(
         ILogger<IncidentDetectionConsumer> logger,
-        ITrafficAnalyticsService analyticsService,
-        ITrafficIncidentPublisher incidentPublisher)
+        ITrafficAnalyticsService analyticsService)
     {
         _logger = logger;
         _analyticsService = analyticsService;
-        _incidentPublisher = incidentPublisher;
     }
 
+    // sensor.incident.detected.{intersection_id}
     public async Task Consume(ConsumeContext<IncidentDetectionMessage> context)
     {
         var msg = context.Message;
 
         _logger.LogInformation(
-            "Incident detected at Intersection {IntersectionId}: {Description}",
-            msg.IntersectionId, msg.Description);
+            "{Tag} Incident detected at Intersection {IntersectionId}: {Description}",
+            ServiceTag, msg.IntersectionId, msg.Description);
 
         var dto = new IncidentDto
         {
@@ -41,16 +38,6 @@ public class IncidentDetectionConsumer : IConsumer<IncidentDetectionMessage>
             CreatedAt = msg.Timestamp
         };
 
-        // Persist in DB
         await _analyticsService.ReportIncidentAsync(dto);
-
-        // Publish incident event
-        var incidentMessage = new TrafficIncidentMessage(
-            dto.AlertId,
-            dto.IntersectionId,
-            dto.Message,
-            dto.CreatedAt
-        );
-        await _incidentPublisher.PublishIncidentAsync(incidentMessage);
     }
 }

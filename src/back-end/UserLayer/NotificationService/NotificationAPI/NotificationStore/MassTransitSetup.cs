@@ -47,7 +47,7 @@ public static class MassTransitSetup
                 var trafficIncidentKey  = rabbit["RoutingKeys:TrafficIncident"];
 
                 // =========================
-                // LOGS
+                // LOGS 
                 // =========================
                 cfg.Message<LogMessages.AuditLogMessage>(e => e.SetEntityName(logsExchange));
                 cfg.Publish<LogMessages.AuditLogMessage>(e => e.ExchangeType = ExchangeType.Direct);
@@ -56,7 +56,7 @@ public static class MassTransitSetup
                 cfg.Publish<LogMessages.ErrorLogMessage>(e => e.ExchangeType = ExchangeType.Direct);
 
                 // =========================
-                // USER NOTIFICATION REQUESTS
+                // USER NOTIFICATION REQUESTS 
                 // =========================
                 cfg.Message<UserMessages.UserNotificationRequest>(e => e.SetEntityName(userExchange));
                 cfg.Publish<UserMessages.UserNotificationRequest>(e => e.ExchangeType = ExchangeType.Direct);
@@ -75,13 +75,12 @@ public static class MassTransitSetup
                 });
 
                 // =========================
-                // TRAFFIC EVENTS
+                // TRAFFIC EVENTS 
                 // =========================
                 cfg.ReceiveEndpoint(trafficQueue, e =>
                 {
                     e.ConfigureConsumeTopology = false;
 
-                    // Replace {intersection_id} with * for wildcard binding
                     e.Bind(trafficExchange, s =>
                     {
                         s.RoutingKey = trafficCongKey.Replace("{intersection_id}", "*");

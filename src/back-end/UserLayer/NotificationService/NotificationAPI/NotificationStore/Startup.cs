@@ -54,7 +54,7 @@ public class Startup
         /******* [5] Publishers ********/
 
         services.AddScoped(typeof(INotificationPublisher), typeof(NotificationPublisher));
-        services.AddScoped(typeof(ILogPublisher), typeof(LogPublisher));
+        services.AddScoped(typeof(INotificationLogPublisher), typeof(NotificationLogPublisher));
 
         /******* [6] Consumers ********/
 

@@ -1,6 +1,6 @@
 namespace SensorMessages;
 
-// sensor.vehicle.count.<intersection_id>
+// sensor.vehicle.count.{intersection_id}
 public record VehicleCountMessage(
     Guid DetectionId,
     Guid IntersectionId,

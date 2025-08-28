@@ -29,27 +29,22 @@ public static class MassTransitSetup
                 });
 
                 // Exchanges
-                var logsExchange = rabbit["Exchanges:Logs"];
-                var sensorExchange = rabbit["Exchanges:Sensor"];
-                var trafficExchange = rabbit["Exchanges:Traffic"];
+                var logsExchange     = rabbit["Exchanges:Logs"];
+                var sensorExchange   = rabbit["Exchanges:Sensor"];
+                var trafficExchange  = rabbit["Exchanges:Traffic"];
 
                 // Queues
-                var analyticsQueue = rabbit["Queues:Analytics"];
+                var sensorQueue = rabbit["Queues:Sensor"];
 
-                // Routing keys
-                var vehicleCountKey = rabbit["RoutingKeys:VehicleCount"];
-                var emergencyVehicleKey = rabbit["RoutingKeys:EmergencyVehicle"];
-                var publicTransportKey = rabbit["RoutingKeys:PublicTransport"];
-                var pedestrianKey = rabbit["RoutingKeys:Pedestrian"];
-                var cyclistKey = rabbit["RoutingKeys:Cyclist"];
-                var incidentDetectedKey = rabbit["RoutingKeys:IncidentDetected"];
-
-                var congestionPrefix = rabbit["RoutingKeys:TrafficCongestionPrefix"];
-                var incidentPrefix = rabbit["RoutingKeys:TrafficIncidentPrefix"];
-                var summaryPrefix = rabbit["RoutingKeys:TrafficSummaryPrefix"];
+                var vehicleCountKey         = rabbit["RoutingKeys:VehicleCount"] ?? "sensor.vehicle.count.{intersection_id}";
+                var emergencyVehicleKey     = rabbit["RoutingKeys:VehicleEmergency"] ?? "sensor.vehicle.emergency.{intersection_id}";
+                var publicTransportKey      = rabbit["RoutingKeys:PublicTransportRequest"] ?? "sensor.public_transport.request.{intersection_id}";
+                var cyclistKey              = rabbit["RoutingKeys:CyclistRequest"] ?? "sensor.cyclist.request.{intersection_id}";
+                var incidentDetectedKey     = rabbit["RoutingKeys:IncidentDetected"] ?? "sensor.incident.detected.{intersection_id}";
+                var pedestrianKey           = rabbit["RoutingKeys:PedestrianRequest"] ?? "sensor.pedestrian.request.{intersection_id}";
 
                 // =========================
-                // LOGS (Publish only)
+                // LOGS (Publish)
                 // =========================
                 cfg.Message<LogMessages.AuditLogMessage>(e => e.SetEntityName(logsExchange));
                 cfg.Publish<LogMessages.AuditLogMessage>(e => e.ExchangeType = ExchangeType.Direct);
@@ -60,49 +55,43 @@ public static class MassTransitSetup
                 // =========================
                 // SENSOR EVENTS (Consume)
                 // =========================
-                cfg.ReceiveEndpoint(analyticsQueue, e =>
+                cfg.ReceiveEndpoint(sensorQueue, e =>
                 {
                     e.ConfigureConsumeTopology = false;
 
-                    // Bind vehicle counts
                     e.Bind(sensorExchange, s =>
                     {
-                        s.RoutingKey = vehicleCountKey ?? "sensor.vehicle.count.*";
+                        s.RoutingKey = vehicleCountKey.Replace("{intersection_id}", "*");
                         s.ExchangeType = ExchangeType.Topic;
                     });
 
-                    // Bind emergency vehicle
                     e.Bind(sensorExchange, s =>
                     {
-                        s.RoutingKey = emergencyVehicleKey ?? "sensor.vehicle.emergency.*";
+                        s.RoutingKey = emergencyVehicleKey.Replace("{intersection_id}", "*");
                         s.ExchangeType = ExchangeType.Topic;
                     });
 
-                    // Bind public transport
                     e.Bind(sensorExchange, s =>
                     {
-                        s.RoutingKey = publicTransportKey ?? "sensor.public_transport.request.*";
+                        s.RoutingKey = publicTransportKey.Replace("{intersection_id}", "*");
                         s.ExchangeType = ExchangeType.Topic;
                     });
 
-                    // Bind pedestrian
                     e.Bind(sensorExchange, s =>
                     {
-                        s.RoutingKey = pedestrianKey ?? "sensor.pedestrian.request.*";
+                        s.RoutingKey = pedestrianKey.Replace("{intersection_id}", "*");
                         s.ExchangeType = ExchangeType.Topic;
                     });
 
-                    // Bind cyclist
                     e.Bind(sensorExchange, s =>
                     {
-                        s.RoutingKey = cyclistKey ?? "sensor.cyclist.request.*";
+                        s.RoutingKey = cyclistKey.Replace("{intersection_id}", "*");
                         s.ExchangeType = ExchangeType.Topic;
                     });
 
-                    // Bind incidents
                     e.Bind(sensorExchange, s =>
                     {
-                        s.RoutingKey = incidentDetectedKey ?? "sensor.incident.detected.*";
+                        s.RoutingKey = incidentDetectedKey.Replace("{intersection_id}", "*");
                         s.ExchangeType = ExchangeType.Topic;
                     });
 
@@ -116,7 +105,7 @@ public static class MassTransitSetup
                 });
 
                 // =========================
-                // TRAFFIC EVENTS (Publish)
+                // TRAFFIC EVENTS 
                 // =========================
                 cfg.Message<TrafficMessages.TrafficSummaryMessage>(e => e.SetEntityName(trafficExchange));
                 cfg.Publish<TrafficMessages.TrafficSummaryMessage>(e => e.ExchangeType = ExchangeType.Topic);

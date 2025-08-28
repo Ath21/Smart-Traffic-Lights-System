@@ -1,6 +1,6 @@
 namespace NotificationStore.Publishers.Logs;
 
-public interface ILogPublisher
+public interface INotificationLogPublisher
 {
     // log.user.notification_service.audit
     Task PublishAuditLogAsync(string action, string details, object? metadata = null);

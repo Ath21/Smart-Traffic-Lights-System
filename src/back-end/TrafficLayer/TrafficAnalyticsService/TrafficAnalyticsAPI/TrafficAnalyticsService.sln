@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrafficAnalyticsData", "Tra
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogMessages", "..\..\..\LogLayer\LogMessages\LogMessages.csproj", "{AFF83E96-4A5A-46A8-9EE9-5984A0C6C5A7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SensorMessages", "..\..\..\SensorLayer\SensorMessages\SensorMessages.csproj", "{C818E3A8-2A24-4D84-964A-01158EA15594}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,6 +71,18 @@ Global
 		{AFF83E96-4A5A-46A8-9EE9-5984A0C6C5A7}.Release|x64.Build.0 = Release|Any CPU
 		{AFF83E96-4A5A-46A8-9EE9-5984A0C6C5A7}.Release|x86.ActiveCfg = Release|Any CPU
 		{AFF83E96-4A5A-46A8-9EE9-5984A0C6C5A7}.Release|x86.Build.0 = Release|Any CPU
+		{C818E3A8-2A24-4D84-964A-01158EA15594}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C818E3A8-2A24-4D84-964A-01158EA15594}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C818E3A8-2A24-4D84-964A-01158EA15594}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C818E3A8-2A24-4D84-964A-01158EA15594}.Debug|x64.Build.0 = Debug|Any CPU
+		{C818E3A8-2A24-4D84-964A-01158EA15594}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C818E3A8-2A24-4D84-964A-01158EA15594}.Debug|x86.Build.0 = Debug|Any CPU
+		{C818E3A8-2A24-4D84-964A-01158EA15594}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C818E3A8-2A24-4D84-964A-01158EA15594}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C818E3A8-2A24-4D84-964A-01158EA15594}.Release|x64.ActiveCfg = Release|Any CPU
+		{C818E3A8-2A24-4D84-964A-01158EA15594}.Release|x64.Build.0 = Release|Any CPU
+		{C818E3A8-2A24-4D84-964A-01158EA15594}.Release|x86.ActiveCfg = Release|Any CPU
+		{C818E3A8-2A24-4D84-964A-01158EA15594}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

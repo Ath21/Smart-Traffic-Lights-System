@@ -1,4 +1,3 @@
-using System;
 using MassTransit;
 using TrafficMessages;
 
@@ -10,21 +9,27 @@ public class TrafficIncidentPublisher : ITrafficIncidentPublisher
     private readonly ILogger<TrafficIncidentPublisher> _logger;
     private readonly string _incidentKey;
 
+    private const string ServiceTag = "[" + nameof(TrafficIncidentPublisher) + "]";
+
     public TrafficIncidentPublisher(IConfiguration configuration, ILogger<TrafficIncidentPublisher> logger, IBus bus)
     {
         _bus = bus;
         _logger = logger;
-        _incidentKey = configuration["RabbitMQ:RoutingKeys:TrafficIncident"] ?? "traffic.analytics.incident";
+
+        _incidentKey = configuration["RabbitMQ:RoutingKeys:TrafficIncident"] 
+                       ?? "traffic.analytics.incident.{intersection_id}";
     }
 
+    // traffic.analytics.incident.{intersection_id}
     public async Task PublishIncidentAsync(TrafficIncidentMessage message)
     {
-        var routingKey = $"{_incidentKey}.{message.IntersectionId}";
+        var routingKey = _incidentKey.Replace("{intersection_id}", message.IntersectionId.ToString());
+
         await _bus.Publish(message, ctx => ctx.SetRoutingKey(routingKey));
 
         _logger.LogInformation(
-            "Published Traffic Incident {IncidentId} for Intersection {IntersectionId}: {Description}",
-            message.IncidentId, message.IntersectionId, message.Description
+            "{Tag} Published Traffic Incident {IncidentId} for Intersection {IntersectionId}: {Description}",
+            ServiceTag, message.IncidentId, message.IntersectionId, message.Description
         );
     }
 }

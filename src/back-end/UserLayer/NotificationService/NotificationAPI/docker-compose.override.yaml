@@ -28,8 +28,8 @@ services:
       # RabbitMQ config
       RabbitMQ__Host: rabbitmq
       RabbitMQ__Port: 5672
-      RabbitMQ__Username: admin
-      RabbitMQ__Password: admin123
+      RabbitMQ__Username: rabbitmq
+      RabbitMQ__Password: rabbitmq123
 
       # Exchanges
       RabbitMQ__Exchanges__Logs: LOG.EXCHANGE

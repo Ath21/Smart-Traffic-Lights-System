@@ -1,11 +1,7 @@
 using MassTransit;
-using Microsoft.Extensions.Logging;
 using SensorMessages;
-using TrafficAnalyticsStore.Models.Dtos;
-using TrafficMessages;
 using TrafficAnalyticsStore.Business;
-using TrafficAnalyticsStore.Publishers.Summary;
-using TrafficAnalyticsStore.Publishers.Congestion;
+using TrafficAnalyticsStore.Models.Dtos;
 
 namespace TrafficAnalyticsStore.Consumers;
 
@@ -13,28 +9,25 @@ public class VehicleCountConsumer : IConsumer<VehicleCountMessage>
 {
     private readonly ILogger<VehicleCountConsumer> _logger;
     private readonly ITrafficAnalyticsService _analyticsService;
-    private readonly ITrafficSummaryPublisher _summaryPublisher;
-    private readonly ITrafficCongestionPublisher _congestionPublisher;
+
+    private const string ServiceTag = "[" + nameof(VehicleCountConsumer) + "]";
 
     public VehicleCountConsumer(
         ILogger<VehicleCountConsumer> logger,
-        ITrafficAnalyticsService analyticsService,
-        ITrafficSummaryPublisher summaryPublisher,
-        ITrafficCongestionPublisher congestionPublisher)
+        ITrafficAnalyticsService analyticsService)
     {
         _logger = logger;
         _analyticsService = analyticsService;
-        _summaryPublisher = summaryPublisher;
-        _congestionPublisher = congestionPublisher;
     }
 
+    // sensor.vehicle.count.{intersection_id}
     public async Task Consume(ConsumeContext<VehicleCountMessage> context)
     {
         var msg = context.Message;
 
         _logger.LogInformation(
-            "VehicleCount received at Intersection {IntersectionId}: Count {Count}, AvgSpeed {Speed}",
-            msg.IntersectionId, msg.VehicleCount, msg.AvgSpeed);
+            "{Tag} VehicleCount received at Intersection {IntersectionId}: Count {Count}, AvgSpeed {Speed}",
+            ServiceTag, msg.IntersectionId, msg.VehicleCount, msg.AvgSpeed);
 
         var dto = new SummaryDto
         {
@@ -47,7 +40,6 @@ public class VehicleCountConsumer : IConsumer<VehicleCountMessage>
 
         await _analyticsService.AddOrUpdateSummaryAsync(dto);
     }
-
 
     private static string InferCongestionLevel(int vehicleCount, float avgSpeed)
     {

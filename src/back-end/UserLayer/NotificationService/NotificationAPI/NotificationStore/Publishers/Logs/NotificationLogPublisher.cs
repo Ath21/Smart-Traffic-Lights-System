@@ -3,17 +3,17 @@ using MassTransit;
 
 namespace NotificationStore.Publishers.Logs;
 
-public class LogPublisher : ILogPublisher
+public class NotificationLogPublisher : INotificationLogPublisher
 {
     private readonly IBus _bus;
-    private readonly ILogger<LogPublisher> _logger;
+    private readonly ILogger<NotificationLogPublisher> _logger;
     private readonly string _serviceName;
     private readonly string _auditKey;
     private readonly string _errorKey;
 
-    private const string ServiceTag = "[" + nameof(LogPublisher) + "]";
+    private const string ServiceTag = "[" + nameof(NotificationLogPublisher) + "]";
 
-    public LogPublisher(IConfiguration configuration, ILogger<LogPublisher> logger, IBus bus)
+    public NotificationLogPublisher(IConfiguration configuration, ILogger<NotificationLogPublisher> logger, IBus bus)
     {
         _logger = logger;
         _bus = bus;

@@ -1,10 +1,7 @@
 using MassTransit;
-using Microsoft.Extensions.Logging;
 using SensorMessages;
-using TrafficAnalyticsStore.Models.Dtos;
-using TrafficMessages;
 using TrafficAnalyticsStore.Business;
-using TrafficAnalyticsStore.Publishers.Summary;
+using TrafficAnalyticsStore.Models.Dtos;
 
 namespace TrafficAnalyticsStore.Consumers;
 
@@ -12,25 +9,25 @@ public class PublicTransportConsumer : IConsumer<PublicTransportMessage>
 {
     private readonly ILogger<PublicTransportConsumer> _logger;
     private readonly ITrafficAnalyticsService _analyticsService;
-    private readonly ITrafficSummaryPublisher _summaryPublisher;
+
+    private const string ServiceTag = "[" + nameof(PublicTransportConsumer) + "]";
 
     public PublicTransportConsumer(
         ILogger<PublicTransportConsumer> logger,
-        ITrafficAnalyticsService analyticsService,
-        ITrafficSummaryPublisher summaryPublisher)
+        ITrafficAnalyticsService analyticsService)
     {
         _logger = logger;
         _analyticsService = analyticsService;
-        _summaryPublisher = summaryPublisher;
     }
 
+    // sensor.public_transport.request.{intersection_id}
     public async Task Consume(ConsumeContext<PublicTransportMessage> context)
     {
         var msg = context.Message;
 
         _logger.LogInformation(
-            "PublicTransport request at Intersection {IntersectionId}, Route {RouteId}",
-            msg.IntersectionId, msg.RouteId ?? "N/A");
+            "{Tag} PublicTransport request at Intersection {IntersectionId}, Route {RouteId}",
+            ServiceTag, msg.IntersectionId, msg.RouteId ?? "N/A");
 
         var dto = new SummaryDto
         {

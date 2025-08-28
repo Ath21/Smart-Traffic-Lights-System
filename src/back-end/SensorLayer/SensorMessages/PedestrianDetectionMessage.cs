@@ -1,6 +1,6 @@
 namespace SensorMessages;
 
-// sensor.pedestrian.request.<intersection_id>
+// sensor.pedestrian.request.{intersection_id}
 public record PedestrianDetectionMessage(
     Guid DetectionId,
     Guid IntersectionId,

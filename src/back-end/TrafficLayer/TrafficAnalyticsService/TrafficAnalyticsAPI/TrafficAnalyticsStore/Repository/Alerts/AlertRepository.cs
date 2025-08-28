@@ -1,4 +1,3 @@
-using System;
 using Microsoft.EntityFrameworkCore;
 using TrafficAnalyticsData;
 using TrafficAnalyticsData.Entities;

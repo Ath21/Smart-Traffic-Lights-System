@@ -1,10 +1,7 @@
 using MassTransit;
-using Microsoft.Extensions.Logging;
 using SensorMessages;
 using TrafficAnalyticsStore.Business;
 using TrafficAnalyticsStore.Models.Dtos;
-using TrafficAnalyticsStore.Publishers.Incident;
-using TrafficMessages;
 
 namespace TrafficAnalyticsStore.Consumers;
 
@@ -12,26 +9,25 @@ public class EmergencyVehicleConsumer : IConsumer<EmergencyVehicleMessage>
 {
     private readonly ILogger<EmergencyVehicleConsumer> _logger;
     private readonly ITrafficAnalyticsService _analyticsService;
-    private readonly ITrafficIncidentPublisher _incidentPublisher;
+
+    private const string ServiceTag = "[" + nameof(EmergencyVehicleConsumer) + "]";
 
     public EmergencyVehicleConsumer(
         ILogger<EmergencyVehicleConsumer> logger,
-        ITrafficAnalyticsService analyticsService,
-        ITrafficIncidentPublisher incidentPublisher)
+        ITrafficAnalyticsService analyticsService)
     {
         _logger = logger;
         _analyticsService = analyticsService;
-        _incidentPublisher = incidentPublisher;
     }
 
-
+    // sensor.vehicle.emergency.{intersection_id}
     public async Task Consume(ConsumeContext<EmergencyVehicleMessage> context)
     {
         var msg = context.Message;
 
         _logger.LogInformation(
-            "Emergency vehicle {Detected} at Intersection {IntersectionId}",
-            msg.Detected ? "DETECTED" : "Not Detected", msg.IntersectionId);
+            "{Tag} Emergency vehicle {Detected} at Intersection {IntersectionId}",
+            ServiceTag, msg.Detected ? "DETECTED" : "Not Detected", msg.IntersectionId);
 
         if (msg.Detected)
         {

@@ -1,6 +1,6 @@
 namespace SensorMessages;
 
-// sensor.vehicle.emergency.<intersection_id>
+// sensor.vehicle.emergency.{intersection_id}
 public record EmergencyVehicleMessage(
     Guid DetectionId,
     Guid IntersectionId,

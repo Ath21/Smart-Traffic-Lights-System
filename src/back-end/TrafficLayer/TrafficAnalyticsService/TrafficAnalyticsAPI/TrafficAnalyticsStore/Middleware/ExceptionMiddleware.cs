@@ -1,7 +1,4 @@
 using System.Net;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using LogMessages;
 using Microsoft.EntityFrameworkCore;
 using TrafficAnalyticsStore.Publishers.Logs;
 
@@ -11,6 +8,8 @@ public class ExceptionMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionMiddleware> _logger;
+
+    private const string ServiceTag = "[" + nameof(ExceptionMiddleware) + "]";
 
     public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
     {
@@ -24,80 +23,99 @@ public class ExceptionMiddleware
         {
             await _next(context);
         }
+        //  Authentication / Authorization
         catch (UnauthorizedAccessException ex)
         {
-            await HandleExceptionAsync(context, ex, HttpStatusCode.Unauthorized, "Unauthorized access", "AUTH_ERROR");
+            await HandleErrorAsync(context, HttpStatusCode.Unauthorized, "Unauthorized access", "AUTH_ERROR", ex);
         }
+
+        //  Not found / bad usage
         catch (KeyNotFoundException ex)
         {
-            await HandleExceptionAsync(context, ex, HttpStatusCode.NotFound, "Resource not found", "NOT_FOUND");
+            await HandleErrorAsync(context, HttpStatusCode.NotFound, "Resource not found", "NOT_FOUND", ex);
         }
         catch (InvalidOperationException ex)
         {
-            await HandleExceptionAsync(context, ex, HttpStatusCode.BadRequest, "Invalid operation", "INVALID_OPERATION");
+            await HandleErrorAsync(context, HttpStatusCode.Conflict, "Invalid operation", "INVALID_OPERATION", ex);
         }
         catch (ArgumentNullException ex)
         {
-            await HandleExceptionAsync(context, ex, HttpStatusCode.BadRequest, "Missing required parameter", "ARGUMENT_NULL");
+            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Missing required parameter", "ARGUMENT_NULL", ex);
         }
         catch (ArgumentException ex)
         {
-            await HandleExceptionAsync(context, ex, HttpStatusCode.BadRequest, "Invalid parameter", "ARGUMENT_ERROR");
+            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid parameter", "ARGUMENT_ERROR", ex);
         }
         catch (FormatException ex)
         {
-            await HandleExceptionAsync(context, ex, HttpStatusCode.BadRequest, "Invalid data format", "FORMAT_ERROR");
+            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid data format", "FORMAT_ERROR", ex);
         }
+
+        //  Timeouts / Network
         catch (TimeoutException ex)
         {
-            await HandleExceptionAsync(context, ex, HttpStatusCode.RequestTimeout, "Operation timed out", "TIMEOUT");
+            await HandleErrorAsync(context, HttpStatusCode.RequestTimeout, "Operation timed out", "TIMEOUT", ex);
         }
         catch (HttpRequestException ex)
         {
-            await HandleExceptionAsync(context, ex, HttpStatusCode.BadGateway, "External service unavailable", "HTTP_REQUEST_ERROR");
+            await HandleErrorAsync(context, HttpStatusCode.BadGateway, "External service unavailable", "HTTP_REQUEST_ERROR", ex);
         }
         catch (TaskCanceledException ex)
         {
-            await HandleExceptionAsync(context, ex, HttpStatusCode.RequestTimeout, "Operation canceled or timed out", "TASK_CANCELED");
+            await HandleErrorAsync(context, HttpStatusCode.RequestTimeout, "Operation canceled or timed out", "TASK_CANCELED", ex);
         }
+        catch (MassTransit.RequestTimeoutException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.RequestTimeout, "Message broker timeout", "BROKER_TIMEOUT", ex);
+        }
+
+        //  Database
         catch (DbUpdateException ex)
         {
-            await HandleExceptionAsync(context, ex, HttpStatusCode.Conflict, "Database update failed", "DB_UPDATE_ERROR");
+            await HandleErrorAsync(context, HttpStatusCode.Conflict, "Database update failed", "DB_UPDATE_ERROR", ex);
         }
+
+        //  Fallback
         catch (Exception ex)
         {
-            await HandleExceptionAsync(context, ex, HttpStatusCode.InternalServerError, "An unexpected error occurred", "UNEXPECTED");
+            await HandleErrorAsync(context, HttpStatusCode.InternalServerError, "An unexpected error occurred", "UNEXPECTED", ex);
         }
     }
 
-    private async Task HandleExceptionAsync(
+    private async Task HandleErrorAsync(
         HttpContext context,
-        Exception ex,
         HttpStatusCode statusCode,
         string userMessage,
-        string errorType)
+        string errorType,
+        Exception ex)
     {
-        _logger.LogError(ex, "{ErrorType} exception caught by middleware", errorType);
+        _logger.LogError(ex, "{Tag} {Message}", ServiceTag, userMessage);
 
         try
         {
-            // resolve publisher from DI scope
             var publisher = context.RequestServices.GetRequiredService<IAnalyticsLogPublisher>();
 
-            var errorLog = new ErrorLogMessage(
+            await publisher.PublishErrorAsync(new LogMessages.ErrorLogMessage(
                 Guid.NewGuid(),
-                "TrafficAnalyticsService",
+                "traffic_analytics_service",
                 errorType,
-                ex.Message,
+                $"{ServiceTag} {ex.Message}",
                 DateTime.UtcNow,
-                new { Path = context.Request.Path, Method = context.Request.Method, TraceId = context.TraceIdentifier }
-            );
+                new
+                {
+                    Path = context.Request.Path,
+                    Method = context.Request.Method,
+                    TraceId = context.TraceIdentifier,
+                    Exception = ex.GetType().Name,
+                    StackTrace = ex.StackTrace
+                }
+            ));
 
-            await publisher.PublishErrorAsync(errorLog);
+            _logger.LogInformation("{Tag} Error published to log exchange: {ErrorType}", ServiceTag, errorType);
         }
         catch (Exception pubEx)
         {
-            _logger.LogError(pubEx, "Failed to publish error log to broker");
+            _logger.LogError(pubEx, "{Tag} Failed to publish error log to broker", ServiceTag);
         }
 
         context.Response.StatusCode = (int)statusCode;

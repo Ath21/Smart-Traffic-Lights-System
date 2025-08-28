@@ -1,4 +1,3 @@
-using System;
 using AutoMapper;
 using TrafficAnalyticsData.Entities;
 using TrafficAnalyticsStore.Models.Dtos;
@@ -17,10 +16,12 @@ public class TrafficAnalyticsService : ITrafficAnalyticsService
     private readonly IAlertRepository _alertRepo;
     private readonly IMapper _mapper;
 
-    // Publishers
     private readonly ITrafficSummaryPublisher _summaryPublisher;
     private readonly ITrafficCongestionPublisher _congestionPublisher;
     private readonly ITrafficIncidentPublisher _incidentPublisher;
+    private readonly ILogger<TrafficAnalyticsService> _logger;
+
+    private const string ServiceTag = "[" + nameof(TrafficAnalyticsService) + "]";
 
     public TrafficAnalyticsService(
         IDailySummaryRepository summaryRepo,
@@ -28,7 +29,8 @@ public class TrafficAnalyticsService : ITrafficAnalyticsService
         IMapper mapper,
         ITrafficSummaryPublisher summaryPublisher,
         ITrafficCongestionPublisher congestionPublisher,
-        ITrafficIncidentPublisher incidentPublisher)
+        ITrafficIncidentPublisher incidentPublisher,
+        ILogger<TrafficAnalyticsService> logger)
     {
         _summaryRepo = summaryRepo;
         _alertRepo = alertRepo;
@@ -36,12 +38,15 @@ public class TrafficAnalyticsService : ITrafficAnalyticsService
         _summaryPublisher = summaryPublisher;
         _congestionPublisher = congestionPublisher;
         _incidentPublisher = incidentPublisher;
+        _logger = logger;
     }
 
-    // ----------------- Queries -----------------
-
+    // [GET] /api/traffic/analytics/congestion/{intersectionId}
     public async Task<CongestionDto?> GetCurrentCongestionAsync(Guid intersectionId)
     {
+        _logger.LogInformation("{Tag} Fetching current congestion for Intersection {IntersectionId}", 
+            ServiceTag, intersectionId);
+
         var today = DateTime.UtcNow.Date;
 
         var summary = (await _summaryRepo.GetByIntersectionAsync(intersectionId, today)).FirstOrDefault();
@@ -57,20 +62,31 @@ public class TrafficAnalyticsService : ITrafficAnalyticsService
         };
     }
 
+    // [GET] /api/traffic/analytics/incidents/{intersectionId}
     public async Task<IEnumerable<IncidentDto>> GetIncidentsAsync(Guid intersectionId)
     {
+        _logger.LogInformation("{Tag} Fetching incidents for Intersection {IntersectionId}", 
+            ServiceTag, intersectionId);
+
         var alerts = await _alertRepo.GetByIntersectionAsync(intersectionId);
         return _mapper.Map<IEnumerable<IncidentDto>>(alerts);
     }
 
+    // [GET] /api/traffic/analytics/summary/{intersectionId}/{date}
     public async Task<SummaryDto?> GetDailySummaryAsync(Guid intersectionId, DateTime date)
     {
+        _logger.LogInformation("{Tag} Fetching daily summary for Intersection {IntersectionId} at {Date}", 
+            ServiceTag, intersectionId, date);
+
         var summary = (await _summaryRepo.GetByIntersectionAsync(intersectionId, date)).FirstOrDefault();
         return summary == null ? null : _mapper.Map<SummaryDto>(summary);
     }
 
+    // [GET] /api/traffic/analytics/reports/daily
     public async Task<IEnumerable<SummaryDto>> GetDailyReportsAsync()
     {
+        _logger.LogInformation("{Tag} Fetching all daily reports for today", ServiceTag);
+
         var summaries = await _summaryRepo.GetAllAsync();
         var today = DateTime.UtcNow.Date;
 
@@ -78,10 +94,12 @@ public class TrafficAnalyticsService : ITrafficAnalyticsService
         return _mapper.Map<IEnumerable<SummaryDto>>(todaySummaries);
     }
 
-    // ----------------- Commands -----------------
-
+    // Command: add or update a daily summary
     public async Task AddOrUpdateSummaryAsync(SummaryDto dto)
     {
+        _logger.LogInformation("{Tag} Adding/updating summary for Intersection {IntersectionId} at {Date}", 
+            ServiceTag, dto.IntersectionId, dto.Date);
+
         var existing = (await _summaryRepo.GetByIntersectionAsync(dto.IntersectionId, dto.Date)).FirstOrDefault();
 
         if (existing == null)
@@ -90,6 +108,8 @@ public class TrafficAnalyticsService : ITrafficAnalyticsService
             entity.SummaryId = Guid.NewGuid();
             await _summaryRepo.AddAsync(entity);
             dto.SummaryId = entity.SummaryId;
+
+            _logger.LogInformation("{Tag} New summary created with Id {SummaryId}", ServiceTag, entity.SummaryId);
         }
         else
         {
@@ -99,6 +119,8 @@ public class TrafficAnalyticsService : ITrafficAnalyticsService
             await _summaryRepo.UpdateAsync(existing);
 
             dto.SummaryId = existing.SummaryId;
+
+            _logger.LogInformation("{Tag} Existing summary updated with Id {SummaryId}", ServiceTag, existing.SummaryId);
         }
 
         // Publish summary
@@ -112,6 +134,9 @@ public class TrafficAnalyticsService : ITrafficAnalyticsService
         );
         await _summaryPublisher.PublishSummaryAsync(summaryMessage);
 
+        _logger.LogInformation("{Tag} Summary published for Intersection {IntersectionId}", 
+            ServiceTag, dto.IntersectionId);
+
         // Publish congestion if applicable
         if (dto.CongestionLevel is "High" or "Medium" or "Low")
         {
@@ -123,11 +148,18 @@ public class TrafficAnalyticsService : ITrafficAnalyticsService
                 DateTime.UtcNow
             );
             await _congestionPublisher.PublishCongestionAsync(congestionMessage);
+
+            _logger.LogInformation("{Tag} Congestion event published for Intersection {IntersectionId} with level {Level}", 
+                ServiceTag, dto.IntersectionId, dto.CongestionLevel);
         }
     }
 
+    // Command: report incident
     public async Task ReportIncidentAsync(IncidentDto dto)
     {
+        _logger.LogInformation("{Tag} Reporting incident at Intersection {IntersectionId}", 
+            ServiceTag, dto.IntersectionId);
+
         var entity = _mapper.Map<Alert>(dto);
         entity.AlertId = dto.AlertId != Guid.Empty ? dto.AlertId : Guid.NewGuid();
         entity.CreatedAt = dto.CreatedAt == default ? DateTime.UtcNow : dto.CreatedAt;
@@ -142,5 +174,8 @@ public class TrafficAnalyticsService : ITrafficAnalyticsService
             entity.CreatedAt
         );
         await _incidentPublisher.PublishIncidentAsync(incidentMessage);
+
+        _logger.LogInformation("{Tag} Incident published with Id {IncidentId} at Intersection {IntersectionId}", 
+            ServiceTag, entity.AlertId, entity.IntersectionId);
     }
 }

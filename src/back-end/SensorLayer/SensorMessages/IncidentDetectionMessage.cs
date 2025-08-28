@@ -1,6 +1,6 @@
 namespace SensorMessages;
 
-// sensor.incident.detected.<intersection_id>
+// sensor.incident.detected.{intersection_id}
 public record IncidentDetectionMessage(
     Guid DetectionId,
     Guid IntersectionId,

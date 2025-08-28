@@ -19,7 +19,7 @@ public class TrafficAnalyticsController : ControllerBase
         _mapper = mapper;
     }
 
-    // Viewers, Users, Admins, and TrafficOperators can all check congestion
+    // GET: /api/traffic/analytics/congestion/{intersectionId}
     [HttpGet("congestion/{intersectionId}")]
     [AllowAnonymous]
     public async Task<IActionResult> GetCongestion(Guid intersectionId)
@@ -31,7 +31,7 @@ public class TrafficAnalyticsController : ControllerBase
         return Ok(response);
     }
 
-    // Incidents can be accessed by Operators, Admins, and Users
+    // GET: /api/traffic/analytics/incidents/{intersectionId}
     [HttpGet("incidents/{intersectionId}")]
     [Authorize(Roles = "User,Admin,TrafficOperator")]
     public async Task<IActionResult> GetIncidents(Guid intersectionId)
@@ -41,7 +41,7 @@ public class TrafficAnalyticsController : ControllerBase
         return Ok(responses);
     }
 
-    // Summaries can be accessed by User, Admin, and TrafficOperator
+    // GET: /api/traffic/analytics/summary/{intersectionId}/{date}
     [HttpGet("summary/{intersectionId}/{date}")]
     [Authorize(Roles = "User,Admin,TrafficOperator")]
     public async Task<IActionResult> GetSummary(Guid intersectionId, DateTime date)
@@ -53,7 +53,7 @@ public class TrafficAnalyticsController : ControllerBase
         return Ok(response);
     }
 
-    // Daily reports should only be accessible by Admins and TrafficOperators
+    // GET: /api/traffic/analytics/reports/daily
     [HttpGet("reports/daily")]
     [Authorize(Roles = "User,Admin,TrafficOperator")]
     public async Task<IActionResult> GetDailyReport()
