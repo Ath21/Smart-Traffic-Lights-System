@@ -19,9 +19,15 @@ public class TrafficAnalyticsController : ControllerBase
         _mapper = mapper;
     }
 
+    // ============================================================
     // GET: /api/traffic/analytics/congestion/{intersectionId}
-    [HttpGet("congestion/{intersectionId}")]
+    // Roles: Anonymous
+    // Purpose: Get current congestion data for a specific intersection
+    // ============================================================
+    [HttpGet("congestion/{intersectionId:guid}")]
     [AllowAnonymous]
+    [ProducesResponseType(typeof(CongestionResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetCongestion(Guid intersectionId)
     {
         var dto = await _service.GetCurrentCongestionAsync(intersectionId);
@@ -31,9 +37,14 @@ public class TrafficAnalyticsController : ControllerBase
         return Ok(response);
     }
 
+    // ============================================================
     // GET: /api/traffic/analytics/incidents/{intersectionId}
-    [HttpGet("incidents/{intersectionId}")]
-    [Authorize(Roles = "User,Admin,TrafficOperator")]
+    // Roles: User, TrafficOperator, Admin
+    // Purpose: Get all incidents detected for a specific intersection
+    // ============================================================
+    [HttpGet("incidents/{intersectionId:guid}")]
+    [Authorize(Roles = "User,TrafficOperator,Admin")]
+    [ProducesResponseType(typeof(IEnumerable<IncidentResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetIncidents(Guid intersectionId)
     {
         var dtos = await _service.GetIncidentsAsync(intersectionId);
@@ -41,9 +52,15 @@ public class TrafficAnalyticsController : ControllerBase
         return Ok(responses);
     }
 
+    // ============================================================
     // GET: /api/traffic/analytics/summary/{intersectionId}/{date}
-    [HttpGet("summary/{intersectionId}/{date}")]
-    [Authorize(Roles = "User,Admin,TrafficOperator")]
+    // Roles: User, TrafficOperator, Admin
+    // Purpose: Get daily traffic summary for a specific intersection and date
+    // ============================================================
+    [HttpGet("summary/{intersectionId:guid}/{date}")]
+    [Authorize(Roles = "User,TrafficOperator,Admin")]
+    [ProducesResponseType(typeof(SummaryResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetSummary(Guid intersectionId, DateTime date)
     {
         var dto = await _service.GetDailySummaryAsync(intersectionId, date);
@@ -53,9 +70,14 @@ public class TrafficAnalyticsController : ControllerBase
         return Ok(response);
     }
 
+    // ============================================================
     // GET: /api/traffic/analytics/reports/daily
+    // Roles: User, TrafficOperator, Admin
+    // Purpose: Get all daily traffic reports (system-wide)
+    // ============================================================
     [HttpGet("reports/daily")]
-    [Authorize(Roles = "User,Admin,TrafficOperator")]
+    [Authorize(Roles = "User,TrafficOperator,Admin")]
+    [ProducesResponseType(typeof(IEnumerable<SummaryResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetDailyReport()
     {
         var dtos = await _service.GetDailyReportsAsync();

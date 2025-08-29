@@ -1,7 +1,9 @@
 using MassTransit;
 using Microsoft.Extensions.Logging;
-using TrafficMessages;
 using TrafficLightCoordinatorStore.Business;
+using TrafficLightCoordinatorStore.Business.Coordination;
+using TrafficLightCoordinatorStore.Models.Dtos;
+using TrafficMessages;
 
 namespace TrafficLightCoordinatorStore.Consumers;
 
@@ -29,6 +31,16 @@ public class PriorityMessageConsumer : IConsumer<PriorityMessage>
             "{Tag} Received priority {Type} for Intersection {IntersectionId}, Reason={Reason}, Ts={Ts:O}",
             ServiceTag, msg.PriorityType, msg.IntersectionId, msg.Reason, msg.Timestamp);
 
-        await _coordinatorService.HandlePriorityAsync(msg, context.CancellationToken);
+        // Map message → DTO
+        var dto = new PriorityDto
+        {
+            IntersectionId = msg.IntersectionId,
+            PriorityType   = msg.PriorityType,
+            Reason         = msg.Reason ?? "N/A",
+            AppliedPattern = PatternBuilder.For(msg.PriorityType, active: true),
+            AppliedAt      = DateTimeOffset.UtcNow
+        };
+
+        await _coordinatorService.HandlePriorityAsync(dto, context.CancellationToken);
     }
 }

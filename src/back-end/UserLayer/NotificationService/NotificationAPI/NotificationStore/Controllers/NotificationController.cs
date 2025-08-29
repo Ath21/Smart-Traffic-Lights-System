@@ -7,8 +7,8 @@ using NotificationStore.Models.Responses;
 
 namespace NotificationStore.Controllers;
 
-[Route("api/notifications")]
 [ApiController]
+[Route("api/notifications")]
 public class NotificationController : ControllerBase
 {
     private readonly INotificationService _notificationService;
@@ -18,9 +18,15 @@ public class NotificationController : ControllerBase
         _notificationService = notificationService;
     }
 
+    // ============================================================
     // POST: /api/notifications/send
+    // Roles: Admin, TrafficOperator
+    // Purpose: Send a direct notification to a specific user
+    // ============================================================
     [HttpPost("send")]
     [Authorize(Roles = "Admin,TrafficOperator")]
+    [ProducesResponseType(typeof(NotificationResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<NotificationResponse>> SendUserNotification([FromBody] SendNotificationRequest request)
     {
         if (request == null ||
@@ -41,7 +47,7 @@ public class NotificationController : ControllerBase
 
         return Ok(new NotificationResponse
         {
-            NotificationId = Guid.NewGuid(), 
+            NotificationId = Guid.NewGuid(),
             Type = request.Type,
             Title = $"{request.Type} Notification",
             Message = request.Message,
@@ -51,9 +57,15 @@ public class NotificationController : ControllerBase
         });
     }
 
+    // ============================================================
     // POST: /api/notifications/public-notice
+    // Roles: Admin, TrafficOperator
+    // Purpose: Publish a notification for a group/audience
+    // ============================================================
     [HttpPost("public-notice")]
     [Authorize(Roles = "Admin,TrafficOperator")]
+    [ProducesResponseType(typeof(NotificationResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<NotificationResponse>> SendPublicNotice([FromBody] PublicNoticeRequest request)
     {
         if (request == null ||
@@ -68,19 +80,25 @@ public class NotificationController : ControllerBase
 
         return Ok(new NotificationResponse
         {
-            NotificationId = Guid.NewGuid(), 
+            NotificationId = Guid.NewGuid(),
             Type = "PublicNotice",
             Title = request.Title,
             Message = request.Message,
-            RecipientEmail = request.TargetAudience, 
+            RecipientEmail = request.TargetAudience,
             Status = "Published",
             CreatedAt = DateTime.UtcNow
         });
     }
 
+    // ============================================================
     // GET: /api/notifications/recipient/{email}
+    // Roles: User, Admin, TrafficOperator
+    // Purpose: Retrieve notifications by recipient email
+    // ============================================================
     [HttpGet("recipient/{email}")]
     [Authorize(Roles = "User,Admin,TrafficOperator")]
+    [ProducesResponseType(typeof(IEnumerable<NotificationResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<IEnumerable<NotificationResponse>>> GetByRecipientEmail(string email)
     {
         if (string.IsNullOrWhiteSpace(email))
@@ -96,14 +114,19 @@ public class NotificationController : ControllerBase
             RecipientEmail = n.RecipientEmail,
             Status = n.Status,
             CreatedAt = n.CreatedAt,
-            IsRead = n.IsRead 
+            IsRead = n.IsRead
         }));
-
     }
 
+    // ============================================================
     // GET: /api/notifications/history/{userId}
+    // Roles: Admin
+    // Purpose: Retrieve delivery history logs for a user
+    // ============================================================
     [HttpGet("history/{userId:guid}")]
     [Authorize(Roles = "Admin")]
+    [ProducesResponseType(typeof(IEnumerable<DeliveryLogResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<IEnumerable<DeliveryLogResponse>>> GetUserHistory(Guid userId)
     {
         if (userId == Guid.Empty)
@@ -121,9 +144,15 @@ public class NotificationController : ControllerBase
         }));
     }
 
+    // ============================================================
     // PATCH: /api/notifications/{notificationId}/read
+    // Roles: User, Admin, TrafficOperator
+    // Purpose: Mark a single notification as read
+    // ============================================================
     [HttpPatch("{notificationId:guid}/read")]
     [Authorize(Roles = "User,Admin,TrafficOperator")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult> MarkAsRead(Guid notificationId)
     {
         var email = User.FindFirstValue(ClaimTypes.Email);
@@ -134,9 +163,15 @@ public class NotificationController : ControllerBase
         return Ok(new { status = "read", notificationId });
     }
 
+    // ============================================================
     // PATCH: /api/notifications/read-all
+    // Roles: User, Admin, TrafficOperator
+    // Purpose: Mark all notifications for current user as read
+    // ============================================================
     [HttpPatch("read-all")]
     [Authorize(Roles = "User,Admin,TrafficOperator")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult> MarkAllAsRead()
     {
         var email = User.FindFirstValue(ClaimTypes.Email);
