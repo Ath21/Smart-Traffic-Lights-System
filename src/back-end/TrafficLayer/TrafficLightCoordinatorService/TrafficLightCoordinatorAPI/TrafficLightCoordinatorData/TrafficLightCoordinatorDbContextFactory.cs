@@ -8,9 +8,12 @@ public class TrafficLightCoordinatorDbContextFactory : IDesignTimeDbContextFacto
 {
     public TrafficLightCoordinatorDbContext CreateDbContext(string[] args)
     {
-        var options = new DbContextOptionsBuilder<TrafficLightCoordinatorDbContext>();
-        options.UseNpgsql("Host=traffic_light_coordinator_postgres;Port=5432;Database=TrafficLightDb;Username=traffic;Password=traffic;Include Error Detail=true");
+        var options = new DbContextOptionsBuilder<TrafficLightCoordinatorDbContext>()
+            .UseNpgsql(
+                "Host=traffic_light_coordinator_postgres;Port=5432;Database=TrafficLightDb;Username=postgres;Password=postgres123;Include Error Detail=true"
+            )
+            .Options;
 
-        return new TrafficLightCoordinatorDbContext(options.Options, new ConfigurationBuilder().Build());
+        return new TrafficLightCoordinatorDbContext(options, new ConfigurationBuilder().Build());
     }
 }

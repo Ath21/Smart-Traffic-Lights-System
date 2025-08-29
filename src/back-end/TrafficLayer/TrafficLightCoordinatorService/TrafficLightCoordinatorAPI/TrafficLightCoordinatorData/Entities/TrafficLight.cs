@@ -14,8 +14,8 @@ public class TrafficLight
 
     public Intersection? Intersection { get; set; }
 
-    [Column("current_state"), MaxLength(50)]
-    public string CurrentState { get; set; } = "RED";
+    [Column("current_state")]
+    public TrafficLightState CurrentState { get; set; } = TrafficLightState.RED;
 
     [Column("updated_at")]
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;

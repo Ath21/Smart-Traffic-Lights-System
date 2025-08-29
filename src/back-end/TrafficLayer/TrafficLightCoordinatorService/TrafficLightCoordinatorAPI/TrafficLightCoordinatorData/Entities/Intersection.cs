@@ -12,7 +12,6 @@ public class Intersection
     [Column("name"), MaxLength(255)]
     public string Name { get; set; } = string.Empty;
 
-    // Store as JSON in Postgres
     [Column("location", TypeName = "jsonb")]
     public string? Location { get; set; }
 
