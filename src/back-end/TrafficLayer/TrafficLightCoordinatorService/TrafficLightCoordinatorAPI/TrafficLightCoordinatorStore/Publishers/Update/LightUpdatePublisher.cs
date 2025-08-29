@@ -16,7 +16,6 @@ public class LightUpdatePublisher : ILightUpdatePublisher
         _bus = bus;
         _logger = logger;
 
-        // from compose mapping
         _updateKey = config["RabbitMQ:RoutingKeys:LightUpdate"] 
                      ?? "traffic.light.update.{intersection_id}";
     }
