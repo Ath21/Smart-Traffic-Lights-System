@@ -56,5 +56,5 @@ services:
 
     depends_on:
       notification_mongo:
-        condition: service_started
+        condition: service_healthy
     restart: always

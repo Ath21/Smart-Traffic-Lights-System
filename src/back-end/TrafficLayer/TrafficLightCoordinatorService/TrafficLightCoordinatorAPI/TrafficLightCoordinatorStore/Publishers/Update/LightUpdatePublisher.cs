@@ -1,11 +1,5 @@
-// Publishers/LightUpdatePublisher.cs
 using MassTransit;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using TrafficMessages.Light; // your records
+using TrafficMessages;
 
 namespace TrafficLightCoordinatorStore.Publishers.Update;
 
@@ -13,30 +7,30 @@ public class LightUpdatePublisher : ILightUpdatePublisher
 {
     private readonly IBus _bus;
     private readonly ILogger<LightUpdatePublisher> _logger;
-    private readonly string _updateExchange;
+    private readonly string _updateKey;
 
-    public LightUpdatePublisher(IBus bus, IConfiguration config, ILogger<LightUpdatePublisher> logger)
+    private const string ServiceTag = "[" + nameof(LightUpdatePublisher) + "]";
+
+    public LightUpdatePublisher(IConfiguration config, ILogger<LightUpdatePublisher> logger, IBus bus)
     {
         _bus = bus;
         _logger = logger;
-        _updateExchange = config.GetSection("RabbitMQ")["TrafficLightUpdateExchange"] ?? "traffic.light.update";
+
+        // from compose mapping
+        _updateKey = config["RabbitMQ:RoutingKeys:LightUpdate"] 
+                     ?? "traffic.light.update.{intersection_id}";
     }
 
-    public async Task PublishAsync(string intersectionId, string currentPattern, CancellationToken ct)
+    // traffic.light.update.{intersection_id}
+    public async Task PublishAsync(TrafficLightUpdateMessage message, CancellationToken ct)
     {
-        _logger.LogInformation("[UPDATE] Publishing TrafficLightStateUpdate to '{Exchange}' with routing key '{Key}'",
-            _updateExchange, intersectionId);
+        var routingKey = _updateKey.Replace("{intersection_id}", message.IntersectionId.ToString());
 
-        await _bus.Publish(new TrafficLightStateUpdate(
-            IntersectionId: intersectionId,
-            CurrentPattern: currentPattern,
-            Timestamp: DateTime.UtcNow),
-            context =>
-            {
-                // topic route: traffic.light.update.<intersection_id>
-                context.SetRoutingKey(intersectionId);
-            }, ct);
+        await _bus.Publish(message, ctx => ctx.SetRoutingKey(routingKey), ct);
 
-        _logger.LogInformation("[UPDATE] Published schedule for intersection {Id}: {Pattern}", intersectionId, currentPattern);
+        _logger.LogInformation(
+            "{Tag} Published Light Update for Intersection {IntersectionId} Light {LightId} -> {State} ({RoutingKey})",
+            ServiceTag, message.IntersectionId, message.LightId, message.CurrentState, routingKey
+        );
     }
 }

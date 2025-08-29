@@ -48,5 +48,5 @@ services:
 
     depends_on:
       user_mssql:
-        condition: service_started
+        condition: service_healthy
     restart: always

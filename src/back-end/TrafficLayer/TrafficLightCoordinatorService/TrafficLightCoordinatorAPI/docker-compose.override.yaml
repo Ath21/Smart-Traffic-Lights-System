@@ -10,36 +10,37 @@ services:
       # Matches our code: ConnectionStrings:TrafficLightDb
       ConnectionStrings__DefaultConnection: Host=traffic_light_coordinator_postgres;Port=5432;Database=TrafficLightDb;Username=traffic;Password=traffic;Include Error Detail=true
 
-      # ---- RabbitMQ connection ----
+      # JWT
+      Jwt__Issuer: http://stls_backend:8080
+      Jwt__Audience: http://stls_backend:8080
+      Jwt__Key: Nn7kLa8Rzv1XHt9UwMqP4YbFdJxVt2Km
+
+      # RabbitMQ
       RabbitMQ__Host: rabbitmq
-      RabbitMQ__Username: admin
-      RabbitMQ__Password: admin123
+      RabbitMQ__Port: 5672
+      RabbitMQ__Username: rabbitmq
+      RabbitMQ__Password: rabbitmq123
 
-      # ---- Queues (the coordinator's receive queue) ----
-      RabbitMQ__Queue__TrafficCoordinationQueue: traffic.light.coordination
+      # Exchanges
+      RabbitMQ__Exchanges__Logs: LOG.EXCHANGE
+      RabbitMQ__Exchanges__Traffic: TRAFFIC.EXCHANGE
 
-      # ---- Topic Exchanges we SUBSCRIBE to (priority + congestion) ----
-      RabbitMQ__Exchange__PriorityEmergencyVehicle: priority.emergency.vehicle
-      RabbitMQ__Exchange__PriorityPublicTransport: priority.public.transport
-      RabbitMQ__Exchange__PriorityPedestrian:      priority.pedestrian
-      RabbitMQ__Exchange__PriorityCyclist:         priority.cyclist
-      RabbitMQ__Exchange__TrafficAnalyticsCongestionAlert: traffic.analytics.congestion_alert
+      # Publish to ...
+      ## Traffic Exchange
+      RabbitMQ__RoutingKeys__LightUpdate: traffic.light.update.{intersection_id}
+      ## Log Exchange
+      RabbitMQ__RoutingKeys__Audit: log.traffic.light_coordinator_service.audit
+      RabbitMQ__RoutingKeys__Error: log.traffic.light_coordinator_service.error
 
-      # ---- Routing keys used on the receive bindings ----
-      RabbitMQ__RoutingKey__PriorityEmergencyKey: "*"
-      RabbitMQ__RoutingKey__PriorityPublicKey:    "*"
-      RabbitMQ__RoutingKey__PriorityPedestrianKey: "*"
-      RabbitMQ__RoutingKey__PriorityCyclistKey:   "*"
-      RabbitMQ__RoutingKey__TrafficAnalyticsCongestionKey: "*"
-
-      # ---- Exchange we PUBLISH to for light updates ----
-      RabbitMQ__TrafficLightUpdateExchange: traffic.light.update
-
-      # ---- Logs exchange + routing keys (used by TrafficLogPublisher) ----
-      RabbitMQ__TrafficLogsExchange: traffic_light_coordinator.logs.exchange
-      RabbitMQ__RoutingKeys__Audit:  traffic_light_coordinator.logs.audit
-      RabbitMQ__RoutingKeys__Error:  traffic_light_coordinator.logs.error
-      RabbitMQ__RoutingKeys__Info:   traffic_light_coordinator.logs.info
+      # Consume from ...
+      ## Traffic Exchange
+      RabbitMQ__Queues__Traffic: traffic.coordinator_service.queue
+      RabbitMQ__RoutingKeys__Emergency: priority.emergency.{intersection_id}
+      RabbitMQ__RoutingKeys__PublicTransport: priority.public_transport.{intersection_id}
+      RabbitMQ__RoutingKeys__Pedestrian: priority.pedestrian.{intersection_id}
+      RabbitMQ__RoutingKeys__Cyclist: priority.cyclist.{intersection_id}
+      RabbitMQ__RoutingKeys__Incident: priority.incident.{intersection_id}
+      RabbitMQ__RoutingKeys__Congestion: traffic.analytics.congestion.{intersection_id}
 
     depends_on:
       traffic_light_coordinator_postgres:

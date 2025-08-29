@@ -1,15 +1,23 @@
 services:
-  
   user_mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: user_mssql
     environment:
       - ACCEPT_EULA=Y
       - MSSQL_SA_PASSWORD=MyPass@word
       - MSSQL_PID=Express
     ports:
-      - '1433:1433'
+      - "1433:1433"
     volumes:
       - user_mssql_data:/var/opt/mssql
     restart: always
+    healthcheck:
+      test: >
+        ["CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P $${MSSQL_SA_PASSWORD} -Q 'SELECT 1' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
 volumes:
   user_mssql_data:

@@ -46,6 +46,6 @@ services:
 
     depends_on:
       traffic_analytics_postgres:
-        condition: service_started
+        condition: service_healthy
 
     restart: always

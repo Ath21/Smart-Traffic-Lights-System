@@ -1330,6 +1330,16 @@
           "buildTransitive/net6.0/_._": {}
         }
       },
+      "LogMessages/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "compile": {
+          "bin/placeholder/LogMessages.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/LogMessages.dll": {}
+        }
+      },
       "TrafficLightCoordinatorData/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
@@ -4033,6 +4043,11 @@
         "useSharedDesignerContext.txt"
       ]
     },
+    "LogMessages/1.0.0": {
+      "type": "project",
+      "path": "../../../../LogLayer/LogMessages/LogMessages.csproj",
+      "msbuildProject": "../../../../LogLayer/LogMessages/LogMessages.csproj"
+    },
     "TrafficLightCoordinatorData/1.0.0": {
       "type": "project",
       "path": "../TrafficLightCoordinatorData/TrafficLightCoordinatorData.csproj",
@@ -4047,6 +4062,7 @@
   "projectFileDependencyGroups": {
     "net9.0": [
       "AutoMapper.Extensions.Microsoft.DependencyInjection >= 12.0.1",
+      "LogMessages >= 1.0.0",
       "MassTransit >= 8.3.3",
       "MassTransit.RabbitMQ >= 8.3.3",
       "Microsoft.AspNetCore.OpenApi >= 9.0.7",
@@ -4086,6 +4102,9 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogMessages/LogMessages.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogMessages/LogMessages.csproj"
+            },
             "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficLightCoordinatorService/TrafficLightCoordinatorAPI/TrafficLightCoordinatorData/TrafficLightCoordinatorData.csproj": {
               "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficLightCoordinatorService/TrafficLightCoordinatorAPI/TrafficLightCoordinatorData/TrafficLightCoordinatorData.csproj"
             },

@@ -2,10 +2,10 @@ services:
   traffic_light_coordinator_postgres:
     environment:
       POSTGRES_DB: TrafficLightDb
-      POSTGRES_USER: traffic
-      POSTGRES_PASSWORD: traffic
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
     ports:
-      - '5432:5432'
+      - '5434:5432'
     volumes:
       - traffic_light_postgres_data:/var/lib/postgresql/data
     healthcheck:
