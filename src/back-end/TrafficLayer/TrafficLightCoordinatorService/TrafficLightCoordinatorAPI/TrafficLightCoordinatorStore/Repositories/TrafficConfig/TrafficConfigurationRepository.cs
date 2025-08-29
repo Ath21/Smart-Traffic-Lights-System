@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using TrafficLightCoordinatorData;
 using TrafficLightCoordinatorData.Entities;
@@ -10,39 +11,52 @@ public class TrafficConfigurationRepository : ITrafficConfigurationRepository
     private readonly TrafficLightCoordinatorDbContext _db;
     public TrafficConfigurationRepository(TrafficLightCoordinatorDbContext db) => _db = db;
 
+    public Task<TrafficConfiguration?> GetActiveAsync(Guid intersectionId, DateTimeOffset atUtc, CancellationToken ct) =>
+        _db.TrafficConfigurations.AsNoTracking()
+            .Where(c => c.IntersectionId == intersectionId && c.EffectiveFrom <= atUtc)
+            .OrderByDescending(c => c.EffectiveFrom)
+            .FirstOrDefaultAsync(ct);
+
     public Task<TrafficConfiguration?> GetLatestAsync(Guid intersectionId, CancellationToken ct) =>
-        _db.TrafficConfigurations
-            .AsNoTracking()
+        _db.TrafficConfigurations.AsNoTracking()
             .Where(c => c.IntersectionId == intersectionId)
-            .OrderByDescending(c => c.UpdatedAt)
+            .OrderByDescending(c => c.EffectiveFrom)
             .FirstOrDefaultAsync(ct);
 
-    public async Task<TrafficConfiguration> UpsertAsync(Guid intersectionId, string patternJson, CancellationToken ct)
+    public Task<List<TrafficConfiguration>> GetHistoryAsync(Guid intersectionId, int take, int skip, CancellationToken ct) =>
+        _db.TrafficConfigurations.AsNoTracking()
+            .Where(c => c.IntersectionId == intersectionId)
+            .OrderByDescending(c => c.EffectiveFrom)
+            .Skip(skip).Take(take)
+            .ToListAsync(ct);
+
+    public Task<bool> ChangeRefExistsAsync(string changeRef, CancellationToken ct) =>
+        _db.TrafficConfigurations.AsNoTracking()
+            .AnyAsync(c => c.ChangeRef == changeRef, ct);
+
+    public async Task<TrafficConfiguration> AddAsync(
+        Guid intersectionId,
+        JsonDocument pattern,
+        DateTimeOffset effectiveFromUtc,
+        string? reason,
+        string? changeRef,
+        string? createdBy,
+        CancellationToken ct)
     {
-        var existing = await _db.TrafficConfigurations
-            .Where(c => c.IntersectionId == intersectionId)
-            .OrderByDescending(c => c.UpdatedAt)
-            .FirstOrDefaultAsync(ct);
-
-        if (existing is null)
+        var row = new TrafficConfiguration
         {
-            existing = new TrafficConfiguration
-            {
-                ConfigId = Guid.NewGuid(),
-                IntersectionId = intersectionId,
-                Pattern = patternJson,
-                UpdatedAt = DateTimeOffset.UtcNow
-            };
-            _db.TrafficConfigurations.Add(existing);
-        }
-        else
-        {
-            existing.Pattern = patternJson;
-            existing.UpdatedAt = DateTimeOffset.UtcNow;
-            _db.TrafficConfigurations.Update(existing);
-        }
+            ConfigId = Guid.NewGuid(),
+            IntersectionId = intersectionId,
+            Pattern = pattern,
+            EffectiveFrom = effectiveFromUtc,
+            Reason = reason,
+            ChangeRef = changeRef,
+            CreatedBy = createdBy,
+            CreatedAt = DateTimeOffset.UtcNow
+        };
 
+        _db.TrafficConfigurations.Add(row);
         await _db.SaveChangesAsync(ct);
-        return existing;
+        return row;
     }
 }
