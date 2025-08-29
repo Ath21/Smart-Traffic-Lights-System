@@ -23,6 +23,7 @@ public class ExceptionMiddleware
         {
             await _next(context);
         }
+        
         //  Authentication / Authorization
         catch (UnauthorizedAccessException ex)
         {

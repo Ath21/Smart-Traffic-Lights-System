@@ -1,15 +1,9 @@
-using System;
 using System.Net;
-using System.Threading.Tasks;
 using MassTransit;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Npgsql;
 using RabbitMQ.Client.Exceptions;
 using TrafficLightCoordinatorStore.Publishers.Logs;
-// If you use FluentValidation, uncomment the using below
-// using FluentValidation;
 
 namespace TrafficLightCoordinatorStore.Middleware
 {
@@ -17,6 +11,8 @@ namespace TrafficLightCoordinatorStore.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly ILogger<ExceptionMiddleware> _logger;
+
+        private const string ServiceTag = "[" + nameof(ExceptionMiddleware) + "]";
 
         public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
         {
@@ -30,16 +26,18 @@ namespace TrafficLightCoordinatorStore.Middleware
             {
                 await _next(context);
             }
+
+            //  Authentication / Authorization
             catch (UnauthorizedAccessException ex)
             {
                 await HandleAsync(context, HttpStatusCode.Unauthorized, "Unauthorized access", ex);
             }
+
+            //  Not found / bad usage
             catch (KeyNotFoundException ex)
             {
                 await HandleAsync(context, HttpStatusCode.NotFound, "Resource not found", ex);
             }
-            // 400 family
-            // catch (ValidationException ex) { await HandleAsync(context, HttpStatusCode.BadRequest, "Validation failed", ex); }
             catch (ArgumentNullException ex)
             {
                 await HandleAsync(context, HttpStatusCode.BadRequest, "Missing required parameter", ex);
@@ -57,12 +55,12 @@ namespace TrafficLightCoordinatorStore.Middleware
                 await HandleAsync(context, HttpStatusCode.BadRequest, "Invalid operation", ex);
             }
 
-            // timeouts / cancellations
+            //  Timeouts / Network
             catch (TimeoutException ex)
             {
                 await HandleAsync(context, HttpStatusCode.RequestTimeout, "Operation timed out", ex);
             }
-            catch (RequestTimeoutException ex) // MassTransit request/response timeout
+            catch (RequestTimeoutException ex) 
             {
                 await HandleAsync(context, HttpStatusCode.RequestTimeout, "Message broker timeout", ex);
             }
@@ -71,7 +69,7 @@ namespace TrafficLightCoordinatorStore.Middleware
                 await HandleAsync(context, HttpStatusCode.RequestTimeout, "Operation canceled or timed out", ex);
             }
 
-            // upstream / infra
+            //  Upstream / Infra
             catch (HttpRequestException ex)
             {
                 await HandleAsync(context, HttpStatusCode.BadGateway, "Upstream HTTP request failed", ex);
@@ -80,12 +78,12 @@ namespace TrafficLightCoordinatorStore.Middleware
             {
                 await HandleAsync(context, HttpStatusCode.BadGateway, "Message broker unreachable", ex);
             }
-            catch (ConfigurationException ex) // MassTransit config/bind issues
+            catch (ConfigurationException ex) // MassTransit configuration error
             {
                 await HandleAsync(context, HttpStatusCode.BadGateway, "Message bus configuration error", ex);
             }
 
-            // database
+            //  Database
             catch (DbUpdateException ex)
             {
                 await HandleAsync(context, HttpStatusCode.Conflict, "Database update failed", ex);
@@ -95,7 +93,7 @@ namespace TrafficLightCoordinatorStore.Middleware
                 await HandleAsync(context, HttpStatusCode.BadGateway, "Database error", ex);
             }
 
-            // last resort
+            //  Fallback
             catch (Exception ex)
             {
                 await HandleAsync(context, HttpStatusCode.InternalServerError, "An unexpected error occurred", ex);
@@ -104,16 +102,33 @@ namespace TrafficLightCoordinatorStore.Middleware
 
         private async Task HandleAsync(HttpContext ctx, HttpStatusCode status, string message, Exception ex)
         {
-            _logger.LogError(ex, "{Message}", message);
+            _logger.LogError(ex, "{Tag} {Message}", ServiceTag, message);
 
-            // publish error to bus
             var publisher = ctx.RequestServices.GetService(typeof(ITrafficLogPublisher)) as ITrafficLogPublisher;
             if (publisher != null)
             {
-                try { await publisher.PublishErrorAsync(message, ex, ctx.RequestAborted); }
+                var metadata = new
+                {
+                    serviceTag = ServiceTag,
+                    path = ctx.Request?.Path.Value,
+                    method = ctx.Request?.Method,
+                    traceId = ctx.TraceIdentifier,
+                    status = (int)status,
+                    query = ctx.Request?.QueryString.Value
+                };
+
+                try
+                {
+                    await publisher.PublishErrorAsync(
+                        errorType: ex.GetType().Name,
+                        message: message,
+                        metadata: metadata,
+                        ct: ctx.RequestAborted
+                    );
+                }
                 catch (Exception pubEx)
                 {
-                    _logger.LogWarning(pubEx, "Failed to publish error log to broker");
+                    _logger.LogWarning(pubEx, "{Tag} Failed to publish error log to broker", ServiceTag);
                 }
             }
 
