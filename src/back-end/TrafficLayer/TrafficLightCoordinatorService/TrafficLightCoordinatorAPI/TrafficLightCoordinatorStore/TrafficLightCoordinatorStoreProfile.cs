@@ -5,9 +5,9 @@ using TrafficLightCoordinatorStore.Models.Responses;
 
 namespace TrafficLightCoordinatorStore;
 
-public class TrafficLightCoordinatorProfile : Profile
+public class TrafficLightCoordinatorStoreProfile : Profile
 {
-    public TrafficLightCoordinatorProfile()
+    public TrafficLightCoordinatorStoreProfile()
     {
         // Entity -> DTO
         CreateMap<TrafficConfiguration, ConfigDto>()

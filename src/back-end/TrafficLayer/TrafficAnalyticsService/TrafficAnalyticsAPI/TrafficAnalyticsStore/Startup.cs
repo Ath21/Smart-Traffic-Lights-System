@@ -58,11 +58,11 @@ public class Startup
         services.AddScoped(typeof(CyclistDetectionConsumer));
         services.AddScoped(typeof(IncidentDetectionConsumer));
 
-        /******* [7] MassTransit *******/
+        /******* [6] MassTransit *******/
 
         services.AddTrafficAnalyticsMassTransit(_configuration);
 
-        /******* [8] Jwt Config ********/
+        /******* [7] Jwt Config ********/
 
         var jwtSettings = _configuration.GetSection("Jwt");
         var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]);
@@ -83,7 +83,7 @@ public class Startup
                 };
             });
 
-        /******* [9] CORS Policy ********/
+        /******* [8] CORS Policy ********/
 
         services.AddCors(options =>
         {
@@ -96,14 +96,14 @@ public class Startup
             });
         });
 
-        /******* [8] Controllers ********/
+        /******* [9] Controllers ********/
 
         services.AddControllers()
             .AddJsonOptions(
                 options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
         services.AddEndpointsApiExplorer();
 
-        /******* [8] Swagger ********/
+        /******* [10] Swagger ********/
 
         services.AddSwaggerGen(c =>
             {

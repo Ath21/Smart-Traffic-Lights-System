@@ -1,12 +1,13 @@
 using System;
+using TrafficLightCoordinatorStore.Models.Dtos;
 
 namespace TrafficLightCoordinatorStore.Business.Coordination;
 
 public interface ICoordinatorService
 {
-    Task<ConfigResponseDto> UpsertConfigAsync(Guid intersectionId, string patternJson, CancellationToken ct);
-    Task<ConfigResponseDto?> GetConfigAsync(Guid intersectionId, CancellationToken ct);
+    Task<ConfigDto> UpsertConfigAsync(Guid intersectionId, string patternJson, CancellationToken ct);
+    Task<ConfigDto?> GetConfigAsync(Guid intersectionId, CancellationToken ct);
 
-    Task HandlePriorityAsync(PriorityMessage message, CancellationToken ct);
-    Task HandleCongestionAsync(TrafficCongestionAlert alert, CancellationToken ct);
+    Task<PriorityDto> HandlePriorityAsync(PriorityDto dto, CancellationToken ct);
+    Task<CongestionDto> HandleCongestionAsync(CongestionDto dto, CancellationToken ct);
 }
