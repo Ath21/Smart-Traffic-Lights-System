@@ -23,11 +23,11 @@ public class TrafficLightCoordinatorController : ControllerBase
     }
 
     // ============================================================
-    // GET: /api/traffic/coordinator/config/{intersectionId}
+    // GET: /api/traffic/coordinator/config-read/{intersectionId}
     // Roles: User, TrafficOperator, Admin
     // Purpose: Fetch the latest traffic light configuration
     // ============================================================
-    [HttpGet("config/{intersectionId:guid}")]
+    [HttpGet("config-read/{intersectionId:guid}")]
     [Authorize(Roles = "User,TrafficOperator,Admin")]
     [ProducesResponseType(typeof(ConfigResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -39,11 +39,11 @@ public class TrafficLightCoordinatorController : ControllerBase
     }
 
     // ============================================================
-    // POST: /api/traffic/coordinator/config/{intersectionId}
+    // POST: /api/traffic/coordinator/config-create/{intersectionId}
     // Roles: Admin
     // Purpose: Upload or update a traffic light configuration pattern
     // ============================================================
-    [HttpPost("config/{intersectionId:guid}")]
+    [HttpPost("config-create/{intersectionId:guid}")]
     [Authorize(Roles = "Admin")]
     [ProducesResponseType(typeof(ConfigResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

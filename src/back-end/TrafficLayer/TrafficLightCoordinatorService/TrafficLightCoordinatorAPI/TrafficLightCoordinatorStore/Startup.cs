@@ -29,7 +29,7 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
-        /******* [1] ORM ********/
+        /******* [1] ORM / PostgreSQL ********/
 
         services.AddDbContext<TrafficLightCoordinatorDbContext>();
 
@@ -57,18 +57,11 @@ public class Startup
         services.AddScoped<TrafficCongestionAlertConsumer>();
         services.AddScoped<PriorityMessageConsumer>();
 
-        /******* [7] MassTransit Setup
+        /******* [7] MassTransit Setup *******/
 
+        services.AddTrafficCoordinatorMassTransit(_configuration);
 
-        /******* [8] Controllers ********/
-
-        services.AddControllers()
-            .AddJsonOptions(options =>
-            {
-                options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
-            });
-
-        /******* [9] Jwt Config ********/
+        /******* [8] Jwt Config ********/
 
         var jwtSettings = _configuration.GetSection("Jwt");
         var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]);
@@ -89,7 +82,7 @@ public class Startup
                 };
             });
 
-        /******* [10] CORS Policy ********/
+        /******* [9] CORS Policy ********/
 
         services.AddCors(options =>
         {
@@ -101,6 +94,15 @@ public class Startup
 
             });
         });
+
+        /******* [10] Controllers ********/
+
+        services.AddControllers()
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+            });
+
 
         /******* [11] Swagger ********/
 

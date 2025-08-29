@@ -13,7 +13,7 @@ using TrafficLightCoordinatorData;
 namespace TrafficLightCoordinatorData.Migrations
 {
     [DbContext(typeof(TrafficLightCoordinatorDbContext))]
-    [Migration("20250829065924_InitialCreate")]
+    [Migration("20250829120949_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -21,7 +21,7 @@ namespace TrafficLightCoordinatorData.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.0")
+                .HasAnnotation("ProductVersion", "9.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -124,8 +124,10 @@ namespace TrafficLightCoordinatorData.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("light_id");
 
-                    b.Property<int>("CurrentState")
-                        .HasColumnType("integer")
+                    b.Property<string>("CurrentState")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("current_state");
 
                     b.Property<Guid>("IntersectionId")
@@ -144,7 +146,7 @@ namespace TrafficLightCoordinatorData.Migrations
 
                     b.ToTable("traffic_lights", t =>
                         {
-                            t.HasCheckConstraint("ck_traffic_lights_state", "current_state IN ('RED','AMBER','GREEN','FLASHING','OFF')");
+                            t.HasCheckConstraint("ck_traffic_lights_state", "current_state IN ('RED','ORANGE','GREEN','FLASHING','OFF')");
                         });
                 });
 

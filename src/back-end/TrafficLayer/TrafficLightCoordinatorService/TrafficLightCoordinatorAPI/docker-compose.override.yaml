@@ -3,12 +3,11 @@ services:
     ports:
       - "5020:8080"
     environment:
-      # ---- ASP.NET Core ----
+      # ASP.NET Core 
       ASPNETCORE_ENVIRONMENT: Development
 
-      # ---- DB connection (PostgreSQL) ----
-      # Matches our code: ConnectionStrings:TrafficLightDb
-      ConnectionStrings__DefaultConnection: Host=traffic_light_coordinator_postgres;Port=5432;Database=TrafficLightDb;Username=traffic;Password=traffic;Include Error Detail=true
+      # PostgreSQL
+      ConnectionStrings__DefaultConnection: Host=traffic_light_coordinator_postgres;Port=5432;Database=TrafficLightDb;Username=postgres;Password=postgres123;Include Error Detail=true
 
       # JWT
       Jwt__Issuer: http://stls_backend:8080

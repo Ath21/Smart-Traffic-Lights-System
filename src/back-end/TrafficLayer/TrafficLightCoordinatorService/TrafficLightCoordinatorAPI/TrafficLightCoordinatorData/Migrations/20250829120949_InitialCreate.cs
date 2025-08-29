@@ -58,13 +58,13 @@ namespace TrafficLightCoordinatorData.Migrations
                 {
                     light_id = table.Column<Guid>(type: "uuid", nullable: false),
                     intersection_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    current_state = table.Column<int>(type: "integer", nullable: false),
+                    current_state = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     updated_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false, defaultValueSql: "(now() at time zone 'utc')")
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_traffic_lights", x => x.light_id);
-                    table.CheckConstraint("ck_traffic_lights_state", "current_state IN ('RED','AMBER','GREEN','FLASHING','OFF')");
+                    table.CheckConstraint("ck_traffic_lights_state", "current_state IN ('RED','ORANGE','GREEN','FLASHING','OFF')");
                     table.ForeignKey(
                         name: "FK_traffic_lights_intersections_intersection_id",
                         column: x => x.intersection_id,

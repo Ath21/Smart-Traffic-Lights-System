@@ -39,21 +39,31 @@ public class TrafficLightCoordinatorDbContext : DbContext
             e.HasIndex(l => new { l.IntersectionId, l.UpdatedAt });
             e.Property(p => p.UpdatedAt).HasDefaultValueSql("(now() at time zone 'utc')");
 
+            // Store enum as string instead of int
+            e.Property(l => l.CurrentState)
+                .HasConversion<string>()      // enum → string
+                .HasMaxLength(20);
+
+            // Explicit check constraint for allowed enum values
             e.ToTable(t => t.HasCheckConstraint("ck_traffic_lights_state",
-                "current_state IN ('RED','AMBER','GREEN','FLASHING','OFF')"));
+                "current_state IN ('RED','ORANGE','GREEN','FLASHING','OFF')"));
         });
 
         // TRAFFIC_CONFIGURATIONS
         modelBuilder.Entity<TrafficConfiguration>(e =>
         {
             // Fast "latest config" lookup per intersection and time
-            e.HasIndex(c => new { c.IntersectionId, c.EffectiveFrom }).HasDatabaseName("ix_cfg_intersection_effective");
+            e.HasIndex(c => new { c.IntersectionId, c.EffectiveFrom })
+                .HasDatabaseName("ix_cfg_intersection_effective");
             e.HasIndex(c => c.ChangeRef).IsUnique();
 
-            e.Property(c => c.EffectiveFrom).HasDefaultValueSql("(now() at time zone 'utc')");
-            e.Property(c => c.CreatedAt).HasDefaultValueSql("(now() at time zone 'utc')");
+            e.Property(c => c.EffectiveFrom)
+                .HasDefaultValueSql("(now() at time zone 'utc')");
+            e.Property(c => c.CreatedAt)
+                .HasDefaultValueSql("(now() at time zone 'utc')");
         });
     }
+
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

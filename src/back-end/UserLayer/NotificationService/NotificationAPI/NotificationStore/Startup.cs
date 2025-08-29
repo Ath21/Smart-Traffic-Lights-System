@@ -67,7 +67,7 @@ public class Startup
 
         services.AddNotificationServiceMassTransit(_configuration);
 
-        /******* [8] JWT Authentication ********/
+        /******* [8] Jwt Config ********/
 
         var jwtSettings = _configuration.GetSection("Jwt");
         var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]);
