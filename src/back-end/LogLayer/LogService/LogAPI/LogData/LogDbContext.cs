@@ -1,10 +1,3 @@
-/*
- *  LogData.LogDbContext
- *
- *  LogDbContext is a class that provides access to the MongoDB database
- *  for storing and retrieving log data. It uses the MongoDB.Driver package
- *  to connect to the database and perform operations on the logs collection.
- */
 using LogData.Collections;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
@@ -13,19 +6,17 @@ namespace LogData;
 
 public class LogDbContext
 {
-    private readonly IMongoCollection<Log> _logsCollection; 
+    private readonly IMongoDatabase _database;
 
-    public LogDbContext(IOptions<LogDbSettings> userLogsDatabaseSettings)
+    public LogDbContext(IOptions<LogDbSettings> logDbSettings)
     {
-        var mongoClient = new MongoClient(
-            userLogsDatabaseSettings.Value.ConnectionString);
+        var mongoClient = new MongoClient(logDbSettings.Value.ConnectionString);
+        _database = mongoClient.GetDatabase(logDbSettings.Value.DatabaseName);
 
-        var mongoDatabase = mongoClient.GetDatabase(
-            userLogsDatabaseSettings.Value.DatabaseName);
-
-        _logsCollection = mongoDatabase.GetCollection<Log>(
-            userLogsDatabaseSettings.Value.LogsCollectionName);
+        AuditLogs = _database.GetCollection<AuditLog>(logDbSettings.Value.AuditLogsCollectionName);
+        ErrorLogs = _database.GetCollection<ErrorLog>(logDbSettings.Value.ErrorLogsCollectionName);
     }
 
-    public IMongoCollection<Log> LogsCollection => _logsCollection;
+    public IMongoCollection<AuditLog> AuditLogs { get; }
+    public IMongoCollection<ErrorLog> ErrorLogs { get; }
 }
