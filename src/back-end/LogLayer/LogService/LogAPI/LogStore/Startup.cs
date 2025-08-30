@@ -1,23 +1,3 @@
-/*
- *  LogStore.Startup
- *
- *  This class is responsible for configuring services and middleware for the LogStore application.
- *  It sets up the following services:
- *  
- *  - MongoDB: For storing and retrieving log data.
- *  - Repositories: For data access abstraction (ILogRepository).
- *  - Business Services: For log-related business logic (ILogService).
- *  - AutoMapper: For mapping between data models and DTOs.
- *  - MassTransit: For message-based communication using RabbitMQ, with consumers for info, audit, and error logs.
- *  - Controllers: For handling HTTP API requests.
- *  - Swagger: For API documentation and testing.
- *  
- *  The class also configures the HTTP request pipeline, including exception handling and authentication.
- *  The application uses RabbitMQ for message brokering, with specific configurations for handling user logs
- *  such as info, audit, and error logs.
- *  The application is designed to run in a web environment, handling requests and responses
- *  through ASP.NET Core's middleware pipeline.
- */
 using LogData;
 using LogStore.Business;
 using LogStore.Consumers.User;
@@ -27,6 +7,8 @@ using MassTransit;
 using UserMessages;
 using Microsoft.OpenApi.Models;
 using RabbitMQ.Client;
+using LogStore.Repository.Audit;
+using LogStore.Repository.Error;
 
 namespace LogStore;
 
@@ -50,7 +32,8 @@ public class Startup
         
         /******* [2] Repositories ********/
 
-        services.AddScoped(typeof(ILogRepository), typeof(LogRepository));
+        services.AddScoped(typeof(IAuditLogRepository), typeof(AuditLogRepository));
+        services.AddScoped(typeof(IErrorLogRepository), typeof(ErrorLogRepository));
 
         /******* [3] Services ********/
 
