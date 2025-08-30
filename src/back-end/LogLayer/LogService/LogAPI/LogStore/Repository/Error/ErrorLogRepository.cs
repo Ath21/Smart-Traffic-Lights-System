@@ -32,4 +32,9 @@ public class ErrorLogRepository : IErrorLogRepository
     {
         return await _context.ErrorLogs.Find(x => x.ErrorType == errorType).ToListAsync();
     }
+
+    public async Task<List<ErrorLog>> FindAsync(FilterDefinition<ErrorLog> filter)
+{
+    return await _context.ErrorLogs.Find(filter).ToListAsync();
+}
 }

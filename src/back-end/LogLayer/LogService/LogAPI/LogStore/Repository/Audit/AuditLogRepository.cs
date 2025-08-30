@@ -27,4 +27,9 @@ public class AuditLogRepository : IAuditLogRepository
     {
         return await _context.AuditLogs.Find(x => x.ServiceName == serviceName).ToListAsync();
     }
+
+    public async Task<List<AuditLog>> FindAsync(FilterDefinition<AuditLog> filter)
+{
+    return await _context.AuditLogs.Find(filter).ToListAsync();
+}
 }

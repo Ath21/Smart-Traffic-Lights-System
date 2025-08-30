@@ -1,49 +1,82 @@
-/*
- * LogStore.Business.LogService
- *
- * This class implements the ILogService interface, providing methods for managing logs.
- * It uses an ILogRepository to interact with the data layer and AutoMapper to map between
- * LogDto and Log models.
- * The methods include storing logs, retrieving all logs, and retrieving logs by service.
- * The methods are asynchronous to support non-blocking operations.
- * The LogDto model is used to transfer log data between the service and the data layer.
- */
 using AutoMapper;
 using LogData.Collections;
 using LogStore.Models;
+using LogStore.Models.Dtos;
 using LogStore.Repository;
+using LogStore.Repository.Audit;
+using LogStore.Repository.Error;
+using MongoDB.Driver;
 
 namespace LogStore.Business;
 
 public class LogService : ILogService
 {
-    private readonly ILogRepository _logRepository;
+    private readonly IAuditLogRepository _auditRepo;
+    private readonly IErrorLogRepository _errorRepo;
     private readonly IMapper _mapper;
 
-    public LogService(ILogRepository logRepository, IMapper mapper)
+    public LogService(IAuditLogRepository auditRepo, IErrorLogRepository errorRepo, IMapper mapper)
     {
-        _logRepository = logRepository;
+        _auditRepo = auditRepo;
+        _errorRepo = errorRepo;
         _mapper = mapper;
     }
 
-    // GET: /API/Log/GetAllLogs
-    public Task<List<LogDto>> GetAllLogsAsync()
+    // GET /audit/{serviceName}
+    public async Task<List<AuditLogDto>> GetAuditLogsByServiceAsync(string serviceName)
     {
-        var logs = _logRepository.GetAllAsync();
-        return logs.ContinueWith(task => _mapper.Map<List<LogDto>>(task.Result));
+        var logs = await _auditRepo.GetByServiceAsync(serviceName);
+        return _mapper.Map<List<AuditLogDto>>(logs);
     }
 
-    // GET: /API/Log/GetLogsByService?service=ServiceName
-    public Task<List<LogDto>> GetLogsByServiceAsync(string service)
+    // GET /error/{serviceName}
+    public async Task<List<ErrorLogDto>> GetErrorLogsByServiceAsync(string serviceName)
     {
-        var logs = _logRepository.GetAsync(service);
-        return logs.ContinueWith(task => _mapper.Map<List<LogDto>>(task.Result));
+        var logs = await _errorRepo.GetByServiceAsync(serviceName);
+        return _mapper.Map<List<ErrorLogDto>>(logs);
     }
 
-    // POST: /API/Log/CreateLog
-    public async Task StoreLogAsync(LogDto logDto)
+    // GET /search → search across audit & error logs
+    public async Task<List<object>> SearchLogsAsync(
+        string? serviceName,
+        string? errorType,
+        string? action,
+        DateTime? from,
+        DateTime? to,
+        Dictionary<string, string>? metadata)
     {
-        var log = _mapper.Map<Log>(logDto);
-        await _logRepository.CreateAsync(log);
+        var results = new List<object>();
+
+        // Search Audit Logs
+        var auditFilter = Builders<AuditLog>.Filter.Empty;
+
+        if (!string.IsNullOrEmpty(serviceName))
+            auditFilter &= Builders<AuditLog>.Filter.Eq(x => x.ServiceName, serviceName);
+        if (!string.IsNullOrEmpty(action))
+            auditFilter &= Builders<AuditLog>.Filter.Eq(x => x.Action, action);
+        if (from.HasValue)
+            auditFilter &= Builders<AuditLog>.Filter.Gte(x => x.Timestamp, from.Value);
+        if (to.HasValue)
+            auditFilter &= Builders<AuditLog>.Filter.Lte(x => x.Timestamp, to.Value);
+
+        var auditLogs = await _auditRepo.FindAsync(auditFilter);
+        results.AddRange(_mapper.Map<List<AuditLogDto>>(auditLogs));
+
+        // Search Error Logs
+        var errorFilter = Builders<ErrorLog>.Filter.Empty;
+
+        if (!string.IsNullOrEmpty(serviceName))
+            errorFilter &= Builders<ErrorLog>.Filter.Eq(x => x.ServiceName, serviceName);
+        if (!string.IsNullOrEmpty(errorType))
+            errorFilter &= Builders<ErrorLog>.Filter.Eq(x => x.ErrorType, errorType);
+        if (from.HasValue)
+            errorFilter &= Builders<ErrorLog>.Filter.Gte(x => x.Timestamp, from.Value);
+        if (to.HasValue)
+            errorFilter &= Builders<ErrorLog>.Filter.Lte(x => x.Timestamp, to.Value);
+
+        var errorLogs = await _errorRepo.FindAsync(errorFilter);
+        results.AddRange(_mapper.Map<List<ErrorLogDto>>(errorLogs));
+
+        return results;
     }
 }
