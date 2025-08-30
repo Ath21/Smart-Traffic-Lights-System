@@ -1,62 +1,88 @@
-/*
- *  LogStore.Controllers.LogController
- *
- *  This controller handles HTTP requests related to log management.
- *  It provides endpoints for creating logs, retrieving all logs, and retrieving logs by service.
- *  The controller uses the ILogService to perform operations on logs.
- *  The endpoints are designed to be used by clients to log messages and retrieve log data.
- *
- *  Endpoints:
- *  - POST API/Log/CreateLog
- *      Accepts a LogDto object in the request body and stores it using the log service.
- *  - GET API/Log/GetAllLogs
- *      Returns a list of all logs stored in the system.
- *  - GET API/Log/GetLogsByService/{service}
- *      Returns a list of logs filtered by the specified service name.
- */
-using LogStore.Business;
-using LogStore.Models;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using LogStore.Business;
+using LogStore.Models.Responses;
+using LogStore.Models.Requests;
 
-namespace LogStore.Controllers
+namespace LogStore.Controllers;
+
+[ApiController]
+[Route("api/logs")]
+public class LogController : ControllerBase
 {
-    [Route("API/[controller]")]
-    [ApiController]
-    public class LogController : ControllerBase
+    private readonly ILogService _logService;
+
+    public LogController(ILogService logService)
     {
-        private readonly ILogService _logService;
+        _logService = logService;
+    }
 
-        public LogController(ILogService logService)
-        {
-            _logService = logService;
-        }
+    // ============================================================
+    // GET: /api/logs/audit/{serviceName}
+    // Roles: Admin
+    // Purpose: Query audit logs by service
+    // ============================================================
+    [HttpGet("audit/{serviceName}")]
+    [Authorize(Roles = "Admin")]
+    [ProducesResponseType(typeof(List<AuditLogResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<List<AuditLogResponse>>> GetAuditLogs(string serviceName)
+    {
+        var logs = await _logService.GetAuditLogsByServiceAsync(serviceName);
+        if (logs == null || logs.Count == 0)
+            return NotFound($"No audit logs found for service: {serviceName}");
 
-        // POST: API/Log/CreateLog
-        [HttpPost("CreateLog")]
-        public async Task<IActionResult> PostLog([FromBody] LogDto logDto)
-        {
-            await _logService.StoreLogAsync(logDto);
-            return Ok();
-        }
+        return Ok(logs);
+    }
 
-        // GET: API/Log/GetAllLogs
-        [HttpGet("GetAllLogs")]
-        public async Task<ActionResult<List<LogDto>>> GetAllLogs()
-        {
-            var logs = await _logService.GetAllLogsAsync();
-            return Ok(logs);
-        }
+    // ============================================================
+    // GET: /api/logs/error/{serviceName}
+    // Roles: Admin
+    // Purpose: Query error logs by service
+    // ============================================================
+    [HttpGet("error/{serviceName}")]
+    [Authorize(Roles = "Admin")]
+    [ProducesResponseType(typeof(List<ErrorLogResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<List<ErrorLogResponse>>> GetErrorLogs(string serviceName)
+    {
+        var logs = await _logService.GetErrorLogsByServiceAsync(serviceName);
+        if (logs == null || logs.Count == 0)
+            return NotFound($"No error logs found for service: {serviceName}");
 
-        // GET: API/Log/GetLogsByService/{service}
-        [HttpGet("GetLogsByService/{service}")]
-        public async Task<ActionResult<List<LogDto>>> GetLogsByService(string service)
-        {
-            var logs = await _logService.GetLogsByServiceAsync(service);
-            if (logs == null || logs.Count == 0)
-            {
-                return NotFound($"No logs found for service: {service}");
-            }
-            return Ok(logs);
-        }
+        return Ok(logs);
+    }
+
+    // ============================================================
+    // GET: /api/logs/search
+    // Roles: Admin
+    // Purpose: Filter logs by metadata / timeframe
+    // ============================================================
+    [HttpGet("search")]
+    [Authorize(Roles = "Admin")]
+    [ProducesResponseType(typeof(List<object>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<List<object>>> SearchLogs([FromQuery] SearchLogsRequest request)
+    {
+        var logs = await _logService.SearchLogsAsync(
+            request.ServiceName,
+            request.ErrorType,
+            request.Action,
+            request.From,
+            request.To,
+            request.Metadata);
+
+        return Ok(logs);
+    }
+
+    // Helper to extract Admin userId from JWT Claims (optional auditing)
+    private Guid GetUserId()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)
+                    ?? User.FindFirstValue(ClaimTypes.Name);
+
+        return Guid.TryParse(userId, out var guid)
+            ? guid
+            : throw new UnauthorizedAccessException("Invalid token.");
     }
 }
