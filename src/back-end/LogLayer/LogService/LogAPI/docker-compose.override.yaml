@@ -3,29 +3,47 @@ services:
     ports:
       - '5005:8080'
     environment:
-      
-      DefaultConnection__ConnectionString: mongodb://log_mongo:27017
-      DefaultConnection__DatabaseName: LogDb
-      DefaultConnection__LogsCollectionName: Logs
-
+      # ASP.NET Core
       ASPNETCORE_ENVIRONMENT: Development
 
+      # MongoDB
+      DefaultConnection__ConnectionString: mongodb://mongo:mongo123@log_mongo:27017
+      DefaultConnection__DatabaseName: LogDb
+      DefaultConnection__AuditLogsCollectionName: audit_logs
+      DefaultConnection__ErrorLogsCollectionName: error_logs
+
+      # JWT
+      Jwt__Issuer: http://stls_backend:8080
+      Jwt__Audience: http://stls_backend:8080
+      Jwt__Key: Nn7kLa8Rzv1XHt9UwMqP4YbFdJxVt2Km
+
+      # RabbitMQ connection
       RabbitMQ__Host: rabbitmq
       RabbitMQ__Port: 5672
-      RabbitMQ__Username: admin
-      RabbitMQ__Password: admin123
+      RabbitMQ__Username: rabbitmq
+      RabbitMQ__Password: rabbitmq123
 
-      RabbitMQ__UserLogsExchange: user.logs.exchange
-      RabbitMQ__RoutingKeys__UserLogs__Info: user.logs.info
-      RabbitMQ__RoutingKeys__UserLogs__Error: user.logs.error
-      RabbitMQ__RoutingKeys__UserLogs__Audit: user.logs.audit
+      # Exchanges
+      RabbitMQ__Exchanges__Logs: LOG.EXCHANGE
+      RabbitMQ__Exchanges__User: USER.EXCHANGE
+      RabbitMQ__Exchanges__Traffic: TRAFFIC.EXCHANGE
+      RabbitMQ__Exchanges__Sensor: SENSOR.EXCHANGE
 
-      RabbitMQ__TrafficAnalyticsExchange: traffic.analytics.exchange
-      RabbitMQ__RoutingKeys__Traffic__DailySummary: traffic.analytics.daily_summary
-      RabbitMQ__RoutingKeys__Traffic__CongestionAlert: traffic.analytics.congestion_alert
+      # Consume from ...
+      ## User Exchange
+      RabbitMQ__Queues__UserLogs: user.log_service.queue
+      RabbitMQ__RoutingKeys__UserAudit: log.user.{service_name}.audit
+      RabbitMQ__RoutingKeys__UserError: log.user.{service_name}.error
 
-      RabbitMQ__TrafficLightControlExchange: traffic.light.control.exchange
-      RabbitMQ__RoutingKeys__Traffic__LightControlPattern: traffic.light.control.*
+      ## Traffic Exchange
+      RabbitMQ__Queues__TrafficLogs: traffic.log_service.queue
+      RabbitMQ__RoutingKeys__TrafficAudit: log.traffic.{service_name}.audit
+      RabbitMQ__RoutingKeys__TrafficError: log.traffic.{service_name}.error
+
+      ## Sensor Exchange
+      RabbitMQ__Queues__SensorLogs: sensor.log_service.queue
+      RabbitMQ__RoutingKeys__SensorAudit: log.sensor.{service_name}.audit
+      RabbitMQ__RoutingKeys__SensorError: log.sensor.{service_name}.error
 
     depends_on:
       log_mongo:
