@@ -1491,6 +1491,7 @@
       "Microsoft.EntityFrameworkCore >= 9.0.6",
       "RabbitMQ.Client >= 7.1.2",
       "SensorMessages >= 1.0.0",
+      "StackExchange.Redis >= 2.9.11",
       "Swashbuckle.AspNetCore >= 9.0.1",
       "TrafficMessages >= 1.0.0"
     ]
@@ -1574,6 +1575,10 @@
           "RabbitMQ.Client": {
             "target": "Package",
             "version": "[7.1.2, )"
+          },
+          "StackExchange.Redis": {
+            "target": "Package",
+            "version": "[2.9.11, )"
           },
           "Swashbuckle.AspNetCore": {
             "target": "Package",

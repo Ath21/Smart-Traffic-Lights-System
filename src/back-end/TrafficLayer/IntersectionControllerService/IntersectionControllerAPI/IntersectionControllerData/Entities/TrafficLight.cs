@@ -2,7 +2,7 @@ using System;
 
 namespace IntersectionControllerData.Entities;
 
-public class TrafficLightEntity
+public class TrafficLight
 {
     public Guid LightId { get; set; }
     public Guid IntersectionId { get; set; }

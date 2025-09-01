@@ -12,12 +12,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using RabbitMQ.Client;
-using TrafficMessages.Logs;
 using TrafficLightControlService.Consumers;
-using TrafficMessages.Priority;
-using TrafficMessages.Light;
-using SensorMessages.Data;
+
 using IntersectionControlStore.Business;
+using IntersectionControllerData;
+using IntersectionControllerStore.Repository.Intersect;
+using IntersectionControllerStore.Repository.Light;
+using IntersectionControllerStore.Repository.Config;
+using IntersectionControllerStore.Repository;
 
 namespace IntersectionControlStore
 {
@@ -32,12 +34,18 @@ namespace IntersectionControlStore
 
         public void ConfigureServices(IServiceCollection services)
         {
-            /******* [1] Database Config ********/
-            // Example: services.AddDbContext<YourDbContext>(...);
+            /******* [1] Redis Config ********/
+            
+            var redisSettings = new RedisSettings();
+            _configuration.GetSection("Redis").Bind(redisSettings);
+            services.AddSingleton(redisSettings);
 
             /******* [2] Repositories ********/
-            // Register repositories here if any:
-            // services.AddScoped<IYourRepository, YourRepository>();
+            
+            services.AddScoped(typeof(IRedisRepository), typeof(RedisRepository));
+            services.AddScoped(typeof(ITrafficConfigurationRepository), typeof(TrafficConfigurationRepository));
+            services.AddScoped(typeof(ITrafficLightRepository), typeof(TrafficLightRepository));
+            services.AddScoped(typeof(IIntersectionRepository), typeof(IntersectionRepository));
 
             /******* [3] Services ********/
             // Register any domain services here:

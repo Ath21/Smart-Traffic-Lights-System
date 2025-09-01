@@ -2,7 +2,7 @@ using System;
 
 namespace IntersectionControllerData.Entities;
 
-public class IntersectionEntity
+public class Intersection
 {
     public Guid IntersectionId { get; set; }
     public string Name { get; set; } = string.Empty;

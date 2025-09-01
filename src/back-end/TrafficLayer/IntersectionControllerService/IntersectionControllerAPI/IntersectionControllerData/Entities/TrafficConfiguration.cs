@@ -3,7 +3,7 @@ using System;
 namespace IntersectionControllerData.Entities;
 
 
-public class TrafficConfigurationEntity
+public class TrafficConfiguration
 {
     public Guid ConfigId { get; set; }
     public Guid IntersectionId { get; set; }
