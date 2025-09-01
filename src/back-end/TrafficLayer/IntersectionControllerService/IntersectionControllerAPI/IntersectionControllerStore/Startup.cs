@@ -78,6 +78,7 @@ namespace IntersectionControlStore
             services.AddIntersectionControllerMassTransit(_configuration);
 
             /******* [8] Controllers ********/
+
             services.AddControllers()
                 .AddJsonOptions(opts => opts.JsonSerializerOptions.PropertyNamingPolicy = null);
 
@@ -87,7 +88,7 @@ namespace IntersectionControlStore
             /******* [10] Swagger ********/
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Intersection Control API", Version = "v1.0" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Intersection Controller API", Version = "v2.0" });
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     In = ParameterLocation.Header,
@@ -126,7 +127,7 @@ namespace IntersectionControlStore
                 app.UseSwagger();
                 app.UseSwaggerUI(c =>
                 {
-                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Intersection Control API");
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Intersection Controller API");
                 });
             }
 

@@ -34,12 +34,14 @@ public static class MassTransitSetup
                 var sensorQueue  = rabbit["Queues:SensorIntersection"];
 
                 // Routing keys
-                var trafficLightUpdateKey   = rabbit["RoutingKeys:TrafficLightUpdate"];
-                var vehicleCountKey         = rabbit["RoutingKeys:SensorVehicleCount"];
-                var emergencyVehicleKey     = rabbit["RoutingKeys:SensorEmergencyVehicle"];
-                var publicTransportKey      = rabbit["RoutingKeys:SensorPublicTransport"];
-                var cyclistKey              = rabbit["RoutingKeys:SensorCyclist"];
-                // if later needed, add pedestrian + incident
+                var trafficLightUpdateKey = rabbit["RoutingKeys:TrafficLightUpdate"];
+
+                var vehicleCountKey     = rabbit["RoutingKeys:SensorVehicleCount"];
+                var emergencyVehicleKey = rabbit["RoutingKeys:SensorEmergencyVehicle"];
+                var publicTransportKey  = rabbit["RoutingKeys:SensorPublicTransport"];
+                var cyclistKey          = rabbit["RoutingKeys:SensorCyclist"];
+                var pedestrianKey       = rabbit["RoutingKeys:SensorPedestrian"];
+                var incidentKey         = rabbit["RoutingKeys:SensorIncident"];
 
                 // =========================
                 // TRAFFIC LIGHT UPDATES
@@ -88,7 +90,17 @@ public static class MassTransitSetup
                         s.ExchangeType = ExchangeType.Topic;
                     });
 
-                    // TODO: extend with pedestrian + incident if you enable them
+                    e.Bind(sensorExchange, s =>
+                    {
+                        s.RoutingKey = pedestrianKey.Replace("{intersection_id}", "*");
+                        s.ExchangeType = ExchangeType.Topic;
+                    });
+
+                    e.Bind(sensorExchange, s =>
+                    {
+                        s.RoutingKey = incidentKey.Replace("{intersection_id}", "*");
+                        s.ExchangeType = ExchangeType.Topic;
+                    });
 
                     e.ConfigureConsumer<SensorDataConsumer>(context);
                 });

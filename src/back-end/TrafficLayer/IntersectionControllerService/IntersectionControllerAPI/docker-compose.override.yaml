@@ -45,6 +45,9 @@ services:
       RabbitMQ__RoutingKeys__SensorEmergencyVehicle: sensor.vehicle.emergency.{intersection_id}
       RabbitMQ__RoutingKeys__SensorPublicTransport: sensor.public_transport.request.{intersection_id}
       RabbitMQ__RoutingKeys__SensorCyclist: sensor.cyclist.request.{intersection_id}
+      RabbitMQ__RoutingKeys__SensorPedestrian: sensor.pedestrian.request.{intersection_id}
+      RabbitMQ__RoutingKeys__SensorIncident: sensor.incident.detected.{intersection_id}
+
 
       # ===============================
       # Routing Keys (Publishes)
