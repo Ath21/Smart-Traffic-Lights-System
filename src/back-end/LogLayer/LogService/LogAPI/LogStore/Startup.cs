@@ -56,6 +56,7 @@ public class Startup
 
         /******* [6] MassTransit ********/
 
+        services.AddLogServiceMassTransit(_configuration);
 
         /******* [6] Controllers ********/
 
