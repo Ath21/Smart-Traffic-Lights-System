@@ -1,5 +1,8 @@
 using System.Net;
+using System.Text.Json;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using RabbitMQ.Client.Exceptions;
 using TrafficAnalyticsStore.Publishers.Logs;
 
 namespace TrafficAnalyticsStore.Middleware;
@@ -24,20 +27,24 @@ public class ExceptionMiddleware
             await _next(context);
         }
 
-        //  Authentication / Authorization
+        // ============================
+        // AUTH / SECURITY
+        // ============================
         catch (UnauthorizedAccessException ex)
         {
             await HandleErrorAsync(context, HttpStatusCode.Unauthorized, "Unauthorized access", "AUTH_ERROR", ex);
         }
 
-        //  Not found / bad usage
+        // ============================
+        // CLIENT ERRORS
+        // ============================
         catch (KeyNotFoundException ex)
         {
             await HandleErrorAsync(context, HttpStatusCode.NotFound, "Resource not found", "NOT_FOUND", ex);
         }
         catch (InvalidOperationException ex)
         {
-            await HandleErrorAsync(context, HttpStatusCode.Conflict, "Invalid operation", "INVALID_OPERATION", ex);
+            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid operation", "INVALID_OPERATION", ex);
         }
         catch (ArgumentNullException ex)
         {
@@ -51,8 +58,18 @@ public class ExceptionMiddleware
         {
             await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid data format", "FORMAT_ERROR", ex);
         }
+        catch (JsonException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid JSON payload", "JSON_ERROR", ex);
+        }
+        catch (InvalidCastException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid type conversion", "CAST_ERROR", ex);
+        }
 
-        //  Timeouts / Network
+        // ============================
+        // NETWORK / BROKER
+        // ============================
         catch (TimeoutException ex)
         {
             await HandleErrorAsync(context, HttpStatusCode.RequestTimeout, "Operation timed out", "TIMEOUT", ex);
@@ -65,18 +82,34 @@ public class ExceptionMiddleware
         {
             await HandleErrorAsync(context, HttpStatusCode.RequestTimeout, "Operation canceled or timed out", "TASK_CANCELED", ex);
         }
-        catch (MassTransit.RequestTimeoutException ex)
+        catch (RequestTimeoutException ex)
         {
-            await HandleErrorAsync(context, HttpStatusCode.RequestTimeout, "Message broker timeout", "BROKER_TIMEOUT", ex);
+            await HandleErrorAsync(context, HttpStatusCode.GatewayTimeout, "Message broker timeout", "BROKER_TIMEOUT", ex);
+        }
+        catch (BrokerUnreachableException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.BadGateway, "Message broker unreachable", "BROKER_UNREACHABLE", ex);
+        }
+        catch (OperationInterruptedException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.ServiceUnavailable, "Message broker interrupted", "BROKER_INTERRUPTED", ex);
         }
 
-        //  Database
+        // ============================
+        // DATABASE (EF Core)
+        // ============================
+        catch (DbUpdateConcurrencyException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.Conflict, "Database concurrency conflict", "DB_CONCURRENCY_ERROR", ex);
+        }
         catch (DbUpdateException ex)
         {
             await HandleErrorAsync(context, HttpStatusCode.Conflict, "Database update failed", "DB_UPDATE_ERROR", ex);
         }
 
-        //  Fallback
+        // ============================
+        // FALLBACK
+        // ============================
         catch (Exception ex)
         {
             await HandleErrorAsync(context, HttpStatusCode.InternalServerError, "An unexpected error occurred", "UNEXPECTED", ex);

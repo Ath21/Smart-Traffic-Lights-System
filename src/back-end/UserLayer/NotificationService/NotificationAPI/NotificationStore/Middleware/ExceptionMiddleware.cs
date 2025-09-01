@@ -1,6 +1,9 @@
 using System.Net;
+using System.Text.Json;
 using MassTransit;
 using MongoDB.Driver;
+using RabbitMQ.Client.Exceptions;
+using MailKit.Net.Smtp;
 using NotificationStore.Publishers.Logs;
 
 namespace NotificationStore.Middleware;
@@ -14,8 +17,8 @@ public class ExceptionMiddleware
 
     public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
     {
-        _logger = logger;
         _next = next;
+        _logger = logger;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -24,20 +27,25 @@ public class ExceptionMiddleware
         {
             await _next(context);
         }
-        //  Authentication / Authorization
+
+        // ============================
+        // AUTH / SECURITY
+        // ============================
         catch (UnauthorizedAccessException ex)
         {
             await HandleErrorAsync(context, HttpStatusCode.Unauthorized, "Unauthorized access", "AUTH_ERROR", ex);
         }
 
-        //  Not found / bad usage
+        // ============================
+        // CLIENT ERRORS
+        // ============================
         catch (KeyNotFoundException ex)
         {
             await HandleErrorAsync(context, HttpStatusCode.NotFound, "Resource not found", "NOT_FOUND", ex);
         }
         catch (InvalidOperationException ex)
         {
-            await HandleErrorAsync(context, HttpStatusCode.Conflict, "Invalid operation", "INVALID_OPERATION", ex);
+            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid operation", "INVALID_OPERATION", ex);
         }
         catch (ArgumentNullException ex)
         {
@@ -51,28 +59,66 @@ public class ExceptionMiddleware
         {
             await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid data format", "FORMAT_ERROR", ex);
         }
+        catch (JsonException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid JSON payload", "JSON_ERROR", ex);
+        }
 
-        //  Network / Messaging
+        // ============================
+        // NETWORK / BROKER
+        // ============================
         catch (TaskCanceledException ex)
         {
             await HandleErrorAsync(context, HttpStatusCode.RequestTimeout, "Request canceled or timed out", "TASK_CANCELED", ex);
         }
         catch (RequestTimeoutException ex)
         {
-            await HandleErrorAsync(context, HttpStatusCode.RequestTimeout, "Message broker timeout", "BROKER_TIMEOUT", ex);
+            await HandleErrorAsync(context, HttpStatusCode.GatewayTimeout, "Message broker timeout", "BROKER_TIMEOUT", ex);
+        }
+        catch (BrokerUnreachableException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.BadGateway, "Message broker unreachable", "BROKER_UNREACHABLE", ex);
+        }
+        catch (OperationInterruptedException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.ServiceUnavailable, "Message broker operation interrupted", "BROKER_INTERRUPTED", ex);
         }
 
-        //  MongoDB
-        catch (MongoWriteException ex)
+        // ============================
+        // EMAIL (MailKit / SMTP)
+        // ============================
+        catch (SmtpCommandException ex)
         {
-            await HandleErrorAsync(context, HttpStatusCode.Conflict, "Mongo write error", "MONGO_WRITE", ex);
+            await HandleErrorAsync(context, HttpStatusCode.BadGateway, "SMTP command failed", "SMTP_COMMAND_ERROR", ex);
+        }
+        catch (SmtpProtocolException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.BadGateway, "SMTP protocol error", "SMTP_PROTOCOL_ERROR", ex);
+        }
+
+        // ============================
+        // DATABASE (MongoDB)
+        // ============================
+        catch (MongoAuthenticationException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.Unauthorized, "MongoDB authentication failed", "MONGO_AUTH", ex);
         }
         catch (MongoConnectionException ex)
         {
-            await HandleErrorAsync(context, HttpStatusCode.ServiceUnavailable, "Mongo connection error", "MONGO_CONNECTION", ex);
+            await HandleErrorAsync(context, HttpStatusCode.ServiceUnavailable, "MongoDB connection error", "MONGO_CONNECTION", ex);
+        }
+        catch (MongoWriteException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.Conflict, "MongoDB write error", "MONGO_WRITE", ex);
+        }
+        catch (MongoException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.InternalServerError, "MongoDB error", "MONGO_ERROR", ex);
         }
 
-        //  Fallback
+        // ============================
+        // FALLBACK
+        // ============================
         catch (Exception ex)
         {
             await HandleErrorAsync(context, HttpStatusCode.InternalServerError, "An unexpected error occurred", "UNEXPECTED", ex);
@@ -91,6 +137,7 @@ public class ExceptionMiddleware
         try
         {
             var publisher = context.RequestServices.GetRequiredService<INotificationLogPublisher>();
+
             await publisher.PublishErrorLogAsync(
                 errorType,
                 $"{ServiceTag} {ex.Message}",
@@ -98,10 +145,14 @@ public class ExceptionMiddleware
                 {
                     Path = context.Request.Path,
                     Method = context.Request.Method,
-                    TraceId = context.TraceIdentifier
+                    TraceId = context.TraceIdentifier,
+                    Exception = ex.GetType().Name,
+                    StackTrace = ex.StackTrace
                 },
                 ex
             );
+
+            _logger.LogInformation("{Tag} Error published to log exchange: {ErrorType}", ServiceTag, errorType);
         }
         catch (Exception pubEx)
         {

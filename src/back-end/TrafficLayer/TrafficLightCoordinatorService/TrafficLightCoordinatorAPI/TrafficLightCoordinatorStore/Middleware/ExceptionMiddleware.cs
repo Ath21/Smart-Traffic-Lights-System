@@ -1,148 +1,176 @@
 using System.Net;
+using System.Text.Json;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using RabbitMQ.Client.Exceptions;
 using TrafficLightCoordinatorStore.Publishers.Logs;
 
-namespace TrafficLightCoordinatorStore.Middleware
+namespace TrafficLightCoordinatorStore.Middleware;
+
+public class ExceptionMiddleware
 {
-    public class ExceptionMiddleware
+    private readonly RequestDelegate _next;
+    private readonly ILogger<ExceptionMiddleware> _logger;
+
+    private const string ServiceTag = "[" + nameof(ExceptionMiddleware) + "]";
+
+    public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
     {
-        private readonly RequestDelegate _next;
-        private readonly ILogger<ExceptionMiddleware> _logger;
+        _next = next ?? throw new ArgumentNullException(nameof(next));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
 
-        private const string ServiceTag = "[" + nameof(ExceptionMiddleware) + "]";
-
-        public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
+    public async Task InvokeAsync(HttpContext context)
+    {
+        try
         {
-            _next = next ?? throw new ArgumentNullException(nameof(next));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            await _next(context);
         }
 
-        public async Task InvokeAsync(HttpContext context)
+        // ============================
+        // AUTH / SECURITY
+        // ============================
+        catch (UnauthorizedAccessException ex)
         {
+            await HandleAsync(context, HttpStatusCode.Unauthorized, "Unauthorized access", "AUTH_ERROR", ex);
+        }
+
+        // ============================
+        // CLIENT ERRORS
+        // ============================
+        catch (KeyNotFoundException ex)
+        {
+            await HandleAsync(context, HttpStatusCode.NotFound, "Resource not found", "NOT_FOUND", ex);
+        }
+        catch (ArgumentNullException ex)
+        {
+            await HandleAsync(context, HttpStatusCode.BadRequest, "Missing required parameter", "ARGUMENT_NULL", ex);
+        }
+        catch (ArgumentException ex)
+        {
+            await HandleAsync(context, HttpStatusCode.BadRequest, "Invalid parameter", "ARGUMENT_ERROR", ex);
+        }
+        catch (FormatException ex)
+        {
+            await HandleAsync(context, HttpStatusCode.BadRequest, "Invalid data format", "FORMAT_ERROR", ex);
+        }
+        catch (InvalidOperationException ex)
+        {
+            await HandleAsync(context, HttpStatusCode.BadRequest, "Invalid operation", "INVALID_OPERATION", ex);
+        }
+        catch (JsonException ex)
+        {
+            await HandleAsync(context, HttpStatusCode.BadRequest, "Invalid JSON payload", "JSON_ERROR", ex);
+        }
+
+        // ============================
+        // NETWORK / BROKER
+        // ============================
+        catch (TimeoutException ex)
+        {
+            await HandleAsync(context, HttpStatusCode.RequestTimeout, "Operation timed out", "TIMEOUT", ex);
+        }
+        catch (RequestTimeoutException ex)
+        {
+            await HandleAsync(context, HttpStatusCode.GatewayTimeout, "Message broker timeout", "BROKER_TIMEOUT", ex);
+        }
+        catch (TaskCanceledException ex)
+        {
+            await HandleAsync(context, HttpStatusCode.RequestTimeout, "Operation canceled or timed out", "TASK_CANCELED", ex);
+        }
+        catch (HttpRequestException ex)
+        {
+            await HandleAsync(context, HttpStatusCode.BadGateway, "Upstream HTTP request failed", "HTTP_REQUEST_ERROR", ex);
+        }
+        catch (BrokerUnreachableException ex)
+        {
+            await HandleAsync(context, HttpStatusCode.BadGateway, "Message broker unreachable", "BROKER_UNREACHABLE", ex);
+        }
+        catch (OperationInterruptedException ex)
+        {
+            await HandleAsync(context, HttpStatusCode.ServiceUnavailable, "Broker operation interrupted", "BROKER_INTERRUPTED", ex);
+        }
+        catch (ConfigurationException ex) // MassTransit bus config
+        {
+            await HandleAsync(context, HttpStatusCode.BadGateway, "Message bus configuration error", "BROKER_CONFIG_ERROR", ex);
+        }
+
+        // ============================
+        // DATABASE
+        // ============================
+        catch (DbUpdateConcurrencyException ex)
+        {
+            await HandleAsync(context, HttpStatusCode.Conflict, "Database concurrency conflict", "DB_CONCURRENCY_ERROR", ex);
+        }
+        catch (DbUpdateException ex)
+        {
+            await HandleAsync(context, HttpStatusCode.Conflict, "Database update failed", "DB_UPDATE_ERROR", ex);
+        }
+        catch (PostgresException ex)
+        {
+            await HandleAsync(context, HttpStatusCode.BadGateway, "PostgreSQL database error", "DB_POSTGRES_ERROR", ex);
+        }
+
+        // ============================
+        // FALLBACK
+        // ============================
+        catch (Exception ex)
+        {
+            await HandleAsync(context, HttpStatusCode.InternalServerError, "An unexpected error occurred", "UNEXPECTED", ex);
+        }
+    }
+
+    private async Task HandleAsync(
+        HttpContext ctx,
+        HttpStatusCode status,
+        string userMessage,
+        string errorType,
+        Exception ex)
+    {
+        _logger.LogError(ex, "{Tag} {Message}", ServiceTag, userMessage);
+
+        var publisher = ctx.RequestServices.GetService<ITrafficLogPublisher>();
+        if (publisher != null)
+        {
+            var metadata = new
+            {
+                serviceTag = ServiceTag,
+                path = ctx.Request?.Path.Value,
+                method = ctx.Request?.Method,
+                traceId = ctx.TraceIdentifier,
+                status = (int)status,
+                query = ctx.Request?.QueryString.Value
+            };
+
             try
             {
-                await _next(context);
-            }
+                await publisher.PublishErrorAsync(
+                    errorType: errorType,
+                    message: $"{ServiceTag} {ex.Message}",
+                    metadata: metadata,
+                    ct: ctx.RequestAborted
+                );
 
-            //  Authentication / Authorization
-            catch (UnauthorizedAccessException ex)
-            {
-                await HandleAsync(context, HttpStatusCode.Unauthorized, "Unauthorized access", ex);
+                _logger.LogInformation("{Tag} Error published to log exchange: {ErrorType}", ServiceTag, errorType);
             }
-
-            //  Not found / bad usage
-            catch (KeyNotFoundException ex)
+            catch (Exception pubEx)
             {
-                await HandleAsync(context, HttpStatusCode.NotFound, "Resource not found", ex);
-            }
-            catch (ArgumentNullException ex)
-            {
-                await HandleAsync(context, HttpStatusCode.BadRequest, "Missing required parameter", ex);
-            }
-            catch (ArgumentException ex)
-            {
-                await HandleAsync(context, HttpStatusCode.BadRequest, "Invalid parameter", ex);
-            }
-            catch (FormatException ex)
-            {
-                await HandleAsync(context, HttpStatusCode.BadRequest, "Invalid data format", ex);
-            }
-            catch (InvalidOperationException ex)
-            {
-                await HandleAsync(context, HttpStatusCode.BadRequest, "Invalid operation", ex);
-            }
-
-            //  Timeouts / Network
-            catch (TimeoutException ex)
-            {
-                await HandleAsync(context, HttpStatusCode.RequestTimeout, "Operation timed out", ex);
-            }
-            catch (RequestTimeoutException ex) 
-            {
-                await HandleAsync(context, HttpStatusCode.RequestTimeout, "Message broker timeout", ex);
-            }
-            catch (TaskCanceledException ex)
-            {
-                await HandleAsync(context, HttpStatusCode.RequestTimeout, "Operation canceled or timed out", ex);
-            }
-
-            //  Upstream / Infra
-            catch (HttpRequestException ex)
-            {
-                await HandleAsync(context, HttpStatusCode.BadGateway, "Upstream HTTP request failed", ex);
-            }
-            catch (BrokerUnreachableException ex)
-            {
-                await HandleAsync(context, HttpStatusCode.BadGateway, "Message broker unreachable", ex);
-            }
-            catch (ConfigurationException ex) // MassTransit configuration error
-            {
-                await HandleAsync(context, HttpStatusCode.BadGateway, "Message bus configuration error", ex);
-            }
-
-            //  Database
-            catch (DbUpdateException ex)
-            {
-                await HandleAsync(context, HttpStatusCode.Conflict, "Database update failed", ex);
-            }
-            catch (PostgresException ex)
-            {
-                await HandleAsync(context, HttpStatusCode.BadGateway, "Database error", ex);
-            }
-
-            //  Fallback
-            catch (Exception ex)
-            {
-                await HandleAsync(context, HttpStatusCode.InternalServerError, "An unexpected error occurred", ex);
+                _logger.LogWarning(pubEx, "{Tag} Failed to publish error log to broker", ServiceTag);
             }
         }
 
-        private async Task HandleAsync(HttpContext ctx, HttpStatusCode status, string message, Exception ex)
+        if (!ctx.Response.HasStarted)
         {
-            _logger.LogError(ex, "{Tag} {Message}", ServiceTag, message);
+            ctx.Response.StatusCode = (int)status;
+            ctx.Response.ContentType = "application/json";
 
-            var publisher = ctx.RequestServices.GetService(typeof(ITrafficLogPublisher)) as ITrafficLogPublisher;
-            if (publisher != null)
+            await ctx.Response.WriteAsJsonAsync(new
             {
-                var metadata = new
-                {
-                    serviceTag = ServiceTag,
-                    path = ctx.Request?.Path.Value,
-                    method = ctx.Request?.Method,
-                    traceId = ctx.TraceIdentifier,
-                    status = (int)status,
-                    query = ctx.Request?.QueryString.Value
-                };
-
-                try
-                {
-                    await publisher.PublishErrorAsync(
-                        errorType: ex.GetType().Name,
-                        message: message,
-                        metadata: metadata,
-                        ct: ctx.RequestAborted
-                    );
-                }
-                catch (Exception pubEx)
-                {
-                    _logger.LogWarning(pubEx, "{Tag} Failed to publish error log to broker", ServiceTag);
-                }
-            }
-
-            if (!ctx.Response.HasStarted)
-            {
-                ctx.Response.StatusCode = (int)status;
-                ctx.Response.ContentType = "application/json";
-                await ctx.Response.WriteAsJsonAsync(new
-                {
-                    error = message,
-                    details = ex.Message,
-                    traceId = ctx.TraceIdentifier
-                });
-            }
+                error = userMessage,
+                details = ex.Message,
+                traceId = ctx.TraceIdentifier
+            });
         }
     }
 }
