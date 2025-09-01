@@ -25,15 +25,28 @@ public class LogService : ILogService
     // ================================
     public async Task StoreAuditLogAsync(AuditLogDto logDto)
     {
+        if (logDto.LogId == Guid.Empty)
+            logDto.LogId = Guid.NewGuid();
+
+        if (logDto.Timestamp == default)
+            logDto.Timestamp = DateTime.UtcNow;
+
         var log = _mapper.Map<AuditLog>(logDto);
         await _auditRepo.CreateAsync(log);
     }
 
     // ================================
     // STORE: Error Log
+    // (called from ExceptionMiddleware)
     // ================================
     public async Task StoreErrorLogAsync(ErrorLogDto logDto)
     {
+        if (logDto.LogId == Guid.Empty)
+            logDto.LogId = Guid.NewGuid();
+
+        if (logDto.Timestamp == default)
+            logDto.Timestamp = DateTime.UtcNow;
+
         var log = _mapper.Map<ErrorLog>(logDto);
         await _errorRepo.CreateAsync(log);
     }
@@ -44,6 +57,18 @@ public class LogService : ILogService
     public async Task<List<AuditLogDto>> GetAuditLogsByServiceAsync(string serviceName)
     {
         var logs = await _auditRepo.GetByServiceAsync(serviceName);
+
+        // Audit this operation
+        await StoreAuditLogAsync(new AuditLogDto
+        {
+            LogId = Guid.NewGuid(),
+            ServiceName = "LogService",
+            Action = "GetAuditLogsByService",
+            Message = $"Queried audit logs for service: {serviceName}",
+            Timestamp = DateTime.UtcNow,
+            Metadata = new Dictionary<string, object> { { "serviceQueried", serviceName } }
+        });
+
         return _mapper.Map<List<AuditLogDto>>(logs);
     }
 
@@ -53,6 +78,18 @@ public class LogService : ILogService
     public async Task<List<ErrorLogDto>> GetErrorLogsByServiceAsync(string serviceName)
     {
         var logs = await _errorRepo.GetByServiceAsync(serviceName);
+
+        // Audit this operation
+        await StoreAuditLogAsync(new AuditLogDto
+        {
+            LogId = Guid.NewGuid(),
+            ServiceName = "LogService",
+            Action = "GetErrorLogsByService",
+            Message = $"Queried error logs for service: {serviceName}",
+            Timestamp = DateTime.UtcNow,
+            Metadata = new Dictionary<string, object> { { "serviceQueried", serviceName } }
+        });
+
         return _mapper.Map<List<ErrorLogDto>>(logs);
     }
 
@@ -98,6 +135,24 @@ public class LogService : ILogService
 
         var errorLogs = await _errorRepo.FindAsync(errorFilter);
         results.AddRange(_mapper.Map<List<ErrorLogDto>>(errorLogs));
+
+        // Audit this operation
+        await StoreAuditLogAsync(new AuditLogDto
+        {
+            LogId = Guid.NewGuid(),
+            ServiceName = "LogService",
+            Action = "SearchLogs",
+            Message = "Performed a search across audit and error logs",
+            Timestamp = DateTime.UtcNow,
+            Metadata = new Dictionary<string, object>
+            {
+                { "serviceName", serviceName ?? "" },
+                { "errorType", errorType ?? "" },
+                { "action", action ?? "" },
+                { "from", from?.ToString("O") ?? "" },
+                { "to", to?.ToString("O") ?? "" }
+            }
+        });
 
         return results;
     }
