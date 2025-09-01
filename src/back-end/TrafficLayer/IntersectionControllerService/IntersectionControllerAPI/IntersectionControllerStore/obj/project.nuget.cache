@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "uTPESOnjdHM=",
+  "dgSpecHash": "OMHt92w8SMA=",
   "success": true,
   "projectFilePath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/IntersectionControllerService/IntersectionControllerAPI/IntersectionControllerStore/IntersectionControllerStore.csproj",
   "expectedPackageFiles": [
@@ -28,7 +28,9 @@
     "/home/ath/.nuget/packages/microsoft.extensions.options/9.0.6/microsoft.extensions.options.9.0.6.nupkg.sha512",
     "/home/ath/.nuget/packages/microsoft.extensions.primitives/9.0.6/microsoft.extensions.primitives.9.0.6.nupkg.sha512",
     "/home/ath/.nuget/packages/microsoft.openapi/1.6.23/microsoft.openapi.1.6.23.nupkg.sha512",
+    "/home/ath/.nuget/packages/pipelines.sockets.unofficial/2.2.8/pipelines.sockets.unofficial.2.2.8.nupkg.sha512",
     "/home/ath/.nuget/packages/rabbitmq.client/7.1.2/rabbitmq.client.7.1.2.nupkg.sha512",
+    "/home/ath/.nuget/packages/stackexchange.redis/2.9.11/stackexchange.redis.2.9.11.nupkg.sha512",
     "/home/ath/.nuget/packages/swashbuckle.aspnetcore/9.0.1/swashbuckle.aspnetcore.9.0.1.nupkg.sha512",
     "/home/ath/.nuget/packages/swashbuckle.aspnetcore.swagger/9.0.1/swashbuckle.aspnetcore.swagger.9.0.1.nupkg.sha512",
     "/home/ath/.nuget/packages/swashbuckle.aspnetcore.swaggergen/9.0.1/swashbuckle.aspnetcore.swaggergen.9.0.1.nupkg.sha512",

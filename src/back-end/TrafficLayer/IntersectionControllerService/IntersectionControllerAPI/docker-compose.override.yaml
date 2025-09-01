@@ -9,6 +9,14 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
 
       # ===============================
+      # Redis Connection
+      # ===============================
+      Redis__Host: redis
+      Redis__Port: 6379
+      Redis__Password: ""
+      Redis__Database: 0
+
+      # ===============================
       # RabbitMQ Connection
       # ===============================
       RabbitMQ__Host: rabbitmq
