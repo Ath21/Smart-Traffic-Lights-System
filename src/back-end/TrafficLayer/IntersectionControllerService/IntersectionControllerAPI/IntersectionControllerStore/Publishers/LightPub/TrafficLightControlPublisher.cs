@@ -3,83 +3,43 @@ using System.Threading.Tasks;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using TrafficMessages.Light;
-using TrafficMessages.Logs;  // Assume you have these message contracts
+using TrafficMessages;
 
-namespace IntersectionControlStore.Publishers.LightPub
+namespace IntersectionControlStore.Publishers.LightPub;
+
+public class TrafficLightControlPublisher : ITrafficLightControlPublisher
 {
-    public class TrafficLightControlPublisher : ITrafficLightControlPublisher
+    private readonly IBus _bus;
+    private readonly ILogger<TrafficLightControlPublisher> _logger;
+    private readonly string _trafficExchange;
+    private readonly string _lightControlRoutingKeyBase;
+
+    private const string ServiceTag = "[" + nameof(TrafficLightControlPublisher) + "]";
+
+    public TrafficLightControlPublisher(IBus bus, ILogger<TrafficLightControlPublisher> logger, IConfiguration configuration)
     {
-        private readonly IBus _bus;
-        private readonly ILogger<TrafficLightControlPublisher> _logger;
-        private readonly IConfiguration _configuration;
+        _bus = bus;
+        _logger = logger;
 
-        private readonly string _trafficControlExchange;
-        private readonly string _trafficLightControlRoutingKeyBase;
+        _trafficExchange = configuration["RabbitMQ:Exchanges:Traffic"] ?? "TRAFFIC.EXCHANGE";
+        _lightControlRoutingKeyBase = configuration["RabbitMQ:RoutingKeys:TrafficLightControl"] ?? "traffic.light.control.{intersection_id}.{light_id}";
+    }
 
-        private readonly string _logExchange;
-        private readonly string _auditLogRoutingKey;
-        private readonly string _errorLogRoutingKey;
+    public async Task PublishControlAsync(Guid intersectionId, Guid lightId, string newState)
+    {
+        var routingKey = _lightControlRoutingKeyBase
+            .Replace("{intersection_id}", intersectionId.ToString())
+            .Replace("{light_id}", lightId.ToString());
 
-        public TrafficLightControlPublisher(
-            IBus bus,
-            ILogger<TrafficLightControlPublisher> logger,
-            IConfiguration configuration)
-        {
-            _bus = bus;
-            _logger = logger;
-            _configuration = configuration;
+        var message = new TrafficLightControlMessage(intersectionId, lightId, newState, DateTime.UtcNow);
 
-            _trafficControlExchange = _configuration["RabbitMQ:Exchange:TrafficControlExchange"] ?? "traffic.control.exchange";
-            _trafficLightControlRoutingKeyBase = _configuration["RabbitMQ:RoutingKey:TrafficLightControl"] ?? "traffic.intersection_control.light.*";
+        _logger.LogInformation("{Tag} Publishing control for light {LightId} -> {State} at intersection {IntersectionId} to {RoutingKey}",
+            ServiceTag, lightId, newState, intersectionId, routingKey);
 
-            _logExchange = _configuration["RabbitMQ:Exchange:LogStoreExchange"] ?? "log.store.exchange";
-            _auditLogRoutingKey = "traffic.logs.audit";
-            _errorLogRoutingKey = "traffic.logs.error";
-        }
+        var endpoint = await _bus.GetSendEndpoint(new Uri($"exchange:{_trafficExchange}"));
+        await endpoint.Send(message, ctx => ctx.SetRoutingKey(routingKey));
 
-        public async Task PublishTrafficLightControlAsync(TrafficLightControl controlMessage)
-        {
-            var routingKey = BuildRoutingKey(_trafficLightControlRoutingKeyBase, controlMessage.IntersectionId);
-
-            _logger.LogInformation("[TRAFFIC LIGHT CONTROL] Publishing control command to '{RoutingKey}' on exchange '{Exchange}'", routingKey, _trafficControlExchange);
-
-            var sendEndpoint = await _bus.GetSendEndpoint(new Uri($"exchange:{_trafficControlExchange}"));
-            await sendEndpoint.Send(controlMessage, context =>
-            {
-                context.SetRoutingKey(routingKey);
-            });
-
-            _logger.LogInformation("[TRAFFIC LIGHT CONTROL] Published control command for intersection {IntersectionId} with pattern '{Pattern}' for {Duration}s triggered by {TriggeredBy}",
-                controlMessage.IntersectionId, controlMessage.ControlPattern, controlMessage.DurationSeconds, controlMessage.TriggeredBy);
-        }
-
-        public async Task PublishAuditLogAsync(AuditLogMessage auditLog)
-        {
-            _logger.LogInformation("[AUDIT LOG] Publishing audit log: {Message}", auditLog.Message);
-
-            var sendEndpoint = await _bus.GetSendEndpoint(new Uri($"exchange:{_logExchange}"));
-            await sendEndpoint.Send(auditLog, context =>
-            {
-                context.SetRoutingKey(_auditLogRoutingKey);
-            });
-        }
-
-        public async Task PublishErrorLogAsync(ErrorLogMessage errorLog)
-        {
-            _logger.LogError("[ERROR LOG] Publishing error log: {Message}", errorLog.Message);
-
-            var sendEndpoint = await _bus.GetSendEndpoint(new Uri($"exchange:{_logExchange}"));
-            await sendEndpoint.Send(errorLog, context =>
-            {
-                context.SetRoutingKey(_errorLogRoutingKey);
-            });
-        }
-
-        private string BuildRoutingKey(string routingKeyBase, string intersectionId)
-        {
-            var baseKey = routingKeyBase.TrimEnd('*').TrimEnd('.');
-            return $"{baseKey}.{intersectionId}";
-        }
+        _logger.LogInformation("{Tag} Control command published successfully for light {LightId} at intersection {IntersectionId}",
+            ServiceTag, lightId, intersectionId);
     }
 }

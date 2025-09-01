@@ -4,6 +4,6 @@ namespace IntersectionControlStore.Publishers.LogPub;
 
 public interface ITrafficLogPublisher
 {
-    Task PublishAuditLogAsync(string serviceName, string message, string intersectionId = null);
-    Task PublishErrorLogAsync(string serviceName, string message, Exception exception);
+    Task PublishAuditAsync(string serviceName, string action, string details, object? metadata = null, string? intersectionId = null);
+    Task PublishErrorAsync(string serviceName, string errorType, string message, object? metadata = null, string? intersectionId = null);
 }
