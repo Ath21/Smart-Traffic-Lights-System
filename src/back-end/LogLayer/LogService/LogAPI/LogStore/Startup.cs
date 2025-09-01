@@ -9,6 +9,8 @@ using Microsoft.OpenApi.Models;
 using RabbitMQ.Client;
 using LogStore.Repository.Audit;
 using LogStore.Repository.Error;
+using LogStore.Consumers.Traffic;
+using LogStore.Consumers.Sensor;
 
 namespace LogStore;
 
@@ -43,108 +45,17 @@ public class Startup
 
         services.AddAutoMapper(typeof(LogStoreProfile));
 
-        /******* [5] MassTransit ********/
+        /******* [5] Consumers ********/
 
-        services.AddMassTransit(x =>
-        {
-            x.AddConsumer<LogInfoConsumer>();
-            x.AddConsumer<LogAuditConsumer>();
-            x.AddConsumer<LogErrorConsumer>();
+        services.AddScoped<UserErrorLogConsumer>();
+        services.AddScoped<UserAuditLogConsumer>();
+        services.AddScoped<TrafficErrorLogConsumer>();
+        services.AddScoped<TrafficAuditLogConsumer>();
+        services.AddScoped<SensorErrorLogConsumer>();
+        services.AddScoped<SensorAuditLogConsumer>();
 
-            x.UsingRabbitMq((context, cfg) =>
-            {
-                var rabbitmqSettings = _configuration.GetSection("RabbitMQ");
+        /******* [6] MassTransit ********/
 
-                // Configure RabbitMQ connection settings
-                cfg.Host(rabbitmqSettings["Host"], "/", h =>
-                {
-                    h.Username(rabbitmqSettings["Username"]);
-                    h.Password(rabbitmqSettings["Password"]);
-            
-                });
-
-                // user.logs.info 
-                cfg.Message<LogInfo>(e =>
-                {
-                    e.SetEntityName(rabbitmqSettings["UserLogsExchange"]);
-
-                });
-
-                cfg.Publish<LogInfo>(e =>
-                {
-                    e.ExchangeType = ExchangeType.Direct;
-                });
-
-                cfg.ReceiveEndpoint("user.logs.info.queue", e =>
-                {
-
-                    e.ConfigureConsumer<LogInfoConsumer>(context);
-                    e.PrefetchCount = 16;
-                    e.UseConcurrencyLimit(4);
-
-
-                    e.Bind(rabbitmqSettings["UserLogsExchange"], x =>
-                    {
-                        x.ExchangeType = ExchangeType.Direct;
-                        x.RoutingKey = rabbitmqSettings["RoutingKeys:UserLogs:Info"];
-                    });
-
-                });
-
-                // user.logs.audit
-                cfg.Message<LogAudit>(e =>
-                {
-                    e.SetEntityName(rabbitmqSettings["UserLogsExchange"]);
-                });
-
-                cfg.Publish<LogAudit>(e =>
-                {
-                    e.ExchangeType = ExchangeType.Direct;
-                });
-
-                cfg.ReceiveEndpoint("user.logs.audit.queue", e =>
-                {
-                    e.ConfigureConsumer<LogAuditConsumer>(context);
-                    e.PrefetchCount = 16;
-                    e.UseConcurrencyLimit(4);
-
-                    e.Bind(rabbitmqSettings["UserLogsExchange"], x =>
-                    {
-                        x.ExchangeType = ExchangeType.Direct;
-                        x.RoutingKey = rabbitmqSettings["RoutingKeys:UserLogs:Audit"];
-                    });
-
-                });
-
-                // user.logs.error  
-                cfg.Message<LogError>(e =>
-                {
-                    e.SetEntityName(rabbitmqSettings["UserLogsExchange"]);
-                });
-
-                cfg.Publish<LogError>(e =>
-                {
-                    e.ExchangeType = ExchangeType.Direct;
-                });
-
-                cfg.ReceiveEndpoint("user.logs.error.queue", e =>
-                {
-                    e.ConfigureConsumer<LogErrorConsumer>(context);
-                    e.PrefetchCount = 16;
-                    e.UseConcurrencyLimit(4);
-
-                    e.Bind(rabbitmqSettings["UserLogsExchange"], x =>
-                    {
-                        x.ExchangeType = ExchangeType.Direct;
-                        x.RoutingKey = rabbitmqSettings["RoutingKeys:UserLogs:Error"];
-                    });
-
-                });
-
-                cfg.ConfigureEndpoints(context);
-
-            });
-        });
 
         /******* [6] Controllers ********/
 

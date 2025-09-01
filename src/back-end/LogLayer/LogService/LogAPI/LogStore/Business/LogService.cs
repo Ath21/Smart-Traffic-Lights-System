@@ -1,8 +1,6 @@
 using AutoMapper;
 using LogData.Collections;
-using LogStore.Models;
 using LogStore.Models.Dtos;
-using LogStore.Repository;
 using LogStore.Repository.Audit;
 using LogStore.Repository.Error;
 using MongoDB.Driver;
@@ -22,21 +20,45 @@ public class LogService : ILogService
         _mapper = mapper;
     }
 
-    // GET /audit/{serviceName}
+    // ================================
+    // STORE: Audit Log
+    // ================================
+    public async Task StoreAuditLogAsync(AuditLogDto logDto)
+    {
+        var log = _mapper.Map<AuditLog>(logDto);
+        await _auditRepo.CreateAsync(log);
+    }
+
+    // ================================
+    // STORE: Error Log
+    // ================================
+    public async Task StoreErrorLogAsync(ErrorLogDto logDto)
+    {
+        var log = _mapper.Map<ErrorLog>(logDto);
+        await _errorRepo.CreateAsync(log);
+    }
+
+    // ================================
+    // GET: /audit/{serviceName}
+    // ================================
     public async Task<List<AuditLogDto>> GetAuditLogsByServiceAsync(string serviceName)
     {
         var logs = await _auditRepo.GetByServiceAsync(serviceName);
         return _mapper.Map<List<AuditLogDto>>(logs);
     }
 
-    // GET /error/{serviceName}
+    // ================================
+    // GET: /error/{serviceName}
+    // ================================
     public async Task<List<ErrorLogDto>> GetErrorLogsByServiceAsync(string serviceName)
     {
         var logs = await _errorRepo.GetByServiceAsync(serviceName);
         return _mapper.Map<List<ErrorLogDto>>(logs);
     }
 
-    // GET /search → search across audit & error logs
+    // ================================
+    // GET: /search
+    // ================================
     public async Task<List<object>> SearchLogsAsync(
         string? serviceName,
         string? errorType,
@@ -47,7 +69,7 @@ public class LogService : ILogService
     {
         var results = new List<object>();
 
-        // Search Audit Logs
+        // ---- Audit Logs ----
         var auditFilter = Builders<AuditLog>.Filter.Empty;
 
         if (!string.IsNullOrEmpty(serviceName))
@@ -62,7 +84,7 @@ public class LogService : ILogService
         var auditLogs = await _auditRepo.FindAsync(auditFilter);
         results.AddRange(_mapper.Map<List<AuditLogDto>>(auditLogs));
 
-        // Search Error Logs
+        // ---- Error Logs ----
         var errorFilter = Builders<ErrorLog>.Filter.Empty;
 
         if (!string.IsNullOrEmpty(serviceName))
