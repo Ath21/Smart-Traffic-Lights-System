@@ -44,7 +44,7 @@ main()
         try_start "$SCRIPT_DIR/$SERVICE/up$SERVICE.sh"
     else
         echo "🚀 Starting ALL services in Traffic Layer..."
-        try_start "$SCRIPT_DIR/IntersectionControlService/upIntersectionControlService.sh"
+        try_start "$SCRIPT_DIR/IntersectionControllerService/upIntersectionControllerService.sh"
         try_start "$SCRIPT_DIR/TrafficLightControlService/upTrafficLightControlService.sh"
         try_start "$SCRIPT_DIR/TrafficLightCoordinatorService/upTrafficLightCoordinatorService.sh"
         try_start "$SCRIPT_DIR/TrafficAnalyticsService/upTrafficAnalyticsService.sh"

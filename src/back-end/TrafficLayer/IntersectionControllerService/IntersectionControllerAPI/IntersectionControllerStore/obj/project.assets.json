@@ -531,6 +531,16 @@
           "buildTransitive/net6.0/_._": {}
         }
       },
+      "LogMessages/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "compile": {
+          "bin/placeholder/LogMessages.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/LogMessages.dll": {}
+        }
+      },
       "SensorMessages/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
@@ -1354,6 +1364,11 @@
         "useSharedDesignerContext.txt"
       ]
     },
+    "LogMessages/1.0.0": {
+      "type": "project",
+      "path": "../../../../LogLayer/LogMessages/LogMessages.csproj",
+      "msbuildProject": "../../../../LogLayer/LogMessages/LogMessages.csproj"
+    },
     "SensorMessages/1.0.0": {
       "type": "project",
       "path": "../../../../SensorLayer/SensorMessages/SensorMessages.csproj",
@@ -1368,6 +1383,7 @@
   "projectFileDependencyGroups": {
     "net9.0": [
       "AutoMapper >= 14.0.0",
+      "LogMessages >= 1.0.0",
       "MassTransit >= 8.5.0",
       "MassTransit.RabbitMQ >= 8.5.0",
       "Microsoft.AspNetCore.OpenApi >= 9.0.6",
@@ -1384,11 +1400,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/IntersectionControlService/IntersectionControlAPI/IntersectionControlStore/IntersectionControlStore.csproj",
-      "projectName": "IntersectionControlStore",
-      "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/IntersectionControlService/IntersectionControlAPI/IntersectionControlStore/IntersectionControlStore.csproj",
+      "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/IntersectionControllerService/IntersectionControllerAPI/IntersectionControllerStore/IntersectionControllerStore.csproj",
+      "projectName": "IntersectionControllerStore",
+      "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/IntersectionControllerService/IntersectionControllerAPI/IntersectionControllerStore/IntersectionControllerStore.csproj",
       "packagesPath": "/home/ath/.nuget/packages/",
-      "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/IntersectionControlService/IntersectionControlAPI/IntersectionControlStore/obj/",
+      "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/IntersectionControllerService/IntersectionControllerAPI/IntersectionControllerStore/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/home/ath/.nuget/NuGet/NuGet.Config"
@@ -1403,6 +1419,9 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogMessages/LogMessages.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogMessages/LogMessages.csproj"
+            },
             "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/SensorMessages/SensorMessages.csproj": {
               "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/SensorMessages/SensorMessages.csproj"
             },
@@ -1476,7 +1495,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/9.0.303/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/9.0.304/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

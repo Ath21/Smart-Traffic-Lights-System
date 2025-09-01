@@ -21,7 +21,7 @@ declare -A SERVICES_PATHS=(
     [traffic_analytics_api]="./TrafficLayer/TrafficAnalyticsService/TrafficAnalyticsAPI"
     [traffic_light_control_api]="./TrafficLayer/TrafficLightControlService/TrafficLightControlAPI"
     [traffic_light_coordinator_api]="./TrafficLayer/TrafficLightCoordinatorService/TrafficLightCoordinatorAPI"
-    [intersection_control_api]="./TrafficLayer/IntersectionControlService/IntersectionControlAPI"
+    [intersection_controller_api]="./TrafficLayer/IntersectionControllerService/IntersectionControllerAPI"
 
     # Sensor Layer
     [vehicle_detection_api]="./SensorLayer/VehicleDetectionService/VehicleDetectionAPI"

@@ -5,7 +5,7 @@
 # ================================
 NETWORK_NAME="intersection_network"
 
-INTERSECTION_API_DIR="./TrafficLayer/IntersectionControlService/IntersectionControlAPI"
+INTERSECTION_API_DIR="./TrafficLayer/IntersectionControllerService/IntersectionControllerAPI"
 
 DOCKER_COMPOSE_FILE="docker-compose.yaml"
 DOCKER_COMPOSE_OVERRIDE="docker-compose.override.yaml"
@@ -15,15 +15,15 @@ DOCKER_COMPOSE_OVERRIDE="docker-compose.override.yaml"
 # ================================
 stop_containers() 
 {
-    echo "🛑 Stopping Intersection Control Service containers..."
+    echo "🛑 Stopping Intersection Controller Service containers..."
 
     docker compose \
         -f "$INTERSECTION_API_DIR/$DOCKER_COMPOSE_FILE" \
         -f "$INTERSECTION_API_DIR/$DOCKER_COMPOSE_OVERRIDE" \
-        -p intersection_control_service \
+        -p intersection_controller_service \
         down
 
-    echo "✅ All Intersection Control Service containers have been stopped."
+    echo "✅ All Intersection Controller Service containers have been stopped."
 }
 
 # ================================

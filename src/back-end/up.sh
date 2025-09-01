@@ -20,7 +20,7 @@ declare -A SERVICES_PATHS=(
     [traffic_analytics_api]="./TrafficLayer/TrafficAnalyticsService/TrafficAnalyticsAPI"
     [traffic_light_control_api]="./TrafficLayer/TrafficLightControlService/TrafficLightControlAPI"
     [traffic_light_coordinator_api]="./TrafficLayer/TrafficLightCoordinatorService/TrafficLightCoordinatorAPI"
-    [intersection_control_api]="./TrafficLayer/IntersectionControlService/IntersectionControlAPI"
+    [intersection_controller_api]="./TrafficLayer/IntersectionControllerService/IntersectionControllerAPI"
 
     # Sensor Layer
     [vehicle_detection_api]="./SensorLayer/VehicleDetectionService/VehicleDetectionAPI"
@@ -211,7 +211,7 @@ main()
                 TrafficAnalyticsService) services_to_build+=(traffic_analytics_api) ;;
                 TrafficLightControlService) services_to_build+=(traffic_light_control_api) ;;
                 TrafficLightCoordinatorService) services_to_build+=(traffic_light_coordinator_api) ;;
-                IntersectionControlService) services_to_build+=(intersection_control_api) ;;
+                IntersectionControllerService) services_to_build+=(intersection_controller_api) ;;
                 *) echo "❌ Unknown traffic service: $TARGET_SERVICE"; exit 1 ;;
             esac
             check_and_build_missing_images "${services_to_build[@]}"

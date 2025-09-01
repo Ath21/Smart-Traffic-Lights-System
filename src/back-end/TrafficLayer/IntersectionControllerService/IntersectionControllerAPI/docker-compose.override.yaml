@@ -1,0 +1,55 @@
+services:
+  intersection_controller_api:
+    ports:
+      - '5190:8080'
+    environment:
+      # ===============================
+      # ASP.NET Core
+      # ===============================
+      ASPNETCORE_ENVIRONMENT: Development
+
+      # ===============================
+      # RabbitMQ Connection
+      # ===============================
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Port: 5672
+      RabbitMQ__Username: rabbitmq
+      RabbitMQ__Password: rabbitmq123
+
+      # ===============================
+      # Exchanges
+      # ===============================
+      RabbitMQ__Exchanges__Traffic: TRAFFIC.EXCHANGE
+      RabbitMQ__Exchanges__Sensor: SENSOR.EXCHANGE
+      RabbitMQ__Exchanges__Logs: LOG.EXCHANGE
+
+      # ===============================
+      # Queues (Consumes)
+      # ===============================
+      RabbitMQ__Queues__TrafficIntersection: traffic.intersection_controller_service.queue
+      RabbitMQ__Queues__SensorIntersection: sensor.intersection_controller_service.queue
+
+      # ===============================
+      # Routing Keys (Consumes)
+      # ===============================
+      RabbitMQ__RoutingKeys__TrafficLightUpdate: traffic.light.update.{intersection_id}
+      RabbitMQ__RoutingKeys__SensorVehicleCount: sensor.vehicle.count.{intersection_id}
+      RabbitMQ__RoutingKeys__SensorEmergencyVehicle: sensor.vehicle.emergency.{intersection_id}
+      RabbitMQ__RoutingKeys__SensorPublicTransport: sensor.public_transport.request.{intersection_id}
+      RabbitMQ__RoutingKeys__SensorCyclist: sensor.cyclist.request.{intersection_id}
+
+      # ===============================
+      # Routing Keys (Publishes)
+      # ===============================
+      RabbitMQ__RoutingKeys__PriorityEmergency: priority.emergency.{intersection_id}
+      RabbitMQ__RoutingKeys__PriorityPublicTransport: priority.public_transport.{intersection_id}
+      RabbitMQ__RoutingKeys__PriorityPedestrian: priority.pedestrian.{intersection_id}
+      RabbitMQ__RoutingKeys__PriorityCyclist: priority.cyclist.{intersection_id}
+      RabbitMQ__RoutingKeys__PriorityIncident: priority.incident.{intersection_id}
+      RabbitMQ__RoutingKeys__TrafficLightControl: traffic.light.control.{intersection_id}.{light_id}
+
+      # ===============================
+      # Logs
+      # ===============================
+      RabbitMQ__RoutingKeys__TrafficLogsAudit: log.traffic.intersection_controller_service.audit
+      RabbitMQ__RoutingKeys__TrafficLogsError: log.traffic.intersection_controller_service.error

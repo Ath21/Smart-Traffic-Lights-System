@@ -1,7 +1,7 @@
 services:
-  intersection_control_api:
-    image: ath21/stls:intersection_control_api
-    container_name: intersection_control_api_container
+  intersection_controller_api:
+    image: ath21/stls:intersection_controller_api
+    container_name: intersection_controller_api_container
     networks:
       - intersection_network
       - rabbitmq_network

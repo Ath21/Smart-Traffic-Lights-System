@@ -3,21 +3,29 @@ services:
     ports:
       - "5087:8080"
     environment:
+      # ===============================
       # ASP.NET Core
+      # ===============================
       ASPNETCORE_ENVIRONMENT: Development
 
-      # MongoDB
+      # ===============================
+      # Database (MongoDB)
+      # ===============================
       DefaultConnection__ConnectionString: mongodb://mongo:mongo123@notification_mongo:27017
       DefaultConnection__DatabaseName: NotificationDb
       DefaultConnection__NotificationsCollectionName: notifications
       DefaultConnection__DeliveryLogsCollectionName: delivery_logs
 
-      # JWT
+      # ===============================
+      # JWT Authentication
+      # ===============================
       Jwt__Issuer: http://stls_backend:8080
       Jwt__Audience: http://stls_backend:8080
       Jwt__Key: Nn7kLa8Rzv1XHt9UwMqP4YbFdJxVt2Km
 
+      # ===============================
       # Email Settings
+      # ===============================
       EmailSettings__SmtpServer: smtp.gmail.com
       EmailSettings__Port: 587
       EmailSettings__SenderName: UNIWA STLS
@@ -25,31 +33,48 @@ services:
       EmailSettings__Username: ice19390005@gmail.com
       EmailSettings__Password: waqr ilfj fxpu banq
 
-      # RabbitMQ config
+      # ===============================
+      # RabbitMQ Connection
+      # ===============================
       RabbitMQ__Host: rabbitmq
       RabbitMQ__Port: 5672
       RabbitMQ__Username: rabbitmq
       RabbitMQ__Password: rabbitmq123
 
+      # ===============================
       # Exchanges
+      # ===============================
       RabbitMQ__Exchanges__Logs: LOG.EXCHANGE
       RabbitMQ__Exchanges__User: USER.EXCHANGE
       RabbitMQ__Exchanges__Traffic: TRAFFIC.EXCHANGE
 
-      # Publish to ...
+      # ===============================
+      # Routing Keys (Publishes)
+      # ===============================
       ## User Exchange
       RabbitMQ__RoutingKeys__NotificationAlert: user.notification.alert
       RabbitMQ__RoutingKeys__NotificationPublic: notification.event.public_notice
+
       ## Log Exchange
       RabbitMQ__RoutingKeys__Audit: log.user.notification_service.audit
       RabbitMQ__RoutingKeys__Error: log.user.notification_service.error
 
-      # Consume from ...
+      # ===============================
+      # Queues (Consumes)
+      # ===============================
       ## User Exchange
       RabbitMQ__Queues__User: user.notification_service.queue
-      RabbitMQ__RoutingKeys__NotificationRequest: user.notification.request
+
       ## Traffic Exchange
       RabbitMQ__Queues__Traffic: traffic.notification_service.queue
+
+      # ===============================
+      # Routing Keys (Consumes)
+      # ===============================
+      ## User Exchange
+      RabbitMQ__RoutingKeys__NotificationRequest: user.notification.request
+
+      ## Traffic Exchange
       RabbitMQ__RoutingKeys__TrafficCongestion: traffic.analytics.congestion.{intersection_id}
       RabbitMQ__RoutingKeys__TrafficSummary: traffic.analytics.summary.{intersection_id}
       RabbitMQ__RoutingKeys__TrafficIncident: traffic.analytics.incident.{intersection_id}

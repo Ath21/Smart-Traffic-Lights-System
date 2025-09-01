@@ -5,7 +5,7 @@
 # ================================
 NETWORK_NAME="intersection_network"
 
-INTERSECTION_API_DIR="./TrafficLayer/IntersectionControlService/IntersectionControlAPI"
+INTERSECTION_API_DIR="./TrafficLayer/IntersectionControllerService/IntersectionControllerAPI"
 
 DOCKER_COMPOSE_FILE="docker-compose.yaml"
 DOCKER_COMPOSE_OVERRIDE="docker-compose.override.yaml"
@@ -29,15 +29,15 @@ create_network()
 # ================================
 start_containers() 
 {
-    echo "📦 Starting Intersection Control Service containers..."
+    echo "📦 Starting Intersection Controller Service containers..."
 
     docker compose \
         -f "$INTERSECTION_API_DIR/$DOCKER_COMPOSE_FILE" \
         -f "$INTERSECTION_API_DIR/$DOCKER_COMPOSE_OVERRIDE" \
-        -p intersection_control_service \
+        -p intersection_controller_service \
         up -d
 
-    echo "✅ Intersection Control Service containers are running!"
+    echo "✅ Intersection Controller Service containers are running!"
 }
 
 # ================================

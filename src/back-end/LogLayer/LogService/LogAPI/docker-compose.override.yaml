@@ -3,42 +3,58 @@ services:
     ports:
       - '5005:8080'
     environment:
+      # ===============================
       # ASP.NET Core
+      # ===============================
       ASPNETCORE_ENVIRONMENT: Development
 
-      # MongoDB
+      # ===============================
+      # Database (MongoDB)
+      # ===============================
       DefaultConnection__ConnectionString: mongodb://mongo:mongo123@log_mongo:27017
       DefaultConnection__DatabaseName: LogDb
       DefaultConnection__AuditLogsCollectionName: audit_logs
       DefaultConnection__ErrorLogsCollectionName: error_logs
 
-      # JWT
+      # ===============================
+      # JWT Authentication
+      # ===============================
       Jwt__Issuer: http://stls_backend:8080
       Jwt__Audience: http://stls_backend:8080
       Jwt__Key: Nn7kLa8Rzv1XHt9UwMqP4YbFdJxVt2Km
 
-      # RabbitMQ connection
+      # ===============================
+      # RabbitMQ Connection
+      # ===============================
       RabbitMQ__Host: rabbitmq
       RabbitMQ__Port: 5672
       RabbitMQ__Username: rabbitmq
       RabbitMQ__Password: rabbitmq123
 
+      # ===============================
       # Exchanges
+      # ===============================
       RabbitMQ__Exchanges__Logs: LOG.EXCHANGE
 
-      # Consume from ...
-      ## User Layer
+      # ===============================
+      # Queues (Consumes)
+      # ===============================
       RabbitMQ__Queues__UserLogs: log.user_layer.queue
+      RabbitMQ__Queues__TrafficLogs: log.traffic_layer.queue
+      RabbitMQ__Queues__SensorLogs: log.sensor_layer.queue
+
+      # ===============================
+      # Routing Keys (Consumes)
+      # ===============================
+      ## User Layer
       RabbitMQ__RoutingKeys__UserAudit: log.user.{service_name}.audit
       RabbitMQ__RoutingKeys__UserError: log.user.{service_name}.error
 
       ## Traffic Layer
-      RabbitMQ__Queues__TrafficLogs: log.traffic_layer.queue
       RabbitMQ__RoutingKeys__TrafficAudit: log.traffic.{service_name}.audit
       RabbitMQ__RoutingKeys__TrafficError: log.traffic.{service_name}.error
 
       ## Sensor Layer
-      RabbitMQ__Queues__SensorLogs: log.sensor_layer.queue
       RabbitMQ__RoutingKeys__SensorAudit: log.sensor.{service_name}.audit
       RabbitMQ__RoutingKeys__SensorError: log.sensor.{service_name}.error
 

@@ -3,46 +3,64 @@ services:
     ports:
       - "5208:8080"
     environment:
+      # ===============================
       # ASP.NET Core
+      # ===============================
       ASPNETCORE_ENVIRONMENT: Development
 
-      # PostgreSQL
+      # ===============================
+      # Database (PostgreSQL)
+      # ===============================
       ConnectionStrings__DefaultConnection: Host=traffic_analytics_postgres;Port=5432;Database=TrafficAnalyticsDb;Username=postgres;Password=postgres123
 
-      # JWT
+      # ===============================
+      # JWT Authentication
+      # ===============================
       Jwt__Issuer: http://stls_backend:8080
       Jwt__Audience: http://stls_backend:8080
       Jwt__Key: Nn7kLa8Rzv1XHt9UwMqP4YbFdJxVt2Km
 
-      # RabbitMQ
+      # ===============================
+      # RabbitMQ Connection
+      # ===============================
       RabbitMQ__Host: rabbitmq
       RabbitMQ__Port: 5672
       RabbitMQ__Username: rabbitmq
       RabbitMQ__Password: rabbitmq123
 
+      # ===============================
       # Exchanges
+      # ===============================
       RabbitMQ__Exchanges__Logs: LOG.EXCHANGE
       RabbitMQ__Exchanges__Traffic: TRAFFIC.EXCHANGE
       RabbitMQ__Exchanges__Sensor: SENSOR.EXCHANGE
 
-      # Publish to ...
-      ## Traffic Exchange
-      RabbitMQ__RoutingKeys__TrafficCongestion: traffic.analytics.congestion.{intersection_id}
-      RabbitMQ__RoutingKeys__TrafficSummary: traffic.analytics.summary.{intersection_id}
-      RabbitMQ__RoutingKeys__TrafficIncident: traffic.analytics.incident.{intersection_id}
-      ## Log Exchange
-      RabbitMQ__RoutingKeys__Audit: log.traffic.analytics_service.audit
-      RabbitMQ__RoutingKeys__Error: log.traffic.analytics_service.error
-
-      # Consume from ...
-      ## Sensor Exchange
+      # ===============================
+      # Queues (Consumes)
+      # ===============================
       RabbitMQ__Queues__Sensor: sensor.traffic_analytics_service.queue
+
+      # ===============================
+      # Routing Keys (Consumes)
+      # ===============================
       RabbitMQ__RoutingKeys__VehicleCount: sensor.vehicle.count.{intersection_id}
       RabbitMQ__RoutingKeys__VehicleEmergency: sensor.vehicle.emergency.{intersection_id}
       RabbitMQ__RoutingKeys__PublicTransportRequest: sensor.public_transport.request.{intersection_id}
       RabbitMQ__RoutingKeys__CyclistRequest: sensor.cyclist.request.{intersection_id}
       RabbitMQ__RoutingKeys__IncidentDetected: sensor.incident.detected.{intersection_id}
 
+      # ===============================
+      # Routing Keys (Publishes)
+      # ===============================
+      RabbitMQ__RoutingKeys__TrafficCongestion: traffic.analytics.congestion.{intersection_id}
+      RabbitMQ__RoutingKeys__TrafficSummary: traffic.analytics.summary.{intersection_id}
+      RabbitMQ__RoutingKeys__TrafficIncident: traffic.analytics.incident.{intersection_id}
+
+      # ===============================
+      # Logs
+      # ===============================
+      RabbitMQ__RoutingKeys__Audit: log.traffic.analytics_service.audit
+      RabbitMQ__RoutingKeys__Error: log.traffic.analytics_service.error
 
     depends_on:
       traffic_analytics_postgres:
