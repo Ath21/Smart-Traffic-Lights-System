@@ -11,6 +11,9 @@ using LogStore.Repository.Audit;
 using LogStore.Repository.Error;
 using LogStore.Consumers.Traffic;
 using LogStore.Consumers.Sensor;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 namespace LogStore;
 
@@ -45,7 +48,28 @@ public class Startup
 
         services.AddAutoMapper(typeof(LogStoreProfile));
 
-        /******* [5] Consumers ********/
+        /******* [5] Jwt Config ********/
+
+        var jwtSettings = _configuration.GetSection("Jwt");
+        var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]);
+
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.RequireHttpsMetadata = false;
+                options.SaveToken = true;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidIssuer = jwtSettings["Issuer"],
+                    ValidateAudience = true,
+                    ValidAudience = jwtSettings["Audience"],
+                    ValidateLifetime = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key)
+                };
+            });
+
+        /******* [6] Consumers ********/
 
         services.AddScoped<UserErrorLogConsumer>();
         services.AddScoped<UserAuditLogConsumer>();
@@ -54,22 +78,35 @@ public class Startup
         services.AddScoped<SensorErrorLogConsumer>();
         services.AddScoped<SensorAuditLogConsumer>();
 
-        /******* [6] MassTransit ********/
+        /******* [7] MassTransit ********/
 
         services.AddLogServiceMassTransit(_configuration);
 
-        /******* [6] Controllers ********/
+        /******* [8] CORS Policy ********/
+
+        services.AddCors(options =>
+        {
+            options.AddPolicy("AllowFrontend", policy =>
+            {
+                policy.WithOrigins("http://localhost:5173") 
+                    .AllowAnyHeader()
+                    .AllowAnyMethod();
+
+            });
+        });
+
+        /******* [9] Controllers ********/
 
         services.AddControllers()
             .AddJsonOptions(
                 options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
         services.AddEndpointsApiExplorer();
 
-        /******* [7] Swagger ********/
+        /******* [10] Swagger ********/
 
         services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Log Service API", Version = "v1.0" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Log API", Version = "v2.0" });
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     In = ParameterLocation.Header,
@@ -103,13 +140,15 @@ public class Startup
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Log Service API");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Log API");
             });
         }
 
         app.UseHttpsRedirection();
 
         app.UseMiddleware<ExceptionMiddleware>();
+
+        app.UseCors("AllowFrontend");
 
         app.UseAuthentication();
         app.UseAuthorization();

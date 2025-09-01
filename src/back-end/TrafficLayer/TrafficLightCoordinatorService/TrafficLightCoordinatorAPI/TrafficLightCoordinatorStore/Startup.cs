@@ -102,7 +102,7 @@ public class Startup
             {
                 options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
             });
-
+        services.AddEndpointsApiExplorer();
 
         /******* [11] Swagger ********/
 
