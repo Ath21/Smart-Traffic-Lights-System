@@ -20,6 +20,7 @@ using IntersectionControllerStore.Repository.Intersect;
 using IntersectionControllerStore.Repository.Light;
 using IntersectionControllerStore.Repository.Config;
 using IntersectionControllerStore.Repository;
+using IntersectionControllerStore;
 
 namespace IntersectionControlStore
 {
@@ -52,9 +53,11 @@ namespace IntersectionControlStore
             services.AddScoped(typeof(IPriorityManager), typeof(PriorityManager));
 
             /******* [4] AutoMapper ********/
-            // services.AddAutoMapper(typeof(YourMappingProfile));
+           
+            services.AddAutoMapper(typeof(IntersectionControllerStoreProfile));
 
             /******* [5] Publishers ********/
+            
             services.AddScoped(typeof(IPriorityPublisher), typeof(PriorityPublisher));
             services.AddScoped(typeof(ITrafficLightControlPublisher), typeof(TrafficLightControlPublisher));
             services.AddScoped(typeof(ITrafficLogPublisher), typeof(TrafficLogPublisher));
