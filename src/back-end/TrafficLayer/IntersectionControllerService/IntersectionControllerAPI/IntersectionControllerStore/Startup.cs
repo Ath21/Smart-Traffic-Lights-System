@@ -21,6 +21,9 @@ using IntersectionControllerStore.Repository.Light;
 using IntersectionControllerStore.Repository.Config;
 using IntersectionControllerStore.Repository;
 using IntersectionControllerStore;
+using IntersectionControllerStore.Business.TrafficConfig;
+using IntersectionControllerStore.Business.TrafficLight;
+using IntersectionControllerStore.Business.Intersection;
 
 namespace IntersectionControlStore
 {
@@ -49,11 +52,13 @@ namespace IntersectionControlStore
             services.AddScoped(typeof(IIntersectionRepository), typeof(IntersectionRepository));
 
             /******* [3] Services ********/
-            // Register any domain services here:
-            services.AddScoped(typeof(IPriorityManager), typeof(PriorityManager));
+            
+            services.AddScoped(typeof(ITrafficConfigurationService), typeof(TrafficConfigurationService));
+            services.AddScoped(typeof(ITrafficLightService), typeof(TrafficLightService));
+            services.AddScoped(typeof(IIntersectionService), typeof(IntersectionService));
 
             /******* [4] AutoMapper ********/
-           
+
             services.AddAutoMapper(typeof(IntersectionControllerStoreProfile));
 
             /******* [5] Publishers ********/
