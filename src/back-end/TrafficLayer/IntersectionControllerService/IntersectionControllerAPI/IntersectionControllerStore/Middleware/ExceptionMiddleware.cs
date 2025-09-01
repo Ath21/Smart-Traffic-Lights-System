@@ -1,113 +1,169 @@
-using System;
 using System.Net;
-using System.Threading.Tasks;
+using System.Text.Json;
 using IntersectionControlStore.Publishers.LogPub;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 using MassTransit;
+using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
 
-namespace IntersectionControlStore.Middleware
+namespace IntersectionControlStore.Middleware;
+
+public class ExceptionMiddleware
 {
-    public class ExceptionMiddleware
+    private readonly RequestDelegate _next;
+    private readonly ILogger<ExceptionMiddleware> _logger;
+    private readonly IServiceScopeFactory _scopeFactory;
+
+    private const string ServiceTag = "[" + nameof(ExceptionMiddleware) + "]";
+
+    public ExceptionMiddleware(
+        RequestDelegate next,
+        ILogger<ExceptionMiddleware> logger,
+        IServiceScopeFactory scopeFactory)
     {
-        private readonly RequestDelegate _next;
-        private readonly ILogger<ExceptionMiddleware> _logger;
-        private readonly IServiceScopeFactory _scopeFactory;
+        _next = next;
+        _logger = logger;
+        _scopeFactory = scopeFactory;
+    }
 
-        public ExceptionMiddleware(
-            RequestDelegate next,
-            ILogger<ExceptionMiddleware> logger,
-            IServiceScopeFactory scopeFactory)
+    public async Task InvokeAsync(HttpContext context)
+    {
+        try
         {
-            _next = next;
-            _logger = logger;
-            _scopeFactory = scopeFactory;
+            await _next(context);
         }
 
-        public async Task InvokeAsync(HttpContext context)
+        // ============================
+        // AUTH / SECURITY
+        // ============================
+        catch (UnauthorizedAccessException ex)
         {
-            try
-            {
-                await _next(context);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                await HandleErrorAsync(context, HttpStatusCode.Unauthorized, "Unauthorized access", ex);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                await HandleErrorAsync(context, HttpStatusCode.NotFound, "Resource not found", ex);
-            }
-            catch (InvalidOperationException ex)
-            {
-                await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid operation", ex);
-            }
-            catch (ArgumentNullException ex)
-            {
-                await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Missing required parameter", ex);
-            }
-            catch (ArgumentException ex)
-            {
-                await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid parameter", ex);
-            }
-            catch (FormatException ex)
-            {
-                await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid data format", ex);
-            }
-            catch (System.Text.Json.JsonException ex)
-            {
-                await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Malformed JSON", ex);
-            }
-            catch (System.ComponentModel.DataAnnotations.ValidationException ex)
-            {
-                await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Validation failed", ex);
-            }
-            catch (TimeoutException ex)
-            {
-                await HandleErrorAsync(context, HttpStatusCode.RequestTimeout, "Operation timed out", ex);
-            }
-            catch (HttpRequestException ex)
-            {
-                await HandleErrorAsync(context, HttpStatusCode.BadGateway, "Dependent service connection failed", ex);
-            }
-            catch (MassTransit.RequestTimeoutException ex)
-            {
-                await HandleErrorAsync(context, HttpStatusCode.RequestTimeout, "Message broker timeout", ex);
-            }
-            catch (MassTransit.RequestFaultException ex)
-            {
-                await HandleErrorAsync(context, HttpStatusCode.BadGateway, "Message broker request fault", ex);
-            }
-            catch (Microsoft.EntityFrameworkCore.DbUpdateException ex)
-            {
-                await HandleErrorAsync(context, HttpStatusCode.InternalServerError, "Database update error", ex);
-            }
-            catch (TaskCanceledException ex)
-            {
-                await HandleErrorAsync(context, HttpStatusCode.RequestTimeout, "Operation canceled or timed out", ex);
-            }
-            catch (NotSupportedException ex)
-            {
-                await HandleErrorAsync(context, HttpStatusCode.NotImplemented, "Operation not supported", ex);
-            }
-            catch (Exception ex)
-            {
-                await HandleErrorAsync(context, HttpStatusCode.InternalServerError, "An unexpected error occurred", ex);
-            }
+            await HandleErrorAsync(context, HttpStatusCode.Unauthorized, "Unauthorized access", "AUTH_ERROR", ex);
         }
 
-        private async Task HandleErrorAsync(HttpContext context, HttpStatusCode statusCode, string message, Exception ex)
+        // ============================
+        // CLIENT ERRORS
+        // ============================
+        catch (KeyNotFoundException ex)
         {
-            _logger.LogError(ex, message);
+            await HandleErrorAsync(context, HttpStatusCode.NotFound, "Resource not found", "NOT_FOUND", ex);
+        }
+        catch (InvalidOperationException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid operation", "INVALID_OPERATION", ex);
+        }
+        catch (ArgumentNullException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Missing required parameter", "ARGUMENT_NULL", ex);
+        }
+        catch (ArgumentException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid parameter", "ARGUMENT_ERROR", ex);
+        }
+        catch (FormatException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid data format", "FORMAT_ERROR", ex);
+        }
+        catch (JsonException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Malformed JSON", "JSON_ERROR", ex);
+        }
 
+        // ============================
+        // NETWORK / BROKER (MassTransit / RabbitMQ)
+        // ============================
+        catch (TaskCanceledException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.RequestTimeout, "Operation canceled or timed out", "TASK_CANCELED", ex);
+        }
+        catch (TimeoutException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.RequestTimeout, "Operation timed out", "TIMEOUT", ex);
+        }
+        catch (RequestTimeoutException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.GatewayTimeout, "Message broker timeout", "BROKER_TIMEOUT", ex);
+        }
+        catch (RequestFaultException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.BadGateway, "Message broker request fault", "BROKER_FAULT", ex);
+        }
+        catch (RabbitMqConnectionException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.BadGateway, "Message broker connection failed", "BROKER_CONNECTION", ex);
+        }
+
+        // ============================
+        // DATABASE (EF Core / Redis)
+        // ============================
+        catch (DbUpdateException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.InternalServerError, "Database update error", "DB_UPDATE_ERROR", ex);
+        }
+        catch (RedisConnectionException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.BadGateway, "Redis connection error", "REDIS_CONNECTION", ex);
+        }
+        catch (RedisServerException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.BadGateway, "Redis server error", "REDIS_SERVER", ex);
+        }
+
+        // ============================
+        // FALLBACK
+        // ============================
+        catch (NotSupportedException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.NotImplemented, "Operation not supported", "NOT_SUPPORTED", ex);
+        }
+        catch (Exception ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.InternalServerError, "An unexpected error occurred", "UNEXPECTED", ex);
+        }
+    }
+
+    private async Task HandleErrorAsync(
+        HttpContext context,
+        HttpStatusCode statusCode,
+        string userMessage,
+        string errorType,
+        Exception ex)
+    {
+        _logger.LogError(ex, "{Tag} {Message}", ServiceTag, userMessage);
+
+        try
+        {
             using var scope = _scopeFactory.CreateScope();
             var logPublisher = scope.ServiceProvider.GetRequiredService<ITrafficLogPublisher>();
 
-            await logPublisher.PublishErrorLogAsync("IntersectionControlService", message, ex);
+            await logPublisher.PublishErrorAsync(
+                serviceName: "IntersectionControllerService",
+                errorType: errorType,
+                message: $"{ServiceTag} {ex.Message}",
+                metadata: new
+                {
+                    Path = context.Request.Path,
+                    Method = context.Request.Method,
+                    TraceId = context.TraceIdentifier,
+                    Exception = ex.GetType().Name,
+                    StackTrace = ex.StackTrace
+                }
+            );
 
-            context.Response.StatusCode = (int)statusCode;
-            context.Response.ContentType = "application/json";
-            await context.Response.WriteAsJsonAsync(new { error = message, details = ex.Message });
+            _logger.LogInformation("{Tag} Error published to log exchange: {ErrorType}", ServiceTag, errorType);
         }
+        catch (Exception pubEx)
+        {
+            _logger.LogError(pubEx, "{Tag} Failed to publish error log", ServiceTag);
+        }
+
+        context.Response.StatusCode = (int)statusCode;
+        context.Response.ContentType = "application/json";
+
+        await context.Response.WriteAsJsonAsync(new
+        {
+            error = userMessage,
+            details = ex.Message,
+            traceId = context.TraceIdentifier
+        });
     }
 }

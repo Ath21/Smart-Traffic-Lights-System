@@ -12,9 +12,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using RabbitMQ.Client;
-using TrafficLightControlService.Consumers;
-
-using IntersectionControlStore.Business;
 using IntersectionControllerData;
 using IntersectionControllerStore.Repository.Intersect;
 using IntersectionControllerStore.Repository.Light;
@@ -25,6 +22,9 @@ using IntersectionControllerStore.Business.TrafficConfig;
 using IntersectionControllerStore.Business.TrafficLight;
 using IntersectionControllerStore.Business.Intersection;
 using IntersectionControllerStore.Consumers;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 namespace IntersectionControlStore
 {
@@ -77,15 +77,47 @@ namespace IntersectionControlStore
 
             services.AddIntersectionControllerMassTransit(_configuration);
 
-            /******* [8] Controllers ********/
+            /******* [8] Jwt Config ********/
+
+            var jwtSettings = _configuration.GetSection("Jwt");
+            var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]);
+
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.RequireHttpsMetadata = false;
+                    options.SaveToken = true;
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidIssuer = jwtSettings["Issuer"],
+                        ValidateAudience = true,
+                        ValidAudience = jwtSettings["Audience"],
+                        ValidateLifetime = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(key)
+                    };
+                });   
+            
+            /******* [9] CORS Policy ********/
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllowFrontend", policy =>
+                {
+                    policy.WithOrigins("http://localhost:5173")   // Vue dev server
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
+
+                });
+            });
+
+            /******* [10] Controllers ********/
 
             services.AddControllers()
                 .AddJsonOptions(opts => opts.JsonSerializerOptions.PropertyNamingPolicy = null);
 
-            /******* [9] Exception Middleware ********/
-            // Middleware will be added in Configure method
-
-            /******* [10] Swagger ********/
+            /******* [11] Swagger ********/
+            
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Intersection Controller API", Version = "v2.0" });
@@ -113,11 +145,6 @@ namespace IntersectionControlStore
                     }
                 });
             });
-
-            /******* [11] Authentication & Authorization ********/
-            // Configure your authentication here
-            // services.AddAuthentication(...);
-            // services.AddAuthorization(...);
         }
 
         public void Configure(WebApplication app, IWebHostEnvironment env)
@@ -133,10 +160,10 @@ namespace IntersectionControlStore
 
             app.UseHttpsRedirection();
 
-            // Exception Middleware
             app.UseMiddleware<ExceptionMiddleware>();
 
-            // Authentication & Authorization Middleware
+            app.UseCors("AllowFrontend");
+
             app.UseAuthentication();
             app.UseAuthorization();
 
