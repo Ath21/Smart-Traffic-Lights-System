@@ -1,0 +1,80 @@
+########################################
+# Dotnet / ASP.NET Core
+########################################
+bin/
+obj/
+[Bb]uild/
+[Ll]ogs/
+app/publish/
+app/build/
+out/
+dist/
+
+# Visual Studio / VS Code
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# JetBrains Rider
+.idea/
+*.sln.iml
+
+# NuGet packages
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+
+# Test results
+[Tt]est[Rr]esult*/
+*.trx
+*.coverage
+*.coveragexml
+
+# Database artifacts
+*.mdf
+*.ldf
+*.dbmdl
+
+# Local configs and secrets
+secrets.json
+appsettings.Development.json
+
+########################################
+# Node / Frontend (stls-ui)
+########################################
+node_modules/
+dist/
+*.local
+.env
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+########################################
+# Docker
+########################################
+docker-compose.override.yaml
+*.env
+*.tar
+
+########################################
+# Logs & temp
+########################################
+*.log
+*.tlog
+*.lastbuildstate
+*.cache
+*.diff
+*.patch
+*.tmp
+*.bak
+*.Backup
+*.bak2
+*.swp
+*.pdb
+.DS_Store
