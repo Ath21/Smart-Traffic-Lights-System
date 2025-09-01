@@ -1,31 +1,32 @@
-# 🔹 Βάση runtime image (για το τελικό container)
+# Base runtime image (final container)
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 WORKDIR /app
 EXPOSE 8080
 
 RUN apt-get update && apt-get install -y libgssapi-krb5-2
 
-# 🔹 Build stage
+# Build stage
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
-COPY SensorLayer SensorLayer/
+COPY SensorLayer/SensorMessages SensorLayer/SensorMessages/
 COPY TrafficLayer TrafficLayer/
+COPY LogLayer/LogMessages LogLayer/LogMessages/
 
-# 🔹 Restore
-RUN dotnet restore TrafficLayer/IntersectionControlService/IntersectionControlAPI/IntersectionControlStore/IntersectionControlStore.csproj
+# Restore dependencies
+RUN dotnet restore TrafficLayer/IntersectionControllerService/IntersectionControlAPI/IntersectionControllerStore/IntersectionControllerStore.csproj
 
-# 🔹 Build
-RUN dotnet build TrafficLayer/IntersectionControlService/IntersectionControlAPI/IntersectionControlStore/IntersectionControlStore.csproj -c $BUILD_CONFIGURATION -o /app/build
+# Build project
+RUN dotnet build TrafficLayer/IntersectionControllerService/IntersectionControlAPI/IntersectionControllerStore/IntersectionControllerStore.csproj -c $BUILD_CONFIGURATION -o /app/build
 
-# 🔹 Publish
+# Publish project
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish TrafficLayer/IntersectionControlService/IntersectionControlAPI/IntersectionControlStore/IntersectionControlStore.csproj -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish TrafficLayer/IntersectionControllerService/IntersectionControlAPI/IntersectionControllerStore/IntersectionControllerStore.csproj -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
-# 🔹 Τελικό image
+# Final runtime image
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "IntersectionControlStore.dll"]
+ENTRYPOINT ["dotnet", "IntersectionControllerStore.dll"]
