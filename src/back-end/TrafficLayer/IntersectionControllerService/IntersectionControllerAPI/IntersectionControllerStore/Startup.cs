@@ -24,6 +24,7 @@ using IntersectionControllerStore;
 using IntersectionControllerStore.Business.TrafficConfig;
 using IntersectionControllerStore.Business.TrafficLight;
 using IntersectionControllerStore.Business.Intersection;
+using IntersectionControllerStore.Consumers;
 
 namespace IntersectionControlStore
 {
@@ -68,14 +69,14 @@ namespace IntersectionControlStore
             services.AddScoped(typeof(ITrafficLogPublisher), typeof(TrafficLogPublisher));
 
             /******* [6] Consumers ********/
-            // Register your consumers for MassTransit here:
-            services.AddScoped(typeof(TrafficLightStateUpdateConsumer));
-            services.AddScoped(typeof(SensorDataConsumer));
-            // Add other consumers as needed
 
-            /******* [7] MassTransit & RabbitMQ Config ********/
-            /******* [7] MassTransit & RabbitMQ Config ********/
-services.AddMassTransit(x =>
+            services.AddScoped(typeof(TrafficLightUpdateConsumer));
+            services.AddScoped(typeof(SensorDataConsumer));
+            
+            /******* [7] MassTransit ********/
+
+
+            services.AddMassTransit(x =>
 {
     x.AddConsumer<SensorDataConsumer>();
     x.AddConsumer<TrafficLightStateUpdateConsumer>();
