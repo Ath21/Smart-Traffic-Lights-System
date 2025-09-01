@@ -781,26 +781,6 @@
         "runtime": {
           "bin/placeholder/LogMessages.dll": {}
         }
-      },
-      "TrafficMessages/1.0.0": {
-        "type": "project",
-        "framework": ".NETCoreApp,Version=v9.0",
-        "compile": {
-          "bin/placeholder/TrafficMessages.dll": {}
-        },
-        "runtime": {
-          "bin/placeholder/TrafficMessages.dll": {}
-        }
-      },
-      "UserMessages/1.0.0": {
-        "type": "project",
-        "framework": ".NETCoreApp,Version=v9.0",
-        "compile": {
-          "bin/placeholder/UserMessages.dll": {}
-        },
-        "runtime": {
-          "bin/placeholder/UserMessages.dll": {}
-        }
       }
     }
   },
@@ -2257,16 +2237,6 @@
       "type": "project",
       "path": "../../../LogMessages/LogMessages.csproj",
       "msbuildProject": "../../../LogMessages/LogMessages.csproj"
-    },
-    "TrafficMessages/1.0.0": {
-      "type": "project",
-      "path": "../../../../TrafficLayer/TrafficMessages/TrafficMessages.csproj",
-      "msbuildProject": "../../../../TrafficLayer/TrafficMessages/TrafficMessages.csproj"
-    },
-    "UserMessages/1.0.0": {
-      "type": "project",
-      "path": "../../../../UserLayer/UserMessages/UserMessages.csproj",
-      "msbuildProject": "../../../../UserLayer/UserMessages/UserMessages.csproj"
     }
   },
   "projectFileDependencyGroups": {
@@ -2280,9 +2250,7 @@
       "Microsoft.AspNetCore.OpenApi >= 9.0.5",
       "MongoDB.Driver >= 3.4.0",
       "RabbitMQ.Client >= 7.1.2",
-      "Swashbuckle.AspNetCore >= 8.1.2",
-      "TrafficMessages >= 1.0.0",
-      "UserMessages >= 1.0.0"
+      "Swashbuckle.AspNetCore >= 8.1.2"
     ]
   },
   "packageFolders": {
@@ -2315,12 +2283,6 @@
             },
             "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogService/LogAPI/LogData/LogData.csproj": {
               "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogService/LogAPI/LogData/LogData.csproj"
-            },
-            "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficMessages/TrafficMessages.csproj": {
-              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficMessages/TrafficMessages.csproj"
-            },
-            "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserMessages/UserMessages.csproj": {
-              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserMessages/UserMessages.csproj"
             }
           }
         }

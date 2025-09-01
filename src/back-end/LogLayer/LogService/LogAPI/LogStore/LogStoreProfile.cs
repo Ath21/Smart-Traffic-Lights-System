@@ -1,7 +1,6 @@
 using AutoMapper;
 using LogData.Collections;
 using LogStore.Models.Dtos;
-using LogStore.Models.Responses;
 using MongoDB.Bson;
 
 namespace LogStore;
@@ -10,29 +9,48 @@ public class LogStoreProfile : Profile
 {
     public LogStoreProfile()
     {
-        // Data → DTO
+        // ==========================
+        // AUDIT LOGS
+        // ==========================
+        CreateMap<AuditLogDto, AuditLog>()
+            .ForMember(dest => dest.Metadata, opt => opt.MapFrom(src =>
+                src.Metadata != null
+                    ? new BsonDocument(src.Metadata)
+                    : new BsonDocument()));
+
         CreateMap<AuditLog, AuditLogDto>()
-            .ForMember(dest => dest.Metadata, 
-                opt => opt.MapFrom(src => src.Metadata.ToDictionary()));
+            .ForMember(dest => dest.Metadata, opt => opt.MapFrom(src =>
+                src.Metadata != null
+                    ? src.Metadata.ToDictionary()
+                    : new Dictionary<string, object>()));
+
+        // ==========================
+        // ERROR LOGS
+        // ==========================
+        CreateMap<ErrorLogDto, ErrorLog>()
+            .ForMember(dest => dest.Metadata, opt => opt.MapFrom(src =>
+                src.Metadata != null
+                    ? new BsonDocument(src.Metadata)
+                    : new BsonDocument()));
 
         CreateMap<ErrorLog, ErrorLogDto>()
-            .ForMember(dest => dest.Metadata, 
-                opt => opt.MapFrom(src => src.Metadata.ToDictionary()));
-
-        // DTO → Response
-        CreateMap<AuditLogDto, AuditLogResponse>();
-        CreateMap<ErrorLogDto, ErrorLogResponse>();
+            .ForMember(dest => dest.Metadata, opt => opt.MapFrom(src =>
+                src.Metadata != null
+                    ? src.Metadata.ToDictionary()
+                    : new Dictionary<string, object>()));
     }
 }
 
-// Helper extension for BsonDocument → Dictionary
+// ==========================
+// BSON EXTENSIONS
+// ==========================
 public static class BsonExtensions
 {
     public static Dictionary<string, object> ToDictionary(this BsonDocument doc)
     {
         return doc.Elements.ToDictionary(
             e => e.Name,
-            e => (object)e.Value.ToString()
+            e => BsonTypeMapper.MapToDotNetValue(e.Value) // safer than ToString()
         );
     }
 }

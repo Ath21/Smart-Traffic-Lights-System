@@ -30,11 +30,8 @@ public static class MassTransitSetup
                     h.Password(rabbit["Password"]);
                 });
 
-                // Exchanges
-                var logsExchange    = rabbit["Exchanges:Logs"];
-                var userExchange    = rabbit["Exchanges:User"];
-                var trafficExchange = rabbit["Exchanges:Traffic"];
-                var sensorExchange  = rabbit["Exchanges:Sensor"];
+                // Centralized log exchange
+                var logsExchange = rabbit["Exchanges:Logs"];
 
                 // Queues
                 var userQueue    = rabbit["Queues:UserLogs"];
@@ -50,7 +47,7 @@ public static class MassTransitSetup
                 var sensorErrorKey  = rabbit["RoutingKeys:SensorError"];
 
                 // ============================================================
-                // PUBLISH DEFINITIONS (LOGS)
+                // PUBLISH DEFINITIONS (LOGS) → LOG.EXCHANGE
                 // ============================================================
                 cfg.Message<LogMessages.AuditLogMessage>(e => e.SetEntityName(logsExchange));
                 cfg.Publish<LogMessages.AuditLogMessage>(e => e.ExchangeType = ExchangeType.Topic);
@@ -59,19 +56,19 @@ public static class MassTransitSetup
                 cfg.Publish<LogMessages.ErrorLogMessage>(e => e.ExchangeType = ExchangeType.Topic);
 
                 // ============================================================
-                // USER LOG QUEUE
+                // USER LOG QUEUE (from LOG.EXCHANGE)
                 // ============================================================
                 cfg.ReceiveEndpoint(userQueue, e =>
                 {
                     e.ConfigureConsumeTopology = false;
 
-                    e.Bind(userExchange, s =>
+                    e.Bind(logsExchange, s =>
                     {
                         s.RoutingKey = userAuditKey.Replace("{service_name}", "*");
                         s.ExchangeType = ExchangeType.Topic;
                     });
 
-                    e.Bind(userExchange, s =>
+                    e.Bind(logsExchange, s =>
                     {
                         s.RoutingKey = userErrorKey.Replace("{service_name}", "*");
                         s.ExchangeType = ExchangeType.Topic;
@@ -82,19 +79,19 @@ public static class MassTransitSetup
                 });
 
                 // ============================================================
-                // TRAFFIC LOG QUEUE
+                // TRAFFIC LOG QUEUE (from LOG.EXCHANGE)
                 // ============================================================
                 cfg.ReceiveEndpoint(trafficQueue, e =>
                 {
                     e.ConfigureConsumeTopology = false;
 
-                    e.Bind(trafficExchange, s =>
+                    e.Bind(logsExchange, s =>
                     {
                         s.RoutingKey = trafficAuditKey.Replace("{service_name}", "*");
                         s.ExchangeType = ExchangeType.Topic;
                     });
 
-                    e.Bind(trafficExchange, s =>
+                    e.Bind(logsExchange, s =>
                     {
                         s.RoutingKey = trafficErrorKey.Replace("{service_name}", "*");
                         s.ExchangeType = ExchangeType.Topic;
@@ -105,19 +102,19 @@ public static class MassTransitSetup
                 });
 
                 // ============================================================
-                // SENSOR LOG QUEUE
+                // SENSOR LOG QUEUE (from LOG.EXCHANGE)
                 // ============================================================
                 cfg.ReceiveEndpoint(sensorQueue, e =>
                 {
                     e.ConfigureConsumeTopology = false;
 
-                    e.Bind(sensorExchange, s =>
+                    e.Bind(logsExchange, s =>
                     {
                         s.RoutingKey = sensorAuditKey.Replace("{service_name}", "*");
                         s.ExchangeType = ExchangeType.Topic;
                     });
 
-                    e.Bind(sensorExchange, s =>
+                    e.Bind(logsExchange, s =>
                     {
                         s.RoutingKey = sensorErrorKey.Replace("{service_name}", "*");
                         s.ExchangeType = ExchangeType.Topic;

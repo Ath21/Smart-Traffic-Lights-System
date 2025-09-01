@@ -25,23 +25,20 @@ services:
 
       # Exchanges
       RabbitMQ__Exchanges__Logs: LOG.EXCHANGE
-      RabbitMQ__Exchanges__User: USER.EXCHANGE
-      RabbitMQ__Exchanges__Traffic: TRAFFIC.EXCHANGE
-      RabbitMQ__Exchanges__Sensor: SENSOR.EXCHANGE
 
       # Consume from ...
-      ## User Exchange
-      RabbitMQ__Queues__UserLogs: user.log_service.queue
+      ## User Layer
+      RabbitMQ__Queues__UserLogs: log.user_layer.queue
       RabbitMQ__RoutingKeys__UserAudit: log.user.{service_name}.audit
       RabbitMQ__RoutingKeys__UserError: log.user.{service_name}.error
 
-      ## Traffic Exchange
-      RabbitMQ__Queues__TrafficLogs: traffic.log_service.queue
+      ## Traffic Layer
+      RabbitMQ__Queues__TrafficLogs: log.traffic_layer.queue
       RabbitMQ__RoutingKeys__TrafficAudit: log.traffic.{service_name}.audit
       RabbitMQ__RoutingKeys__TrafficError: log.traffic.{service_name}.error
 
-      ## Sensor Exchange
-      RabbitMQ__Queues__SensorLogs: sensor.log_service.queue
+      ## Sensor Layer
+      RabbitMQ__Queues__SensorLogs: log.sensor_layer.queue
       RabbitMQ__RoutingKeys__SensorAudit: log.sensor.{service_name}.audit
       RabbitMQ__RoutingKeys__SensorError: log.sensor.{service_name}.error
 

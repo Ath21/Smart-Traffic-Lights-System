@@ -47,10 +47,10 @@ public static class MassTransitSetup
                 // LOGS (Publish)
                 // =========================
                 cfg.Message<LogMessages.AuditLogMessage>(e => e.SetEntityName(logsExchange));
-                cfg.Publish<LogMessages.AuditLogMessage>(e => e.ExchangeType = ExchangeType.Direct);
+                cfg.Publish<LogMessages.AuditLogMessage>(e => e.ExchangeType = ExchangeType.Topic);
 
                 cfg.Message<LogMessages.ErrorLogMessage>(e => e.SetEntityName(logsExchange));
-                cfg.Publish<LogMessages.ErrorLogMessage>(e => e.ExchangeType = ExchangeType.Direct);
+                cfg.Publish<LogMessages.ErrorLogMessage>(e => e.ExchangeType = ExchangeType.Topic);
 
                 // =========================
                 // SENSOR EVENTS (Consume)
