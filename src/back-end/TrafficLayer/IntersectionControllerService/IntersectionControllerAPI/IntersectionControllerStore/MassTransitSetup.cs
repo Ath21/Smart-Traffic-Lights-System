@@ -2,6 +2,8 @@ using MassTransit;
 using RabbitMQ.Client;
 using IntersectionControlStore.Consumers;
 using IntersectionControllerStore.Consumers;
+using TrafficMessages;
+using SensorMessages; // namespace where TrafficLightUpdateMessage and sensor messages live
 
 namespace IntersectionControlStore;
 
@@ -28,6 +30,7 @@ public static class MassTransitSetup
                 // Exchanges
                 var trafficExchange = rabbit["Exchanges:Traffic"];
                 var sensorExchange  = rabbit["Exchanges:Sensor"];
+                var logsExchange     = rabbit["Exchanges:Logs"];
 
                 // Queues
                 var trafficQueue = rabbit["Queues:TrafficIntersection"];
@@ -42,6 +45,54 @@ public static class MassTransitSetup
                 var cyclistKey          = rabbit["RoutingKeys:SensorCyclist"];
                 var pedestrianKey       = rabbit["RoutingKeys:SensorPedestrian"];
                 var incidentKey         = rabbit["RoutingKeys:SensorIncident"];
+
+                // =========================
+                // TRAFFIC COMMANDS -> publish to TRAFFIC.EXCHANGE
+                // =========================
+                cfg.Message<TrafficMessages.TrafficLightControlMessage>(e => e.SetEntityName(trafficExchange));
+                cfg.Publish<TrafficMessages.TrafficLightControlMessage>(e => e.ExchangeType = ExchangeType.Topic);
+
+                // ==========================
+                // PRIORITY MESSAGES -> publish to TRAFFIC.EXCHANGE
+                // ==========================
+                cfg.Message<TrafficMessages.PriorityMessage>(e => e.SetEntityName(trafficExchange));
+                cfg.Publish<TrafficMessages.PriorityMessage>(e => e.ExchangeType = ExchangeType.Topic);
+
+                // ==========================
+                // LOGS -> publish to LOG.EXCHANGE
+                // ==========================
+                cfg.Message<LogMessages.AuditLogMessage>(e => e.SetEntityName(logsExchange));
+                cfg.Publish<LogMessages.AuditLogMessage>(e => e.ExchangeType = ExchangeType.Topic);
+
+                cfg.Message<LogMessages.ErrorLogMessage>(e => e.SetEntityName(logsExchange));
+                cfg.Publish<LogMessages.ErrorLogMessage>(e => e.ExchangeType = ExchangeType.Topic);
+
+                // ==========================
+                // TRAFFIC LIGHT PATTERNS
+                // ==========================
+                cfg.Message<TrafficMessages.TrafficLightUpdateMessage>(e => e.SetEntityName(trafficExchange));
+                cfg.Publish<TrafficMessages.TrafficLightUpdateMessage>(e => e.ExchangeType = ExchangeType.Topic);
+
+                // ==========================
+                // SENSOR DATA
+                // ==========================
+                cfg.Message<SensorMessages.VehicleCountMessage>(e => e.SetEntityName(sensorExchange));
+                cfg.Publish<SensorMessages.VehicleCountMessage>(e => e.ExchangeType = ExchangeType.Topic);
+
+                cfg.Message<SensorMessages.EmergencyVehicleMessage>(e => e.SetEntityName(sensorExchange));
+                cfg.Publish<SensorMessages.EmergencyVehicleMessage>(e => e.ExchangeType = ExchangeType.Topic);
+
+                cfg.Message<SensorMessages.PublicTransportMessage>(e => e.SetEntityName(sensorExchange));
+                cfg.Publish<SensorMessages.PublicTransportMessage>(e => e.ExchangeType = ExchangeType.Topic);
+
+                cfg.Message<SensorMessages.CyclistDetectionMessage>(e => e.SetEntityName(sensorExchange));
+                cfg.Publish<SensorMessages.CyclistDetectionMessage>(e => e.ExchangeType = ExchangeType.Topic);
+
+                cfg.Message<SensorMessages.PedestrianDetectionMessage>(e => e.SetEntityName(sensorExchange));
+                cfg.Publish<SensorMessages.PedestrianDetectionMessage>(e => e.ExchangeType = ExchangeType.Topic);
+
+                cfg.Message<SensorMessages.IncidentDetectionMessage>(e => e.SetEntityName(sensorExchange));
+                cfg.Publish<SensorMessages.IncidentDetectionMessage>(e => e.ExchangeType = ExchangeType.Topic);
 
                 // =========================
                 // TRAFFIC LIGHT UPDATES

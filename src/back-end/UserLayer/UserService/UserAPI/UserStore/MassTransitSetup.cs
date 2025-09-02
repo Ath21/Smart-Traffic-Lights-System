@@ -54,16 +54,40 @@ public static class MassTransitSetup
                 cfg.Publish<LogMessages.ErrorLogMessage>(e => e.ExchangeType = ExchangeType.Topic);
 
                 // =========================
-                // USER NOTIFICATIONS
+                // NOTIFICATION REQUESTS -> publish to USER.EXCHANGE
                 // =========================
                 cfg.Message<UserMessages.UserNotificationRequest>(e => e.SetEntityName(userExchange));
-                cfg.Publish<UserMessages.UserNotificationRequest>(e => e.ExchangeType = ExchangeType.Direct);
+                cfg.Publish<UserMessages.UserNotificationRequest>(e => e.ExchangeType = ExchangeType.Topic);
 
+                // =========================
+                // USER NOTIFICATIONS
+                // =========================
                 cfg.Message<UserMessages.UserNotificationAlert>(e => e.SetEntityName(userExchange));
-                cfg.Publish<UserMessages.UserNotificationAlert>(e => e.ExchangeType = ExchangeType.Direct);
+                cfg.Publish<UserMessages.UserNotificationAlert>(e => e.ExchangeType = ExchangeType.Topic);
 
                 cfg.Message<UserMessages.PublicNoticeEvent>(e => e.SetEntityName(userExchange));
-                cfg.Publish<UserMessages.PublicNoticeEvent>(e => e.ExchangeType = ExchangeType.Direct);
+                cfg.Publish<UserMessages.PublicNoticeEvent>(e => e.ExchangeType = ExchangeType.Topic);
+
+                // =========================
+                // TRAFFIC COMMANDS -> publish to TRAFFIC.EXCHANGE
+                // =========================
+                cfg.Message<TrafficMessages.TrafficLightUpdateMessage>(e => e.SetEntityName(trafficExchange));
+                cfg.Publish<TrafficMessages.TrafficLightUpdateMessage>(e => e.ExchangeType = ExchangeType.Topic);
+
+                cfg.Message<TrafficMessages.TrafficLightControlMessage>(e => e.SetEntityName(trafficExchange));
+                cfg.Publish<TrafficMessages.TrafficLightControlMessage>(e => e.ExchangeType = ExchangeType.Topic);
+
+                // =========================
+                // TRAFFIC EVENTS
+                // =========================
+                cfg.Message<TrafficMessages.TrafficCongestionMessage>(e => e.SetEntityName(trafficExchange));
+                cfg.Publish<TrafficMessages.TrafficCongestionMessage>(e => e.ExchangeType = ExchangeType.Topic);
+
+                cfg.Message<TrafficMessages.TrafficIncidentMessage>(e => e.SetEntityName(trafficExchange));
+                cfg.Publish<TrafficMessages.TrafficIncidentMessage>(e => e.ExchangeType = ExchangeType.Topic);
+
+                cfg.Message<TrafficMessages.TrafficSummaryMessage>(e => e.SetEntityName(trafficExchange));
+                cfg.Publish<TrafficMessages.TrafficSummaryMessage>(e => e.ExchangeType = ExchangeType.Topic);
 
                 cfg.ReceiveEndpoint(userQueue, e =>
                 {
@@ -72,13 +96,13 @@ public static class MassTransitSetup
                     e.Bind(userExchange, s =>
                     {
                         s.RoutingKey = notifAlertKey;  
-                        s.ExchangeType = ExchangeType.Direct;
+                        s.ExchangeType = ExchangeType.Topic;
                     });
 
                     e.Bind(userExchange, s =>
                     {
                         s.RoutingKey = notifPublicKey; 
-                        s.ExchangeType = ExchangeType.Direct;
+                        s.ExchangeType = ExchangeType.Topic;
                     });
 
                     e.ConfigureConsumer<UserNotificationAlertConsumer>(context);

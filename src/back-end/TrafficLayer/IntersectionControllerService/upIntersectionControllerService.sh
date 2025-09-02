@@ -6,6 +6,7 @@
 NETWORK_NAME="intersection_network"
 
 INTERSECTION_API_DIR="./TrafficLayer/IntersectionControllerService/IntersectionControllerAPI"
+INTERSECTION_REDIS_DIR="./TrafficLayer/IntersectionControllerService/Redis"
 
 DOCKER_COMPOSE_FILE="docker-compose.yaml"
 DOCKER_COMPOSE_OVERRIDE="docker-compose.override.yaml"
@@ -34,6 +35,8 @@ start_containers()
     docker compose \
         -f "$INTERSECTION_API_DIR/$DOCKER_COMPOSE_FILE" \
         -f "$INTERSECTION_API_DIR/$DOCKER_COMPOSE_OVERRIDE" \
+        -f "$INTERSECTION_REDIS_DIR/$DOCKER_COMPOSE_FILE" \
+        -f "$INTERSECTION_REDIS_DIR/$DOCKER_COMPOSE_OVERRIDE" \
         -p intersection_controller_service \
         up -d
 

@@ -3,7 +3,7 @@ using IntersectionControllerStore.Repository;
 
 namespace IntersectionControllerStore.Business.CommandLog;
 
-public class CommandLogService
+public class CommandLogService : ICommandLogService
 {
     private readonly IRedisRepository _redis;
 

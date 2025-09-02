@@ -15,15 +15,15 @@ COPY TrafficLayer TrafficLayer/
 COPY LogLayer/LogMessages LogLayer/LogMessages/
 
 # Restore dependencies
-RUN dotnet restore TrafficLayer/IntersectionControllerService/IntersectionControlAPI/IntersectionControllerStore/IntersectionControllerStore.csproj
+RUN dotnet restore TrafficLayer/IntersectionControllerService/IntersectionControllerAPI/IntersectionControllerStore/IntersectionControllerStore.csproj
 
 # Build project
-RUN dotnet build TrafficLayer/IntersectionControllerService/IntersectionControlAPI/IntersectionControllerStore/IntersectionControllerStore.csproj -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build TrafficLayer/IntersectionControllerService/IntersectionControllerAPI/IntersectionControllerStore/IntersectionControllerStore.csproj -c $BUILD_CONFIGURATION -o /app/build
 
 # Publish project
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish TrafficLayer/IntersectionControllerService/IntersectionControlAPI/IntersectionControllerStore/IntersectionControllerStore.csproj -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish TrafficLayer/IntersectionControllerService/IntersectionControllerAPI/IntersectionControllerStore/IntersectionControllerStore.csproj -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # Final runtime image
 FROM base AS final

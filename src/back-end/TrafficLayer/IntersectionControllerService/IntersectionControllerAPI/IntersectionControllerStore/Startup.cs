@@ -25,6 +25,9 @@ using IntersectionControllerStore.Consumers;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using IntersectionControllerStore.Business.Priority;
+using IntersectionControllerStore.Business.Coordinator;
+using IntersectionControllerStore.Business.CommandLog;
 
 namespace IntersectionControlStore
 {
@@ -40,10 +43,11 @@ namespace IntersectionControlStore
         public void ConfigureServices(IServiceCollection services)
         {
             /******* [1] Redis Config ********/
-            
             var redisSettings = new RedisSettings();
             _configuration.GetSection("Redis").Bind(redisSettings);
             services.AddSingleton(redisSettings);
+
+            services.AddSingleton<TrafficLightDbMemoryContext>();
 
             /******* [2] Repositories ********/
             
@@ -57,6 +61,9 @@ namespace IntersectionControlStore
             services.AddScoped(typeof(ITrafficConfigurationService), typeof(TrafficConfigurationService));
             services.AddScoped(typeof(ITrafficLightService), typeof(TrafficLightService));
             services.AddScoped(typeof(IIntersectionService), typeof(IntersectionService));
+            services.AddScoped(typeof(IPriorityManager), typeof(PriorityManager));
+            services.AddScoped(typeof(ICommandLogService), typeof(CommandLogService));
+            services.AddScoped(typeof(ITrafficLightCoordinatorService), typeof(TrafficLightCoordinatorService));
 
             /******* [4] AutoMapper ********/
 

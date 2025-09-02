@@ -1,0 +1,12 @@
+services:
+  intersection_redis:
+    image: redis:7.4
+    container_name: intersection_redis_container
+    networks:
+      - intersection_network
+
+networks:
+  intersection_network:
+    name: intersection_network
+    driver: bridge
+    external: true
