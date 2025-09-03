@@ -1,9 +1,9 @@
-using AutoMapper;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using TrafficMessages;
 using TrafficLightControlStore.Repository;
 using TrafficLightControlStore.Models.Dtos;
+using TrafficLightControlStore.Publishers.Logs;
 
 namespace TrafficLightControlStore.Business;
 
@@ -11,19 +11,22 @@ public class TrafficLightControlService : ITrafficLightControlService
 {
     private readonly ITrafficLightRepository _repository;
     private readonly IBus _bus;
+    private readonly ITrafficLogPublisher _logPublisher;
     private readonly ILogger<TrafficLightControlService> _logger;
     private readonly string _controlKey;
 
-    private const string ServiceTag = "[" + "TrafficLightControlService" + "]";
+    private const string ServiceTag = "[" + nameof(TrafficLightControlService) + "]";
 
     public TrafficLightControlService(
         ITrafficLightRepository repository,
         IBus bus,
+        ITrafficLogPublisher logPublisher,
         ILogger<TrafficLightControlService> logger,
         IConfiguration configuration)
     {
         _repository = repository;
         _bus = bus;
+        _logPublisher = logPublisher;
         _logger = logger;
 
         _controlKey = configuration["RabbitMQ:RoutingKeys:TrafficLightControl"]
@@ -36,31 +39,50 @@ public class TrafficLightControlService : ITrafficLightControlService
     /// </summary>
     public async Task<TrafficLightDto> ForceStateChangeAsync(Guid intersectionId, Guid lightId, string newState)
     {
-        // Save state & log event in Redis
-        await _repository.SetLightStateAsync(intersectionId, lightId, newState);
-        await _repository.SaveControlEventAsync(intersectionId, lightId, newState);
+        var updatedAt = DateTime.UtcNow;
 
-        // Publish to RabbitMQ
-        var key = _controlKey
-            .Replace("{intersection_id}", intersectionId.ToString())
-            .Replace("{light_id}", lightId.ToString());
-
-        var msg = new TrafficLightControlMessage(intersectionId, lightId, newState, DateTime.UtcNow);
-
-        await _bus.Publish(msg, ctx => ctx.SetRoutingKey(key));
-
-        _logger.LogInformation(
-            "{Tag} Manual override applied: Intersection={IntersectionId}, Light={LightId}, State={State}",
-            ServiceTag, intersectionId, lightId, newState);
-
-        // Map to DTO for response
-        return new TrafficLightDto
+        try
         {
-            IntersectionId = intersectionId,
-            LightId = lightId,
-            State = newState,
-            UpdatedAt = DateTime.UtcNow
-        };
+            // Save state & control event in Redis
+            await _repository.SetLightStateAsync(intersectionId, lightId, newState);
+            await _repository.SaveControlEventAsync(intersectionId, lightId, newState);
+
+            // Publish to RabbitMQ
+            var key = _controlKey
+                .Replace("{intersection_id}", intersectionId.ToString())
+                .Replace("{light_id}", lightId.ToString());
+
+            var msg = new TrafficLightControlMessage(intersectionId, lightId, newState, updatedAt);
+            await _bus.Publish(msg, ctx => ctx.SetRoutingKey(key));
+
+            _logger.LogInformation(
+                "{Tag} Manual override applied: Intersection={IntersectionId}, Light={LightId}, State={State}",
+                ServiceTag, intersectionId, lightId, newState);
+
+            await _logPublisher.PublishAuditLogAsync(
+                "TrafficLightControlService",
+                "LightStateOverride",
+                $"Intersection={intersectionId}, Light={lightId}, NewState={newState}",
+                new { updatedAt });
+
+            return new TrafficLightDto
+            {
+                IntersectionId = intersectionId,
+                LightId = lightId,
+                State = newState,
+                UpdatedAt = updatedAt
+            };
+        }
+        catch (Exception ex)
+        {
+            await _logPublisher.PublishErrorLogAsync(
+                "TrafficLightControlService",
+                "OverrideFailed",
+                $"Failed to override light {lightId} in intersection {intersectionId}",
+                new { newState, ex });
+
+            throw;
+        }
     }
 
     /// <summary>
@@ -68,9 +90,36 @@ public class TrafficLightControlService : ITrafficLightControlService
     /// </summary>
     public async Task<IEnumerable<TrafficLightDto>> GetCurrentStatesAsync(Guid intersectionId)
     {
-        // In real DB, we’d fetch all. Here, we just simulate single light retrieval
-        // TODO: if lights list is known, loop over IDs.
-        // For now, empty list (placeholder until lights registry exists).
-        return Enumerable.Empty<TrafficLightDto>();
+        // TODO: maintain a registry of lightIds per intersection
+        // For now, we return the last control event if it exists
+        var lights = new List<TrafficLightDto>();
+
+        // Example: Try to get just one light (placeholder logic)
+        var lastControl = await _repository.GetLastControlEventAsync(intersectionId, Guid.Empty);
+        if (lastControl != null)
+        {
+            lights.Add(new TrafficLightDto
+            {
+                IntersectionId = intersectionId,
+                LightId = Guid.Empty, // until registry exists
+                State = lastControl,
+                UpdatedAt = DateTime.UtcNow
+            });
+        }
+
+        return lights;
+    }
+
+    public async Task<IEnumerable<ControlEventDto>> GetLastControlEventsAsync(Guid intersectionId)
+    {
+        var events = await _repository.GetControlEventsAsync(intersectionId);
+
+        return events.Select(e => new ControlEventDto
+        {
+            IntersectionId = intersectionId,
+            LightId = e.LightId,
+            Command = e.Command,
+            Timestamp = e.Timestamp
+        });
     }
 }
