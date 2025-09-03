@@ -58,54 +58,15 @@ namespace TrafficLightControlStore
 
             /******* [7] MassTransit ********/
 
-            services.AddMassTransit(x =>
-            {
-                x.AddConsumer<TrafficLightControlConsumer>();
-
-                x.UsingRabbitMq((context, cfg) =>
-                {
-                    cfg.Host(_configuration["RabbitMQ:Host"], "/", h =>
-                    {
-                        h.Username(_configuration["RabbitMQ:Username"]);
-                        h.Password(_configuration["RabbitMQ:Password"]);
-                    });
-
-                    /* ------------------- TRAFFIC CONTROL ------------------- */
-                    string trafficControlExchange = _configuration["RabbitMQ:Exchange:TrafficControlExchange"];
-
-                    cfg.Message<TrafficLightControl>(m => m.SetEntityName(trafficControlExchange));
-                    cfg.Message<TrafficLightStateUpdate>(m => m.SetEntityName(trafficControlExchange));
-
-                    cfg.Publish<TrafficLightControl>(m => m.ExchangeType = ExchangeType.Topic);
-                    cfg.Publish<TrafficLightStateUpdate>(m => m.ExchangeType = ExchangeType.Topic);
-
-                    // Receive control commands
-                    cfg.ReceiveEndpoint(_configuration["RabbitMQ:Queue:TrafficLightControlQueue"], e =>
-                    {
-                        e.Bind(trafficControlExchange, s =>
-                        {
-                            s.RoutingKey = _configuration["RabbitMQ:RoutingKey:TrafficLightControl"];
-                            s.ExchangeType = ExchangeType.Topic;
-                        });
-                        e.ConfigureConsumer<TrafficLightControlConsumer>(context);
-                    });
-
-                    /* ------------------- LOGGING ------------------- */
-                    string logExchange = _configuration["RabbitMQ:Exchange:LogStoreExchange"];
-
-                    cfg.Message<AuditLogMessage>(m => m.SetEntityName(logExchange));
-                    cfg.Message<ErrorLogMessage>(m => m.SetEntityName(logExchange));
-
-                    cfg.Publish<AuditLogMessage>(m => m.ExchangeType = ExchangeType.Direct);
-                    cfg.Publish<ErrorLogMessage>(m => m.ExchangeType = ExchangeType.Direct);
-                });
-            });
+            services.AddTrafficLightControlMassTransit(_configuration);
 
             /******* [5] Controllers ********/
+
             services.AddControllers()
                 .AddJsonOptions(opts => opts.JsonSerializerOptions.PropertyNamingPolicy = null);
 
             /******* [6] Swagger ********/
+            
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo
