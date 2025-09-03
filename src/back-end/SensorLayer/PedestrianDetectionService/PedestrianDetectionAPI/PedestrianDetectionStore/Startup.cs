@@ -5,7 +5,6 @@ using MassTransit;
 using Microsoft.OpenApi.Models;
 using PedestrianDetectionStore;
 using PedestrianDetectionStore.Business;
-using PedestrianDetectionStore.Consumers;
 using PedestrianDetectionStore.Middleware;
 using PedestrianDetectionStore.Publishers;
 using PedestrianDetectionStore.Repositories;
@@ -44,65 +43,15 @@ public class Startup
 
         services.AddAutoMapper(typeof(PedestrianDetectionStoreProfile));
 
-        /******* [5] MassTransit ********/
+        /******* [5] Publishers ********/
 
         services.AddScoped(typeof(IPedestrianDetectionPublisher), typeof(PedestrianDetectionPublisher));
-        services.AddScoped<PedestrianDetectionConsumer>();
 
-        services.AddMassTransit(x =>
-        {
-            // Register the consumer for vehicle count messages
-            x.AddConsumer<PedestrianDetectionConsumer>();
+        /******* [6] MassTransit ********/
 
-            x.UsingRabbitMq((context, cfg) =>
-            {
-                cfg.Host(_configuration["RabbitMQ:Host"],
-                        "/",
-                        h =>
-                {
-                    h.Username(_configuration["RabbitMQ:Username"]);
-                    h.Password(_configuration["RabbitMQ:Password"]);
-                });
+        services.AddPedestrianDetectionMassTransit(_configuration);
 
-                cfg.Message<PedestrianDetectionMessage>(x =>
-                {
-                    x.SetEntityName(_configuration["RabbitMQ:Exchange:SensorDataExchange"]);
-                });
-                cfg.Publish<PedestrianDetectionMessage>(x =>
-                {
-                    x.ExchangeType = ExchangeType.Topic;
-                });
-
-                // Receive endpoint for vehicle count queue
-                cfg.ReceiveEndpoint(_configuration["RabbitMQ:Queue:SensorPedestrianDetectionRequestQueue"], e =>
-                {
-                    e.Bind(_configuration["RabbitMQ:Exchange:SensorDataExchange"], s =>
-                    {
-                        s.RoutingKey = _configuration["RabbitMQ:RoutingKey:SensorPedestrianDetectionRequestKey"];
-                        s.ExchangeType = "topic";
-                    });
-
-                    e.ConfigureConsumer<PedestrianDetectionConsumer>(context);
-                });
-
-                cfg.Message<AuditLogMessage>(x =>
-                {
-                    x.SetEntityName(_configuration["RabbitMQ:Exchange:LogStoreExchange"]);
-                });
-                cfg.Publish<AuditLogMessage>(x =>
-                {
-                    x.ExchangeType = ExchangeType.Direct;
-                });
-                cfg.Message<ErrorLogMessage>(x =>
-                {
-                    x.SetEntityName(_configuration["RabbitMQ:Exchange:LogStoreExchange"]);
-                });
-                cfg.Publish<ErrorLogMessage>(x =>
-                {
-                    x.ExchangeType = ExchangeType.Direct;
-                });
-            });
-        });
+        
 
         
         /******* [7] Workers ********/

@@ -7,7 +7,6 @@ using SensorMessages;
 using VehicleDetectionService.Middleware;
 using VehicleDetectionService.Publishers;
 using VehicleDetectionStore.Business;
-using VehicleDetectionStore.Consumers;
 using VehicleDetectionStore.Publishers;
 using VehicleDetectionStore.Repositories;
 using VehicleDetectionStore.Workers;
@@ -43,65 +42,13 @@ public class Startup
 
         services.AddAutoMapper(typeof(VehicleDetectionStoreProfile));
 
-        /******* [5] MassTransit ********/
+        /******* [5] Publishers ********/
 
         services.AddScoped(typeof(IVehicleDetectionPublisher), typeof(VehicleDetectionPublisher));
-        services.AddScoped<VehicleCountConsumer>();
 
-        services.AddMassTransit(x =>
-        {
-            // Register the consumer for vehicle count messages
-            x.AddConsumer<VehicleCountConsumer>();
+        /******* [6] MassTransit ********/
 
-            x.UsingRabbitMq((context, cfg) =>
-            {
-                cfg.Host(_configuration["RabbitMQ:Host"],
-                        "/",
-                        h =>
-                {
-                    h.Username(_configuration["RabbitMQ:Username"]);
-                    h.Password(_configuration["RabbitMQ:Password"]);
-                });
-
-                cfg.Message<VehicleCountMessage>(x =>
-                {
-                    x.SetEntityName(_configuration["RabbitMQ:Exchange:SensorDataExchange"] ?? "sensor.data.exchange");
-                });
-                cfg.Publish<VehicleCountMessage>(x =>
-                {
-                    x.ExchangeType = ExchangeType.Topic;
-                });
-
-                // Receive endpoint for vehicle count queue
-                cfg.ReceiveEndpoint(_configuration["RabbitMQ:Queue:SensorVehicleDetectionVehicleCountQueue"], e =>
-                {
-                    e.Bind(_configuration["RabbitMQ:Exchange:SensorDataExchange"], s =>
-                    {
-                        s.RoutingKey = _configuration["RabbitMQ:RoutingKey:SensorVehicleDetectionVehicleCountKey"];
-                        s.ExchangeType = "topic";
-                    });
-
-                    e.ConfigureConsumer<VehicleCountConsumer>(context);
-                });
-
-                cfg.Message<AuditLogMessage>(x =>
-                {
-                    x.SetEntityName(_configuration["RabbitMQ:Exchange:LogStoreExchange"] ?? "log.store.exchange");
-                });
-                cfg.Publish<AuditLogMessage>(x =>
-                {
-                    x.ExchangeType = ExchangeType.Direct;
-                });
-                cfg.Message<ErrorLogMessage>(x =>
-                {
-                    x.SetEntityName(_configuration["RabbitMQ:Exchange:LogStoreExchange"] ?? "log.store.exchange");
-                });
-                cfg.Publish<ErrorLogMessage>(x =>
-                {
-                    x.ExchangeType = ExchangeType.Direct;
-                });
-            });
-        });
+        services.AddVehicleDetectionMassTransit(_configuration);
 
         
         /******* [7] Workers ********/

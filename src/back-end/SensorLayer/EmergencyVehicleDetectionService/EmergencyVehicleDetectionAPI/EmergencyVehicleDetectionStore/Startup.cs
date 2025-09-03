@@ -4,7 +4,6 @@ using Microsoft.OpenApi.Models;
 using RabbitMQ.Client;
 using EmergencyVehicleDetectionService.Publishers;
 using EmergencyVehicleDetectionStore.Business;
-using EmergencyVehicleDetectionStore.Consumers;
 using EmergencyVehicleDetectionStore.Publishers;
 using EmergencyVehicleDetectionStore.Repositories;
 using EmergencyVehicleDetectionStore;
@@ -44,67 +43,15 @@ public class Startup
 
         services.AddAutoMapper(typeof(EmergencyVehicleDetectionStoreProfile));
 
-        /******* [5] MassTransit ********/
+        /******* [5] Publishers ********/
 
         services.AddScoped(typeof(IEmergencyVehicleDetectionPublisher), typeof(EmergencyVehicleDetectionPublisher));
-        services.AddScoped<EmergencyVehicleDetectionConsumer>();
 
-        services.AddMassTransit(x =>
-        {
-            // Register the consumer for vehicle count messages
-            x.AddConsumer<EmergencyVehicleDetectionConsumer>();
+        /******* [6] MassTransit ********/
 
-            x.UsingRabbitMq((context, cfg) =>
-            {
-                cfg.Host(_configuration["RabbitMQ:Host"],
-                        "/",
-                        h =>
-                {
-                    h.Username(_configuration["RabbitMQ:Username"]);
-                    h.Password(_configuration["RabbitMQ:Password"]);
-                });
+        services.AddEmergencyVehicleDetectionMassTransit(_configuration);
 
-                cfg.Message<EmergencyVehicleMessage>(x =>
-                {
-                    x.SetEntityName(_configuration["RabbitMQ:Exchange:SensorDataExchange"] ?? "sensor.data.exchange");
-                });
-                cfg.Publish<EmergencyVehicleMessage>(x =>
-                {
-                    x.ExchangeType = ExchangeType.Topic;
-                });
-
-                // Receive endpoint for vehicle count queue
-                cfg.ReceiveEndpoint(_configuration["RabbitMQ:Queue:SensorEmergencyVehicleDetectionDetectionQueue"], e =>
-                {
-                    e.Bind(_configuration["RabbitMQ:Exchange:SensorDataExchange"], s =>
-                    {
-                        s.RoutingKey = _configuration["RabbitMQ:RoutingKey:SensorEmergencyVehicleDetectionDetectionKey"];
-                        s.ExchangeType = "topic";
-                    });
-
-                    e.ConfigureConsumer<EmergencyVehicleDetectionConsumer>(context);
-                });
-
-                cfg.Message<AuditLogMessage>(x =>
-                {
-                    x.SetEntityName(_configuration["RabbitMQ:Exchange:LogStoreExchange"] ?? "log.store.exchange");
-                });
-                cfg.Publish<AuditLogMessage>(x =>
-                {
-                    x.ExchangeType = ExchangeType.Direct;
-                });
-                cfg.Message<ErrorLogMessage>(x =>
-                {
-                    x.SetEntityName(_configuration["RabbitMQ:Exchange:LogStoreExchange"] ?? "log.store.exchange");
-                });
-                cfg.Publish<ErrorLogMessage>(x =>
-                {
-                    x.ExchangeType = ExchangeType.Direct;
-                });
-            });
-        });
-
-        
+               
         /******* [7] Workers ********/
 
         services.AddHostedService<EmergencyVehicleSensor>();

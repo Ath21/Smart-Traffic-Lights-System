@@ -1,6 +1,5 @@
 using DetectionData;
 using IncidentDetectionStore.Business;
-using IncidentDetectionStore.Consumers;
 using IncidentDetectionStore.Middleware;
 using IncidentDetectionStore.Publishers;
 using IncidentDetectionStore.Repositories;
@@ -42,65 +41,13 @@ public class Startup
 
         services.AddAutoMapper(typeof(IncidentDetectionStoreProfile));
 
-        /******* [5] MassTransit ********/
+        /******* [5] Publishers ********/
 
         services.AddScoped(typeof(IIncidentDetectionPublisher), typeof(IncidentDetectionPublisher));
-        services.AddScoped<IncidentDetectionConsumer>();
 
-        services.AddMassTransit(x =>
-        {
-            // Register the consumer for vehicle count messages
-            x.AddConsumer<IncidentDetectionConsumer>();
+        /******* [6] MassTransit *******/
 
-            x.UsingRabbitMq((context, cfg) =>
-            {
-                cfg.Host(_configuration["RabbitMQ:Host"],
-                        "/",
-                        h =>
-                {
-                    h.Username(_configuration["RabbitMQ:Username"]);
-                    h.Password(_configuration["RabbitMQ:Password"]);
-                });
-
-                cfg.Message<IncidentDetectionMessage>(x =>
-                {
-                    x.SetEntityName(_configuration["RabbitMQ:Exchange:SensorDataExchange"]);
-                });
-                cfg.Publish<IncidentDetectionMessage>(x =>
-                {
-                    x.ExchangeType = ExchangeType.Topic;
-                });
-
-                // Receive endpoint for vehicle count queue
-                cfg.ReceiveEndpoint(_configuration["RabbitMQ:Queue:SensorIncidentDetectionReportQueue"], e =>
-                {
-                    e.Bind(_configuration["RabbitMQ:Exchange:SensorDataExchange"], s =>
-                    {
-                        s.RoutingKey = _configuration["RabbitMQ:RoutingKey:SensorIncidentDetectionReportKey"];
-                        s.ExchangeType = "topic";
-                    });
-
-                    e.ConfigureConsumer<IncidentDetectionConsumer>(context);
-                });
-
-                cfg.Message<AuditLogMessage>(x =>
-                {
-                    x.SetEntityName(_configuration["RabbitMQ:Exchange:LogStoreExchange"]);
-                });
-                cfg.Publish<AuditLogMessage>(x =>
-                {
-                    x.ExchangeType = ExchangeType.Direct;
-                });
-                cfg.Message<ErrorLogMessage>(x =>
-                {
-                    x.SetEntityName(_configuration["RabbitMQ:Exchange:LogStoreExchange"]);
-                });
-                cfg.Publish<ErrorLogMessage>(x =>
-                {
-                    x.ExchangeType = ExchangeType.Direct;
-                });
-            });
-        });
+        services.AddIncidentDetectionMassTransit(_configuration);
 
         
         /******* [7] Workers ********/
