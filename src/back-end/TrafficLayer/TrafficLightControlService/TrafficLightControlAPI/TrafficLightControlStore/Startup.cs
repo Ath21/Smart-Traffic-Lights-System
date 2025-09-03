@@ -40,13 +40,17 @@ namespace TrafficLightControlStore
 
             services.AddScoped<ITrafficLightRepository, TrafficLightRepository>();
 
-            /******* [2] Publishers ********/
+            /******* [3] Services ********/
 
             services.AddScoped<ITrafficLightUpdatePublisher, TrafficLightUpdatePublisher>();
             services.AddScoped<ITrafficLogPublisher, TrafficLogPublisher>();
 
+            /******* [4] Automapper ********/
+
+            services.AddAutoMapper(typeof(TrafficLightControlStoreProfile));
+
             /******* [3] Consumers ********/
-            
+
             services.AddScoped<TrafficLightControlConsumer>();
 
             /******* [4] MassTransit & RabbitMQ Config ********/
