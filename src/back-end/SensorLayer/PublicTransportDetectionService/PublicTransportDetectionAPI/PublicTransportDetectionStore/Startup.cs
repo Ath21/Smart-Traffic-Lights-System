@@ -1,5 +1,6 @@
 using System;
 using DetectionData;
+using LogMessages;
 using MassTransit;
 using Microsoft.OpenApi.Models;
 using PublicTransportDetectionStore.Business;
@@ -9,8 +10,7 @@ using PublicTransportDetectionStore.Publishers;
 using PublicTransportDetectionStore.Repositories;
 using PublicTransportDetectionStore.Workers;
 using RabbitMQ.Client;
-using SensorMessages.Data;
-using SensorMessages.Logs;
+using SensorMessages;
 
 namespace PublicTransportDetectionStore;
 
@@ -63,11 +63,11 @@ public class Startup
                     h.Password(_configuration["RabbitMQ:Password"]);
                 });
 
-                cfg.Message<PublicTransportDetectionMessage>(x =>
+                cfg.Message<PublicTransportMessage>(x =>
                 {
                     x.SetEntityName(_configuration["RabbitMQ:Exchange:SensorDataExchange"]);
                 });
-                cfg.Publish<PublicTransportDetectionMessage>(x =>
+                cfg.Publish<PublicTransportMessage>(x =>
                 {
                     x.ExchangeType = ExchangeType.Topic;
                 });

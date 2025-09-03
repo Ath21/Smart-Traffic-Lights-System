@@ -17,7 +17,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../../DetectionData/DetectionData.csproj" />
+    <ProjectReference Include="../../../../LogLayer/LogMessages/LogMessages.csproj" />
+    <ProjectReference Include="../../../DetectionDB/DetectionData/DetectionData.csproj" />
     <ProjectReference Include="../../../SensorMessages/SensorMessages.csproj" />
   </ItemGroup>
 

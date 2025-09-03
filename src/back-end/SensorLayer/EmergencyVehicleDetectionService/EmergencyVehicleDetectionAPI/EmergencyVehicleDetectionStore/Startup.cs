@@ -2,8 +2,6 @@ using DetectionData;
 using MassTransit;
 using Microsoft.OpenApi.Models;
 using RabbitMQ.Client;
-using SensorMessages.Data;
-using SensorMessages.Logs;
 using EmergencyVehicleDetectionService.Publishers;
 using EmergencyVehicleDetectionStore.Business;
 using EmergencyVehicleDetectionStore.Consumers;
@@ -12,6 +10,8 @@ using EmergencyVehicleDetectionStore.Repositories;
 using EmergencyVehicleDetectionStore;
 using EmergencyVehicleDetectionStore.Middleware;
 using EmergencyVehicleDetectionStore.Workers;
+using SensorMessages;
+using LogMessages;
 
 namespace VehicleDetectionStore;
 
@@ -64,11 +64,11 @@ public class Startup
                     h.Password(_configuration["RabbitMQ:Password"]);
                 });
 
-                cfg.Message<EmergencyVehicleDetectionMessage>(x =>
+                cfg.Message<EmergencyVehicleMessage>(x =>
                 {
                     x.SetEntityName(_configuration["RabbitMQ:Exchange:SensorDataExchange"] ?? "sensor.data.exchange");
                 });
-                cfg.Publish<EmergencyVehicleDetectionMessage>(x =>
+                cfg.Publish<EmergencyVehicleMessage>(x =>
                 {
                     x.ExchangeType = ExchangeType.Topic;
                 });

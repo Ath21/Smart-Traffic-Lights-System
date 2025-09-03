@@ -5,11 +5,11 @@ using CyclistDetectionStore.Publishers;
 using CyclistDetectionStore.Repositories;
 using CyclistDetectionStore.Workers;
 using DetectionData;
+using LogMessages;
 using MassTransit;
 using Microsoft.OpenApi.Models;
 using RabbitMQ.Client;
-using SensorMessages.Data;
-using SensorMessages.Logs;
+using SensorMessages;
 
 namespace CyclistDetectionStore;
 
@@ -62,11 +62,11 @@ public class Startup
                     h.Password(_configuration["RabbitMQ:Password"]);
                 });
 
-                cfg.Message<PublicTransportDetectionMessage>(x =>
+                cfg.Message<CyclistDetectionMessage>(x =>
                 {
                     x.SetEntityName(_configuration["RabbitMQ:Exchange:SensorDataExchange"]);
                 });
-                cfg.Publish<PublicTransportDetectionMessage>(x =>
+                cfg.Publish<CyclistDetectionMessage>(x =>
                 {
                     x.ExchangeType = ExchangeType.Topic;
                 });

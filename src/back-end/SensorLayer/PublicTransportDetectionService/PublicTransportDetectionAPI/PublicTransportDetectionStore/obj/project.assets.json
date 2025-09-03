@@ -870,6 +870,16 @@
           "bin/placeholder/DetectionData.dll": {}
         }
       },
+      "LogMessages/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "compile": {
+          "bin/placeholder/LogMessages.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/LogMessages.dll": {}
+        }
+      },
       "SensorMessages/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
@@ -2429,8 +2439,13 @@
     },
     "DetectionData/1.0.0": {
       "type": "project",
-      "path": "../../../DetectionData/DetectionData.csproj",
-      "msbuildProject": "../../../DetectionData/DetectionData.csproj"
+      "path": "../../../DetectionDB/DetectionData/DetectionData.csproj",
+      "msbuildProject": "../../../DetectionDB/DetectionData/DetectionData.csproj"
+    },
+    "LogMessages/1.0.0": {
+      "type": "project",
+      "path": "../../../../LogLayer/LogMessages/LogMessages.csproj",
+      "msbuildProject": "../../../../LogLayer/LogMessages/LogMessages.csproj"
     },
     "SensorMessages/1.0.0": {
       "type": "project",
@@ -2443,6 +2458,7 @@
       "AutoMapper.Extensions.Microsoft.DependencyInjection >= 12.0.1",
       "DetectionData >= 1.0.0",
       "InfluxDB.Client >= 4.18.0",
+      "LogMessages >= 1.0.0",
       "MassTransit >= 8.5.1",
       "MassTransit.RabbitMQ >= 8.5.1",
       "Microsoft.AspNetCore.Authentication.JwtBearer >= 9.0.8",
@@ -2476,8 +2492,11 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
-            "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/DetectionData/DetectionData.csproj": {
-              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/DetectionData/DetectionData.csproj"
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogMessages/LogMessages.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogMessages/LogMessages.csproj"
+            },
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/DetectionDB/DetectionData/DetectionData.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/DetectionDB/DetectionData/DetectionData.csproj"
             },
             "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/SensorMessages/SensorMessages.csproj": {
               "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/SensorMessages/SensorMessages.csproj"
@@ -2549,7 +2568,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/9.0.303/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/9.0.304/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

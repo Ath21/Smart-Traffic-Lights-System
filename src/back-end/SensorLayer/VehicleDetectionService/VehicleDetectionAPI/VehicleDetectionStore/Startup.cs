@@ -1,9 +1,9 @@
 using DetectionData;
+using LogMessages;
 using MassTransit;
 using Microsoft.OpenApi.Models;
 using RabbitMQ.Client;
-using SensorMessages.Data;
-using SensorMessages.Logs;
+using SensorMessages;
 using VehicleDetectionService.Middleware;
 using VehicleDetectionService.Publishers;
 using VehicleDetectionStore.Business;

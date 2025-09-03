@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "+59S00XuiFI=",
+  "dgSpecHash": "4Tp86GVrS3k=",
   "success": true,
   "projectFilePath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/PedestrianDetectionService/PedestrianDetectionAPI/PedestrianDetectionStore/PedestrianDetectionStore.csproj",
   "expectedPackageFiles": [

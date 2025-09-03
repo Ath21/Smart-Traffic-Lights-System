@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "tV1ovLQmKxY=",
+  "dgSpecHash": "wg3FcvBpr6c=",
   "success": true,
-  "projectFilePath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/DetectionData/DetectionData.csproj",
+  "projectFilePath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/DetectionDB/DetectionData/DetectionData.csproj",
   "expectedPackageFiles": [
     "/home/ath/.nuget/packages/csvhelper/33.0.1/csvhelper.33.0.1.nupkg.sha512",
     "/home/ath/.nuget/packages/influxdb.client/4.18.0/influxdb.client.4.18.0.nupkg.sha512",

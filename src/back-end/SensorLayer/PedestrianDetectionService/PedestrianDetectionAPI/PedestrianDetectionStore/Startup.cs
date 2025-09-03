@@ -1,5 +1,6 @@
 using System;
 using DetectionData;
+using LogMessages;
 using MassTransit;
 using Microsoft.OpenApi.Models;
 using PedestrianDetectionStore;
@@ -10,8 +11,7 @@ using PedestrianDetectionStore.Publishers;
 using PedestrianDetectionStore.Repositories;
 using PedestrianDetectionStore.Workers;
 using RabbitMQ.Client;
-using SensorMessages.Data;
-using SensorMessages.Logs;
+using SensorMessages;
 
 namespace PedestrianDetectionStore;
 
@@ -64,11 +64,11 @@ public class Startup
                     h.Password(_configuration["RabbitMQ:Password"]);
                 });
 
-                cfg.Message<PublicTransportDetectionMessage>(x =>
+                cfg.Message<PedestrianDetectionMessage>(x =>
                 {
                     x.SetEntityName(_configuration["RabbitMQ:Exchange:SensorDataExchange"]);
                 });
-                cfg.Publish<PublicTransportDetectionMessage>(x =>
+                cfg.Publish<PedestrianDetectionMessage>(x =>
                 {
                     x.ExchangeType = ExchangeType.Topic;
                 });

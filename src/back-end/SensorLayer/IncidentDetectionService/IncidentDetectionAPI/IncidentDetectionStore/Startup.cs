@@ -5,11 +5,11 @@ using IncidentDetectionStore.Middleware;
 using IncidentDetectionStore.Publishers;
 using IncidentDetectionStore.Repositories;
 using IncidentDetectionStore.Workers;
+using LogMessages;
 using MassTransit;
 using Microsoft.OpenApi.Models;
 using RabbitMQ.Client;
-using SensorMessages.Data;
-using SensorMessages.Logs;
+using SensorMessages;
 
 namespace IncidentDetectionStore;
 
@@ -62,11 +62,11 @@ public class Startup
                     h.Password(_configuration["RabbitMQ:Password"]);
                 });
 
-                cfg.Message<PublicTransportDetectionMessage>(x =>
+                cfg.Message<IncidentDetectionMessage>(x =>
                 {
                     x.SetEntityName(_configuration["RabbitMQ:Exchange:SensorDataExchange"]);
                 });
-                cfg.Publish<PublicTransportDetectionMessage>(x =>
+                cfg.Publish<IncidentDetectionMessage>(x =>
                 {
                     x.ExchangeType = ExchangeType.Topic;
                 });
