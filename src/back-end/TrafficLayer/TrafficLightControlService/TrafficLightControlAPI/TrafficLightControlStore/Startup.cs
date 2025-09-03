@@ -1,4 +1,5 @@
 using System;
+using IntersectionControllerData;
 using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -12,8 +13,7 @@ using TrafficLightControlService.Middleware;
 using TrafficLightControlStore.Business;
 using TrafficLightControlStore.Publishers.Light;
 using TrafficLightControlStore.Publishers.Logs;
-using TrafficMessages.Light;
-using TrafficMessages.Logs;
+using TrafficLightControlStore.Repository;
 
 namespace TrafficLightControlStore
 {
@@ -28,14 +28,25 @@ namespace TrafficLightControlStore
 
         public void ConfigureServices(IServiceCollection services)
         {
-            /******* [1] Domain Services ********/
-            services.AddScoped<ITrafficLightManager, TrafficLightManager>();
+            /******* [1] Redis Config ********/
+
+            var redisSettings = new RedisSettings();
+            _configuration.GetSection("Redis").Bind(redisSettings);
+            services.AddSingleton(redisSettings);
+
+            services.AddSingleton<TrafficLightDbMemoryContext>();
+
+            /******* [2] Repositories ********/
+
+            services.AddScoped<ITrafficLightRepository, TrafficLightRepository>();
 
             /******* [2] Publishers ********/
+
             services.AddScoped<ITrafficLightUpdatePublisher, TrafficLightUpdatePublisher>();
             services.AddScoped<ITrafficLogPublisher, TrafficLogPublisher>();
 
             /******* [3] Consumers ********/
+            
             services.AddScoped<TrafficLightControlConsumer>();
 
             /******* [4] MassTransit & RabbitMQ Config ********/

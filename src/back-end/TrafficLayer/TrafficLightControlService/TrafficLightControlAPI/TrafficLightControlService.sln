@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrafficLightControlStore", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrafficMessages", "..\..\TrafficMessages\TrafficMessages.csproj", "{17BB6389-334F-40DC-AB08-EF9B517283A7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogMessages", "..\..\..\LogLayer\LogMessages\LogMessages.csproj", "{A554DA74-4B72-47A2-839C-602622D47B75}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntersectionControllerData", "..\..\IntersectionControllerService\IntersectionControllerAPI\IntersectionControllerData\IntersectionControllerData.csproj", "{E771DD22-6796-454A-90FE-8ACA00274F51}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,6 +45,30 @@ Global
 		{17BB6389-334F-40DC-AB08-EF9B517283A7}.Release|x64.Build.0 = Release|Any CPU
 		{17BB6389-334F-40DC-AB08-EF9B517283A7}.Release|x86.ActiveCfg = Release|Any CPU
 		{17BB6389-334F-40DC-AB08-EF9B517283A7}.Release|x86.Build.0 = Release|Any CPU
+		{A554DA74-4B72-47A2-839C-602622D47B75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A554DA74-4B72-47A2-839C-602622D47B75}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A554DA74-4B72-47A2-839C-602622D47B75}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A554DA74-4B72-47A2-839C-602622D47B75}.Debug|x64.Build.0 = Debug|Any CPU
+		{A554DA74-4B72-47A2-839C-602622D47B75}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A554DA74-4B72-47A2-839C-602622D47B75}.Debug|x86.Build.0 = Debug|Any CPU
+		{A554DA74-4B72-47A2-839C-602622D47B75}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A554DA74-4B72-47A2-839C-602622D47B75}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A554DA74-4B72-47A2-839C-602622D47B75}.Release|x64.ActiveCfg = Release|Any CPU
+		{A554DA74-4B72-47A2-839C-602622D47B75}.Release|x64.Build.0 = Release|Any CPU
+		{A554DA74-4B72-47A2-839C-602622D47B75}.Release|x86.ActiveCfg = Release|Any CPU
+		{A554DA74-4B72-47A2-839C-602622D47B75}.Release|x86.Build.0 = Release|Any CPU
+		{E771DD22-6796-454A-90FE-8ACA00274F51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E771DD22-6796-454A-90FE-8ACA00274F51}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E771DD22-6796-454A-90FE-8ACA00274F51}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E771DD22-6796-454A-90FE-8ACA00274F51}.Debug|x64.Build.0 = Debug|Any CPU
+		{E771DD22-6796-454A-90FE-8ACA00274F51}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E771DD22-6796-454A-90FE-8ACA00274F51}.Debug|x86.Build.0 = Debug|Any CPU
+		{E771DD22-6796-454A-90FE-8ACA00274F51}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E771DD22-6796-454A-90FE-8ACA00274F51}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E771DD22-6796-454A-90FE-8ACA00274F51}.Release|x64.ActiveCfg = Release|Any CPU
+		{E771DD22-6796-454A-90FE-8ACA00274F51}.Release|x64.Build.0 = Release|Any CPU
+		{E771DD22-6796-454A-90FE-8ACA00274F51}.Release|x86.ActiveCfg = Release|Any CPU
+		{E771DD22-6796-454A-90FE-8ACA00274F51}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

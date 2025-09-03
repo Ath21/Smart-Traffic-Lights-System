@@ -14,10 +14,13 @@
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.6" />
     <PackageReference Include="RabbitMQ.Client" Version="7.1.2" />
+    <PackageReference Include="StackExchange.Redis" Version="2.9.11" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.1" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../../../LogLayer/LogMessages/LogMessages.csproj" />
+    <ProjectReference Include="../../../IntersectionControllerService/IntersectionControllerAPI/IntersectionControllerData/IntersectionControllerData.csproj" />
     <ProjectReference Include="../../../TrafficMessages/TrafficMessages.csproj" />
   </ItemGroup>
 
