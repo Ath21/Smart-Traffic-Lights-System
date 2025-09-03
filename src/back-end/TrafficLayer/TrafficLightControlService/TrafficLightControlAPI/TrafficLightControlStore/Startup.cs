@@ -1,17 +1,19 @@
 using System;
+using System.Text;
 using IntersectionControllerData;
 using MassTransit;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using RabbitMQ.Client;
 using TrafficLightControlStore.Business;
 using TrafficLightControlStore.Consumers;
 using TrafficLightControlStore.Middleware;
-using TrafficLightControlStore.Publishers.Light;
 using TrafficLightControlStore.Publishers.Logs;
 using TrafficLightControlStore.Repository;
 
@@ -60,19 +62,53 @@ namespace TrafficLightControlStore
 
             services.AddTrafficLightControlMassTransit(_configuration);
 
-            /******* [5] Controllers ********/
+            /******* [8] Jwt Config ********/
+
+            var jwtSettings = _configuration.GetSection("Jwt");
+            var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]);
+
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.RequireHttpsMetadata = false;
+                    options.SaveToken = true;
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidIssuer = jwtSettings["Issuer"],
+                        ValidateAudience = true,
+                        ValidAudience = jwtSettings["Audience"],
+                        ValidateLifetime = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(key)
+                    };
+                });   
+            
+            /******* [9] CORS Policy ********/
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllowFrontend", policy =>
+                {
+                    policy.WithOrigins("http://localhost:5173")   // Vue dev server
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
+
+                });
+            });
+
+            /******* [10] Controllers ********/
 
             services.AddControllers()
                 .AddJsonOptions(opts => opts.JsonSerializerOptions.PropertyNamingPolicy = null);
 
-            /******* [6] Swagger ********/
-            
+            /******* [11] Swagger ********/
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo
                 {
-                    Title = "Traffic Light Control API",
-                    Version = "v1.0"
+                    Title = "Traffic Light Controller API",
+                    Version = "v2.0"
                 });
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
@@ -99,9 +135,7 @@ namespace TrafficLightControlStore
                 });
             });
 
-            /******* [7] Authentication & Authorization ********/
-            // services.AddAuthentication(...);
-            // services.AddAuthorization(...);
+
         }
 
         public void Configure(WebApplication app, IWebHostEnvironment env)
@@ -111,7 +145,7 @@ namespace TrafficLightControlStore
                 app.UseSwagger();
                 app.UseSwaggerUI(c =>
                 {
-                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Traffic Light Control API");
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Traffic Light Controller API");
                 });
             }
 
@@ -119,6 +153,8 @@ namespace TrafficLightControlStore
 
             // Exception Middleware
             app.UseMiddleware<ExceptionMiddleware>();
+
+            app.UseCors("AllowFrontend");
 
             app.UseAuthentication();
             app.UseAuthorization();
