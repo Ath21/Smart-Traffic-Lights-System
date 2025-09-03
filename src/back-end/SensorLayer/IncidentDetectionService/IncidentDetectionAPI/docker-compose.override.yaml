@@ -3,36 +3,48 @@ services:
     ports:
       - '5109:8080' # Optional if you want metrics/health endpoints exposed
     environment:
+      # ===============================
+      # ASP.NET Core
+      # ===============================
       ASPNETCORE_ENVIRONMENT: Development
 
-      # RabbitMQ Config
-      RabbitMQ__Host: rabbitmq
-      RabbitMQ__Port: 5672
-      RabbitMQ__Username: admin
-      RabbitMQ__Password: admin123
+      # ===============================
+      # JWT Authentication
+      # ===============================
+      Jwt__Issuer: http://stls_backend:8080
+      Jwt__Audience: http://stls_backend:8080
+      Jwt__Key: Nn7kLa8Rzv1XHt9UwMqP4YbFdJxVt2Km
 
-      # RabbitMQ Exchanges
-      RabbitMQ__Exchange__SensorDataExchange: sensor.data.exchange
-      RabbitMQ__Exchange__LogStoreExchange: log.store.exchange
-
-      # RabbitMQ Queues
-      RabbitMQ__Queue__SensorIncidentDetectionReportQueue: sensor.incident_detection.report.queue
-      RabbitMQ__Queue__SensorLogsAuditQueue: sensor.logs.audit.queue
-      RabbitMQ__Queue__SensorLogsErrorQueue: sensor.logs.error.queue
-
-      # RabbitMQ Routing Keys
-      RabbitMQ__RoutingKey__SensorIncidentDetectionReportKey: sensor.incident_detection.report.*
-      RabbitMQ__RoutingKey__SensorLogsAuditKey: sensor.incident_detection.logs.audit
-      RabbitMQ__RoutingKey__SensorLogsErrorKey: sensor.incident_detection.logs.error
-
-      # InfluxDB Config
+      # ===============================
+      # InfluxDB Connection
+      # ===============================
       DetectionDb__Url: http://influxdb:8086
       DetectionDb__Token: admin-token
       DetectionDb__Org: DetectionOrg
       DetectionDb__Bucket: DetectionDb
 
+      # ===============================
+      # RabbitMQ Connection
+      # ===============================
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Port: 5672
+      RabbitMQ__Username: rabbitmq
+      RabbitMQ__Password: rabbitmq123
 
-    depends_on:
-      influxdb:
-        condition: service_started
-    restart: always
+      # ===============================
+      # Exchanges
+      # ===============================
+      RabbitMQ__Exchanges__Sensor: SENSOR.EXCHANGE
+      RabbitMQ__Exchanges__Logs: LOG.EXCHANGE
+
+
+      # ===============================
+      # Routing Keys (Publishes)
+      # ===============================
+      RabbitMQ__RoutingKeys__SensorIncidentDetected: sensor.incident.detected.{intersection_id}
+
+      # ===============================
+      # Logs
+      # ===============================
+      RabbitMQ__RoutingKeys__IncidentLogsAudit: log.sensor.incident_detection_service.audit
+      RabbitMQ__RoutingKeys__IncidentLogsError: log.sensor.incident_detection_service.error
