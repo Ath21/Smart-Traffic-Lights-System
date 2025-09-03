@@ -41,7 +41,7 @@ services:
       # ===============================
       # Routing Keys (Publishes)
       # ===============================
-      RabbitMQ__RoutingKeys__SensorVehicleDetected: sensor.vehicle.detected.{intersection_id}
+      RabbitMQ__RoutingKeys__SensorVehicleCount: sensor.vehicle.count.{intersection_id}
 
       # ===============================
       # Logs

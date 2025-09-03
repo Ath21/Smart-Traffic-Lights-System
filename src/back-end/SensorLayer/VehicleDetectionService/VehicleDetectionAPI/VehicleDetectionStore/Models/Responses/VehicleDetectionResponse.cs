@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 
-namespace VehicleDetectionStore.Models;
+namespace VehicleDetectionStore.Models.Responses;
 
-
-public class VehicleDetectionCreateDto
+public class VehicleDetectionResponse
 {
+    public Guid DetectionId { get; set; }
     public Guid IntersectionId { get; set; }
     public DateTime Timestamp { get; set; }
     public int VehicleCount { get; set; }

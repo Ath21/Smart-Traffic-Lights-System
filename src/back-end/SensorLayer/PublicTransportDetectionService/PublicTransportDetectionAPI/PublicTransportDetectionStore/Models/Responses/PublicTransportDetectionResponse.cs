@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 
-namespace PublicTransportDetectionStore.Models;
+namespace PublicTransportDetectionStore.Models.Responses;
 
-public class PublicTransportDetectionReadDto
+public class PublicTransportDetectionResponse
 {
     public Guid DetectionId { get; set; }
     public Guid IntersectionId { get; set; }

@@ -1,21 +1,21 @@
 using AutoMapper;
 using DetectionData.TimeSeriesObjects;
 using PedestrianDetectionStore.Models;
+using PedestrianDetectionStore.Models.Requests;
+using PedestrianDetectionStore.Models.Responses;
+using SensorMessages;
 
-namespace PedestrianDetectionStore
+namespace PedestrianDetectionStore;
+
+public class PedestrianDetectionStoreProfile : Profile
 {
-    public class PedestrianDetectionStoreProfile : Profile
+    public PedestrianDetectionStoreProfile()
     {
-        public PedestrianDetectionStoreProfile()
-        {
-            // Create → Entity
-            CreateMap<PedestrianDetectionCreateDto, PedestrianDetection>();
+        CreateMap<PedestrianDetectionRequest, PedestrianDetection>()
+            .ForMember(dest => dest.Timestamp, opt => opt.MapFrom(src => src.Timestamp ?? DateTime.UtcNow));
 
-            // Entity → Read
-            CreateMap<PedestrianDetection, PedestrianDetectionReadDto>();
-
-            // Entity → Response
-            CreateMap<PedestrianDetection, PedestrianDetectionResponseDto>();
-        }
+        CreateMap<PedestrianDetection, PedestrianDetectionResponse>();
+        CreateMap<PedestrianDetection, PedestrianDetectionMessage>();
+        CreateMap<PedestrianDetectionMessage, PedestrianDetection>();
     }
 }

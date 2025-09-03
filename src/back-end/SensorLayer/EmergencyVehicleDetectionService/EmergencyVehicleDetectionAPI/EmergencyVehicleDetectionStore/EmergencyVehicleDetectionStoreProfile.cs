@@ -2,6 +2,9 @@ using System;
 using AutoMapper;
 using DetectionData.TimeSeriesObjects;
 using EmergencyVehicleDetectionStore.Models;
+using EmergencyVehicleDetectionStore.Models.Requests;
+using EmergencyVehicleDetectionStore.Models.Responses;
+using SensorMessages;
 
 namespace EmergencyVehicleDetectionStore;
 
@@ -9,9 +12,11 @@ public class EmergencyVehicleDetectionStoreProfile : Profile
 {
     public EmergencyVehicleDetectionStoreProfile()
     {
-        CreateMap<EmergencyVehicleDetectionCreateDto, EmergencyVehicleDetection>();
-        CreateMap<EmergencyVehicleDetection, EmergencyVehicleDetectionReadDto>();
-        CreateMap<EmergencyVehicleDetection, DetectionResponseDto>()
-            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => "Success"));
+        CreateMap<EmergencyVehicleDetectionRequest, EmergencyVehicleDetection>()
+            .ForMember(dest => dest.Timestamp, opt => opt.MapFrom(src => src.Timestamp ?? DateTime.UtcNow));
+
+        CreateMap<EmergencyVehicleDetection, EmergencyVehicleDetectionResponse>();
+        CreateMap<EmergencyVehicleDetection, EmergencyVehicleMessage>();
+        CreateMap<EmergencyVehicleMessage, EmergencyVehicleDetection>();
     }
 }

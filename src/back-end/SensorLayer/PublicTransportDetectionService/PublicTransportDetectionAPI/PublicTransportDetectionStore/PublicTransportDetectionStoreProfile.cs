@@ -2,6 +2,9 @@ using System;
 using AutoMapper;
 using DetectionData.TimeSeriesObjects;
 using PublicTransportDetectionStore.Models;
+using PublicTransportDetectionStore.Models.Requests;
+using PublicTransportDetectionStore.Models.Responses;
+using SensorMessages;
 
 namespace PublicTransportDetectionStore;
 
@@ -9,14 +12,11 @@ public class PublicTransportDetectionStoreProfile : Profile
 {
     public PublicTransportDetectionStoreProfile()
     {
-        // Entity → Read DTO
-        CreateMap<PublicTransportDetection, PublicTransportDetectionReadDto>();
-       
-        // Create DTO → Entity
-        CreateMap<PublicTransportDetectionCreateDto, PublicTransportDetection>();
+        CreateMap<PublicTransportDetectionRequest, PublicTransportDetection>()
+            .ForMember(dest => dest.Timestamp, opt => opt.MapFrom(src => src.Timestamp ?? DateTime.UtcNow));
 
-        // Entity → Response DTO
-        CreateMap<PublicTransportDetection, PublicTransportDetectionResponseDto>()
-            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => "Success"));
+        CreateMap<PublicTransportDetection, PublicTransportDetectionResponse>();
+        CreateMap<PublicTransportDetection, PublicTransportMessage>();
+        CreateMap<PublicTransportMessage, PublicTransportDetection>();
     }
 }

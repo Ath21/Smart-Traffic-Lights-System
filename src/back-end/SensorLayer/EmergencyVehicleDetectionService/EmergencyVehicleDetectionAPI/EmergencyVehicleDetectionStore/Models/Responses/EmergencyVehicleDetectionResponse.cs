@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 
-namespace EmergencyVehicleDetectionStore.Models;
+namespace EmergencyVehicleDetectionStore.Models.Responses;
 
-public class EmergencyVehicleDetectionReadDto
+public class EmergencyVehicleDetectionResponse
 {
     public Guid DetectionId { get; set; }
     public Guid IntersectionId { get; set; }
