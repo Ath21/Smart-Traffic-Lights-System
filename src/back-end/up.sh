@@ -18,7 +18,7 @@ declare -A SERVICES_PATHS=(
 
     # Traffic Layer
     [traffic_analytics_api]="./TrafficLayer/TrafficAnalyticsService/TrafficAnalyticsAPI"
-    [traffic_light_control_api]="./TrafficLayer/TrafficLightControlService/TrafficLightControlAPI"
+    [traffic_light_controller_api]="./TrafficLayer/TrafficLightControlService/TrafficLightControlAPI"
     [traffic_light_coordinator_api]="./TrafficLayer/TrafficLightCoordinatorService/TrafficLightCoordinatorAPI"
     [intersection_controller_api]="./TrafficLayer/IntersectionControllerService/IntersectionControllerAPI"
 
@@ -207,9 +207,9 @@ main()
         traffic)
             services_to_build=()
             case "$TARGET_SERVICE" in
-                "") services_to_build+=(traffic_analytics_api traffic_light_control_api traffic_light_coordinator_api intersection_control_api) ;;
+                "") services_to_build+=(traffic_analytics_api traffic_light_controller_api traffic_light_coordinator_api intersection_control_api) ;;
                 TrafficAnalyticsService) services_to_build+=(traffic_analytics_api) ;;
-                TrafficLightControlService) services_to_build+=(traffic_light_control_api) ;;
+                TrafficLightControllerService) services_to_build+=(traffic_light_controller_api) ;;
                 TrafficLightCoordinatorService) services_to_build+=(traffic_light_coordinator_api) ;;
                 IntersectionControllerService) services_to_build+=(intersection_controller_api) ;;
                 *) echo "❌ Unknown traffic service: $TARGET_SERVICE"; exit 1 ;;

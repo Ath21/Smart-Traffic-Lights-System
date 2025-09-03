@@ -16,18 +16,18 @@ COPY TrafficLayer TrafficLayer/
 COPY LogLayer/LogMessages LogLayer/LogMessages/
 
 # Restore dependencies
-RUN dotnet restore TrafficLayer/TrafficLightControllerService/TrafficLightControllerAPI/TrafficLightControllerStore/TrafficLightControllerStore.csproj
+RUN dotnet restore TrafficLayer/TrafficLightControlService/TrafficLightControlAPI/TrafficLightControlStore/TrafficLightControlStore.csproj
 
 # Build project
-RUN dotnet build TrafficLayer/TrafficLightControllerService/TrafficLightControllerAPI/TrafficLightControllerStore/TrafficLightControllerStore.csproj -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build TrafficLayer/TrafficLightControlService/TrafficLightControlAPI/TrafficLightControlStore/TrafficLightControlStore.csproj -c $BUILD_CONFIGURATION -o /app/build
 
 # Publish project
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish TrafficLayer/TrafficLightControllerService/TrafficLightControllerAPI/TrafficLightControllerStore/TrafficLightControllerStore.csproj -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish TrafficLayer/TrafficLightControlService/TrafficLightControlAPI/TrafficLightControlStore/TrafficLightControlStore.csproj -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # Final image
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "TrafficLightControllerStore.dll"]
+ENTRYPOINT ["dotnet", "TrafficLightControlStore.dll"]

@@ -3,9 +3,10 @@
 # ================================
 # 🔧 Configuration
 # ================================
-NETWORK_NAME="traffic_light_network"
+NETWORK_NAME="intersection_network"
 
 TRAFFIC_LIGHT_API_DIR="./TrafficLayer/TrafficLightControlService/TrafficLightControlAPI"
+TRAFFIC_REDIS_DIR="./TrafficLayer/IntersectionControllerService/IntersectionControllerAPI/Redis"
 
 DOCKER_COMPOSE_FILE="docker-compose.yaml"
 DOCKER_COMPOSE_OVERRIDE="docker-compose.override.yaml"
@@ -15,15 +16,17 @@ DOCKER_COMPOSE_OVERRIDE="docker-compose.override.yaml"
 # ================================
 stop_containers() 
 {
-    echo "🛑 Stopping Traffic Light Control Service containers..."
+    echo "🛑 Stopping Traffic Light Controller Service containers..."
 
     docker compose \
         -f "$TRAFFIC_LIGHT_API_DIR/$DOCKER_COMPOSE_FILE" \
         -f "$TRAFFIC_LIGHT_API_DIR/$DOCKER_COMPOSE_OVERRIDE" \
-        -p traffic_light_control_service \
+        -f "$TRAFFIC_REDIS_DIR/$DOCKER_COMPOSE_FILE" \
+        -f "$TRAFFIC_REDIS_DIR/$DOCKER_COMPOSE_OVERRIDE" \
+        -p traffic_light_controller_service \
         down
 
-    echo "✅ All Traffic Light Control Service containers have been stopped."
+    echo "✅ All Traffic Light Controller Service containers have been stopped."
 }
 
 # ================================

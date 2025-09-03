@@ -19,7 +19,7 @@ declare -A SERVICES_PATHS=(
 
     # Traffic Layer
     [traffic_analytics_api]="./TrafficLayer/TrafficAnalyticsService/TrafficAnalyticsAPI"
-    [traffic_light_control_api]="./TrafficLayer/TrafficLightControlService/TrafficLightControlAPI"
+    [traffic_light_controller_api]="./TrafficLayer/TrafficLightControlService/TrafficLightControlAPI"
     [traffic_light_coordinator_api]="./TrafficLayer/TrafficLightCoordinatorService/TrafficLightCoordinatorAPI"
     [intersection_controller_api]="./TrafficLayer/IntersectionControllerService/IntersectionControllerAPI"
 
