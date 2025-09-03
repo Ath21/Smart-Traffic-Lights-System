@@ -1,6 +1,5 @@
 using System;
 using System.Text;
-using IntersectionControllerData;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -16,6 +15,7 @@ using TrafficLightControllerStore.Consumers;
 using TrafficLightControllerStore.Middleware;
 using TrafficLightControllerStore.Publishers.Logs;
 using TrafficLightControllerStore.Repository;
+using TrafficLightData;
 
 namespace TrafficLightControllerStore
 {

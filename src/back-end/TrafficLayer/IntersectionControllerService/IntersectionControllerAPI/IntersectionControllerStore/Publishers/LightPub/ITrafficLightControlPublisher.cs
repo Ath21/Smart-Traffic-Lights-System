@@ -1,6 +1,6 @@
 using System;
 
-namespace IntersectionControlStore.Publishers.LightPub;
+namespace IntersectionControllerStore.Publishers.LightPub;
 
 public interface ITrafficLightControlPublisher
 {

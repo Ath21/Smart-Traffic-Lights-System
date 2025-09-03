@@ -5,7 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using TrafficMessages;
 
-namespace IntersectionControlStore.Publishers.LightPub;
+namespace IntersectionControllerStore.Publishers.LightPub;
 
 public class TrafficLightControlPublisher : ITrafficLightControlPublisher
 {

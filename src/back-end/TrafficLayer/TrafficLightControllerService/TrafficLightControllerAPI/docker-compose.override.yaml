@@ -52,8 +52,3 @@ services:
       # ===============================
       RabbitMQ__RoutingKeys__TrafficLogsAudit: log.traffic.light_controller_service.audit
       RabbitMQ__RoutingKeys__TrafficLogsError: log.traffic.light_controller_service.error
-
-    depends_on:
-      intersection_redis:
-        condition: service_healthy
-    restart: always

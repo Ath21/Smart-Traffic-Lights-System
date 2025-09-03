@@ -1,6 +1,6 @@
 using System.Text.Json;
 using StackExchange.Redis;
-using IntersectionControllerData;
+using TrafficLightData;
 
 namespace IntersectionControllerStore.Repository;
 

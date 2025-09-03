@@ -1,6 +1,6 @@
 using System;
-using IntersectionControllerData;
 using StackExchange.Redis;
+using TrafficLightData;
 
 namespace TrafficLightControllerStore.Repository;
 
@@ -8,7 +8,7 @@ public class TrafficLightRepository : ITrafficLightRepository
 {
     private readonly IDatabase _db;
 
-    public TrafficLightRepository(IntersectionControllerData.TrafficLightDbMemoryContext context)
+    public TrafficLightRepository(TrafficLightDbMemoryContext context)
     {
         _db = context.Database;
     }

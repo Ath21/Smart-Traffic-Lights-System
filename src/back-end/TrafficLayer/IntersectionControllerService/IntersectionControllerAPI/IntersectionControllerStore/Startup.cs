@@ -1,9 +1,9 @@
 using System;
-using IntersectionControlStore.Middleware;
-using IntersectionControlStore.Publishers.LightPub;
-using IntersectionControlStore.Publishers.LogPub;
-using IntersectionControlStore.Publishers.PriorityPub;
-using IntersectionControlStore.Consumers; // assuming your consumers are in this namespace
+using IntersectionControllerStore.Middleware;
+using IntersectionControllerStore.Publishers.LightPub;
+using IntersectionControllerStore.Publishers.LogPub;
+using IntersectionControllerStore.Publishers.PriorityPub;
+using IntersectionControllerStore.Consumers; // assuming your consumers are in this namespace
 using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -12,7 +12,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using RabbitMQ.Client;
-using IntersectionControllerData;
 using IntersectionControllerStore.Repository.Intersect;
 using IntersectionControllerStore.Repository.Light;
 using IntersectionControllerStore.Repository.Config;
@@ -21,15 +20,15 @@ using IntersectionControllerStore;
 using IntersectionControllerStore.Business.TrafficConfig;
 using IntersectionControllerStore.Business.TrafficLight;
 using IntersectionControllerStore.Business.Intersection;
-using IntersectionControllerStore.Consumers;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using IntersectionControllerStore.Business.Priority;
 using IntersectionControllerStore.Business.Coordinator;
 using IntersectionControllerStore.Business.CommandLog;
+using TrafficLightData;
 
-namespace IntersectionControlStore
+namespace IntersectionControllerStore
 {
     public class Startup
     {
@@ -43,6 +42,7 @@ namespace IntersectionControlStore
         public void ConfigureServices(IServiceCollection services)
         {
             /******* [1] Redis Config ********/
+            
             var redisSettings = new RedisSettings();
             _configuration.GetSection("Redis").Bind(redisSettings);
             services.AddSingleton(redisSettings);

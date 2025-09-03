@@ -694,21 +694,6 @@
           "buildTransitive/net6.0/_._": {}
         }
       },
-      "IntersectionControllerData/1.0.0": {
-        "type": "project",
-        "framework": ".NETCoreApp,Version=v9.0",
-        "dependencies": {
-          "Microsoft.Extensions.Configuration.Abstractions": "9.0.0",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.0",
-          "StackExchange.Redis": "2.9.11"
-        },
-        "compile": {
-          "bin/placeholder/IntersectionControllerData.dll": {}
-        },
-        "runtime": {
-          "bin/placeholder/IntersectionControllerData.dll": {}
-        }
-      },
       "LogMessages/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
@@ -727,6 +712,21 @@
         },
         "runtime": {
           "bin/placeholder/SensorMessages.dll": {}
+        }
+      },
+      "TrafficLightData/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "dependencies": {
+          "Microsoft.Extensions.Configuration.Abstractions": "9.0.0",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.0",
+          "StackExchange.Redis": "2.9.11"
+        },
+        "compile": {
+          "bin/placeholder/TrafficLightData.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/TrafficLightData.dll": {}
         }
       },
       "TrafficMessages/1.0.0": {
@@ -1766,11 +1766,6 @@
         "useSharedDesignerContext.txt"
       ]
     },
-    "IntersectionControllerData/1.0.0": {
-      "type": "project",
-      "path": "../IntersectionControllerData/IntersectionControllerData.csproj",
-      "msbuildProject": "../IntersectionControllerData/IntersectionControllerData.csproj"
-    },
     "LogMessages/1.0.0": {
       "type": "project",
       "path": "../../../../LogLayer/LogMessages/LogMessages.csproj",
@@ -1781,6 +1776,11 @@
       "path": "../../../../SensorLayer/SensorMessages/SensorMessages.csproj",
       "msbuildProject": "../../../../SensorLayer/SensorMessages/SensorMessages.csproj"
     },
+    "TrafficLightData/1.0.0": {
+      "type": "project",
+      "path": "../../../TrafficLightMemoryDB/TrafficLightData/TrafficLightData.csproj",
+      "msbuildProject": "../../../TrafficLightMemoryDB/TrafficLightData/TrafficLightData.csproj"
+    },
     "TrafficMessages/1.0.0": {
       "type": "project",
       "path": "../../../TrafficMessages/TrafficMessages.csproj",
@@ -1790,7 +1790,6 @@
   "projectFileDependencyGroups": {
     "net9.0": [
       "AutoMapper >= 14.0.0",
-      "IntersectionControllerData >= 1.0.0",
       "LogMessages >= 1.0.0",
       "MassTransit >= 8.5.0",
       "MassTransit.RabbitMQ >= 8.5.0",
@@ -1801,6 +1800,7 @@
       "SensorMessages >= 1.0.0",
       "StackExchange.Redis >= 2.9.11",
       "Swashbuckle.AspNetCore >= 9.0.1",
+      "TrafficLightData >= 1.0.0",
       "TrafficMessages >= 1.0.0"
     ]
   },
@@ -1835,8 +1835,8 @@
             "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/SensorMessages/SensorMessages.csproj": {
               "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/SensorMessages/SensorMessages.csproj"
             },
-            "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/IntersectionControllerService/IntersectionControllerAPI/IntersectionControllerData/IntersectionControllerData.csproj": {
-              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/IntersectionControllerService/IntersectionControllerAPI/IntersectionControllerData/IntersectionControllerData.csproj"
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficLightMemoryDB/TrafficLightData/TrafficLightData.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficLightMemoryDB/TrafficLightData/TrafficLightData.csproj"
             },
             "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficMessages/TrafficMessages.csproj": {
               "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficMessages/TrafficMessages.csproj"

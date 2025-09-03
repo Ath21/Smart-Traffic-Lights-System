@@ -1,5 +1,5 @@
 using System;
-using IntersectionControllerData.Entities;
+using TrafficLightData.Entities;
 
 namespace IntersectionControllerStore.Repository.Intersect;
 

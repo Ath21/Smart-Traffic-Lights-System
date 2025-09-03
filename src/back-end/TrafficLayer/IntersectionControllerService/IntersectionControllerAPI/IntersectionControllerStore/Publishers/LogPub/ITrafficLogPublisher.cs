@@ -1,6 +1,6 @@
 using System;
 
-namespace IntersectionControlStore.Publishers.LogPub;
+namespace IntersectionControllerStore.Publishers.LogPub;
 
 public interface ITrafficLogPublisher
 {

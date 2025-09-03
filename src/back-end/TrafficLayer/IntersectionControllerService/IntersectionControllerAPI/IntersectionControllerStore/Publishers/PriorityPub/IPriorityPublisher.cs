@@ -1,6 +1,6 @@
 using System;
 
-namespace IntersectionControlStore.Publishers.PriorityPub;
+namespace IntersectionControllerStore.Publishers.PriorityPub;
 
 public interface IPriorityPublisher
 {

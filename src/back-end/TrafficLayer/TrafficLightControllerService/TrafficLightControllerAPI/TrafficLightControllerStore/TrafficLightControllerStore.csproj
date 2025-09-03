@@ -21,7 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../../../../LogLayer/LogMessages/LogMessages.csproj" />
-    <ProjectReference Include="../../../IntersectionControllerService/IntersectionControllerAPI/IntersectionControllerData/IntersectionControllerData.csproj" />
+    <ProjectReference Include="../../../TrafficLightMemoryDB/TrafficLightData/TrafficLightData.csproj" />
     <ProjectReference Include="../../../TrafficMessages/TrafficMessages.csproj" />
   </ItemGroup>
 

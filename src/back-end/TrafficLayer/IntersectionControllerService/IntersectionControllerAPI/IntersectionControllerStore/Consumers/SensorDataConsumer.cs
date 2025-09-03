@@ -3,7 +3,7 @@ using MassTransit;
 using Microsoft.Extensions.Logging;
 using SensorMessages;
 
-namespace IntersectionControlStore.Consumers;
+namespace IntersectionControllerStore.Consumers;
 
 public class SensorDataConsumer :
     IConsumer<VehicleCountMessage>,

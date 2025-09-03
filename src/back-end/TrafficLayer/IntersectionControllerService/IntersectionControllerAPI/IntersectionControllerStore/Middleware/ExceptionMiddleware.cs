@@ -1,11 +1,11 @@
 using System.Net;
 using System.Text.Json;
-using IntersectionControlStore.Publishers.LogPub;
+using IntersectionControllerStore.Publishers.LogPub;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
 
-namespace IntersectionControlStore.Middleware;
+namespace IntersectionControllerStore.Middleware;
 
 public class ExceptionMiddleware
 {

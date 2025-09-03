@@ -1,7 +1,7 @@
-using IntersectionControlStore;
+using IntersectionControllerStore;
 
 
-namespace IntersectionControlStore
+namespace IntersectionControllerStore
 {
     public class Program
     {

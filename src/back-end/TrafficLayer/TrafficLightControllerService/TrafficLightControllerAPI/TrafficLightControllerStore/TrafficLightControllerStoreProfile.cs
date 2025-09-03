@@ -1,9 +1,9 @@
 using System;
 using AutoMapper;
-using IntersectionControllerData.Entities;
 using TrafficLightControllerStore.Models.Dtos;
 using TrafficLightControllerStore.Models.Requests;
 using TrafficLightControllerStore.Models.Responses;
+using TrafficLightData.Entities;
 
 namespace TrafficLightControllerStore;
 

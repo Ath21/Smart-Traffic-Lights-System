@@ -1,7 +1,7 @@
 using System;
 using IntersectionControllerStore.Business.CommandLog;
 using IntersectionControllerStore.Business.TrafficLight;
-using IntersectionControlStore.Publishers.LogPub;
+using IntersectionControllerStore.Publishers.LogPub;
 
 namespace IntersectionControllerStore.Business.Coordinator;
 

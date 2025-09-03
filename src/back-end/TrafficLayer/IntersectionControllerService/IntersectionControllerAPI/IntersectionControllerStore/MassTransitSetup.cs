@@ -1,11 +1,10 @@
 using MassTransit;
 using RabbitMQ.Client;
-using IntersectionControlStore.Consumers;
 using IntersectionControllerStore.Consumers;
 using TrafficMessages;
 using SensorMessages; // namespace where TrafficLightUpdateMessage and sensor messages live
 
-namespace IntersectionControlStore;
+namespace IntersectionControllerStore;
 
 public static class MassTransitSetup
 {

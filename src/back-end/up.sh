@@ -207,7 +207,7 @@ main()
         traffic)
             services_to_build=()
             case "$TARGET_SERVICE" in
-                "") services_to_build+=(traffic_analytics_api traffic_light_controller_api traffic_light_coordinator_api intersection_control_api) ;;
+                "") services_to_build+=(traffic_analytics_api traffic_light_controller_api traffic_light_coordinator_api intersection_controller_api) ;;
                 TrafficAnalyticsService) services_to_build+=(traffic_analytics_api) ;;
                 TrafficLightControllerService) services_to_build+=(traffic_light_controller_api) ;;
                 TrafficLightCoordinatorService) services_to_build+=(traffic_light_coordinator_api) ;;

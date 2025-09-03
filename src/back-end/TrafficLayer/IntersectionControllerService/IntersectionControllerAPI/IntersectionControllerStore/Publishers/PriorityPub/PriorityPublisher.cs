@@ -5,7 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using TrafficMessages;
 
-namespace IntersectionControlStore.Publishers.PriorityPub;
+namespace IntersectionControllerStore.Publishers.PriorityPub;
 
 public class PriorityPublisher : IPriorityPublisher
 {

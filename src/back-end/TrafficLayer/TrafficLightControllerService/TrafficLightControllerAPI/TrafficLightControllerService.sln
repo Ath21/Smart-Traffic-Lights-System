@@ -7,9 +7,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogMessages", "..\..\..\Log
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrafficMessages", "..\..\TrafficMessages\TrafficMessages.csproj", "{95643A00-5991-4F4A-A139-C94050EDBDA6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntersectionControllerData", "..\..\IntersectionControllerService\IntersectionControllerAPI\IntersectionControllerData\IntersectionControllerData.csproj", "{F5027824-A2F1-4089-AAC8-DC61628B4D47}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrafficLightControllerStore", "TrafficLightControllerStore\TrafficLightControllerStore.csproj", "{A3EEDEB6-6E91-4477-893A-B0DDEBEA36A6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrafficLightData", "..\..\TrafficLightMemoryDB\TrafficLightData\TrafficLightData.csproj", "{6B30ECC7-5F76-4C1B-A2E0-513E19B14BAF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,18 +45,6 @@ Global
 		{95643A00-5991-4F4A-A139-C94050EDBDA6}.Release|x64.Build.0 = Release|Any CPU
 		{95643A00-5991-4F4A-A139-C94050EDBDA6}.Release|x86.ActiveCfg = Release|Any CPU
 		{95643A00-5991-4F4A-A139-C94050EDBDA6}.Release|x86.Build.0 = Release|Any CPU
-		{F5027824-A2F1-4089-AAC8-DC61628B4D47}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F5027824-A2F1-4089-AAC8-DC61628B4D47}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F5027824-A2F1-4089-AAC8-DC61628B4D47}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{F5027824-A2F1-4089-AAC8-DC61628B4D47}.Debug|x64.Build.0 = Debug|Any CPU
-		{F5027824-A2F1-4089-AAC8-DC61628B4D47}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{F5027824-A2F1-4089-AAC8-DC61628B4D47}.Debug|x86.Build.0 = Debug|Any CPU
-		{F5027824-A2F1-4089-AAC8-DC61628B4D47}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F5027824-A2F1-4089-AAC8-DC61628B4D47}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F5027824-A2F1-4089-AAC8-DC61628B4D47}.Release|x64.ActiveCfg = Release|Any CPU
-		{F5027824-A2F1-4089-AAC8-DC61628B4D47}.Release|x64.Build.0 = Release|Any CPU
-		{F5027824-A2F1-4089-AAC8-DC61628B4D47}.Release|x86.ActiveCfg = Release|Any CPU
-		{F5027824-A2F1-4089-AAC8-DC61628B4D47}.Release|x86.Build.0 = Release|Any CPU
 		{A3EEDEB6-6E91-4477-893A-B0DDEBEA36A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A3EEDEB6-6E91-4477-893A-B0DDEBEA36A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A3EEDEB6-6E91-4477-893A-B0DDEBEA36A6}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -69,6 +57,18 @@ Global
 		{A3EEDEB6-6E91-4477-893A-B0DDEBEA36A6}.Release|x64.Build.0 = Release|Any CPU
 		{A3EEDEB6-6E91-4477-893A-B0DDEBEA36A6}.Release|x86.ActiveCfg = Release|Any CPU
 		{A3EEDEB6-6E91-4477-893A-B0DDEBEA36A6}.Release|x86.Build.0 = Release|Any CPU
+		{6B30ECC7-5F76-4C1B-A2E0-513E19B14BAF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B30ECC7-5F76-4C1B-A2E0-513E19B14BAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B30ECC7-5F76-4C1B-A2E0-513E19B14BAF}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6B30ECC7-5F76-4C1B-A2E0-513E19B14BAF}.Debug|x64.Build.0 = Debug|Any CPU
+		{6B30ECC7-5F76-4C1B-A2E0-513E19B14BAF}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6B30ECC7-5F76-4C1B-A2E0-513E19B14BAF}.Debug|x86.Build.0 = Debug|Any CPU
+		{6B30ECC7-5F76-4C1B-A2E0-513E19B14BAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B30ECC7-5F76-4C1B-A2E0-513E19B14BAF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6B30ECC7-5F76-4C1B-A2E0-513E19B14BAF}.Release|x64.ActiveCfg = Release|Any CPU
+		{6B30ECC7-5F76-4C1B-A2E0-513E19B14BAF}.Release|x64.Build.0 = Release|Any CPU
+		{6B30ECC7-5F76-4C1B-A2E0-513E19B14BAF}.Release|x86.ActiveCfg = Release|Any CPU
+		{6B30ECC7-5F76-4C1B-A2E0-513E19B14BAF}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

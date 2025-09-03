@@ -5,7 +5,7 @@ using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace IntersectionControlStore.Publishers.LogPub;
+namespace IntersectionControllerStore.Publishers.LogPub;
 
 public class TrafficLogPublisher : ITrafficLogPublisher
 {

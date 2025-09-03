@@ -6,7 +6,6 @@
 NETWORK_NAME="intersection_network"
 
 TRAFFIC_LIGHT_API_DIR="./TrafficLayer/TrafficLightControllerService/TrafficLightControllerAPI"
-TRAFFIC_REDIS_DIR="./TrafficLayer/IntersectionControllerService/Redis"
 
 DOCKER_COMPOSE_FILE="docker-compose.yaml"
 DOCKER_COMPOSE_OVERRIDE="docker-compose.override.yaml"
@@ -35,8 +34,6 @@ start_containers()
     docker compose \
         -f "$TRAFFIC_LIGHT_API_DIR/$DOCKER_COMPOSE_FILE" \
         -f "$TRAFFIC_LIGHT_API_DIR/$DOCKER_COMPOSE_OVERRIDE" \
-        -f "$TRAFFIC_REDIS_DIR/$DOCKER_COMPOSE_FILE" \
-        -f "$TRAFFIC_REDIS_DIR/$DOCKER_COMPOSE_OVERRIDE" \
         -p traffic_light_controller_service \
         up -d
 
