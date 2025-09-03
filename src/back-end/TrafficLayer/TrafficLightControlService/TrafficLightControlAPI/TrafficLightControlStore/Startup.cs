@@ -46,11 +46,12 @@ namespace TrafficLightControlStore
 
             services.AddAutoMapper(typeof(TrafficLightControlStoreProfile));
 
-            /******* [3] Consumers ********/
+            /******* [5] Publishers ********/
 
-            services.AddScoped<TrafficLightControlConsumer>();
+            services.AddScoped(typeof(ITrafficLogPublisher), typeof(TrafficLogPublisher));
 
-            /******* [4] MassTransit & RabbitMQ Config ********/
+            /******* [6] Consumers ********/
+            
             services.AddMassTransit(x =>
             {
                 x.AddConsumer<TrafficLightControlConsumer>();
