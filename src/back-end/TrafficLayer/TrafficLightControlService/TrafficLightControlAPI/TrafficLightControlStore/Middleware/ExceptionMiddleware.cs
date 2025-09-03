@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using TrafficLightControlStore.Publishers.Logs;
 
-namespace TrafficLightControlService.Middleware
+namespace TrafficLightControlStore.Middleware
 {
     public class ExceptionMiddleware
     {

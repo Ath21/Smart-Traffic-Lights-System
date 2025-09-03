@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using TrafficLightControlStore.Business;
 using TrafficLightControlStore.Models;
 
-namespace TrafficLightControlService.Controllers
+namespace TrafficLightControlStore.Controllers
 {
     [ApiController]
     [Route("traffic-lights")]

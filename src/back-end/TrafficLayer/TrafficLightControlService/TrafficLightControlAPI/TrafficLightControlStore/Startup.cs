@@ -8,8 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using RabbitMQ.Client;
-using TrafficLightControlService.Consumers;
-using TrafficLightControlService.Middleware;
 using TrafficLightControlStore.Business;
 using TrafficLightControlStore.Publishers.Light;
 using TrafficLightControlStore.Publishers.Logs;
@@ -42,8 +40,7 @@ namespace TrafficLightControlStore
 
             /******* [3] Services ********/
 
-            services.AddScoped<ITrafficLightUpdatePublisher, TrafficLightUpdatePublisher>();
-            services.AddScoped<ITrafficLogPublisher, TrafficLogPublisher>();
+            services.AddScoped(typeof(ITrafficLightControlService), typeof(TrafficLightControlService));
 
             /******* [4] Automapper ********/
 
