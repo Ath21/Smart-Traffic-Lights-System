@@ -7,108 +7,110 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using TrafficLightControlStore.Publishers.Logs;
 
-namespace TrafficLightControlStore.Middleware
+namespace TrafficLightControlStore.Middleware;
+
+public class ExceptionMiddleware
 {
-    public class ExceptionMiddleware
+    private readonly RequestDelegate _next;
+    private readonly ILogger<ExceptionMiddleware> _logger;
+    private readonly IServiceScopeFactory _scopeFactory;
+
+    public ExceptionMiddleware(
+        RequestDelegate next,
+        ILogger<ExceptionMiddleware> logger,
+        IServiceScopeFactory scopeFactory)
     {
-        private readonly RequestDelegate _next;
-        private readonly ILogger<ExceptionMiddleware> _logger;
-        private readonly IServiceScopeFactory _scopeFactory;
+        _next = next;
+        _logger = logger;
+        _scopeFactory = scopeFactory;
+    }
 
-        public ExceptionMiddleware(
-            RequestDelegate next,
-            ILogger<ExceptionMiddleware> logger,
-            IServiceScopeFactory scopeFactory)
+    public async Task InvokeAsync(HttpContext context)
+    {
+        try
         {
-            _next = next;
-            _logger = logger;
-            _scopeFactory = scopeFactory;
+            await _next(context);
         }
-
-        public async Task InvokeAsync(HttpContext context)
+        catch (UnauthorizedAccessException ex)
         {
-            try
-            {
-                await _next(context);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                await HandleErrorAsync(context, HttpStatusCode.Unauthorized, "Unauthorized access", ex);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                await HandleErrorAsync(context, HttpStatusCode.NotFound, "Resource not found", ex);
-            }
-            catch (InvalidOperationException ex)
-            {
-                await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid operation", ex);
-            }
-            catch (ArgumentNullException ex)
-            {
-                await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Missing required parameter", ex);
-            }
-            catch (ArgumentException ex)
-            {
-                await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid parameter", ex);
-            }
-            catch (FormatException ex)
-            {
-                await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid data format", ex);
-            }
-            catch (System.Text.Json.JsonException ex)
-            {
-                await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Malformed JSON", ex);
-            }
-            catch (System.ComponentModel.DataAnnotations.ValidationException ex)
-            {
-                await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Validation failed", ex);
-            }
-            catch (TimeoutException ex)
-            {
-                await HandleErrorAsync(context, HttpStatusCode.RequestTimeout, "Operation timed out", ex);
-            }
-            catch (HttpRequestException ex)
-            {
-                await HandleErrorAsync(context, HttpStatusCode.BadGateway, "Dependent service connection failed", ex);
-            }
-            catch (RequestTimeoutException ex)
-            {
-                await HandleErrorAsync(context, HttpStatusCode.RequestTimeout, "Message broker timeout", ex);
-            }
-            catch (RequestFaultException ex)
-            {
-                await HandleErrorAsync(context, HttpStatusCode.BadGateway, "Message broker request fault", ex);
-            }
-            catch (Microsoft.EntityFrameworkCore.DbUpdateException ex)
-            {
-                await HandleErrorAsync(context, HttpStatusCode.InternalServerError, "Database update error", ex);
-            }
-            catch (TaskCanceledException ex)
-            {
-                await HandleErrorAsync(context, HttpStatusCode.RequestTimeout, "Operation canceled or timed out", ex);
-            }
-            catch (NotSupportedException ex)
-            {
-                await HandleErrorAsync(context, HttpStatusCode.NotImplemented, "Operation not supported", ex);
-            }
-            catch (Exception ex)
-            {
-                await HandleErrorAsync(context, HttpStatusCode.InternalServerError, "An unexpected error occurred", ex);
-            }
+            await HandleErrorAsync(context, HttpStatusCode.Unauthorized, "UnauthorizedAccess", ex);
         }
-
-        private async Task HandleErrorAsync(HttpContext context, HttpStatusCode statusCode, string message, Exception ex)
+        catch (KeyNotFoundException ex)
         {
-            _logger.LogError(ex, message);
-
-            using var scope = _scopeFactory.CreateScope();
-            var logPublisher = scope.ServiceProvider.GetRequiredService<ITrafficLogPublisher>();
-
-            await logPublisher.PublishErrorLogAsync("TrafficLightControlService", message, ex);
-
-            context.Response.StatusCode = (int)statusCode;
-            context.Response.ContentType = "application/json";
-            await context.Response.WriteAsJsonAsync(new { error = message, details = ex.Message });
+            await HandleErrorAsync(context, HttpStatusCode.NotFound, "ResourceNotFound", ex);
         }
+        catch (InvalidOperationException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "InvalidOperation", ex);
+        }
+        catch (ArgumentNullException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "ArgumentNull", ex);
+        }
+        catch (ArgumentException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Argument", ex);
+        }
+        catch (FormatException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Format", ex);
+        }
+        catch (System.Text.Json.JsonException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "JsonParse", ex);
+        }
+        catch (System.ComponentModel.DataAnnotations.ValidationException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Validation", ex);
+        }
+        catch (TimeoutException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.RequestTimeout, "Timeout", ex);
+        }
+        catch (HttpRequestException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.BadGateway, "HttpRequest", ex);
+        }
+        catch (TaskCanceledException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.RequestTimeout, "TaskCanceled", ex);
+        }
+        catch (NotSupportedException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.NotImplemented, "NotSupported", ex);
+        }
+        catch (Exception ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.InternalServerError, "Unhandled", ex);
+        }
+    }
+
+    private async Task HandleErrorAsync(HttpContext context, HttpStatusCode statusCode, string errorType, Exception ex)
+    {
+        _logger.LogError(ex, "[{Type}] {Message}", errorType, ex.Message);
+
+        using var scope = _scopeFactory.CreateScope();
+        var logPublisher = scope.ServiceProvider.GetRequiredService<ITrafficLogPublisher>();
+
+        // 🔹 Publish structured error log
+        await logPublisher.PublishErrorLogAsync(
+            serviceName: "TrafficLightControlService",
+            errorType: errorType,
+            message: ex.Message,
+            metadata: new
+            {
+                Path = context.Request.Path,
+                Method = context.Request.Method,
+                StatusCode = (int)statusCode,
+                Exception = ex.ToString()
+            });
+
+        context.Response.StatusCode = (int)statusCode;
+        context.Response.ContentType = "application/json";
+        await context.Response.WriteAsJsonAsync(new
+        {
+            error = errorType,
+            details = ex.Message
+        });
     }
 }

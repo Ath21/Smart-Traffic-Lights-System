@@ -10,6 +10,7 @@ using Microsoft.OpenApi.Models;
 using RabbitMQ.Client;
 using TrafficLightControlStore.Business;
 using TrafficLightControlStore.Consumers;
+using TrafficLightControlStore.Middleware;
 using TrafficLightControlStore.Publishers.Light;
 using TrafficLightControlStore.Publishers.Logs;
 using TrafficLightControlStore.Repository;
