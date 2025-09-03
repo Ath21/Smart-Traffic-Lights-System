@@ -3,27 +3,57 @@ services:
     ports:
       - '5261:8080'
     environment:
+      # ===============================
+      # ASP.NET Core
+      # ===============================
       ASPNETCORE_ENVIRONMENT: Development
 
-      # RabbitMQ Config
+      # ===============================
+      # JWT Authentication
+      # ===============================
+      Jwt__Issuer: http://stls_backend:8080
+      Jwt__Audience: http://stls_backend:8080
+      Jwt__Key: Nn7kLa8Rzv1XHt9UwMqP4YbFdJxVt2Km
+
+      # ===============================
+      # Redis Connection
+      # ===============================
+      Redis__Host: intersection_redis
+      Redis__Port: 6379
+      Redis__Password: ""
+      Redis__Database: 0
+
+      # ===============================
+      # RabbitMQ Connection
+      # ===============================
       RabbitMQ__Host: rabbitmq
       RabbitMQ__Port: 5672
-      RabbitMQ__Username: admin
-      RabbitMQ__Password: admin123
+      RabbitMQ__Username: rabbitmq
+      RabbitMQ__Password: rabbitmq123
 
-      # RabbitMQ Exchanges
-      RabbitMQ__Exchange__TrafficControlExchange: traffic.control.exchange
-      RabbitMQ__Exchange__LogStoreExchange: traffic.logs.exchange
+      # ===============================
+      # Exchanges
+      # ===============================
+      RabbitMQ__Exchanges__Traffic: TRAFFIC.EXCHANGE
+      RabbitMQ__Exchanges__Logs: LOG.EXCHANGE
 
-      # RabbitMQ Queues (for commands)
-      RabbitMQ__Queue__TrafficLightControlQueue: traffic.light.control.queue
+      # ===============================
+      # Queues (Consumes)
+      # ===============================
+      RabbitMQ__Queues__TrafficLightControl: traffic.light_control_service.queue
 
-      # RabbitMQ Routing Keys for subscribing (commands from intersection controller)
-      RabbitMQ__RoutingKey__TrafficLightControl: traffic.light.control.*
+      # ===============================
+      # Routing Keys (Consumes)
+      # ===============================
+      RabbitMQ__RoutingKeys__TrafficLightControl: traffic.light.control.{intersection_id}.{light_id}
 
-      # RabbitMQ Routing Keys for publishing (light status updates)
-      RabbitMQ__RoutingKey__TrafficLightUpdate: traffic.light.update.*
-
+      # ===============================
       # Logs
-      RabbitMQ__RoutingKey__TrafficLogsAudit: traffic.logs.audit
-      RabbitMQ__RoutingKey__TrafficLogsError: traffic.logs.error
+      # ===============================
+      RabbitMQ__RoutingKeys__TrafficLogsAudit: log.traffic.light_control_service.audit
+      RabbitMQ__RoutingKeys__TrafficLogsError: log.traffic.light_control_service.error
+
+    depends_on:
+      intersection_redis:
+        condition: service_healthy
+    restart: always
