@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "N/HwGgCTGk4=",
+  "dgSpecHash": "P0Fr6OT4tMU=",
   "success": true,
   "projectFilePath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/VehicleDetectionService/VehicleDetectionAPI/VehicleDetectionStore/VehicleDetectionStore.csproj",
   "expectedPackageFiles": [
@@ -13,7 +13,7 @@
     "/home/ath/.nuget/packages/masstransit/8.5.1/masstransit.8.5.1.nupkg.sha512",
     "/home/ath/.nuget/packages/masstransit.abstractions/8.5.1/masstransit.abstractions.8.5.1.nupkg.sha512",
     "/home/ath/.nuget/packages/masstransit.rabbitmq/8.5.1/masstransit.rabbitmq.8.5.1.nupkg.sha512",
-    "/home/ath/.nuget/packages/microsoft.aspnetcore.authentication.jwtbearer/9.0.8/microsoft.aspnetcore.authentication.jwtbearer.9.0.8.nupkg.sha512",
+    "/home/ath/.nuget/packages/microsoft.aspnetcore.authentication.jwtbearer/9.0.0/microsoft.aspnetcore.authentication.jwtbearer.9.0.0.nupkg.sha512",
     "/home/ath/.nuget/packages/microsoft.aspnetcore.openapi/9.0.7/microsoft.aspnetcore.openapi.9.0.7.nupkg.sha512",
     "/home/ath/.nuget/packages/microsoft.csharp/4.7.0/microsoft.csharp.4.7.0.nupkg.sha512",
     "/home/ath/.nuget/packages/microsoft.extensions.apidescription.server/9.0.0/microsoft.extensions.apidescription.server.9.0.0.nupkg.sha512",
