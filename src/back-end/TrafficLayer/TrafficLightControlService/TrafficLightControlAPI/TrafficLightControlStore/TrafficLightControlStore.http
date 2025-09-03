@@ -1,6 +1,0 @@
-@TrafficLightControlStore_HostAddress = http://localhost:5261
-
-GET {{TrafficLightControlStore_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

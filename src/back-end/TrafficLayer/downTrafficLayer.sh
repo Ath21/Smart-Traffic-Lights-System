@@ -45,7 +45,7 @@ main()
     else
         echo "🛑 Stopping ALL services in Traffic Layer..."
         try_stop "$SCRIPT_DIR/IntersectionControllerService/downIntersectionControllerService.sh"
-        try_stop "$SCRIPT_DIR/TrafficLightControlService/downTrafficLightControlService.sh"
+        try_stop "$SCRIPT_DIR/TrafficLightControllerService/downTrafficLightControllerService.sh"
         try_stop "$SCRIPT_DIR/TrafficLightCoordinatorService/downTrafficLightCoordinatorService.sh"
         try_stop "$SCRIPT_DIR/TrafficAnalyticsService/downTrafficAnalyticsService.sh"
     fi
