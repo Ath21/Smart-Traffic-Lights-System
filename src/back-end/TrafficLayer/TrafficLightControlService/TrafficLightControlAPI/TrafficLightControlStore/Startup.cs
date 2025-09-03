@@ -9,6 +9,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using RabbitMQ.Client;
 using TrafficLightControlStore.Business;
+using TrafficLightControlStore.Consumers;
 using TrafficLightControlStore.Publishers.Light;
 using TrafficLightControlStore.Publishers.Logs;
 using TrafficLightControlStore.Repository;
@@ -51,7 +52,11 @@ namespace TrafficLightControlStore
             services.AddScoped(typeof(ITrafficLogPublisher), typeof(TrafficLogPublisher));
 
             /******* [6] Consumers ********/
-            
+
+            services.AddScoped<TrafficLightControlConsumer>();
+
+            /******* [7] MassTransit ********/
+
             services.AddMassTransit(x =>
             {
                 x.AddConsumer<TrafficLightControlConsumer>();
