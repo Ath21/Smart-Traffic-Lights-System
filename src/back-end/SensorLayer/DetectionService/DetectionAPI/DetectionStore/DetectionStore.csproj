@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.8" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Business/" />
+    <Folder Include="Controllers/" />
+    <Folder Include="Middleware/" />
+    <Folder Include="Models/" />
+    <Folder Include="Models/Dtos/" />
+    <Folder Include="Models/Requests/" />
+    <Folder Include="Models/Responses/" />
+    <Folder Include="Publishers/" />
+    <Folder Include="Repositories/" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../../LogLayer/LogMessages/LogMessages.csproj" />
+    <ProjectReference Include="../../../DetectionCacheDB/DetectionCacheData/DetectionCacheData.csproj" />
+    <ProjectReference Include="../../../DetectionHistoryDB/DetectionHistoryData/DetectionHistoryData.csproj" />
+    <ProjectReference Include="../../../SensorMessages/SensorMessages.csproj" />
+  </ItemGroup>
+
+</Project>

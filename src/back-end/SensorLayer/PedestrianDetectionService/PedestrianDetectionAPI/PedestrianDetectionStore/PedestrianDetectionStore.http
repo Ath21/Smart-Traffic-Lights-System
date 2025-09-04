@@ -1,6 +1,0 @@
-@PedestrianDetectionStore_HostAddress = http://localhost:5078
-
-GET {{PedestrianDetectionStore_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
