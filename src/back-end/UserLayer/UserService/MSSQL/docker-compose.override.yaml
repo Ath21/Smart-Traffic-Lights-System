@@ -1,13 +1,11 @@
 services:
   user_mssql:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: user_mssql
     environment:
       - ACCEPT_EULA=Y
       - MSSQL_SA_PASSWORD=MyPass@word
       - MSSQL_PID=Express
     ports:
-      - "1433:1433"
+      - '1433:1433'
     volumes:
       - user_mssql_data:/var/opt/mssql
     restart: always

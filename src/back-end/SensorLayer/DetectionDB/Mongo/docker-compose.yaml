@@ -1,0 +1,12 @@
+services:
+  detection_mongo:
+    image: mongo:6.0
+    container_name: detection_mongo_container
+    networks:
+      - detection_network
+
+networks:
+  detection_network:
+    name: detection_network
+    driver: bridge
+    external: true

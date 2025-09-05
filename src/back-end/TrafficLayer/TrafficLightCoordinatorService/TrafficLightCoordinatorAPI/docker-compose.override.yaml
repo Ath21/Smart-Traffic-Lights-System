@@ -1,7 +1,7 @@
 services:
   traffic_light_coordinator_api:
     ports:
-      - "5020:8080"
+      - '5020:8080'
     environment:
       # ===============================
       # ASP.NET Core
@@ -9,9 +9,29 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
 
       # ===============================
-      # Database (PostgreSQL)
+      # Databases
       # ===============================
-      ConnectionStrings__DefaultConnection: Host=traffic_light_coordinator_postgres;Port=5432;Database=TrafficLightDb;Username=postgres;Password=postgres123;Include Error Detail=true
+
+      ## TrafficLightDB (PostgreSQL)
+      PostgreSQL__ConnectionString: Host=traffic_light_postgres;Port=5432;Database=TrafficLightDB;Username=postgres;Password=postgres123;Include Error Detail=true
+
+      ## TrafficLightCacheDB (Redis)
+      Redis__TrafficLight__Host: traffic_light_cache_redis
+      Redis__TrafficLight__Port: 6379
+      Redis__TrafficLight__Password: ""
+      Redis__TrafficLight__Database: 0
+      Redis__TrafficLight__KeyPrefix__State: traffic_light:{intersection_id}:state
+      Redis__TrafficLight__KeyPrefix__Duration: traffic_light:{intersection_id}:duration
+      Redis__TrafficLight__KeyPrefix__LastUpdate: traffic_light:{intersection_id}:last_update
+      Redis__TrafficLight__KeyPrefix__Priority: traffic_light:{intersection_id}:priority
+      Redis__TrafficLight__KeyPrefix__QueueLength: traffic_light:{intersection_id}:queue_length
+
+      # ===============================
+      # CORS Policy
+      # ===============================
+      Cors__AllowedOrigins: http://localhost:5173
+      Cors__AllowedMethods: GET,POST,PUT,PATCH,DELETE
+      Cors__AllowedHeaders: Content-Type,Authorization
 
       # ===============================
       # JWT Authentication
@@ -29,36 +49,30 @@ services:
       RabbitMQ__Password: rabbitmq123
 
       # ===============================
-      # Exchanges
+      # RabbitMQ Exchanges
       # ===============================
-      RabbitMQ__Exchanges__Logs: LOG.EXCHANGE
+
+      ## TRAFFIC.EXCHANGE
       RabbitMQ__Exchanges__Traffic: TRAFFIC.EXCHANGE
+      # --- Publish
+      RabbitMQ__RoutingKeys__Traffic__LightUpdate: traffic.light.update.{intersection_id}
+      # --- Consume
+      RabbitMQ__Queues__Traffic__Analytics: traffic.analytics.coordinator.queue
+      RabbitMQ__RoutingKeys__Traffic__Congestion: traffic.analytics.congestion.{intersection_id}
 
-      # ===============================
-      # Queues (Consumes)
-      # ===============================
-      RabbitMQ__Queues__Traffic: traffic.coordinator_service.queue
+      ## PRIORITY (handled inside TRAFFIC.EXCHANGE)
+      RabbitMQ__Queues__Priority__Coordinator: priority.coordinator.queue
+      RabbitMQ__RoutingKeys__Priority__EmergencyVehicle: priority.emergency_vehicle.{intersection_id}
+      RabbitMQ__RoutingKeys__Priority__PublicTransport: priority.public_transport.{intersection_id}
+      RabbitMQ__RoutingKeys__Priority__Cyclist: priority.cyclist.{intersection_id}
+      RabbitMQ__RoutingKeys__Priority__Pedestrian: priority.pedestrian.{intersection_id}
+      RabbitMQ__RoutingKeys__Priority__Incident: priority.incident.{intersection_id}
 
-      # ===============================
-      # Routing Keys (Consumes)
-      # ===============================
-      RabbitMQ__RoutingKeys__Emergency: priority.emergency.{intersection_id}
-      RabbitMQ__RoutingKeys__PublicTransport: priority.public_transport.{intersection_id}
-      RabbitMQ__RoutingKeys__Pedestrian: priority.pedestrian.{intersection_id}
-      RabbitMQ__RoutingKeys__Cyclist: priority.cyclist.{intersection_id}
-      RabbitMQ__RoutingKeys__Incident: priority.incident.{intersection_id}
-      RabbitMQ__RoutingKeys__Congestion: traffic.analytics.congestion.{intersection_id}
-
-      # ===============================
-      # Routing Keys (Publishes)
-      # ===============================
-      RabbitMQ__RoutingKeys__LightUpdate: traffic.light.update.{intersection_id}
-
-      # ===============================
-      # Logs
-      # ===============================
-      RabbitMQ__RoutingKeys__Audit: log.traffic.light_coordinator_service.audit
-      RabbitMQ__RoutingKeys__Error: log.traffic.light_coordinator_service.error
+      ## LOG.EXCHANGE
+      RabbitMQ__Exchanges__Log: LOG.EXCHANGE
+      # --- Publish
+      RabbitMQ__RoutingKeys__Log__Audit: log.traffic.coordinator_service.audit
+      RabbitMQ__RoutingKeys__Log__Error: log.traffic.coordinator_service.error
 
     depends_on:
       traffic_light_coordinator_postgres:

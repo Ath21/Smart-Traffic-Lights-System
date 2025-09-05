@@ -1,6 +1,6 @@
 using System;
 
-namespace TrafficLightData.Entities;
+namespace TrafficLightCacheData.Entities;
 
 public class Intersection
 {

@@ -1,6 +1,6 @@
 using System;
 
-namespace DetectionHistoryData;
+namespace DetectionData;
 
 public class MongoDbSettings
 {

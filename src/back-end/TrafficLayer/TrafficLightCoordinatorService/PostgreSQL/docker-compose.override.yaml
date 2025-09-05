@@ -1,7 +1,7 @@
 services:
-  traffic_light_coordinator_postgres:
+  traffic_light_postgres:
     environment:
-      POSTGRES_DB: TrafficLightDb
+      POSTGRES_DB: TrafficLightDB
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres123
     ports:

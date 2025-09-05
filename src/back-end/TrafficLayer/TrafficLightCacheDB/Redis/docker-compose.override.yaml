@@ -1,13 +1,11 @@
 services:
-  traffic_light_redis:
-    image: redis:7.4
-    container_name: traffic_light_redis_container
+  traffic_light_cache_redis:
     ports:
-      - "6379:6379"
+      - '6379:6379'
     command: ["redis-server", "--appendonly", "yes"]
     restart: always
     volumes:
-      - traffic_light_redis_data:/data
+      - traffic_light_cache_redis_data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -15,6 +13,6 @@ services:
       retries: 5
 
 volumes:
-  traffic_light_redis_data:
-    name: traffic_light_redis_data
+  traffic_light_cache_redis_data:
+    name: traffic_light_cache_redis_data
     driver: local

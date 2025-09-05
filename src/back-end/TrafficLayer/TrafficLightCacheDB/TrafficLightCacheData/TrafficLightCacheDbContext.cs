@@ -3,12 +3,12 @@ using StackExchange.Redis;
 
 namespace TrafficLightData;
 
-public class TrafficLightDbMemoryContext
+public class TrafficLightCacheDbContext
 {
     private readonly ConnectionMultiplexer _connection;
     public IDatabase Database { get; }
 
-    public TrafficLightDbMemoryContext(RedisSettings settings)
+    public TrafficLightCacheDbContext(RedisSettings settings)
     {
         var configOptions = new ConfigurationOptions
         {

@@ -1,0 +1,12 @@
+services:
+  detection_cache_redis:
+    image: redis:7.4
+    container_name: detection_cache_redis_container
+    networks:
+      - detection_cache_network
+
+networks:
+  detection_cache_network:
+    name: detection_cache_network
+    driver: bridge
+    external: true

@@ -7,4 +7,6 @@ services:
 
 networks:
   traffic_analytics_network:
+    name: traffic_analytics_network
     driver: bridge
+    external: true

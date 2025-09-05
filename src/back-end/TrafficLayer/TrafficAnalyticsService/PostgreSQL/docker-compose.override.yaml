@@ -1,13 +1,11 @@
 services:
   traffic_analytics_postgres:
-    image: postgres:16
-    container_name: traffic_analytics_postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres123
-      POSTGRES_DB: TrafficAnalyticsDb
+      POSTGRES_DB: TrafficAnalyticsDB
     ports:
-      - "5432:5432"
+      - '5433:5432'
     volumes:
       - traffic_analytics_postgres_data:/var/lib/postgresql/data
     healthcheck:

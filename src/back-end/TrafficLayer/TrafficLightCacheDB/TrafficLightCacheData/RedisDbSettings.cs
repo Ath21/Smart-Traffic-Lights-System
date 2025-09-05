@@ -1,6 +1,6 @@
 using System;
 
-namespace TrafficLightData;
+namespace TrafficLightCacheData;
 
 public class RedisSettings
 {

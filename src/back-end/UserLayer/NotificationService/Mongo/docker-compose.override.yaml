@@ -1,18 +1,15 @@
 services:
   notification_mongo:
-    image: mongo:6
-    container_name: notification_mongo
     ports:
-      - "27018:27017"
+      - '27018:27017'
     environment:
       MONGO_INITDB_ROOT_USERNAME: mongo
       MONGO_INITDB_ROOT_PASSWORD: mongo123
     volumes:
-      - notification_mongodb_data:/data/db
+      - notification_mongo_data:/data/db
     restart: always
 
-
 volumes:
-  notification_mongodb_data:
-    name: notification_mongodb_data
+  notification_mongo_data:
+    name: notification_mongo_data
     driver: local
