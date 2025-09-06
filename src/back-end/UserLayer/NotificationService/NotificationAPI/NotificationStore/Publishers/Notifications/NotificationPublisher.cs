@@ -17,9 +17,10 @@ public class NotificationPublisher : INotificationPublisher
         _logger = logger;
         _bus = bus;
 
-        _publicNoticeKey = configuration["RabbitMQ:RoutingKeys:NotificationPublic"] 
+        _publicNoticeKey = configuration["RabbitMQ:RoutingKeys:User:NotificationPublic"]
                            ?? "notification.event.public_notice";
-        _userAlertKey = configuration["RabbitMQ:RoutingKeys:NotificationAlert"] 
+
+        _userAlertKey = configuration["RabbitMQ:RoutingKeys:User:NotificationAlert"]
                         ?? "user.notification.alert";
     }
 

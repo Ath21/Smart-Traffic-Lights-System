@@ -17,14 +17,13 @@ public class AnalyticsLogPublisher : IAnalyticsLogPublisher
         _bus = bus;
         _logger = logger;
 
-        _auditKey = configuration["RabbitMQ:RoutingKeys:Audit"] 
+        _auditKey = configuration["RabbitMQ:RoutingKeys:Log:Audit"] 
                     ?? "log.traffic.analytics_service.audit";
 
-        _errorKey = configuration["RabbitMQ:RoutingKeys:Error"] 
+        _errorKey = configuration["RabbitMQ:RoutingKeys:Log:Error"] 
                     ?? "log.traffic.analytics_service.error";
     }
 
-    // log.traffic.analytics_service.audit
     public async Task PublishAuditAsync(AuditLogMessage message)
     {
         await _bus.Publish(message, ctx => ctx.SetRoutingKey(_auditKey));
@@ -35,7 +34,6 @@ public class AnalyticsLogPublisher : IAnalyticsLogPublisher
         );
     }
 
-    // log.traffic.analytics_service.error
     public async Task PublishErrorAsync(ErrorLogMessage message)
     {
         await _bus.Publish(message, ctx => ctx.SetRoutingKey(_errorKey));

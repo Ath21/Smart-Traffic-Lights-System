@@ -18,42 +18,24 @@ public class UserLogPublisher : IUserLogPublisher
         _logger = logger;
         _bus = bus;
 
-        var section = configuration.GetSection("RabbitMQ:RoutingKeys");
-        _auditKey = section["Audit"] ?? "log.user.user_service.audit";
-        _errorKey = section["Error"] ?? "log.user.user_service.error";
+        _auditKey = configuration["RabbitMQ:RoutingKeys:Log:Audit"]
+                    ?? "log.user.user_service.audit";
+
+        _errorKey = configuration["RabbitMQ:RoutingKeys:Log:Error"]
+                    ?? "log.user.user_service.error";
     }
 
-    // log.user.user_service.audit
     public async Task PublishAuditAsync(string action, string details, object? metadata = null)
     {
-        var message = new AuditLogMessage(
-            Guid.NewGuid(),
-            _serviceName,
-            action,
-            details,
-            DateTime.UtcNow,
-            metadata
-        );
-
+        var message = new AuditLogMessage(Guid.NewGuid(), _serviceName, action, details, DateTime.UtcNow, metadata);
         await _bus.Publish(message, ctx => ctx.SetRoutingKey(_auditKey));
-
         _logger.LogInformation("{Tag} Audit: {Action} -> {Details}", ServiceTag, action, details);
     }
 
-    // log.user.user_service.error
     public async Task PublishErrorAsync(string errorType, string messageText, object? metadata = null)
     {
-        var message = new ErrorLogMessage(
-            Guid.NewGuid(),
-            _serviceName,
-            errorType,
-            messageText,
-            DateTime.UtcNow,
-            metadata
-        );
-
+        var message = new ErrorLogMessage(Guid.NewGuid(), _serviceName, errorType, messageText, DateTime.UtcNow, metadata);
         await _bus.Publish(message, ctx => ctx.SetRoutingKey(_errorKey));
-
         _logger.LogError("{Tag} Error: {ErrorType} - {Message}", ServiceTag, errorType, messageText);
     }
 }

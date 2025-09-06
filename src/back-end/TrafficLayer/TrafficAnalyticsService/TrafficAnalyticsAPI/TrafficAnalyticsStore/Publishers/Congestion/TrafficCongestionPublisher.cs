@@ -16,11 +16,10 @@ public class TrafficCongestionPublisher : ITrafficCongestionPublisher
         _bus = bus;
         _logger = logger;
 
-        _congestionKey = configuration["RabbitMQ:RoutingKeys:TrafficCongestion"] 
+        _congestionKey = configuration["RabbitMQ:RoutingKeys:Traffic:Congestion"] 
                          ?? "traffic.analytics.congestion.{intersection_id}";
     }
 
-    // traffic.analytics.congestion.{intersection_id}
     public async Task PublishCongestionAsync(TrafficCongestionMessage message)
     {
         var routingKey = _congestionKey.Replace("{intersection_id}", message.IntersectionId.ToString());

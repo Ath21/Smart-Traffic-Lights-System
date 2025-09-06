@@ -7,7 +7,7 @@ public class UserNotificationPublisher : IUserNotificationPublisher
 {
     private readonly IBus _bus;
     private readonly ILogger<UserNotificationPublisher> _logger;
-    private readonly string _notificationKey;
+    private readonly string _notificationRequestKey;
 
     private const string ServiceTag = "[" + nameof(UserNotificationPublisher) + "]";
 
@@ -16,28 +16,17 @@ public class UserNotificationPublisher : IUserNotificationPublisher
         _logger = logger;
         _bus = bus;
 
-        _notificationKey = configuration["RabbitMQ:RoutingKeys:NotificationRequest"] 
-                           ?? "user.notification.request";
+        _notificationRequestKey = configuration["RabbitMQ:RoutingKeys:User:NotificationRequest"] 
+                                  ?? "user.notification.request";
     }
 
-    // user.notification.request
-    public async Task PublishNotificationAsync(
-        Guid userId,
-        string recipientEmail,
-        string type,
-        string message,
-        string targetAudience)
+    public async Task PublishNotificationAsync(Guid userId, string recipientEmail, string type, string message, string targetAudience)
     {
         var notification = new UserNotificationRequest(
-            userId,
-            recipientEmail,
-            type,
-            message,
-            targetAudience,
-            DateTime.UtcNow
+            userId, recipientEmail, type, message, targetAudience, DateTime.UtcNow
         );
 
-        await _bus.Publish(notification, ctx => ctx.SetRoutingKey(_notificationKey));
+        await _bus.Publish(notification, ctx => ctx.SetRoutingKey(_notificationRequestKey));
 
         _logger.LogInformation(
             "{Tag} Published notification for {UserId}, type {Type}, email {Email}, audience {Audience}",

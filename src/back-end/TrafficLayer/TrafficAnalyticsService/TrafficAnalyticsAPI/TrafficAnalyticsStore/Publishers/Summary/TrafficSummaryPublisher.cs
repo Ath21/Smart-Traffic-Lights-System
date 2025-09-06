@@ -16,11 +16,10 @@ public class TrafficSummaryPublisher : ITrafficSummaryPublisher
         _bus = bus;
         _logger = logger;
 
-        _summaryKey = configuration["RabbitMQ:RoutingKeys:TrafficSummary"] 
+        _summaryKey = configuration["RabbitMQ:RoutingKeys:Traffic:Summary"] 
                       ?? "traffic.analytics.summary.{intersection_id}";
     }
 
-    // traffic.analytics.summary.{intersection_id}
     public async Task PublishSummaryAsync(TrafficSummaryMessage message)
     {
         var routingKey = _summaryKey.Replace("{intersection_id}", message.IntersectionId.ToString());

@@ -16,11 +16,10 @@ public class TrafficIncidentPublisher : ITrafficIncidentPublisher
         _bus = bus;
         _logger = logger;
 
-        _incidentKey = configuration["RabbitMQ:RoutingKeys:TrafficIncident"] 
+        _incidentKey = configuration["RabbitMQ:RoutingKeys:Traffic:Incident"] 
                        ?? "traffic.analytics.incident.{intersection_id}";
     }
 
-    // traffic.analytics.incident.{intersection_id}
     public async Task PublishIncidentAsync(TrafficIncidentMessage message)
     {
         var routingKey = _incidentKey.Replace("{intersection_id}", message.IntersectionId.ToString());
