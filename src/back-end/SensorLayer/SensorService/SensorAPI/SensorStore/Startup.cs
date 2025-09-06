@@ -3,10 +3,6 @@ using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using SensorData;
-using SensorStore.Middleware;
-using SensorStore.Repositories;
-using SensorStore.Services;
 using SensorStore.Publishers;
 
 namespace SensorStore;

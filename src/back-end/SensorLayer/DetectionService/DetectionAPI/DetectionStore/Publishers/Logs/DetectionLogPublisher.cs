@@ -3,7 +3,7 @@ using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace DetectionStore.Publishers;
+namespace DetectionStore.Publishers.Logs;
 
 public class DetectionLogPublisher : IDetectionLogPublisher
 {

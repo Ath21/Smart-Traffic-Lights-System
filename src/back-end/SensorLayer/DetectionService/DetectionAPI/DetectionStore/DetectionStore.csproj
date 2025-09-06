@@ -8,6 +8,15 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.8" />
+    <PackageReference Include="AutoMapper" Version="14.0.0" />
+    <PackageReference Include="MassTransit" Version="8.5.0" />
+    <PackageReference Include="MassTransit.RabbitMQ" Version="8.5.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.6" />
+    <PackageReference Include="RabbitMQ.Client" Version="7.1.2" />
+    <PackageReference Include="StackExchange.Redis" Version="2.9.11" />
+    <PackageReference Include="MongoDB.Driver" Version="3.4.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,7 +34,7 @@
   <ItemGroup>
     <ProjectReference Include="../../../../LogLayer/LogMessages/LogMessages.csproj" />
     <ProjectReference Include="../../../DetectionCacheDB/DetectionCacheData/DetectionCacheData.csproj" />
-    <ProjectReference Include="../../../DetectionHistoryDB/DetectionHistoryData/DetectionHistoryData.csproj" />
+    <ProjectReference Include="../../../DetectionDB/DetectionData/DetectionData.csproj" />
     <ProjectReference Include="../../../SensorMessages/SensorMessages.csproj" />
   </ItemGroup>
 

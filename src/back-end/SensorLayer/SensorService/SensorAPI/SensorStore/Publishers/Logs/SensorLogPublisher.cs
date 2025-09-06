@@ -3,7 +3,7 @@ using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace SensorStore.Publishers;
+namespace SensorStore.Publishers.Logs;
 
 public class SensorLogPublisher : ISensorLogPublisher
 {
