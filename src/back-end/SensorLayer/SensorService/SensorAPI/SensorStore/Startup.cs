@@ -1,9 +1,13 @@
 using System.Text;
+using DetectionCacheData;
+using DetectionData;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using SensorStore.Publishers;
+using SensorStore.Publishers.Count;
+using SensorStore.Publishers.Logs;
 
 namespace SensorStore;
 
@@ -19,7 +23,7 @@ public class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         /******* [1] MongoDB Config ********/
-        services.Configure<SensorDbSettings>(options =>
+        services.Configure<DetectionDbSettings>(options =>
         {
             options.ConnectionString = _configuration["Mongo:ConnectionString"];
             options.Database = _configuration["Mongo:Database"];
@@ -30,10 +34,10 @@ public class Startup
             options.PublicTransportCollection = _configuration["Mongo:Collections:PublicTransport"];
             options.IncidentCollection = _configuration["Mongo:Collections:Incident"];
         });
-        services.AddSingleton<SensorDbContext>();
+        services.AddSingleton<DetectionDbContext>();
 
         /******* [2] Redis Config ********/
-        services.Configure<SensorCacheSettings>(options =>
+        services.Configure<DetectionCacheDbSettings>(options =>
         {
             options.Host = _configuration["Redis:Host"];
             options.Port = int.Parse(_configuration["Redis:Port"] ?? "6379");
@@ -49,14 +53,14 @@ public class Startup
         });
 
         /******* [3] Repositories ********/
-        services.AddScoped<ISensorRepository, SensorRepository>();
+        services.AddScoped(typeof(ISensorRepository), typeof(SensorRepository));
 
         /******* [4] Services ********/
-        services.AddScoped<ISensorService, SensorService>();
+        services.AddScoped(typeof(ISensorService), typeof(SensorService));
 
         /******* [5] Publishers ********/
-        services.AddScoped<ISensorCountPublisher, SensorCountPublisher>();
-        services.AddScoped<ISensorLogPublisher, SensorLogPublisher>();
+        services.AddScoped(typeof(ISensorCountPublisher), typeof(SensorCountPublisher));
+        services.AddScoped(typeof(ISensorLogPublisher), typeof(SensorLogPublisher));
 
         /******* [6] MassTransit ********/
         services.AddSensorServiceMassTransit(_configuration);

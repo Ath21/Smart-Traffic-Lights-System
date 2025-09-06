@@ -3,20 +3,20 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SensorMessages;
 
-namespace SensorStore.Publishers.Event;
+namespace SensorStore.Publishers.Count;
 
-public class SensorEventPublisher : ISensorEventPublisher
+public class SensorCountPublisher : ISensorCountPublisher
 {
     private readonly IBus _bus;
-    private readonly ILogger<SensorEventPublisher> _logger;
+    private readonly ILogger<SensorCountPublisher> _logger;
     private readonly string _sensorExchange;
     private readonly string _vehicleKey;
     private readonly string _pedestrianKey;
     private readonly string _cyclistKey;
 
-    private const string ServiceTag = "[" + nameof(SensorEventPublisher) + "]";
+    private const string ServiceTag = "[" + nameof(SensorCountPublisher) + "]";
 
-    public SensorEventPublisher(IConfiguration config, ILogger<SensorEventPublisher> logger, IBus bus)
+    public SensorCountPublisher(IConfiguration config, ILogger<SensorCountPublisher> logger, IBus bus)
     {
         _bus = bus;
         _logger = logger;

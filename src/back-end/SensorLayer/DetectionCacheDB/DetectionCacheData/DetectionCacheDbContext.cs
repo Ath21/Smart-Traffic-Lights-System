@@ -1,4 +1,5 @@
-﻿using StackExchange.Redis;
+﻿using Microsoft.Extensions.Options;
+using StackExchange.Redis;
 
 namespace DetectionCacheData;
 
@@ -7,24 +8,21 @@ public class DetectionCacheDbContext : IDisposable
     private readonly ConnectionMultiplexer _connection;
     public IDatabase Database { get; }
 
-    public DetectionCacheDbContext(RedisDbSettings settings)
+    public DetectionCacheDbContext(IOptions<DetectionCacheDbSettings> settings)
     {
         var configOptions = new ConfigurationOptions
         {
-            EndPoints = { $"{settings}:{settings.Port}" },
+            EndPoints = { $"{settings.Value.Host}:{settings.Value.Port}" },
             AbortOnConnectFail = false,
-            DefaultDatabase = settings.Database
+            DefaultDatabase = settings.Value.Database
         };
 
-        if (!string.IsNullOrEmpty(settings.Password))
-            configOptions.Password = settings.Password;
+        if (!string.IsNullOrEmpty(settings.Value.Password))
+            configOptions.Password = settings.Value.Password;
 
         _connection = ConnectionMultiplexer.Connect(configOptions);
         Database = _connection.GetDatabase();
     }
 
-    public void Dispose()
-    {
-        _connection.Dispose();
-    }
+    public void Dispose() => _connection.Dispose();
 }

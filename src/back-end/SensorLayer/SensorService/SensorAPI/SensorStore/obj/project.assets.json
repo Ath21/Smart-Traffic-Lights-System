@@ -893,6 +893,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
+          "Microsoft.Extensions.Options": "9.0.6",
           "StackExchange.Redis": "2.9.11"
         },
         "compile": {
@@ -905,6 +906,10 @@
       "DetectionData/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
+        "dependencies": {
+          "Microsoft.Extensions.Options": "9.0.6",
+          "MongoDB.Driver": "3.4.0"
+        },
         "compile": {
           "bin/placeholder/DetectionData.dll": {}
         },

@@ -3,9 +3,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SensorMessages;
 
-namespace SensorStore.Publishers.Event;
+namespace SensorStore.Publishers.Count;
 
-public interface ISensorEventPublisher
+public interface ISensorCountPublisher
 {
     Task PublishVehicleCountAsync(Guid intersectionId, int count, float avgSpeed);
     Task PublishPedestrianCountAsync(Guid intersectionId, int count);
