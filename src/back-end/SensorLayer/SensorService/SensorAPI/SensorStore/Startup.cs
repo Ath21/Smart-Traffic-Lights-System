@@ -1,15 +1,15 @@
 using System.Text;
-using DetectionData;
-using DetectionStore.Middleware;
-using DetectionStore.Repositories;
-using DetectionStore.Services;
-using DetectionStore.Publishers;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using SensorData;
+using SensorStore.Middleware;
+using SensorStore.Repositories;
+using SensorStore.Services;
+using SensorStore.Publishers;
 
-namespace DetectionStore;
+namespace SensorStore;
 
 public class Startup
 {
@@ -23,7 +23,7 @@ public class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         /******* [1] MongoDB Config ********/
-        services.Configure<DetectionDbSettings>(options =>
+        services.Configure<SensorDbSettings>(options =>
         {
             options.ConnectionString = _configuration["Mongo:ConnectionString"];
             options.Database = _configuration["Mongo:Database"];
@@ -34,10 +34,10 @@ public class Startup
             options.PublicTransportCollection = _configuration["Mongo:Collections:PublicTransport"];
             options.IncidentCollection = _configuration["Mongo:Collections:Incident"];
         });
-        services.AddSingleton<DetectionDbContext>();
+        services.AddSingleton<SensorDbContext>();
 
         /******* [2] Redis Config ********/
-        services.Configure<DetectionCacheSettings>(options =>
+        services.Configure<SensorCacheSettings>(options =>
         {
             options.Host = _configuration["Redis:Host"];
             options.Port = int.Parse(_configuration["Redis:Port"] ?? "6379");
@@ -53,17 +53,17 @@ public class Startup
         });
 
         /******* [3] Repositories ********/
-        services.AddScoped<IDetectionRepository, DetectionRepository>();
+        services.AddScoped<ISensorRepository, SensorRepository>();
 
         /******* [4] Services ********/
-        services.AddScoped<IDetectionService, DetectionService>();
+        services.AddScoped<ISensorService, SensorService>();
 
         /******* [5] Publishers ********/
-        services.AddScoped<ISensorEventPublisher, SensorEventPublisher>();
-        services.AddScoped<IDetectionLogPublisher, DetectionLogPublisher>();
+        services.AddScoped<ISensorCountPublisher, SensorCountPublisher>();
+        services.AddScoped<ISensorLogPublisher, SensorLogPublisher>();
 
         /******* [6] MassTransit ********/
-        services.AddDetectionServiceMassTransit(_configuration);
+        services.AddSensorServiceMassTransit(_configuration);
 
         /******* [7] Jwt Config ********/
         var jwtSettings = _configuration.GetSection("Jwt");
@@ -107,7 +107,7 @@ public class Startup
         /******* [10] Swagger ********/
         services.AddSwaggerGen(c =>
         {
-            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Detection API", Version = "v2.0" });
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Sensor API", Version = "v2.0" });
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 In = ParameterLocation.Header,
@@ -141,7 +141,7 @@ public class Startup
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Detection API");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Sensor API");
             });
         }
 

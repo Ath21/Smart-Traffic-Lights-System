@@ -10,7 +10,7 @@ public static class MassTransitSetup
     {
         services.AddMassTransit(x =>
         {
-            // Register Consumers
+            // Consumers
             x.AddConsumer<PriorityMessageConsumer>();
             x.AddConsumer<TrafficCongestionAlertConsumer>();
 
@@ -25,66 +25,36 @@ public static class MassTransitSetup
                 });
 
                 // Exchanges
-                var logsExchange    = rabbit["Exchanges:Logs"] ?? "LOG.EXCHANGE";
-                var trafficExchange = rabbit["Exchanges:Traffic"] ?? "TRAFFIC.EXCHANGE";
+                var logExchange    = rabbit["Exchanges:Log"];
+                var trafficExchange = rabbit["Exchanges:Traffic"];
 
-                // Queue
-                var trafficQueue = rabbit["Queues:Traffic"] ?? "traffic.coordinator_service.queue";
+                // Queues
+                var analyticsQueue = rabbit["Queues:Traffic:Analytics"];
+                var priorityQueue  = rabbit["Queues:Priority:Coordinator"];
 
-                // Routing keys
-                var emergencyKey   = rabbit["RoutingKeys:Emergency"]       ?? "priority.emergency.{intersection_id}";
-                var publicKey      = rabbit["RoutingKeys:PublicTransport"] ?? "priority.public_transport.{intersection_id}";
-                var pedestrianKey  = rabbit["RoutingKeys:Pedestrian"]      ?? "priority.pedestrian.{intersection_id}";
-                var cyclistKey     = rabbit["RoutingKeys:Cyclist"]         ?? "priority.cyclist.{intersection_id}";
-                var incidentKey    = rabbit["RoutingKeys:Incident"]        ?? "priority.incident.{intersection_id}";
-                var congestionKey  = rabbit["RoutingKeys:Congestion"]      ?? "traffic.analytics.congestion.{intersection_id}";
+                // Routing Keys (Priority & Analytics)
+                var emergencyKey  = rabbit["RoutingKeys:Priority:EmergencyVehicle"];
+                var publicKey     = rabbit["RoutingKeys:Priority:PublicTransport"];
+                var pedestrianKey = rabbit["RoutingKeys:Priority:Pedestrian"];
+                var cyclistKey    = rabbit["RoutingKeys:Priority:Cyclist"];
+                var incidentKey   = rabbit["RoutingKeys:Priority:Incident"];
+                var congestionKey = rabbit["RoutingKeys:Traffic:Congestion"];
 
                 // =========================
                 // LOGS (Publish)
                 // =========================
-                cfg.Message<LogMessages.AuditLogMessage>(e => e.SetEntityName(logsExchange));
+                cfg.Message<LogMessages.AuditLogMessage>(e => e.SetEntityName(logExchange));
                 cfg.Publish<LogMessages.AuditLogMessage>(e => e.ExchangeType = ExchangeType.Topic);
 
-                cfg.Message<LogMessages.ErrorLogMessage>(e => e.SetEntityName(logsExchange));
+                cfg.Message<LogMessages.ErrorLogMessage>(e => e.SetEntityName(logExchange));
                 cfg.Publish<LogMessages.ErrorLogMessage>(e => e.ExchangeType = ExchangeType.Topic);
 
                 // =========================
-                // TRAFFIC EVENTS (Consume)
+                // TRAFFIC EVENTS (Consume - Analytics Queue)
                 // =========================
-                cfg.ReceiveEndpoint(trafficQueue, e =>
+                cfg.ReceiveEndpoint(analyticsQueue, e =>
                 {
                     e.ConfigureConsumeTopology = false;
-
-                    // Bind each priority/congestion routing key
-                    e.Bind(trafficExchange, s =>
-                    {
-                        s.RoutingKey = emergencyKey.Replace("{intersection_id}", "*");
-                        s.ExchangeType = ExchangeType.Topic;
-                    });
-
-                    e.Bind(trafficExchange, s =>
-                    {
-                        s.RoutingKey = publicKey.Replace("{intersection_id}", "*");
-                        s.ExchangeType = ExchangeType.Topic;
-                    });
-
-                    e.Bind(trafficExchange, s =>
-                    {
-                        s.RoutingKey = pedestrianKey.Replace("{intersection_id}", "*");
-                        s.ExchangeType = ExchangeType.Topic;
-                    });
-
-                    e.Bind(trafficExchange, s =>
-                    {
-                        s.RoutingKey = cyclistKey.Replace("{intersection_id}", "*");
-                        s.ExchangeType = ExchangeType.Topic;
-                    });
-
-                    e.Bind(trafficExchange, s =>
-                    {
-                        s.RoutingKey = incidentKey.Replace("{intersection_id}", "*");
-                        s.ExchangeType = ExchangeType.Topic;
-                    });
 
                     e.Bind(trafficExchange, s =>
                     {
@@ -92,9 +62,43 @@ public static class MassTransitSetup
                         s.ExchangeType = ExchangeType.Topic;
                     });
 
-                    // Consumers
-                    e.ConfigureConsumer<PriorityMessageConsumer>(context);
                     e.ConfigureConsumer<TrafficCongestionAlertConsumer>(context);
+                });
+
+                // =========================
+                // TRAFFIC EVENTS (Consume - Priority Queue)
+                // =========================
+                cfg.ReceiveEndpoint(priorityQueue, e =>
+                {
+                    e.ConfigureConsumeTopology = false;
+
+                    e.Bind(trafficExchange, s =>
+                    {
+                        s.RoutingKey = emergencyKey.Replace("{intersection_id}", "*");
+                        s.ExchangeType = ExchangeType.Topic;
+                    });
+                    e.Bind(trafficExchange, s =>
+                    {
+                        s.RoutingKey = publicKey.Replace("{intersection_id}", "*");
+                        s.ExchangeType = ExchangeType.Topic;
+                    });
+                    e.Bind(trafficExchange, s =>
+                    {
+                        s.RoutingKey = pedestrianKey.Replace("{intersection_id}", "*");
+                        s.ExchangeType = ExchangeType.Topic;
+                    });
+                    e.Bind(trafficExchange, s =>
+                    {
+                        s.RoutingKey = cyclistKey.Replace("{intersection_id}", "*");
+                        s.ExchangeType = ExchangeType.Topic;
+                    });
+                    e.Bind(trafficExchange, s =>
+                    {
+                        s.RoutingKey = incidentKey.Replace("{intersection_id}", "*");
+                        s.ExchangeType = ExchangeType.Topic;
+                    });
+
+                    e.ConfigureConsumer<PriorityMessageConsumer>(context);
                 });
 
                 // =========================

@@ -1,16 +1,16 @@
 using MassTransit;
 using RabbitMQ.Client;
 
-namespace DetectionStore;
+namespace SensorStore;
 
 public static class MassTransitSetup
 {
-    public static IServiceCollection AddDetectionServiceMassTransit(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddSensorServiceMassTransit(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddMassTransit(x =>
         {
-            // Detection doesn’t consume events — it only publishes sensor events and logs.
-            // If later you add consumers (like commands to reset counts), register them here.
+            // Sensor service publishes sensor counts & logs
+            // No consumers (unless we later add commands for reset, calibration, etc.)
 
             x.UsingRabbitMq((context, cfg) =>
             {
@@ -27,21 +27,21 @@ public static class MassTransitSetup
                 var logExchange    = rabbit["Exchanges:Log"];
 
                 // Routing keys (publish)
-                var emergencyKey   = rabbit["RoutingKeys:Sensor:EmergencyVehicle"];
-                var publicKey      = rabbit["RoutingKeys:Sensor:PublicTransport"];
-                var incidentKey    = rabbit["RoutingKeys:Sensor:IncidentDetected"];
+                var vehicleCountKey    = rabbit["RoutingKeys:Sensor:VehicleCount"];
+                var pedestrianCountKey = rabbit["RoutingKeys:Sensor:PedestrianCount"];
+                var cyclistCountKey    = rabbit["RoutingKeys:Sensor:CyclistCount"];
 
                 // =========================
-                // SENSOR EVENTS (Publish)
+                // SENSOR COUNTS (Publish)
                 // =========================
-                cfg.Message<SensorMessages.EmergencyVehicleMessage>(e => e.SetEntityName(sensorExchange));
-                cfg.Publish<SensorMessages.EmergencyVehicleMessage>(e => e.ExchangeType = ExchangeType.Topic);
+                cfg.Message<SensorMessages.VehicleCountMessage>(e => e.SetEntityName(sensorExchange));
+                cfg.Publish<SensorMessages.VehicleCountMessage>(e => e.ExchangeType = ExchangeType.Topic);
 
-                cfg.Message<SensorMessages.PublicTransportMessage>(e => e.SetEntityName(sensorExchange));
-                cfg.Publish<SensorMessages.PublicTransportMessage>(e => e.ExchangeType = ExchangeType.Topic);
+                cfg.Message<SensorMessages.PedestrianCountMessage>(e => e.SetEntityName(sensorExchange));
+                cfg.Publish<SensorMessages.PedestrianCountMessage>(e => e.ExchangeType = ExchangeType.Topic);
 
-                cfg.Message<SensorMessages.IncidentDetectionMessage>(e => e.SetEntityName(sensorExchange));
-                cfg.Publish<SensorMessages.IncidentDetectionMessage>(e => e.ExchangeType = ExchangeType.Topic);
+                cfg.Message<SensorMessages.CyclistCountMessage>(e => e.SetEntityName(sensorExchange));
+                cfg.Publish<SensorMessages.CyclistCountMessage>(e => e.ExchangeType = ExchangeType.Topic);
 
                 // =========================
                 // LOGS (Publish)

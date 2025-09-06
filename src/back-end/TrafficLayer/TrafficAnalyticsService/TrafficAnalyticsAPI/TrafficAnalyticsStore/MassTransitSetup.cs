@@ -10,7 +10,7 @@ public static class MassTransitSetup
     {
         services.AddMassTransit(x =>
         {
-            // Register Consumers
+            // Consumers
             x.AddConsumer<VehicleCountConsumer>();
             x.AddConsumer<EmergencyVehicleConsumer>();
             x.AddConsumer<PublicTransportConsumer>();
@@ -29,27 +29,33 @@ public static class MassTransitSetup
                 });
 
                 // Exchanges
-                var logsExchange     = rabbit["Exchanges:Logs"];
-                var sensorExchange   = rabbit["Exchanges:Sensor"];
-                var trafficExchange  = rabbit["Exchanges:Traffic"];
+                var logExchange     = rabbit["Exchanges:Log"];
+                var sensorExchange  = rabbit["Exchanges:Sensor"];
+                var trafficExchange = rabbit["Exchanges:Traffic"];
 
                 // Queues
-                var sensorQueue = rabbit["Queues:Sensor"];
+                var sensorQueue = rabbit["Queues:Sensor:Analytics"];
 
-                var vehicleCountKey         = rabbit["RoutingKeys:VehicleCount"] ?? "sensor.vehicle.count.{intersection_id}";
-                var emergencyVehicleKey     = rabbit["RoutingKeys:VehicleEmergency"] ?? "sensor.vehicle.emergency.{intersection_id}";
-                var publicTransportKey      = rabbit["RoutingKeys:PublicTransportRequest"] ?? "sensor.public_transport.request.{intersection_id}";
-                var cyclistKey              = rabbit["RoutingKeys:CyclistRequest"] ?? "sensor.cyclist.request.{intersection_id}";
-                var incidentDetectedKey     = rabbit["RoutingKeys:IncidentDetected"] ?? "sensor.incident.detected.{intersection_id}";
-                var pedestrianKey           = rabbit["RoutingKeys:PedestrianRequest"] ?? "sensor.pedestrian.request.{intersection_id}";
+                // Routing Keys (from SENSOR.EXCHANGE)
+                var vehicleCountKey     = rabbit["RoutingKeys:Sensor:VehicleCount"];
+                var emergencyKey        = rabbit["RoutingKeys:Sensor:EmergencyVehicle"];
+                var publicTransportKey  = rabbit["RoutingKeys:Sensor:PublicTransport"];
+                var pedestrianKey       = rabbit["RoutingKeys:Sensor:PedestrianCount"];
+                var cyclistKey          = rabbit["RoutingKeys:Sensor:CyclistCount"];
+                var incidentDetectedKey = rabbit["RoutingKeys:Sensor:IncidentDetected"];
+
+                // Routing Keys (to TRAFFIC.EXCHANGE)
+                var trafficCongKey   = rabbit["RoutingKeys:Traffic:Congestion"];
+                var trafficSummaryKey= rabbit["RoutingKeys:Traffic:Summary"];
+                var trafficIncKey    = rabbit["RoutingKeys:Traffic:Incident"];
 
                 // =========================
                 // LOGS (Publish)
                 // =========================
-                cfg.Message<LogMessages.AuditLogMessage>(e => e.SetEntityName(logsExchange));
+                cfg.Message<LogMessages.AuditLogMessage>(e => e.SetEntityName(logExchange));
                 cfg.Publish<LogMessages.AuditLogMessage>(e => e.ExchangeType = ExchangeType.Topic);
 
-                cfg.Message<LogMessages.ErrorLogMessage>(e => e.SetEntityName(logsExchange));
+                cfg.Message<LogMessages.ErrorLogMessage>(e => e.SetEntityName(logExchange));
                 cfg.Publish<LogMessages.ErrorLogMessage>(e => e.ExchangeType = ExchangeType.Topic);
 
                 // =========================
@@ -67,7 +73,7 @@ public static class MassTransitSetup
 
                     e.Bind(sensorExchange, s =>
                     {
-                        s.RoutingKey = emergencyVehicleKey.Replace("{intersection_id}", "*");
+                        s.RoutingKey = emergencyKey.Replace("{intersection_id}", "*");
                         s.ExchangeType = ExchangeType.Topic;
                     });
 
@@ -105,13 +111,13 @@ public static class MassTransitSetup
                 });
 
                 // =========================
-                // TRAFFIC EVENTS 
+                // TRAFFIC EVENTS (Publish)
                 // =========================
-                cfg.Message<TrafficMessages.TrafficSummaryMessage>(e => e.SetEntityName(trafficExchange));
-                cfg.Publish<TrafficMessages.TrafficSummaryMessage>(e => e.ExchangeType = ExchangeType.Topic);
-
                 cfg.Message<TrafficMessages.TrafficCongestionMessage>(e => e.SetEntityName(trafficExchange));
                 cfg.Publish<TrafficMessages.TrafficCongestionMessage>(e => e.ExchangeType = ExchangeType.Topic);
+
+                cfg.Message<TrafficMessages.TrafficSummaryMessage>(e => e.SetEntityName(trafficExchange));
+                cfg.Publish<TrafficMessages.TrafficSummaryMessage>(e => e.ExchangeType = ExchangeType.Topic);
 
                 cfg.Message<TrafficMessages.TrafficIncidentMessage>(e => e.SetEntityName(trafficExchange));
                 cfg.Publish<TrafficMessages.TrafficIncidentMessage>(e => e.ExchangeType = ExchangeType.Topic);

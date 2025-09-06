@@ -29,28 +29,28 @@ public static class MassTransitSetup
                 });
 
                 // Exchanges
-                var logsExchange    = rabbit["Exchanges:Logs"];
+                var logExchange     = rabbit["Exchanges:Log"];
                 var userExchange    = rabbit["Exchanges:User"];
                 var trafficExchange = rabbit["Exchanges:Traffic"];
 
                 // Queues
-                var userQueue    = rabbit["Queues:User"];
-                var trafficQueue = rabbit["Queues:Traffic"];
+                var userQueue    = rabbit["Queues:User:Notifications"];
+                var trafficQueue = rabbit["Queues:Traffic:Analytics"];
 
-                // Routing keys
-                var notifAlertKey   = rabbit["RoutingKeys:NotificationAlert"];
-                var notifPublicKey  = rabbit["RoutingKeys:NotificationPublic"];
-                var trafficCongKey  = rabbit["RoutingKeys:TrafficCongestion"];
-                var trafficSumKey   = rabbit["RoutingKeys:TrafficSummary"];
-                var trafficIncKey   = rabbit["RoutingKeys:TrafficIncident"];
+                // Routing Keys
+                var notifAlertKey  = rabbit["RoutingKeys:User:NotificationAlert"];
+                var notifPublicKey = rabbit["RoutingKeys:User:NotificationPublic"];
+                var trafficCongKey = rabbit["RoutingKeys:Traffic:Congestion"];
+                var trafficSumKey  = rabbit["RoutingKeys:Traffic:Summary"];
+                var trafficIncKey  = rabbit["RoutingKeys:Traffic:Incident"];
 
                 // =========================
-                // LOGS → publish to LOG.EXCHANGE (topic)
+                // LOGS → publish to LOG.EXCHANGE
                 // =========================
-                cfg.Message<LogMessages.AuditLogMessage>(e => e.SetEntityName(logsExchange));
+                cfg.Message<LogMessages.AuditLogMessage>(e => e.SetEntityName(logExchange));
                 cfg.Publish<LogMessages.AuditLogMessage>(e => e.ExchangeType = ExchangeType.Topic);
 
-                cfg.Message<LogMessages.ErrorLogMessage>(e => e.SetEntityName(logsExchange));
+                cfg.Message<LogMessages.ErrorLogMessage>(e => e.SetEntityName(logExchange));
                 cfg.Publish<LogMessages.ErrorLogMessage>(e => e.ExchangeType = ExchangeType.Topic);
 
                 // =========================
@@ -58,15 +58,6 @@ public static class MassTransitSetup
                 // =========================
                 cfg.Message<UserMessages.UserNotificationRequest>(e => e.SetEntityName(userExchange));
                 cfg.Publish<UserMessages.UserNotificationRequest>(e => e.ExchangeType = ExchangeType.Topic);
-
-                // =========================
-                // USER NOTIFICATIONS
-                // =========================
-                cfg.Message<UserMessages.UserNotificationAlert>(e => e.SetEntityName(userExchange));
-                cfg.Publish<UserMessages.UserNotificationAlert>(e => e.ExchangeType = ExchangeType.Topic);
-
-                cfg.Message<UserMessages.PublicNoticeEvent>(e => e.SetEntityName(userExchange));
-                cfg.Publish<UserMessages.PublicNoticeEvent>(e => e.ExchangeType = ExchangeType.Topic);
 
                 // =========================
                 // TRAFFIC COMMANDS -> publish to TRAFFIC.EXCHANGE
@@ -78,30 +69,21 @@ public static class MassTransitSetup
                 cfg.Publish<TrafficMessages.TrafficLightControlMessage>(e => e.ExchangeType = ExchangeType.Topic);
 
                 // =========================
-                // TRAFFIC EVENTS
+                // USER NOTIFICATIONS (consumers)
                 // =========================
-                cfg.Message<TrafficMessages.TrafficCongestionMessage>(e => e.SetEntityName(trafficExchange));
-                cfg.Publish<TrafficMessages.TrafficCongestionMessage>(e => e.ExchangeType = ExchangeType.Topic);
-
-                cfg.Message<TrafficMessages.TrafficIncidentMessage>(e => e.SetEntityName(trafficExchange));
-                cfg.Publish<TrafficMessages.TrafficIncidentMessage>(e => e.ExchangeType = ExchangeType.Topic);
-
-                cfg.Message<TrafficMessages.TrafficSummaryMessage>(e => e.SetEntityName(trafficExchange));
-                cfg.Publish<TrafficMessages.TrafficSummaryMessage>(e => e.ExchangeType = ExchangeType.Topic);
-
                 cfg.ReceiveEndpoint(userQueue, e =>
                 {
                     e.ConfigureConsumeTopology = false;
 
                     e.Bind(userExchange, s =>
                     {
-                        s.RoutingKey = notifAlertKey;  
+                        s.RoutingKey = notifAlertKey;
                         s.ExchangeType = ExchangeType.Topic;
                     });
 
                     e.Bind(userExchange, s =>
                     {
-                        s.RoutingKey = notifPublicKey; 
+                        s.RoutingKey = notifPublicKey;
                         s.ExchangeType = ExchangeType.Topic;
                     });
 
@@ -110,7 +92,7 @@ public static class MassTransitSetup
                 });
 
                 // =========================
-                // TRAFFIC EVENTS
+                // TRAFFIC ANALYTICS EVENTS (consumers)
                 // =========================
                 cfg.ReceiveEndpoint(trafficQueue, e =>
                 {
@@ -121,22 +103,20 @@ public static class MassTransitSetup
                         s.RoutingKey = trafficCongKey.Replace("{intersection_id}", "*");
                         s.ExchangeType = ExchangeType.Topic;
                     });
-
+                    e.Bind(trafficExchange, s =>
+                    {
+                        s.RoutingKey = trafficSumKey.Replace("{intersection_id}", "*");
+                        s.ExchangeType = ExchangeType.Topic;
+                    });
                     e.Bind(trafficExchange, s =>
                     {
                         s.RoutingKey = trafficIncKey.Replace("{intersection_id}", "*");
                         s.ExchangeType = ExchangeType.Topic;
                     });
 
-                    e.Bind(trafficExchange, s =>
-                    {
-                        s.RoutingKey = trafficSumKey.Replace("{intersection_id}", "*");
-                        s.ExchangeType = ExchangeType.Topic;
-                    });
-
                     e.ConfigureConsumer<TrafficCongestionConsumer>(context);
-                    e.ConfigureConsumer<TrafficIncidentConsumer>(context);
                     e.ConfigureConsumer<TrafficSummaryConsumer>(context);
+                    e.ConfigureConsumer<TrafficIncidentConsumer>(context);
                 });
 
                 cfg.ConfigureEndpoints(context);

@@ -1,4 +1,3 @@
-using System;
 using LogMessages;
 using MassTransit;
 using RabbitMQ.Client;
@@ -28,13 +27,13 @@ public static class MassTransitSetup
 
                 // Exchanges
                 var trafficExchange = rabbit["Exchanges:Traffic"];
-                var logsExchange    = rabbit["Exchanges:Logs"];
+                var logExchange     = rabbit["Exchanges:Log"];
 
                 // Queues
-                var controlQueue = rabbit["Queues:TrafficLightControl"];
+                var controlQueue = rabbit["Queues:Traffic:LightControl"];
 
-                // Routing keys
-                var controlKey = rabbit["RoutingKeys:TrafficLightControl"];
+                // Routing Keys
+                var controlKey = rabbit["RoutingKeys:Traffic:LightControl"];
 
                 // =========================
                 // TRAFFIC LIGHT CONTROL (Consume)
@@ -58,10 +57,10 @@ public static class MassTransitSetup
                 // =========================
                 // LOGS (Publish)
                 // =========================
-                cfg.Message<AuditLogMessage>(e => e.SetEntityName(logsExchange));
+                cfg.Message<AuditLogMessage>(e => e.SetEntityName(logExchange));
                 cfg.Publish<AuditLogMessage>(e => e.ExchangeType = ExchangeType.Topic);
 
-                cfg.Message<ErrorLogMessage>(e => e.SetEntityName(logsExchange));
+                cfg.Message<ErrorLogMessage>(e => e.SetEntityName(logExchange));
                 cfg.Publish<ErrorLogMessage>(e => e.ExchangeType = ExchangeType.Topic);
 
                 cfg.ConfigureEndpoints(context);
@@ -71,4 +70,3 @@ public static class MassTransitSetup
         return services;
     }
 }
-

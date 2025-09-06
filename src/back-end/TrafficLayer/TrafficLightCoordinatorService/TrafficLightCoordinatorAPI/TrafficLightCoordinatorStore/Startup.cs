@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using TrafficLightCoordinatorData;
-using TrafficLightCoordinatorData.Entities;
 using TrafficLightCoordinatorStore.Business.Coordination;
 using TrafficLightCoordinatorStore.Consumers;
 using TrafficLightCoordinatorStore.Middleware;
@@ -14,7 +13,6 @@ using TrafficLightCoordinatorStore.Publishers.Update;
 using TrafficLightCoordinatorStore.Repositories.Intersections;
 using TrafficLightCoordinatorStore.Repositories.Light;
 using TrafficLightCoordinatorStore.Repositories.TrafficConfig;
-
 
 namespace TrafficLightCoordinatorStore;
 
@@ -30,39 +28,47 @@ public class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         /******* [1] ORM / PostgreSQL ********/
-
         services.AddDbContext<TrafficLightCoordinatorDbContext>();
 
-        /******* [2] Repositories ********/
+        /******* [2] Redis (TrafficLight Cache) ********/
+        services.Configure<TrafficLightCacheSettings>(options =>
+        {
+            options.Host = _configuration["Redis:TrafficLight:Host"];
+            options.Port = int.Parse(_configuration["Redis:TrafficLight:Port"] ?? "6379");
+            options.Password = _configuration["Redis:TrafficLight:Password"];
+            options.Database = int.Parse(_configuration["Redis:TrafficLight:Database"] ?? "0");
 
-        services.AddScoped(typeof(ITrafficConfigurationRepository), typeof(TrafficConfigurationRepository));
-        services.AddScoped(typeof(IIntersectionRepository), typeof(IntersectionRepository));
-        services.AddScoped(typeof(ITrafficLightRepository), typeof(TrafficLightRepository));
+            options.KeyPrefix_State = _configuration["Redis:TrafficLight:KeyPrefix:State"];
+            options.KeyPrefix_Duration = _configuration["Redis:TrafficLight:KeyPrefix:Duration"];
+            options.KeyPrefix_LastUpdate = _configuration["Redis:TrafficLight:KeyPrefix:LastUpdate"];
+            options.KeyPrefix_Priority = _configuration["Redis:TrafficLight:KeyPrefix:Priority"];
+            options.KeyPrefix_QueueLength = _configuration["Redis:TrafficLight:KeyPrefix:QueueLength"];
+        });
+        services.AddSingleton<TrafficLightCacheDbContext>();
 
-        /******* [3] Services ********/
+        /******* [3] Repositories ********/
+        services.AddScoped<ITrafficConfigurationRepository, TrafficConfigurationRepository>();
+        services.AddScoped<IIntersectionRepository, IntersectionRepository>();
+        services.AddScoped<ITrafficLightRepository, TrafficLightRepository>();
 
-        services.AddScoped(typeof(ICoordinatorService), typeof(CoordinatorService));
+        /******* [4] Services ********/
+        services.AddScoped<ICoordinatorService, CoordinatorService>();
 
-        /******* [4] AutoMapper ********/
-
+        /******* [5] AutoMapper ********/
         services.AddAutoMapper(typeof(TrafficLightCoordinatorStoreProfile));
 
-        /******* [5] Publishers ********/
+        /******* [6] Publishers ********/
+        services.AddScoped<ILightUpdatePublisher, LightUpdatePublisher>();
+        services.AddScoped<ITrafficLogPublisher, TrafficLogPublisher>();
 
-        services.AddScoped(typeof(ILightUpdatePublisher), typeof(LightUpdatePublisher));
-        services.AddScoped(typeof(ITrafficLogPublisher), typeof(TrafficLogPublisher));
-
-        /******* [6] Consumers ********/
-
+        /******* [7] Consumers ********/
         services.AddScoped<TrafficCongestionAlertConsumer>();
         services.AddScoped<PriorityMessageConsumer>();
 
-        /******* [7] MassTransit Setup *******/
-
+        /******* [8] MassTransit Setup *******/
         services.AddTrafficCoordinatorMassTransit(_configuration);
 
-        /******* [8] Jwt Config ********/
-
+        /******* [9] Jwt Config ********/
         var jwtSettings = _configuration.GetSection("Jwt");
         var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]);
 
@@ -82,21 +88,22 @@ public class Startup
                 };
             });
 
-        /******* [9] CORS Policy ********/
+        /******* [10] CORS Policy ********/
+        var allowedOrigins = _configuration["Cors:AllowedOrigins"]?.Split(",") ?? Array.Empty<string>();
+        var allowedMethods = _configuration["Cors:AllowedMethods"]?.Split(",") ?? new[] { "GET","POST","PUT","DELETE","PATCH" };
+        var allowedHeaders = _configuration["Cors:AllowedHeaders"]?.Split(",") ?? new[] { "Content-Type","Authorization" };
 
         services.AddCors(options =>
         {
             options.AddPolicy("AllowFrontend", policy =>
             {
-                policy.WithOrigins("http://localhost:5173")   // Vue dev server
-                    .AllowAnyHeader()
-                    .AllowAnyMethod();
-
+                policy.WithOrigins(allowedOrigins)
+                      .WithMethods(allowedMethods)
+                      .WithHeaders(allowedHeaders);
             });
         });
 
-        /******* [10] Controllers ********/
-
+        /******* [11] Controllers ********/
         services.AddControllers()
             .AddJsonOptions(options =>
             {
@@ -104,35 +111,34 @@ public class Startup
             });
         services.AddEndpointsApiExplorer();
 
-        /******* [11] Swagger ********/
-
+        /******* [12] Swagger ********/
         services.AddSwaggerGen(c =>
+        {
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Traffic Light Coordinator API", Version = "v2.0" });
+            c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Traffic Light Coordinator API", Version = "v2.0" });
-                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-                {
-                    In = ParameterLocation.Header,
-                    Description = "Insert JWT token",
-                    Name = "Authorization",
-                    Type = SecuritySchemeType.Http,
-                    BearerFormat = "JWT",
-                    Scheme = "bearer"
-                });
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement
-                {
-                    {
-                        new OpenApiSecurityScheme
-                        {
-                            Reference = new OpenApiReference
-                            {
-                                Type = ReferenceType.SecurityScheme,
-                                Id = "Bearer"
-                            }
-                        },
-                        new string[] { }
-                    }
-                });
+                In = ParameterLocation.Header,
+                Description = "Insert JWT token",
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                BearerFormat = "JWT",
+                Scheme = "bearer"
             });
+            c.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    new string[] { }
+                }
+            });
+        });
     }
 
     public void Configure(WebApplication app, IWebHostEnvironment env)
@@ -147,16 +153,11 @@ public class Startup
         }
 
         app.UseHttpsRedirection();
-
         app.UseMiddleware<ExceptionMiddleware>();
-
         app.UseCors("AllowFrontend");
-
         app.UseAuthentication();
         app.UseAuthorization();
-
         app.MapControllers();
-
         app.Run();
     }
 }

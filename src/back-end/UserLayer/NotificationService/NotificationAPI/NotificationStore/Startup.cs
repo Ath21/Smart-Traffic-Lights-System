@@ -27,48 +27,49 @@ public class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         /******* [1] MongoDb Config ********/
-
-        services.Configure<NotificationDbSettings>(
-            _configuration.GetSection("DefaultConnection")
-        );
+        services.Configure<NotificationDbSettings>(options =>
+        {
+            options.ConnectionString = _configuration["Mongo:ConnectionString"];
+            options.Database = _configuration["Mongo:Database"];
+            options.NotificationsCollection = _configuration["Mongo:NotificationsCollection"];
+            options.DeliveryLogsCollection = _configuration["Mongo:DeliveryLogsCollection"];
+        });
         services.AddSingleton<NotificationDbContext>();
 
         /******* [2] Repositories ********/
-
-        services.AddScoped(typeof(INotificationRepository), typeof(NotificationRepository));
-        services.AddScoped(typeof(IDeliveryLogRepository), typeof(DeliveryLogRepository));
+        services.AddScoped<INotificationRepository, NotificationRepository>();
+        services.AddScoped<IDeliveryLogRepository, DeliveryLogRepository>();
 
         /******* [3] Services ********/
-       
-        services.Configure<EmailSettings>(
-            _configuration.GetSection("EmailSettings")
-        );
-        services.AddScoped(typeof(IEmailService), typeof(EmailService));
-
-        services.AddScoped(typeof(INotificationService), typeof(NotificationService));
+        services.Configure<EmailSettings>(options =>
+        {
+            options.SmtpServer = _configuration["Email:SmtpServer"];
+            options.Port = int.Parse(_configuration["Email:Port"] ?? "587");
+            options.SenderName = _configuration["Email:SenderName"];
+            options.SenderEmail = _configuration["Email:SenderEmail"];
+            options.Username = _configuration["Email:Username"];
+            options.Password = _configuration["Email:Password"];
+        });
+        services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<INotificationService, NotificationService>();
 
         /******* [4] AutoMapper ********/
-
         services.AddAutoMapper(typeof(NotificationStoreProfile));
 
         /******* [5] Publishers ********/
-
-        services.AddScoped(typeof(INotificationPublisher), typeof(NotificationPublisher));
-        services.AddScoped(typeof(INotificationLogPublisher), typeof(NotificationLogPublisher));
+        services.AddScoped<INotificationPublisher, NotificationPublisher>();
+        services.AddScoped<INotificationLogPublisher, NotificationLogPublisher>();
 
         /******* [6] Consumers ********/
-
         services.AddScoped<NotificationRequestConsumer>();
         services.AddScoped<TrafficIncidentConsumer>();
         services.AddScoped<TrafficCongestionConsumer>();
         services.AddScoped<TrafficSummaryConsumer>();
 
         /******* [7] MassTransit ********/
-
         services.AddNotificationServiceMassTransit(_configuration);
 
         /******* [8] Jwt Config ********/
-
         var jwtSettings = _configuration.GetSection("Jwt");
         var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]);
 
@@ -86,57 +87,59 @@ public class Startup
                     ValidateLifetime = true,
                     IssuerSigningKey = new SymmetricSecurityKey(key)
                 };
-            });        
+            });
 
-        /******* [8] CORS Policy ********/
+        /******* [9] CORS Policy ********/
+        var allowedOrigins = _configuration["Cors:AllowedOrigins"]?.Split(",") ?? Array.Empty<string>();
+        var allowedMethods = _configuration["Cors:AllowedMethods"]?.Split(",") ?? new[] { "GET","POST","PUT","DELETE","PATCH" };
+        var allowedHeaders = _configuration["Cors:AllowedHeaders"]?.Split(",") ?? new[] { "Content-Type","Authorization" };
 
         services.AddCors(options =>
         {
             options.AddPolicy("AllowFrontend", policy =>
             {
-                policy.WithOrigins("http://localhost:5173")   // Vue dev server
-                    .AllowAnyHeader()
-                    .AllowAnyMethod();
-
+                policy.WithOrigins(allowedOrigins)
+                      .WithMethods(allowedMethods)
+                      .WithHeaders(allowedHeaders);
             });
         });
 
-        /******* [9] Controllers ********/
-
+        /******* [10] Controllers ********/
         services.AddControllers()
-            .AddJsonOptions(
-                options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.PropertyNamingPolicy = null;
+            });
         services.AddEndpointsApiExplorer();
 
-        /******* [10] Swagger ********/
-
+        /******* [11] Swagger ********/
         services.AddSwaggerGen(c =>
+        {
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Notification API", Version = "v2.0" });
+            c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Notification API", Version = "v2.0" });
-                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-                {
-                    In = ParameterLocation.Header,
-                    Description = "Insert JWT token",
-                    Name = "Authorization",
-                    Type = SecuritySchemeType.Http,
-                    BearerFormat = "JWT",
-                    Scheme = "bearer"
-                });
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement
-                {
-                    {
-                        new OpenApiSecurityScheme
-                        {
-                            Reference = new OpenApiReference
-                            {
-                                Type = ReferenceType.SecurityScheme,
-                                Id = "Bearer"
-                            }
-                        },
-                        new string[] { }
-                    }
-                });
+                In = ParameterLocation.Header,
+                Description = "Insert JWT token",
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                BearerFormat = "JWT",
+                Scheme = "bearer"
             });
+            c.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    new string[] { }
+                }
+            });
+        });
     }
 
     public void Configure(WebApplication app, IWebHostEnvironment env)
@@ -151,17 +154,11 @@ public class Startup
         }
 
         app.UseHttpsRedirection();
-
         app.UseMiddleware<ExceptionMiddleware>();
-
         app.UseCors("AllowFrontend");
-
         app.UseAuthentication();
         app.UseAuthorization();
-
         app.MapControllers();
-
         app.Run();
     }
 }
-

@@ -2,7 +2,7 @@ using MassTransit;
 using RabbitMQ.Client;
 using IntersectionControllerStore.Consumers;
 using TrafficMessages;
-using SensorMessages; // namespace where TrafficLightUpdateMessage and sensor messages live
+using SensorMessages;
 
 namespace IntersectionControllerStore;
 
@@ -12,7 +12,6 @@ public static class MassTransitSetup
     {
         services.AddMassTransit(x =>
         {
-            // Consumers
             x.AddConsumer<TrafficLightUpdateConsumer>();
             x.AddConsumer<SensorDataConsumer>();
 
@@ -29,72 +28,44 @@ public static class MassTransitSetup
                 // Exchanges
                 var trafficExchange = rabbit["Exchanges:Traffic"];
                 var sensorExchange  = rabbit["Exchanges:Sensor"];
-                var logsExchange     = rabbit["Exchanges:Logs"];
+                var logExchange     = rabbit["Exchanges:Log"];
 
                 // Queues
-                var trafficQueue = rabbit["Queues:TrafficIntersection"];
-                var sensorQueue  = rabbit["Queues:SensorIntersection"];
+                var trafficQueue = rabbit["Queues:Traffic:LightUpdate"];
+                var sensorQueue  = rabbit["Queues:Sensor:Intersection"];
 
-                // Routing keys
-                var trafficLightUpdateKey = rabbit["RoutingKeys:TrafficLightUpdate"];
-
-                var vehicleCountKey     = rabbit["RoutingKeys:SensorVehicleCount"];
-                var emergencyVehicleKey = rabbit["RoutingKeys:SensorEmergencyVehicle"];
-                var publicTransportKey  = rabbit["RoutingKeys:SensorPublicTransport"];
-                var cyclistKey          = rabbit["RoutingKeys:SensorCyclist"];
-                var pedestrianKey       = rabbit["RoutingKeys:SensorPedestrian"];
-                var incidentKey         = rabbit["RoutingKeys:SensorIncident"];
+                // Routing Keys
+                var lightUpdateKey   = rabbit["RoutingKeys:Traffic:LightUpdate"];
+                var vehicleCountKey  = rabbit["RoutingKeys:Sensor:VehicleCount"];
+                var emergencyKey     = rabbit["RoutingKeys:Sensor:EmergencyVehicle"];
+                var publicTransportKey = rabbit["RoutingKeys:Sensor:PublicTransport"];
+                var pedestrianKey    = rabbit["RoutingKeys:Sensor:PedestrianCount"];
+                var cyclistKey       = rabbit["RoutingKeys:Sensor:CyclistCount"];
+                var incidentKey      = rabbit["RoutingKeys:Sensor:IncidentDetected"];
 
                 // =========================
-                // TRAFFIC COMMANDS -> publish to TRAFFIC.EXCHANGE
+                // TRAFFIC LIGHT CONTROL → publish
                 // =========================
-                cfg.Message<TrafficMessages.TrafficLightControlMessage>(e => e.SetEntityName(trafficExchange));
-                cfg.Publish<TrafficMessages.TrafficLightControlMessage>(e => e.ExchangeType = ExchangeType.Topic);
+                cfg.Message<TrafficLightControlMessage>(e => e.SetEntityName(trafficExchange));
+                cfg.Publish<TrafficLightControlMessage>(e => e.ExchangeType = ExchangeType.Topic);
 
-                // ==========================
-                // PRIORITY MESSAGES -> publish to TRAFFIC.EXCHANGE
-                // ==========================
-                cfg.Message<TrafficMessages.PriorityMessage>(e => e.SetEntityName(trafficExchange));
-                cfg.Publish<TrafficMessages.PriorityMessage>(e => e.ExchangeType = ExchangeType.Topic);
+                // =========================
+                // PRIORITY EVENTS → publish
+                // =========================
+                cfg.Message<PriorityMessage>(e => e.SetEntityName(trafficExchange));
+                cfg.Publish<PriorityMessage>(e => e.ExchangeType = ExchangeType.Topic);
 
-                // ==========================
-                // LOGS -> publish to LOG.EXCHANGE
-                // ==========================
-                cfg.Message<LogMessages.AuditLogMessage>(e => e.SetEntityName(logsExchange));
+                // =========================
+                // LOGS → publish
+                // =========================
+                cfg.Message<LogMessages.AuditLogMessage>(e => e.SetEntityName(logExchange));
                 cfg.Publish<LogMessages.AuditLogMessage>(e => e.ExchangeType = ExchangeType.Topic);
 
-                cfg.Message<LogMessages.ErrorLogMessage>(e => e.SetEntityName(logsExchange));
+                cfg.Message<LogMessages.ErrorLogMessage>(e => e.SetEntityName(logExchange));
                 cfg.Publish<LogMessages.ErrorLogMessage>(e => e.ExchangeType = ExchangeType.Topic);
 
-                // ==========================
-                // TRAFFIC LIGHT PATTERNS
-                // ==========================
-                cfg.Message<TrafficMessages.TrafficLightUpdateMessage>(e => e.SetEntityName(trafficExchange));
-                cfg.Publish<TrafficMessages.TrafficLightUpdateMessage>(e => e.ExchangeType = ExchangeType.Topic);
-
-                // ==========================
-                // SENSOR DATA
-                // ==========================
-                cfg.Message<SensorMessages.VehicleCountMessage>(e => e.SetEntityName(sensorExchange));
-                cfg.Publish<SensorMessages.VehicleCountMessage>(e => e.ExchangeType = ExchangeType.Topic);
-
-                cfg.Message<SensorMessages.EmergencyVehicleMessage>(e => e.SetEntityName(sensorExchange));
-                cfg.Publish<SensorMessages.EmergencyVehicleMessage>(e => e.ExchangeType = ExchangeType.Topic);
-
-                cfg.Message<SensorMessages.PublicTransportMessage>(e => e.SetEntityName(sensorExchange));
-                cfg.Publish<SensorMessages.PublicTransportMessage>(e => e.ExchangeType = ExchangeType.Topic);
-
-                cfg.Message<SensorMessages.CyclistDetectionMessage>(e => e.SetEntityName(sensorExchange));
-                cfg.Publish<SensorMessages.CyclistDetectionMessage>(e => e.ExchangeType = ExchangeType.Topic);
-
-                cfg.Message<SensorMessages.PedestrianDetectionMessage>(e => e.SetEntityName(sensorExchange));
-                cfg.Publish<SensorMessages.PedestrianDetectionMessage>(e => e.ExchangeType = ExchangeType.Topic);
-
-                cfg.Message<SensorMessages.IncidentDetectionMessage>(e => e.SetEntityName(sensorExchange));
-                cfg.Publish<SensorMessages.IncidentDetectionMessage>(e => e.ExchangeType = ExchangeType.Topic);
-
                 // =========================
-                // TRAFFIC LIGHT UPDATES
+                // TRAFFIC LIGHT UPDATES (Consume)
                 // =========================
                 cfg.ReceiveEndpoint(trafficQueue, e =>
                 {
@@ -102,7 +73,7 @@ public static class MassTransitSetup
 
                     e.Bind(trafficExchange, s =>
                     {
-                        s.RoutingKey = trafficLightUpdateKey.Replace("{intersection_id}", "*");
+                        s.RoutingKey = lightUpdateKey.Replace("{intersection_id}", "*");
                         s.ExchangeType = ExchangeType.Topic;
                     });
 
@@ -110,7 +81,7 @@ public static class MassTransitSetup
                 });
 
                 // =========================
-                // SENSOR EVENTS
+                // SENSOR EVENTS (Consume)
                 // =========================
                 cfg.ReceiveEndpoint(sensorQueue, e =>
                 {
@@ -121,31 +92,26 @@ public static class MassTransitSetup
                         s.RoutingKey = vehicleCountKey.Replace("{intersection_id}", "*");
                         s.ExchangeType = ExchangeType.Topic;
                     });
-
                     e.Bind(sensorExchange, s =>
                     {
-                        s.RoutingKey = emergencyVehicleKey.Replace("{intersection_id}", "*");
+                        s.RoutingKey = emergencyKey.Replace("{intersection_id}", "*");
                         s.ExchangeType = ExchangeType.Topic;
                     });
-
                     e.Bind(sensorExchange, s =>
                     {
                         s.RoutingKey = publicTransportKey.Replace("{intersection_id}", "*");
                         s.ExchangeType = ExchangeType.Topic;
                     });
-
-                    e.Bind(sensorExchange, s =>
-                    {
-                        s.RoutingKey = cyclistKey.Replace("{intersection_id}", "*");
-                        s.ExchangeType = ExchangeType.Topic;
-                    });
-
                     e.Bind(sensorExchange, s =>
                     {
                         s.RoutingKey = pedestrianKey.Replace("{intersection_id}", "*");
                         s.ExchangeType = ExchangeType.Topic;
                     });
-
+                    e.Bind(sensorExchange, s =>
+                    {
+                        s.RoutingKey = cyclistKey.Replace("{intersection_id}", "*");
+                        s.ExchangeType = ExchangeType.Topic;
+                    });
                     e.Bind(sensorExchange, s =>
                     {
                         s.RoutingKey = incidentKey.Replace("{intersection_id}", "*");

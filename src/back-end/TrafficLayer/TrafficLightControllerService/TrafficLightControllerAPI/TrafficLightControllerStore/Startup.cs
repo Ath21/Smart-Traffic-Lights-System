@@ -1,15 +1,8 @@
-using System;
 using System.Text;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using RabbitMQ.Client;
 using TrafficLightControllerStore.Business;
 using TrafficLightControllerStore.Consumers;
 using TrafficLightControllerStore.Middleware;
@@ -17,151 +10,139 @@ using TrafficLightControllerStore.Publishers.Logs;
 using TrafficLightControllerStore.Repository;
 using TrafficLightData;
 
-namespace TrafficLightControllerStore
+namespace TrafficLightControllerStore;
+
+public class Startup
 {
-    public class Startup
+    private readonly IConfiguration _configuration;
+
+    public Startup(IConfiguration configuration)
     {
-        private readonly IConfiguration _configuration;
+        _configuration = configuration;
+    }
 
-        public Startup(IConfiguration configuration)
+    public void ConfigureServices(IServiceCollection services)
+    {
+        /******* [1] Redis Config (TrafficLight Cache) ********/
+        services.Configure<TrafficLightCacheSettings>(options =>
         {
-            _configuration = configuration;
-        }
+            options.Host = _configuration["Redis:TrafficLight:Host"];
+            options.Port = int.Parse(_configuration["Redis:TrafficLight:Port"] ?? "6379");
+            options.Password = _configuration["Redis:TrafficLight:Password"];
+            options.Database = int.Parse(_configuration["Redis:TrafficLight:Database"] ?? "0");
 
-        public void ConfigureServices(IServiceCollection services)
-        {
-            /******* [1] Redis Config ********/
+            options.KeyPrefix_State = _configuration["Redis:TrafficLight:KeyPrefix:State"];
+            options.KeyPrefix_Duration = _configuration["Redis:TrafficLight:KeyPrefix:Duration"];
+            options.KeyPrefix_LastUpdate = _configuration["Redis:TrafficLight:KeyPrefix:LastUpdate"];
+            options.KeyPrefix_Priority = _configuration["Redis:TrafficLight:KeyPrefix:Priority"];
+            options.KeyPrefix_QueueLength = _configuration["Redis:TrafficLight:KeyPrefix:QueueLength"];
+        });
+        services.AddSingleton<TrafficLightDbMemoryContext>();
 
-            var redisSettings = new RedisSettings();
-            _configuration.GetSection("Redis").Bind(redisSettings);
-            services.AddSingleton(redisSettings);
+        /******* [2] Repositories ********/
+        services.AddScoped<ITrafficLightRepository, TrafficLightRepository>();
 
-            services.AddSingleton<TrafficLightDbMemoryContext>();
+        /******* [3] Services ********/
+        services.AddScoped<ITrafficLightControlService, TrafficLightControlService>();
 
-            /******* [2] Repositories ********/
+        /******* [4] Automapper ********/
+        services.AddAutoMapper(typeof(TrafficLightControlStoreProfile));
 
-            services.AddScoped<ITrafficLightRepository, TrafficLightRepository>();
+        /******* [5] Publishers ********/
+        services.AddScoped<ITrafficLogPublisher, TrafficLogPublisher>();
 
-            /******* [3] Services ********/
+        /******* [6] Consumers ********/
+        services.AddScoped<TrafficLightControlConsumer>();
 
-            services.AddScoped(typeof(ITrafficLightControlService), typeof(TrafficLightControlService));
+        /******* [7] MassTransit ********/
+        services.AddTrafficLightControlMassTransit(_configuration);
 
-            /******* [4] Automapper ********/
+        /******* [8] Jwt Config ********/
+        var jwtSettings = _configuration.GetSection("Jwt");
+        var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]);
 
-            services.AddAutoMapper(typeof(TrafficLightControlStoreProfile));
-
-            /******* [5] Publishers ********/
-
-            services.AddScoped(typeof(ITrafficLogPublisher), typeof(TrafficLogPublisher));
-
-            /******* [6] Consumers ********/
-
-            services.AddScoped<TrafficLightControlConsumer>();
-
-            /******* [7] MassTransit ********/
-
-            services.AddTrafficLightControlMassTransit(_configuration);
-
-            /******* [8] Jwt Config ********/
-
-            var jwtSettings = _configuration.GetSection("Jwt");
-            var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]);
-
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options =>
-                {
-                    options.RequireHttpsMetadata = false;
-                    options.SaveToken = true;
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuer = true,
-                        ValidIssuer = jwtSettings["Issuer"],
-                        ValidateAudience = true,
-                        ValidAudience = jwtSettings["Audience"],
-                        ValidateLifetime = true,
-                        IssuerSigningKey = new SymmetricSecurityKey(key)
-                    };
-                });   
-            
-            /******* [9] CORS Policy ********/
-
-            services.AddCors(options =>
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
             {
-                options.AddPolicy("AllowFrontend", policy =>
+                options.RequireHttpsMetadata = false;
+                options.SaveToken = true;
+                options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    policy.WithOrigins("http://localhost:5173")   // Vue dev server
-                        .AllowAnyHeader()
-                        .AllowAnyMethod();
-
-                });
+                    ValidateIssuer = true,
+                    ValidIssuer = jwtSettings["Issuer"],
+                    ValidateAudience = true,
+                    ValidAudience = jwtSettings["Audience"],
+                    ValidateLifetime = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key)
+                };
             });
 
-            /******* [10] Controllers ********/
+        /******* [9] CORS Policy ********/
+        var allowedOrigins = _configuration["Cors:AllowedOrigins"]?.Split(",") ?? Array.Empty<string>();
+        var allowedMethods = _configuration["Cors:AllowedMethods"]?.Split(",") ?? new[] { "GET","POST","PUT","DELETE","PATCH" };
+        var allowedHeaders = _configuration["Cors:AllowedHeaders"]?.Split(",") ?? new[] { "Content-Type","Authorization" };
 
-            services.AddControllers()
-                .AddJsonOptions(opts => opts.JsonSerializerOptions.PropertyNamingPolicy = null);
-
-            /******* [11] Swagger ********/
-
-            services.AddSwaggerGen(c =>
+        services.AddCors(options =>
+        {
+            options.AddPolicy("AllowFrontend", policy =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo
+                policy.WithOrigins(allowedOrigins)
+                      .WithMethods(allowedMethods)
+                      .WithHeaders(allowedHeaders);
+            });
+        });
+
+        /******* [10] Controllers ********/
+        services.AddControllers()
+            .AddJsonOptions(opts => opts.JsonSerializerOptions.PropertyNamingPolicy = null);
+
+        /******* [11] Swagger ********/
+        services.AddSwaggerGen(c =>
+        {
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Traffic Light Controller API", Version = "v2.0" });
+            c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                In = ParameterLocation.Header,
+                Description = "Insert JWT token",
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                BearerFormat = "JWT",
+                Scheme = "bearer"
+            });
+            c.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
                 {
-                    Title = "Traffic Light Controller API",
-                    Version = "v2.0"
-                });
-                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-                {
-                    In = ParameterLocation.Header,
-                    Description = "Insert JWT token",
-                    Name = "Authorization",
-                    Type = SecuritySchemeType.Http,
-                    BearerFormat = "JWT",
-                    Scheme = "bearer"
-                });
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement
-                {
+                    new OpenApiSecurityScheme
                     {
-                        new OpenApiSecurityScheme
+                        Reference = new OpenApiReference
                         {
-                            Reference = new OpenApiReference
-                            {
-                                Type = ReferenceType.SecurityScheme,
-                                Id = "Bearer"
-                            }
-                        },
-                        Array.Empty<string>()
-                    }
-                });
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    Array.Empty<string>()
+                }
             });
+        });
+    }
 
-
-        }
-
-        public void Configure(WebApplication app, IWebHostEnvironment env)
+    public void Configure(WebApplication app, IWebHostEnvironment env)
+    {
+        if (env.IsDevelopment() || env.IsProduction())
         {
-            if (env.IsDevelopment() || env.IsProduction())
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
             {
-                app.UseSwagger();
-                app.UseSwaggerUI(c =>
-                {
-                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Traffic Light Controller API");
-                });
-            }
-
-            app.UseHttpsRedirection();
-
-            // Exception Middleware
-            app.UseMiddleware<ExceptionMiddleware>();
-
-            app.UseCors("AllowFrontend");
-
-            app.UseAuthentication();
-            app.UseAuthorization();
-
-            app.MapControllers();
-
-            app.Run();
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Traffic Light Controller API");
+            });
         }
+
+        app.UseHttpsRedirection();
+        app.UseMiddleware<ExceptionMiddleware>();
+        app.UseCors("AllowFrontend");
+        app.UseAuthentication();
+        app.UseAuthorization();
+        app.MapControllers();
+        app.Run();
     }
 }
