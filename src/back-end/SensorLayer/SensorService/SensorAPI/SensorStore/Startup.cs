@@ -5,9 +5,15 @@ using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using SensorStore.Middleware;
 using SensorStore.Publishers;
 using SensorStore.Publishers.Count;
 using SensorStore.Publishers.Logs;
+using SensorStore.Repositories.Cache;
+using SensorStore.Repositories.Cyclist;
+using SensorStore.Repositories.Metrics;
+using SensorStore.Repositories.Pedestrian;
+using SensorStore.Repositories.Vehicle;
 
 namespace SensorStore;
 
@@ -53,7 +59,11 @@ public class Startup
         });
 
         /******* [3] Repositories ********/
-        services.AddScoped(typeof(ISensorRepository), typeof(SensorRepository));
+        services.AddScoped(typeof(IVehicleCountRepository), typeof(VehicleCountRepository));
+        services.AddScoped(typeof(IPedestrianCountRepository), typeof(PedestrianCountRepository));
+        services.AddScoped(typeof(ICyclistCountRepository), typeof(CyclistCountRepository));
+        services.AddScoped(typeof(ISensorCacheRepository), typeof(SensorCacheRepository));
+        services.AddScoped(typeof(IMetricRepository), typeof(MetricRepository));
 
         /******* [4] Services ********/
         services.AddScoped(typeof(ISensorService), typeof(SensorService));

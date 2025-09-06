@@ -8,6 +8,10 @@ using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using DetectionCacheData;
+using DetectionStore.Repositories.EmergencyVehicle;
+using DetectionStore.Repositories.PublicTransport;
+using DetectionStore.Repositories.Incident;
 
 namespace DetectionStore;
 
@@ -37,7 +41,7 @@ public class Startup
         services.AddSingleton<DetectionDbContext>();
 
         /******* [2] Redis Config ********/
-        services.Configure<DetectionCacheSettings>(options =>
+        services.Configure<DetectionCacheDbSettings>(options =>
         {
             options.Host = _configuration["Redis:Host"];
             options.Port = int.Parse(_configuration["Redis:Port"] ?? "6379");
@@ -53,7 +57,9 @@ public class Startup
         });
 
         /******* [3] Repositories ********/
-        services.AddScoped<IDetectionRepository, DetectionRepository>();
+        services.AddScoped(typeof(IEmergencyVehicleDetectionRepository), typeof(EmergencyVehicleDetectionRepository));
+        services.AddScoped(typeof(IPublicTransportDetectionRepository), typeof(PublicTransportDetectionRepository));
+        services.AddScoped(typeof(IIncidentDetectionRepository), typeof(IncidentDetectionRepository));
 
         /******* [4] Services ********/
         services.AddScoped<IDetectionService, DetectionService>();
