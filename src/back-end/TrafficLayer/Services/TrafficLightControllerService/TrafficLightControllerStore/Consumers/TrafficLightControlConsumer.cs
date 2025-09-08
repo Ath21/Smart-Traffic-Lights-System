@@ -2,8 +2,8 @@ using System;
 using System.Threading.Tasks;
 using MassTransit;
 using Microsoft.Extensions.Logging;
+using TrafficLightCacheData.Repositories.Light;
 using TrafficMessages;
-using TrafficLightControllerStore.Repository;
 
 namespace TrafficLightControllerStore.Consumers;
 

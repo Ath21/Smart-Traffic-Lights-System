@@ -13,11 +13,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogMessages/LogMessages.csproj",
+      "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/LogMessages/LogMessages.csproj",
       "projectName": "LogMessages",
-      "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogMessages/LogMessages.csproj",
+      "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/LogMessages/LogMessages.csproj",
       "packagesPath": "/home/ath/.nuget/packages/",
-      "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogMessages/obj/",
+      "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/LogMessages/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/home/ath/.nuget/NuGet/NuGet.Config"

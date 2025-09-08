@@ -694,6 +694,20 @@
           "buildTransitive/net6.0/_._": {}
         }
       },
+      "DetectionCacheData/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "dependencies": {
+          "Microsoft.Extensions.Options": "9.0.6",
+          "StackExchange.Redis": "2.9.11"
+        },
+        "compile": {
+          "bin/placeholder/DetectionCacheData.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/DetectionCacheData.dll": {}
+        }
+      },
       "LogMessages/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
@@ -714,7 +728,7 @@
           "bin/placeholder/SensorMessages.dll": {}
         }
       },
-      "TrafficLightData/1.0.0": {
+      "TrafficLightCacheData/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
@@ -723,10 +737,10 @@
           "StackExchange.Redis": "2.9.11"
         },
         "compile": {
-          "bin/placeholder/TrafficLightData.dll": {}
+          "bin/placeholder/TrafficLightCacheData.dll": {}
         },
         "runtime": {
-          "bin/placeholder/TrafficLightData.dll": {}
+          "bin/placeholder/TrafficLightCacheData.dll": {}
         }
       },
       "TrafficMessages/1.0.0": {
@@ -1766,30 +1780,36 @@
         "useSharedDesignerContext.txt"
       ]
     },
+    "DetectionCacheData/1.0.0": {
+      "type": "project",
+      "path": "../../../../SensorLayer/Databases/DetectionCacheDB/DetectionCacheData/DetectionCacheData.csproj",
+      "msbuildProject": "../../../../SensorLayer/Databases/DetectionCacheDB/DetectionCacheData/DetectionCacheData.csproj"
+    },
     "LogMessages/1.0.0": {
       "type": "project",
-      "path": "../../../../LogLayer/LogMessages/LogMessages.csproj",
-      "msbuildProject": "../../../../LogLayer/LogMessages/LogMessages.csproj"
+      "path": "../../../../MessageLayer/LogMessages/LogMessages.csproj",
+      "msbuildProject": "../../../../MessageLayer/LogMessages/LogMessages.csproj"
     },
     "SensorMessages/1.0.0": {
       "type": "project",
-      "path": "../../../../SensorLayer/SensorMessages/SensorMessages.csproj",
-      "msbuildProject": "../../../../SensorLayer/SensorMessages/SensorMessages.csproj"
+      "path": "../../../../MessageLayer/SensorMessages/SensorMessages.csproj",
+      "msbuildProject": "../../../../MessageLayer/SensorMessages/SensorMessages.csproj"
     },
-    "TrafficLightData/1.0.0": {
+    "TrafficLightCacheData/1.0.0": {
       "type": "project",
-      "path": "../../../TrafficLightMemoryDB/TrafficLightData/TrafficLightData.csproj",
-      "msbuildProject": "../../../TrafficLightMemoryDB/TrafficLightData/TrafficLightData.csproj"
+      "path": "../../../Databases/TrafficLightCacheDB/TrafficLightCacheData/TrafficLightCacheData.csproj",
+      "msbuildProject": "../../../Databases/TrafficLightCacheDB/TrafficLightCacheData/TrafficLightCacheData.csproj"
     },
     "TrafficMessages/1.0.0": {
       "type": "project",
-      "path": "../../../TrafficMessages/TrafficMessages.csproj",
-      "msbuildProject": "../../../TrafficMessages/TrafficMessages.csproj"
+      "path": "../../../../MessageLayer/TrafficMessages/TrafficMessages.csproj",
+      "msbuildProject": "../../../../MessageLayer/TrafficMessages/TrafficMessages.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net9.0": [
       "AutoMapper >= 14.0.0",
+      "DetectionCacheData >= 1.0.0",
       "LogMessages >= 1.0.0",
       "MassTransit >= 8.5.0",
       "MassTransit.RabbitMQ >= 8.5.0",
@@ -1800,7 +1820,7 @@
       "SensorMessages >= 1.0.0",
       "StackExchange.Redis >= 2.9.11",
       "Swashbuckle.AspNetCore >= 9.0.1",
-      "TrafficLightData >= 1.0.0",
+      "TrafficLightCacheData >= 1.0.0",
       "TrafficMessages >= 1.0.0"
     ]
   },
@@ -1810,11 +1830,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/IntersectionControllerService/IntersectionControllerAPI/IntersectionControllerStore/IntersectionControllerStore.csproj",
+      "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/IntersectionControllerService/IntersectionControllerStore/IntersectionControllerStore.csproj",
       "projectName": "IntersectionControllerStore",
-      "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/IntersectionControllerService/IntersectionControllerAPI/IntersectionControllerStore/IntersectionControllerStore.csproj",
+      "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/IntersectionControllerService/IntersectionControllerStore/IntersectionControllerStore.csproj",
       "packagesPath": "/home/ath/.nuget/packages/",
-      "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/IntersectionControllerService/IntersectionControllerAPI/IntersectionControllerStore/obj/",
+      "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/IntersectionControllerService/IntersectionControllerStore/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/home/ath/.nuget/NuGet/NuGet.Config"
@@ -1829,17 +1849,20 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
-            "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogMessages/LogMessages.csproj": {
-              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogMessages/LogMessages.csproj"
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/LogMessages/LogMessages.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/LogMessages/LogMessages.csproj"
             },
-            "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/SensorMessages/SensorMessages.csproj": {
-              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/SensorMessages/SensorMessages.csproj"
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/SensorMessages/SensorMessages.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/SensorMessages/SensorMessages.csproj"
             },
-            "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficLightMemoryDB/TrafficLightData/TrafficLightData.csproj": {
-              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficLightMemoryDB/TrafficLightData/TrafficLightData.csproj"
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/TrafficMessages/TrafficMessages.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/TrafficMessages/TrafficMessages.csproj"
             },
-            "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficMessages/TrafficMessages.csproj": {
-              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficMessages/TrafficMessages.csproj"
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Databases/DetectionCacheDB/DetectionCacheData/DetectionCacheData.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Databases/DetectionCacheDB/DetectionCacheData/DetectionCacheData.csproj"
+            },
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Databases/TrafficLightCacheDB/TrafficLightCacheData/TrafficLightCacheData.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Databases/TrafficLightCacheDB/TrafficLightCacheData/TrafficLightCacheData.csproj"
             }
           }
         }

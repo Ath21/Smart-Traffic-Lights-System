@@ -1,6 +1,6 @@
 using UserData.Entities;
 
-namespace UserData.Repository.Ses;
+namespace UserData.Repositories.Ses;
 
 public interface ISessionRepository
 {

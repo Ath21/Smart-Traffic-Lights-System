@@ -12,6 +12,7 @@ using TrafficAnalyticsStore.Business;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using DetectionCacheData;
 
 namespace TrafficAnalyticsStore;
 
@@ -30,7 +31,7 @@ public class Startup
         services.AddDbContext<TrafficAnalyticsDbContext>();
 
         /******* [2] Redis (Detection Cache) ********/
-        services.Configure<RedisSettings>(options =>
+        services.Configure<DetectionCacheDbSettings>(options =>
         {
             options.Host = _configuration["Redis:Host"];
             options.Port = int.Parse(_configuration["Redis:Port"] ?? "6379");
@@ -44,7 +45,7 @@ public class Startup
             options.KeyPrefix_PublicTransportDetected = _configuration["Redis:KeyPrefix:PublicTransportDetected"];
             options.KeyPrefix_IncidentDetected = _configuration["Redis:KeyPrefix:IncidentDetected"];
         });
-        services.AddSingleton<RedisCacheContext>();
+        services.AddSingleton<DetectionCacheDbContext>();
 
         /******* [3] Repositories ********/
         services.AddScoped<IDailySummaryRepository, DailySummaryRepository>();

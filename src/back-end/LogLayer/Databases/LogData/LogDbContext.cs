@@ -11,10 +11,10 @@ public class LogDbContext
     public LogDbContext(IOptions<LogDbSettings> logDbSettings)
     {
         var mongoClient = new MongoClient(logDbSettings.Value.ConnectionString);
-        _database = mongoClient.GetDatabase(logDbSettings.Value.DatabaseName);
+        _database = mongoClient.GetDatabase(logDbSettings.Value.Database);
 
-        AuditLogs = _database.GetCollection<AuditLog>(logDbSettings.Value.AuditLogsCollectionName);
-        ErrorLogs = _database.GetCollection<ErrorLog>(logDbSettings.Value.ErrorLogsCollectionName);
+        AuditLogs = _database.GetCollection<AuditLog>(logDbSettings.Value.AuditLogsCollection);
+        ErrorLogs = _database.GetCollection<ErrorLog>(logDbSettings.Value.ErrorLogsCollection);
     }
 
     public IMongoCollection<AuditLog> AuditLogs { get; }

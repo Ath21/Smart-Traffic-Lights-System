@@ -760,11 +760,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/NotificationService/NotificationAPI/NotificationData/NotificationData.csproj",
+      "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Databases/NotificationDB/NotificationData/NotificationData.csproj",
       "projectName": "NotificationData",
-      "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/NotificationService/NotificationAPI/NotificationData/NotificationData.csproj",
+      "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Databases/NotificationDB/NotificationData/NotificationData.csproj",
       "packagesPath": "/home/ath/.nuget/packages/",
-      "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/NotificationService/NotificationAPI/NotificationData/obj/",
+      "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Databases/NotificationDB/NotificationData/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/home/ath/.nuget/NuGet/NuGet.Config"

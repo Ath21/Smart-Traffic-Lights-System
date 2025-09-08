@@ -1122,6 +1122,22 @@
           }
         }
       },
+      "Pipelines.Sockets.Unofficial/2.2.8": {
+        "type": "package",
+        "dependencies": {
+          "System.IO.Pipelines": "5.0.1"
+        },
+        "compile": {
+          "lib/net5.0/Pipelines.Sockets.Unofficial.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net5.0/Pipelines.Sockets.Unofficial.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "RabbitMQ.Client/7.0.0": {
         "type": "package",
         "dependencies": {
@@ -1135,6 +1151,23 @@
         },
         "runtime": {
           "lib/net8.0/RabbitMQ.Client.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "StackExchange.Redis/2.9.11": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.Logging.Abstractions": "8.0.0",
+          "Pipelines.Sockets.Unofficial": "2.2.8"
+        },
+        "compile": {
+          "lib/net8.0/StackExchange.Redis.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/StackExchange.Redis.dll": {
             "related": ".xml"
           }
         }
@@ -1468,6 +1501,21 @@
         },
         "runtime": {
           "bin/placeholder/LogMessages.dll": {}
+        }
+      },
+      "TrafficLightCacheData/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "dependencies": {
+          "Microsoft.Extensions.Configuration.Abstractions": "9.0.0",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.0",
+          "StackExchange.Redis": "2.9.11"
+        },
+        "compile": {
+          "bin/placeholder/TrafficLightCacheData.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/TrafficLightCacheData.dll": {}
         }
       },
       "TrafficLightCoordinatorData/1.0.0": {
@@ -3789,6 +3837,29 @@
         "postgresql.png"
       ]
     },
+    "Pipelines.Sockets.Unofficial/2.2.8": {
+      "sha512": "zG2FApP5zxSx6OcdJQLbZDk2AVlN2BNQD6MorwIfV6gVj0RRxWPEp2LXAxqDGZqeNV1Zp0BNPcNaey/GXmTdvQ==",
+      "type": "package",
+      "path": "pipelines.sockets.unofficial/2.2.8",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net461/Pipelines.Sockets.Unofficial.dll",
+        "lib/net461/Pipelines.Sockets.Unofficial.xml",
+        "lib/net472/Pipelines.Sockets.Unofficial.dll",
+        "lib/net472/Pipelines.Sockets.Unofficial.xml",
+        "lib/net5.0/Pipelines.Sockets.Unofficial.dll",
+        "lib/net5.0/Pipelines.Sockets.Unofficial.xml",
+        "lib/netcoreapp3.1/Pipelines.Sockets.Unofficial.dll",
+        "lib/netcoreapp3.1/Pipelines.Sockets.Unofficial.xml",
+        "lib/netstandard2.0/Pipelines.Sockets.Unofficial.dll",
+        "lib/netstandard2.0/Pipelines.Sockets.Unofficial.xml",
+        "lib/netstandard2.1/Pipelines.Sockets.Unofficial.dll",
+        "lib/netstandard2.1/Pipelines.Sockets.Unofficial.xml",
+        "pipelines.sockets.unofficial.2.2.8.nupkg.sha512",
+        "pipelines.sockets.unofficial.nuspec"
+      ]
+    },
     "RabbitMQ.Client/7.0.0": {
       "sha512": "8YJz22mOSMtkbIVuVSz2HbJwbpKwRoXQ1uqbczDUt1w1Ds8dxFs6dkV/oZ8AlTmkErZjtQelHv+oBu52ud00WA==",
       "type": "package",
@@ -3804,6 +3875,30 @@
         "lib/netstandard2.0/RabbitMQ.Client.xml",
         "rabbitmq.client.7.0.0.nupkg.sha512",
         "rabbitmq.client.nuspec"
+      ]
+    },
+    "StackExchange.Redis/2.9.11": {
+      "sha512": "3J0qv0qFhMeCe2ZApnbbC6ZgNs/iTdmqvFyN/tIw5A0CTlABF1BJh86D3Cf03V9FoftvqeKeAnOkJAHTHpm1xA==",
+      "type": "package",
+      "path": "stackexchange.redis/2.9.11",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "lib/net461/StackExchange.Redis.dll",
+        "lib/net461/StackExchange.Redis.xml",
+        "lib/net472/StackExchange.Redis.dll",
+        "lib/net472/StackExchange.Redis.xml",
+        "lib/net6.0/StackExchange.Redis.dll",
+        "lib/net6.0/StackExchange.Redis.xml",
+        "lib/net8.0/StackExchange.Redis.dll",
+        "lib/net8.0/StackExchange.Redis.xml",
+        "lib/netcoreapp3.1/StackExchange.Redis.dll",
+        "lib/netcoreapp3.1/StackExchange.Redis.xml",
+        "lib/netstandard2.0/StackExchange.Redis.dll",
+        "lib/netstandard2.0/StackExchange.Redis.xml",
+        "stackexchange.redis.2.9.11.nupkg.sha512",
+        "stackexchange.redis.nuspec"
       ]
     },
     "Swashbuckle.AspNetCore/6.6.2": {
@@ -4352,18 +4447,23 @@
     },
     "LogMessages/1.0.0": {
       "type": "project",
-      "path": "../../../../LogLayer/LogMessages/LogMessages.csproj",
-      "msbuildProject": "../../../../LogLayer/LogMessages/LogMessages.csproj"
+      "path": "../../../../MessageLayer/LogMessages/LogMessages.csproj",
+      "msbuildProject": "../../../../MessageLayer/LogMessages/LogMessages.csproj"
+    },
+    "TrafficLightCacheData/1.0.0": {
+      "type": "project",
+      "path": "../../../Databases/TrafficLightCacheDB/TrafficLightCacheData/TrafficLightCacheData.csproj",
+      "msbuildProject": "../../../Databases/TrafficLightCacheDB/TrafficLightCacheData/TrafficLightCacheData.csproj"
     },
     "TrafficLightCoordinatorData/1.0.0": {
       "type": "project",
-      "path": "../TrafficLightCoordinatorData/TrafficLightCoordinatorData.csproj",
-      "msbuildProject": "../TrafficLightCoordinatorData/TrafficLightCoordinatorData.csproj"
+      "path": "../../../Databases/TrafficLightDB/TrafficLightCoordinatorData/TrafficLightCoordinatorData.csproj",
+      "msbuildProject": "../../../Databases/TrafficLightDB/TrafficLightCoordinatorData/TrafficLightCoordinatorData.csproj"
     },
     "TrafficMessages/1.0.0": {
       "type": "project",
-      "path": "../../../TrafficMessages/TrafficMessages.csproj",
-      "msbuildProject": "../../../TrafficMessages/TrafficMessages.csproj"
+      "path": "../../../../MessageLayer/TrafficMessages/TrafficMessages.csproj",
+      "msbuildProject": "../../../../MessageLayer/TrafficMessages/TrafficMessages.csproj"
     }
   },
   "projectFileDependencyGroups": {
@@ -4381,6 +4481,7 @@
       "Npgsql.EntityFrameworkCore.PostgreSQL >= 9.0.4",
       "Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite >= 9.0.4",
       "Swashbuckle.AspNetCore >= 6.6.2",
+      "TrafficLightCacheData >= 1.0.0",
       "TrafficLightCoordinatorData >= 1.0.0",
       "TrafficMessages >= 1.0.0"
     ]
@@ -4391,11 +4492,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficLightCoordinatorService/TrafficLightCoordinatorAPI/TrafficLightCoordinatorStore/TrafficLightCoordinatorStore.csproj",
+      "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/TrafficLightCoordinatorStore.csproj",
       "projectName": "TrafficLightCoordinatorStore",
-      "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficLightCoordinatorService/TrafficLightCoordinatorAPI/TrafficLightCoordinatorStore/TrafficLightCoordinatorStore.csproj",
+      "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/TrafficLightCoordinatorStore.csproj",
       "packagesPath": "/home/ath/.nuget/packages/",
-      "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficLightCoordinatorService/TrafficLightCoordinatorAPI/TrafficLightCoordinatorStore/obj/",
+      "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/home/ath/.nuget/NuGet/NuGet.Config"
@@ -4410,14 +4511,17 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
-            "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogMessages/LogMessages.csproj": {
-              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogMessages/LogMessages.csproj"
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/LogMessages/LogMessages.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/LogMessages/LogMessages.csproj"
             },
-            "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficLightCoordinatorService/TrafficLightCoordinatorAPI/TrafficLightCoordinatorData/TrafficLightCoordinatorData.csproj": {
-              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficLightCoordinatorService/TrafficLightCoordinatorAPI/TrafficLightCoordinatorData/TrafficLightCoordinatorData.csproj"
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/TrafficMessages/TrafficMessages.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/TrafficMessages/TrafficMessages.csproj"
             },
-            "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficMessages/TrafficMessages.csproj": {
-              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficMessages/TrafficMessages.csproj"
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Databases/TrafficLightCacheDB/TrafficLightCacheData/TrafficLightCacheData.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Databases/TrafficLightCacheDB/TrafficLightCacheData/TrafficLightCacheData.csproj"
+            },
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Databases/TrafficLightDB/TrafficLightCoordinatorData/TrafficLightCoordinatorData.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Databases/TrafficLightDB/TrafficLightCoordinatorData/TrafficLightCoordinatorData.csproj"
             }
           }
         }

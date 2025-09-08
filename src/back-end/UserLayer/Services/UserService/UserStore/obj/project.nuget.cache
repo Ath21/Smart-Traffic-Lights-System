@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "laxEoA02n1s=",
+  "dgSpecHash": "mtkNadh9ZLQ=",
   "success": true,
-  "projectFilePath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserService/UserAPI/UserStore/UserStore.csproj",
+  "projectFilePath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Services/UserService/UserStore/UserStore.csproj",
   "expectedPackageFiles": [
     "/home/ath/.nuget/packages/automapper/12.0.1/automapper.12.0.1.nupkg.sha512",
     "/home/ath/.nuget/packages/automapper.extensions.microsoft.dependencyinjection/12.0.1/automapper.extensions.microsoft.dependencyinjection.12.0.1.nupkg.sha512",

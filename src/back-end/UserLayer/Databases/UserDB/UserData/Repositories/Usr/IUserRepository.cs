@@ -1,6 +1,6 @@
 using UserData.Entities;
 
-namespace UserData.Repository.Usr;
+namespace UserData.Repositories.Usr;
 
 public interface IUserRepository
 {

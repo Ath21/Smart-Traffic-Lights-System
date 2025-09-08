@@ -907,6 +907,7 @@
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
           "Microsoft.Extensions.Options": "9.0.6",
+          "Newtonsoft.Json": "13.0.3",
           "StackExchange.Redis": "2.9.11"
         },
         "compile": {
@@ -2375,23 +2376,23 @@
     },
     "DetectionCacheData/1.0.0": {
       "type": "project",
-      "path": "../../../DetectionCacheDB/DetectionCacheData/DetectionCacheData.csproj",
-      "msbuildProject": "../../../DetectionCacheDB/DetectionCacheData/DetectionCacheData.csproj"
+      "path": "../../../Databases/DetectionCacheDB/DetectionCacheData/DetectionCacheData.csproj",
+      "msbuildProject": "../../../Databases/DetectionCacheDB/DetectionCacheData/DetectionCacheData.csproj"
     },
     "DetectionData/1.0.0": {
       "type": "project",
-      "path": "../../../DetectionDB/DetectionData/DetectionData.csproj",
-      "msbuildProject": "../../../DetectionDB/DetectionData/DetectionData.csproj"
+      "path": "../../../Databases/DetectionDB/DetectionData/DetectionData.csproj",
+      "msbuildProject": "../../../Databases/DetectionDB/DetectionData/DetectionData.csproj"
     },
     "LogMessages/1.0.0": {
       "type": "project",
-      "path": "../../../../LogLayer/LogMessages/LogMessages.csproj",
-      "msbuildProject": "../../../../LogLayer/LogMessages/LogMessages.csproj"
+      "path": "../../../../MessageLayer/LogMessages/LogMessages.csproj",
+      "msbuildProject": "../../../../MessageLayer/LogMessages/LogMessages.csproj"
     },
     "SensorMessages/1.0.0": {
       "type": "project",
-      "path": "../../../SensorMessages/SensorMessages.csproj",
-      "msbuildProject": "../../../SensorMessages/SensorMessages.csproj"
+      "path": "../../../../MessageLayer/SensorMessages/SensorMessages.csproj",
+      "msbuildProject": "../../../../MessageLayer/SensorMessages/SensorMessages.csproj"
     }
   },
   "projectFileDependencyGroups": {
@@ -2419,11 +2420,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/SensorService/SensorAPI/SensorStore/SensorStore.csproj",
+      "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/SensorService/SensorStore/SensorStore.csproj",
       "projectName": "SensorStore",
-      "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/SensorService/SensorAPI/SensorStore/SensorStore.csproj",
+      "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/SensorService/SensorStore/SensorStore.csproj",
       "packagesPath": "/home/ath/.nuget/packages/",
-      "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/SensorService/SensorAPI/SensorStore/obj/",
+      "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/SensorService/SensorStore/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/home/ath/.nuget/NuGet/NuGet.Config"
@@ -2438,17 +2439,17 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
-            "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogMessages/LogMessages.csproj": {
-              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogMessages/LogMessages.csproj"
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/LogMessages/LogMessages.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/LogMessages/LogMessages.csproj"
             },
-            "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/DetectionCacheDB/DetectionCacheData/DetectionCacheData.csproj": {
-              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/DetectionCacheDB/DetectionCacheData/DetectionCacheData.csproj"
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/SensorMessages/SensorMessages.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/SensorMessages/SensorMessages.csproj"
             },
-            "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/DetectionDB/DetectionData/DetectionData.csproj": {
-              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/DetectionDB/DetectionData/DetectionData.csproj"
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Databases/DetectionCacheDB/DetectionCacheData/DetectionCacheData.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Databases/DetectionCacheDB/DetectionCacheData/DetectionCacheData.csproj"
             },
-            "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/SensorMessages/SensorMessages.csproj": {
-              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/SensorMessages/SensorMessages.csproj"
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Databases/DetectionDB/DetectionData/DetectionData.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Databases/DetectionDB/DetectionData/DetectionData.csproj"
             }
           }
         }

@@ -1,9 +1,9 @@
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using TrafficMessages;
-using TrafficLightControllerStore.Repository;
 using TrafficLightControllerStore.Models.Dtos;
 using TrafficLightControllerStore.Publishers.Logs;
+using TrafficLightCacheData.Repositories.Light;
 
 namespace TrafficLightControllerStore.Business;
 
@@ -45,7 +45,6 @@ public class TrafficLightControlService : ITrafficLightControlService
         {
             // Save state & control event in Redis
             await _repository.SetLightStateAsync(intersectionId, lightId, newState);
-            await _repository.SaveControlEventAsync(intersectionId, lightId, newState);
 
             // Publish to RabbitMQ
             var key = _controlKey
@@ -92,16 +91,20 @@ public class TrafficLightControlService : ITrafficLightControlService
     {
         var lights = new List<TrafficLightDto>();
 
-        var lastControl = await _repository.GetLastControlEventAsync(intersectionId, Guid.Empty);
+        var lastControl = await _repository.GetLightStatesAsync(intersectionId); 
         if (lastControl != null)
         {
-            lights.Add(new TrafficLightDto
+            foreach (var kvp in lastControl)
             {
-                IntersectionId = intersectionId,
-                LightId = Guid.Empty, // until registry exists
-                State = lastControl,
-                UpdatedAt = DateTime.UtcNow
-            });
+                // If you have a way to map kvp.Key (string) to Guid, do it here. Otherwise, keep as Guid.Empty.
+                lights.Add(new TrafficLightDto
+                {
+                    IntersectionId = intersectionId,
+                    LightId = Guid.TryParse(kvp.Key, out var lid) ? lid : Guid.Empty,
+                    State = kvp.Value,
+                    UpdatedAt = DateTime.UtcNow
+                });
+            }
         }
 
         return lights;
@@ -109,14 +112,14 @@ public class TrafficLightControlService : ITrafficLightControlService
 
     public async Task<IEnumerable<ControlEventDto>> GetLastControlEventsAsync(Guid intersectionId)
     {
-        var events = await _repository.GetControlEventsAsync(intersectionId);
+        var events = await _repository.GetLightStatesAsync(intersectionId);
 
         return events.Select(e => new ControlEventDto
         {
             IntersectionId = intersectionId,
-            LightId = e.LightId,
-            Command = e.Command,
-            Timestamp = e.Timestamp
+            LightId = Guid.TryParse(e.Key, out var lid) ? lid : Guid.Empty,
+            Command = e.Value, // Assuming e.Value is the command string
+            Timestamp = DateTime.UtcNow // Or replace with actual timestamp if available
         });
     }
 }

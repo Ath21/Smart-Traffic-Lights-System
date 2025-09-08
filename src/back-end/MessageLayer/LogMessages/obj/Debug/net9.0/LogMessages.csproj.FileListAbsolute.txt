@@ -10,3 +10,15 @@
 /home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogMessages/obj/Debug/net9.0/refint/LogMessages.dll
 /home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogMessages/obj/Debug/net9.0/LogMessages.pdb
 /home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogMessages/obj/Debug/net9.0/ref/LogMessages.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/LogMessages/bin/Debug/net9.0/LogMessages.deps.json
+/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/LogMessages/bin/Debug/net9.0/LogMessages.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/LogMessages/bin/Debug/net9.0/LogMessages.pdb
+/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/LogMessages/obj/Debug/net9.0/LogMessages.GeneratedMSBuildEditorConfig.editorconfig
+/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/LogMessages/obj/Debug/net9.0/LogMessages.AssemblyInfoInputs.cache
+/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/LogMessages/obj/Debug/net9.0/LogMessages.AssemblyInfo.cs
+/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/LogMessages/obj/Debug/net9.0/LogMessages.csproj.CoreCompileInputs.cache
+/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/LogMessages/obj/Debug/net9.0/LogMessages.sourcelink.json
+/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/LogMessages/obj/Debug/net9.0/LogMessages.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/LogMessages/obj/Debug/net9.0/refint/LogMessages.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/LogMessages/obj/Debug/net9.0/LogMessages.pdb
+/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/LogMessages/obj/Debug/net9.0/ref/LogMessages.dll

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "AseO8VJAGoA=",
+  "dgSpecHash": "d6D0Uqybf3A=",
   "success": true,
-  "projectFilePath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/SensorMessages/SensorMessages.csproj",
+  "projectFilePath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/SensorMessages/SensorMessages.csproj",
   "expectedPackageFiles": [],
   "logs": []
 }

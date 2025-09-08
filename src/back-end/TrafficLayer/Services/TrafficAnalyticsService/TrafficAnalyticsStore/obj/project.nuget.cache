@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "X1eoSDcpf/o=",
+  "dgSpecHash": "2nB6mmKeUqM=",
   "success": true,
-  "projectFilePath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficAnalyticsService/TrafficAnalyticsAPI/TrafficAnalyticsStore/TrafficAnalyticsStore.csproj",
+  "projectFilePath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficAnalyticsService/TrafficAnalyticsStore/TrafficAnalyticsStore.csproj",
   "expectedPackageFiles": [
     "/home/ath/.nuget/packages/automapper/14.0.0/automapper.14.0.0.nupkg.sha512",
     "/home/ath/.nuget/packages/humanizer.core/2.14.1/humanizer.core.2.14.1.nupkg.sha512",
@@ -52,7 +52,9 @@
     "/home/ath/.nuget/packages/mono.texttemplating/3.0.0/mono.texttemplating.3.0.0.nupkg.sha512",
     "/home/ath/.nuget/packages/npgsql/9.0.3/npgsql.9.0.3.nupkg.sha512",
     "/home/ath/.nuget/packages/npgsql.entityframeworkcore.postgresql/9.0.4/npgsql.entityframeworkcore.postgresql.9.0.4.nupkg.sha512",
+    "/home/ath/.nuget/packages/pipelines.sockets.unofficial/2.2.8/pipelines.sockets.unofficial.2.2.8.nupkg.sha512",
     "/home/ath/.nuget/packages/rabbitmq.client/7.1.2/rabbitmq.client.7.1.2.nupkg.sha512",
+    "/home/ath/.nuget/packages/stackexchange.redis/2.9.11/stackexchange.redis.2.9.11.nupkg.sha512",
     "/home/ath/.nuget/packages/swashbuckle.aspnetcore/9.0.1/swashbuckle.aspnetcore.9.0.1.nupkg.sha512",
     "/home/ath/.nuget/packages/swashbuckle.aspnetcore.swagger/9.0.1/swashbuckle.aspnetcore.swagger.9.0.1.nupkg.sha512",
     "/home/ath/.nuget/packages/swashbuckle.aspnetcore.swaggergen/9.0.1/swashbuckle.aspnetcore.swaggergen.9.0.1.nupkg.sha512",

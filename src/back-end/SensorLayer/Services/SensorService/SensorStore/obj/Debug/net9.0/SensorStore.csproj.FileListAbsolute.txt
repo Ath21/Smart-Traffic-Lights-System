@@ -1,0 +1,9 @@
+/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/SensorService/SensorStore/obj/Debug/net9.0/SensorStore.csproj.AssemblyReference.cache
+/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/SensorService/SensorStore/obj/Debug/net9.0/rpswa.dswa.cache.json
+/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/SensorService/SensorStore/obj/Debug/net9.0/SensorStore.GeneratedMSBuildEditorConfig.editorconfig
+/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/SensorService/SensorStore/obj/Debug/net9.0/SensorStore.AssemblyInfoInputs.cache
+/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/SensorService/SensorStore/obj/Debug/net9.0/SensorStore.AssemblyInfo.cs
+/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/SensorService/SensorStore/obj/Debug/net9.0/SensorStore.csproj.CoreCompileInputs.cache
+/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/SensorService/SensorStore/obj/Debug/net9.0/SensorStore.MvcApplicationPartsAssemblyInfo.cs
+/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/SensorService/SensorStore/obj/Debug/net9.0/SensorStore.MvcApplicationPartsAssemblyInfo.cache
+/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/SensorService/SensorStore/obj/Debug/net9.0/SensorStore.sourcelink.json

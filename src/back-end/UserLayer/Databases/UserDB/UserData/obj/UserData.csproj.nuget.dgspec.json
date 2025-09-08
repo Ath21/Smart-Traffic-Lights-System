@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserService/UserAPI/UserData/UserData.csproj": {}
+    "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Databases/UserDB/UserData/UserData.csproj": {}
   },
   "projects": {
-    "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserService/UserAPI/UserData/UserData.csproj": {
+    "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Databases/UserDB/UserData/UserData.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserService/UserAPI/UserData/UserData.csproj",
+        "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Databases/UserDB/UserData/UserData.csproj",
         "projectName": "UserData",
-        "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserService/UserAPI/UserData/UserData.csproj",
+        "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Databases/UserDB/UserData/UserData.csproj",
         "packagesPath": "/home/ath/.nuget/packages/",
-        "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserService/UserAPI/UserData/obj/",
+        "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Databases/UserDB/UserData/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/home/ath/.nuget/NuGet/NuGet.Config"

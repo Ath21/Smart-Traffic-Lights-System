@@ -2318,23 +2318,23 @@
     },
     "LogMessages/1.0.0": {
       "type": "project",
-      "path": "../../../../LogLayer/LogMessages/LogMessages.csproj",
-      "msbuildProject": "../../../../LogLayer/LogMessages/LogMessages.csproj"
+      "path": "../../../../MessageLayer/LogMessages/LogMessages.csproj",
+      "msbuildProject": "../../../../MessageLayer/LogMessages/LogMessages.csproj"
     },
     "NotificationData/1.0.0": {
       "type": "project",
-      "path": "../NotificationData/NotificationData.csproj",
-      "msbuildProject": "../NotificationData/NotificationData.csproj"
+      "path": "../../../Databases/NotificationDB/NotificationData/NotificationData.csproj",
+      "msbuildProject": "../../../Databases/NotificationDB/NotificationData/NotificationData.csproj"
     },
     "TrafficMessages/1.0.0": {
       "type": "project",
-      "path": "../../../../TrafficLayer/TrafficMessages/TrafficMessages.csproj",
-      "msbuildProject": "../../../../TrafficLayer/TrafficMessages/TrafficMessages.csproj"
+      "path": "../../../../MessageLayer/TrafficMessages/TrafficMessages.csproj",
+      "msbuildProject": "../../../../MessageLayer/TrafficMessages/TrafficMessages.csproj"
     },
     "UserMessages/1.0.0": {
       "type": "project",
-      "path": "../../../UserMessages/UserMessages.csproj",
-      "msbuildProject": "../../../UserMessages/UserMessages.csproj"
+      "path": "../../../../MessageLayer/UserMessages/UserMessages.csproj",
+      "msbuildProject": "../../../../MessageLayer/UserMessages/UserMessages.csproj"
     }
   },
   "projectFileDependencyGroups": {
@@ -2361,11 +2361,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/NotificationService/NotificationAPI/NotificationStore/NotificationStore.csproj",
+      "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Services/NotificationService/NotificationStore/NotificationStore.csproj",
       "projectName": "NotificationStore",
-      "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/NotificationService/NotificationAPI/NotificationStore/NotificationStore.csproj",
+      "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Services/NotificationService/NotificationStore/NotificationStore.csproj",
       "packagesPath": "/home/ath/.nuget/packages/",
-      "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/NotificationService/NotificationAPI/NotificationStore/obj/",
+      "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Services/NotificationService/NotificationStore/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/home/ath/.nuget/NuGet/NuGet.Config"
@@ -2380,17 +2380,17 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
-            "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogMessages/LogMessages.csproj": {
-              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogMessages/LogMessages.csproj"
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/LogMessages/LogMessages.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/LogMessages/LogMessages.csproj"
             },
-            "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficMessages/TrafficMessages.csproj": {
-              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficMessages/TrafficMessages.csproj"
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/TrafficMessages/TrafficMessages.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/TrafficMessages/TrafficMessages.csproj"
             },
-            "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/NotificationService/NotificationAPI/NotificationData/NotificationData.csproj": {
-              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/NotificationService/NotificationAPI/NotificationData/NotificationData.csproj"
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/UserMessages/UserMessages.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/UserMessages/UserMessages.csproj"
             },
-            "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserMessages/UserMessages.csproj": {
-              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserMessages/UserMessages.csproj"
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Databases/NotificationDB/NotificationData/NotificationData.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Databases/NotificationDB/NotificationData/NotificationData.csproj"
             }
           }
         }

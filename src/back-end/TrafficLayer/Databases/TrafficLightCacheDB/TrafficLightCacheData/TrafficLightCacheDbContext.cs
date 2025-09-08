@@ -1,14 +1,15 @@
 using System;
 using StackExchange.Redis;
+using TrafficLightCacheData.Entities;
 
-namespace TrafficLightData;
+namespace TrafficLightCacheData;
 
 public class TrafficLightCacheDbContext
 {
     private readonly ConnectionMultiplexer _connection;
     public IDatabase Database { get; }
 
-    public TrafficLightCacheDbContext(RedisSettings settings)
+    public TrafficLightCacheDbContext(TrafficLightCacheDbSettings settings)
     {
         var configOptions = new ConfigurationOptions
         {

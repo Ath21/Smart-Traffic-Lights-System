@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/DetectionDB/DetectionData/DetectionData.csproj": {}
+    "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Databases/DetectionDB/DetectionData/DetectionData.csproj": {}
   },
   "projects": {
-    "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/DetectionDB/DetectionData/DetectionData.csproj": {
+    "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Databases/DetectionDB/DetectionData/DetectionData.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/DetectionDB/DetectionData/DetectionData.csproj",
+        "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Databases/DetectionDB/DetectionData/DetectionData.csproj",
         "projectName": "DetectionData",
-        "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/DetectionDB/DetectionData/DetectionData.csproj",
+        "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Databases/DetectionDB/DetectionData/DetectionData.csproj",
         "packagesPath": "/home/ath/.nuget/packages/",
-        "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/DetectionDB/DetectionData/obj/",
+        "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Databases/DetectionDB/DetectionData/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/home/ath/.nuget/NuGet/NuGet.Config"

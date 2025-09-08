@@ -3,12 +3,9 @@ using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using TrafficLightData;
+
 using IntersectionControllerStore.Middleware;
-using IntersectionControllerStore.Repositories.Intersect;
-using IntersectionControllerStore.Repositories.Light;
-using IntersectionControllerStore.Repositories.Config;
-using IntersectionControllerStore.Repositories;
+
 using IntersectionControllerStore.Business.TrafficConfig;
 using IntersectionControllerStore.Business.TrafficLight;
 using IntersectionControllerStore.Business.Intersection;
@@ -19,6 +16,12 @@ using IntersectionControllerStore.Publishers.LightPub;
 using IntersectionControllerStore.Publishers.LogPub;
 using IntersectionControllerStore.Publishers.PriorityPub;
 using IntersectionControllerStore.Consumers;
+using TrafficLightCacheData;
+using DetectionCacheData;
+using TrafficLightCacheData.Repositories;
+using TrafficLightCacheData.Repositories.Config;
+using TrafficLightCacheData.Repositories.Light;
+using TrafficLightCacheData.Repositories.Intersect;
 
 namespace IntersectionControllerStore;
 
@@ -34,7 +37,7 @@ public class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         /******* [1] Redis Config ********/
-        services.Configure<TrafficLightCacheSettings>(options =>
+        services.Configure<TrafficLightCacheDbSettings>(options =>
         {
             options.Host = _configuration["Redis:TrafficLight:Host"];
             options.Port = int.Parse(_configuration["Redis:TrafficLight:Port"] ?? "6379");
@@ -48,7 +51,7 @@ public class Startup
             options.KeyPrefix_QueueLength = _configuration["Redis:TrafficLight:KeyPrefix:QueueLength"];
         });
 
-        services.Configure<DetectionCacheSettings>(options =>
+        services.Configure<DetectionCacheDbSettings>(options =>
         {
             options.Host = _configuration["Redis:Detection:Host"];
             options.Port = int.Parse(_configuration["Redis:Detection:Port"] ?? "6379");
@@ -63,7 +66,7 @@ public class Startup
             options.KeyPrefix_IncidentDetected = _configuration["Redis:Detection:KeyPrefix:IncidentDetected"];
         });
 
-        services.AddSingleton<TrafficLightDbMemoryContext>();
+        services.AddSingleton<TrafficLightCacheDbContext>();
 
         /******* [2] Repositories ********/
         services.AddScoped<IRedisRepository, RedisRepository>();

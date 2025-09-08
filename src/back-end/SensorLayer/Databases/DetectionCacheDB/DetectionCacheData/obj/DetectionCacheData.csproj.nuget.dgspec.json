@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/DetectionCacheDB/DetectionCacheData/DetectionCacheData.csproj": {}
+    "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Databases/DetectionCacheDB/DetectionCacheData/DetectionCacheData.csproj": {}
   },
   "projects": {
-    "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/DetectionCacheDB/DetectionCacheData/DetectionCacheData.csproj": {
+    "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Databases/DetectionCacheDB/DetectionCacheData/DetectionCacheData.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/DetectionCacheDB/DetectionCacheData/DetectionCacheData.csproj",
+        "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Databases/DetectionCacheDB/DetectionCacheData/DetectionCacheData.csproj",
         "projectName": "DetectionCacheData",
-        "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/DetectionCacheDB/DetectionCacheData/DetectionCacheData.csproj",
+        "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Databases/DetectionCacheDB/DetectionCacheData/DetectionCacheData.csproj",
         "packagesPath": "/home/ath/.nuget/packages/",
-        "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/DetectionCacheDB/DetectionCacheData/obj/",
+        "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Databases/DetectionCacheDB/DetectionCacheData/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/home/ath/.nuget/NuGet/NuGet.Config"
@@ -47,6 +47,10 @@
             "Microsoft.Extensions.Options": {
               "target": "Package",
               "version": "[9.0.6, )"
+            },
+            "Newtonsoft.Json": {
+              "target": "Package",
+              "version": "[13.0.3, )"
             },
             "StackExchange.Redis": {
               "target": "Package",

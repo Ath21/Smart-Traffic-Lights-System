@@ -20,10 +20,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../../../LogLayer/LogMessages/LogMessages.csproj" />
-    <ProjectReference Include="../../../../TrafficLayer/TrafficMessages/TrafficMessages.csproj" />
-    <ProjectReference Include="..\NotificationData\NotificationData.csproj" />
-    <ProjectReference Include="..\..\..\UserMessages\UserMessages.csproj" />
+    <ProjectReference Include="../../../../MessageLayer/LogMessages/LogMessages.csproj" />
+    <ProjectReference Include="../../../../MessageLayer/TrafficMessages/TrafficMessages.csproj" />
+    <ProjectReference Include="../../../../MessageLayer/UserMessages/UserMessages.csproj" />
+    <ProjectReference Include="../../../Databases/NotificationDB/NotificationData/NotificationData.csproj" />
   </ItemGroup>
 
 </Project>

@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using UserData;
 using UserData.Entities;
 
-namespace UserData.Repository.Ses;
+namespace UserData.Repositories.Ses;
 
 public class SessionRepository : ISessionRepository
 {

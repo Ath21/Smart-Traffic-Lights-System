@@ -11,10 +11,10 @@ public class NotificationDbContext
     public NotificationDbContext(IOptions<NotificationDbSettings> notificationDbSettings)
     {
         var mongoClient = new MongoClient(notificationDbSettings.Value.ConnectionString);
-        _database = mongoClient.GetDatabase(notificationDbSettings.Value.DatabaseName);
+        _database = mongoClient.GetDatabase(notificationDbSettings.Value.Database);
 
-        Notifications = _database.GetCollection<Notification>(notificationDbSettings.Value.NotificationsCollectionName);
-        DeliveryLogs = _database.GetCollection<DeliveryLog>(notificationDbSettings.Value.DeliveryLogsCollectionName);
+        Notifications = _database.GetCollection<Notification>(notificationDbSettings.Value.NotificationsCollection);
+        DeliveryLogs = _database.GetCollection<DeliveryLog>(notificationDbSettings.Value.DeliveryLogsCollection);
     }
 
     // Exposed collections

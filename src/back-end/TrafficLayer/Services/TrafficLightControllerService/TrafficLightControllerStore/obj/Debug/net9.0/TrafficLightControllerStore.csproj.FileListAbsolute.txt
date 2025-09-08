@@ -65,3 +65,15 @@
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficLightControllerService/TrafficLightControllerAPI/TrafficLightControllerStore/obj/Debug/net9.0/TrafficLightControllerStore.pdb
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficLightControllerService/TrafficLightControllerAPI/TrafficLightControllerStore/obj/Debug/net9.0/TrafficLightControllerStore.genruntimeconfig.cache
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficLightControllerService/TrafficLightControllerAPI/TrafficLightControllerStore/obj/Debug/net9.0/ref/TrafficLightControllerStore.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightControllerService/TrafficLightControllerStore/obj/Debug/net9.0/TrafficLightControllerStore.csproj.AssemblyReference.cache
+/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightControllerService/TrafficLightControllerStore/obj/Debug/net9.0/rpswa.dswa.cache.json
+/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightControllerService/TrafficLightControllerStore/obj/Debug/net9.0/TrafficLightControllerStore.GeneratedMSBuildEditorConfig.editorconfig
+/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightControllerService/TrafficLightControllerStore/obj/Debug/net9.0/TrafficLightControllerStore.AssemblyInfoInputs.cache
+/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightControllerService/TrafficLightControllerStore/obj/Debug/net9.0/TrafficLightControllerStore.AssemblyInfo.cs
+/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightControllerService/TrafficLightControllerStore/obj/Debug/net9.0/TrafficLightControllerStore.csproj.CoreCompileInputs.cache
+/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightControllerService/TrafficLightControllerStore/obj/Debug/net9.0/TrafficLightControllerStore.MvcApplicationPartsAssemblyInfo.cs
+/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightControllerService/TrafficLightControllerStore/obj/Debug/net9.0/TrafficLightControllerStore.MvcApplicationPartsAssemblyInfo.cache
+/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightControllerService/TrafficLightControllerStore/obj/Debug/net9.0/TrafficLightControllerStore.sourcelink.json
+/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightControllerService/TrafficLightControllerStore/obj/Debug/net9.0/TrafficLightControllerStore.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightControllerService/TrafficLightControllerStore/obj/Debug/net9.0/refint/TrafficLightControllerStore.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightControllerService/TrafficLightControllerStore/obj/Debug/net9.0/TrafficLightControllerStore.pdb

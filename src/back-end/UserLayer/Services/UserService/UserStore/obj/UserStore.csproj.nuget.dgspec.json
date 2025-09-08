@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserService/UserAPI/UserStore/UserStore.csproj": {}
+    "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Services/UserService/UserStore/UserStore.csproj": {}
   },
   "projects": {
-    "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogMessages/LogMessages.csproj": {
+    "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/LogMessages/LogMessages.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogMessages/LogMessages.csproj",
+        "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/LogMessages/LogMessages.csproj",
         "projectName": "LogMessages",
-        "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogMessages/LogMessages.csproj",
+        "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/LogMessages/LogMessages.csproj",
         "packagesPath": "/home/ath/.nuget/packages/",
-        "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogMessages/obj/",
+        "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/LogMessages/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/home/ath/.nuget/NuGet/NuGet.Config"
@@ -63,14 +63,14 @@
         }
       }
     },
-    "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficMessages/TrafficMessages.csproj": {
+    "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/TrafficMessages/TrafficMessages.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficMessages/TrafficMessages.csproj",
+        "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/TrafficMessages/TrafficMessages.csproj",
         "projectName": "TrafficMessages",
-        "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficMessages/TrafficMessages.csproj",
+        "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/TrafficMessages/TrafficMessages.csproj",
         "packagesPath": "/home/ath/.nuget/packages/",
-        "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficMessages/obj/",
+        "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/TrafficMessages/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/home/ath/.nuget/NuGet/NuGet.Config"
@@ -122,14 +122,14 @@
         }
       }
     },
-    "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserMessages/UserMessages.csproj": {
+    "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/UserMessages/UserMessages.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserMessages/UserMessages.csproj",
+        "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/UserMessages/UserMessages.csproj",
         "projectName": "UserMessages",
-        "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserMessages/UserMessages.csproj",
+        "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/UserMessages/UserMessages.csproj",
         "packagesPath": "/home/ath/.nuget/packages/",
-        "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserMessages/obj/",
+        "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/UserMessages/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/home/ath/.nuget/NuGet/NuGet.Config"
@@ -181,14 +181,14 @@
         }
       }
     },
-    "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserService/UserAPI/UserData/UserData.csproj": {
+    "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Databases/UserDB/UserData/UserData.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserService/UserAPI/UserData/UserData.csproj",
+        "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Databases/UserDB/UserData/UserData.csproj",
         "projectName": "UserData",
-        "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserService/UserAPI/UserData/UserData.csproj",
+        "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Databases/UserDB/UserData/UserData.csproj",
         "packagesPath": "/home/ath/.nuget/packages/",
-        "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserService/UserAPI/UserData/obj/",
+        "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Databases/UserDB/UserData/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/home/ath/.nuget/NuGet/NuGet.Config"
@@ -274,14 +274,14 @@
         }
       }
     },
-    "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserService/UserAPI/UserStore/UserStore.csproj": {
+    "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Services/UserService/UserStore/UserStore.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserService/UserAPI/UserStore/UserStore.csproj",
+        "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Services/UserService/UserStore/UserStore.csproj",
         "projectName": "UserStore",
-        "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserService/UserAPI/UserStore/UserStore.csproj",
+        "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Services/UserService/UserStore/UserStore.csproj",
         "packagesPath": "/home/ath/.nuget/packages/",
-        "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserService/UserAPI/UserStore/obj/",
+        "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Services/UserService/UserStore/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/home/ath/.nuget/NuGet/NuGet.Config"
@@ -296,17 +296,17 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogMessages/LogMessages.csproj": {
-                "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogMessages/LogMessages.csproj"
+              "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/LogMessages/LogMessages.csproj": {
+                "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/LogMessages/LogMessages.csproj"
               },
-              "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficMessages/TrafficMessages.csproj": {
-                "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/TrafficMessages/TrafficMessages.csproj"
+              "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/TrafficMessages/TrafficMessages.csproj": {
+                "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/TrafficMessages/TrafficMessages.csproj"
               },
-              "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserMessages/UserMessages.csproj": {
-                "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserMessages/UserMessages.csproj"
+              "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/UserMessages/UserMessages.csproj": {
+                "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/UserMessages/UserMessages.csproj"
               },
-              "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserService/UserAPI/UserData/UserData.csproj": {
-                "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/UserService/UserAPI/UserData/UserData.csproj"
+              "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Databases/UserDB/UserData/UserData.csproj": {
+                "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Databases/UserDB/UserData/UserData.csproj"
               }
             }
           }

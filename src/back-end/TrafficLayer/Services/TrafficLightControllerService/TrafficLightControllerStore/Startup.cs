@@ -3,12 +3,12 @@ using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using TrafficLightCacheData;
+using TrafficLightCacheData.Repositories.Light;
 using TrafficLightControllerStore.Business;
 using TrafficLightControllerStore.Consumers;
 using TrafficLightControllerStore.Middleware;
 using TrafficLightControllerStore.Publishers.Logs;
-using TrafficLightControllerStore.Repository;
-using TrafficLightData;
 
 namespace TrafficLightControllerStore;
 
@@ -24,7 +24,7 @@ public class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         /******* [1] Redis Config (TrafficLight Cache) ********/
-        services.Configure<TrafficLightCacheSettings>(options =>
+        services.Configure<TrafficLightCacheDbSettings>(options =>
         {
             options.Host = _configuration["Redis:TrafficLight:Host"];
             options.Port = int.Parse(_configuration["Redis:TrafficLight:Port"] ?? "6379");
@@ -37,7 +37,7 @@ public class Startup
             options.KeyPrefix_Priority = _configuration["Redis:TrafficLight:KeyPrefix:Priority"];
             options.KeyPrefix_QueueLength = _configuration["Redis:TrafficLight:KeyPrefix:QueueLength"];
         });
-        services.AddSingleton<TrafficLightDbMemoryContext>();
+        services.AddSingleton<TrafficLightCacheDbContext>();
 
         /******* [2] Repositories ********/
         services.AddScoped<ITrafficLightRepository, TrafficLightRepository>();

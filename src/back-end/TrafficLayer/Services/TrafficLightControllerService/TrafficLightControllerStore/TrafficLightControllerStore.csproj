@@ -20,9 +20,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../../../LogLayer/LogMessages/LogMessages.csproj" />
-    <ProjectReference Include="../../../TrafficLightMemoryDB/TrafficLightData/TrafficLightData.csproj" />
-    <ProjectReference Include="../../../TrafficMessages/TrafficMessages.csproj" />
+    <ProjectReference Include="../../../../MessageLayer/LogMessages/LogMessages.csproj" />
+    <ProjectReference Include="../../../../MessageLayer/TrafficMessages/TrafficMessages.csproj" />
+    <ProjectReference Include="../../../Databases/TrafficLightCacheDB/TrafficLightCacheData/TrafficLightCacheData.csproj" />
   </ItemGroup>
 
 </Project>

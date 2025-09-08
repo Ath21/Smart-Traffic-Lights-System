@@ -1,6 +1,11 @@
 using System.Text;
 using DetectionCacheData;
+using DetectionCacheData.Repositories.Cache;
+using DetectionCacheData.Repositories.Metrics;
 using DetectionData;
+using DetectionData.Repositories.Cyclist;
+using DetectionData.Repositories.Pedestrian;
+using DetectionData.Repositories.Vehicle;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -9,11 +14,7 @@ using SensorStore.Middleware;
 using SensorStore.Publishers;
 using SensorStore.Publishers.Count;
 using SensorStore.Publishers.Logs;
-using SensorStore.Repositories.Cache;
-using SensorStore.Repositories.Cyclist;
-using SensorStore.Repositories.Metrics;
-using SensorStore.Repositories.Pedestrian;
-using SensorStore.Repositories.Vehicle;
+
 
 namespace SensorStore;
 
@@ -66,7 +67,7 @@ public class Startup
         services.AddScoped(typeof(IMetricRepository), typeof(MetricRepository));
 
         /******* [4] Services ********/
-        services.AddScoped(typeof(ISensorService), typeof(SensorService));
+        //services.AddScoped(typeof(ISensorService), typeof(SensorService));
 
         /******* [5] Publishers ********/
         services.AddScoped(typeof(ISensorCountPublisher), typeof(SensorCountPublisher));

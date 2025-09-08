@@ -1,6 +1,6 @@
 using UserData.Entities;
 
-namespace UserData.Repository.Audit;
+namespace UserData.Repositories.Audit;
 
 public interface IAuditLogRepository
 {

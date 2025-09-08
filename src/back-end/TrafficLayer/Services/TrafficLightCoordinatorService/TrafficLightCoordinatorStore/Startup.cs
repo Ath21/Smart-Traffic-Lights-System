@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using TrafficLightCacheData;
 using TrafficLightCoordinatorData;
 using TrafficLightCoordinatorStore.Business.Coordination;
 using TrafficLightCoordinatorStore.Consumers;
@@ -31,7 +32,7 @@ public class Startup
         services.AddDbContext<TrafficLightCoordinatorDbContext>();
 
         /******* [2] Redis (TrafficLight Cache) ********/
-        services.Configure<TrafficLightCacheSettings>(options =>
+        services.Configure<TrafficLightCacheDbSettings>(options =>
         {
             options.Host = _configuration["Redis:TrafficLight:Host"];
             options.Port = int.Parse(_configuration["Redis:TrafficLight:Port"] ?? "6379");

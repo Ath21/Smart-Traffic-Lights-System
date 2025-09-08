@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "LG66LR7+pOg=",
+  "dgSpecHash": "BJoPNmsFAv4=",
   "success": true,
-  "projectFilePath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/LogService/LogAPI/LogStore/LogStore.csproj",
+  "projectFilePath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/Services/LogService/LogStore/LogStore.csproj",
   "expectedPackageFiles": [
     "/home/ath/.nuget/packages/automapper/12.0.1/automapper.12.0.1.nupkg.sha512",
     "/home/ath/.nuget/packages/automapper.extensions.microsoft.dependencyinjection/12.0.1/automapper.extensions.microsoft.dependencyinjection.12.0.1.nupkg.sha512",

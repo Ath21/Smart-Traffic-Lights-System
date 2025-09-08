@@ -1,5 +1,5 @@
 using System;
-using IntersectionControllerStore.Repository;
+using TrafficLightCacheData.Repositories;
 
 namespace IntersectionControllerStore.Business.CommandLog;
 

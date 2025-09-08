@@ -1,7 +1,7 @@
 using System;
 using AutoMapper;
 using IntersectionControllerStore.Models.Dtos;
-using IntersectionControllerStore.Repository.Light;
+using TrafficLightCacheData.Repositories.Light;
 
 namespace IntersectionControllerStore.Business.TrafficLight;
 

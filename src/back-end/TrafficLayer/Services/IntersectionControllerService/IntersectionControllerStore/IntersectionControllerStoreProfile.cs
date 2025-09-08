@@ -2,7 +2,7 @@ using System;
 using AutoMapper;
 using IntersectionControllerStore.Models.Dtos;
 using IntersectionControllerStore.Models.Responses;
-using TrafficLightData.Entities;
+using TrafficLightCacheData.Entities;
 
 namespace IntersectionControllerStore;
 

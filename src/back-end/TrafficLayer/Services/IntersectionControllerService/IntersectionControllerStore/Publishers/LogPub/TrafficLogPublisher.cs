@@ -27,7 +27,7 @@ public class TrafficLogPublisher : ITrafficLogPublisher
                        ?? "log.traffic.intersection_controller_service.error";
     }
 
-    public async Task PublishAuditAsync(string serviceName, string action, string details, object? metadata = null)
+    public async Task PublishAuditAsync(string serviceName, string action, string details, object? metadata = null, string? intersectionId = null)
     {
         var log = new AuditLogMessage(Guid.NewGuid(), serviceName, action, details, DateTime.UtcNow, metadata);
 
@@ -37,7 +37,7 @@ public class TrafficLogPublisher : ITrafficLogPublisher
         _logger.LogInformation("{Tag} AUDIT published: {Action} -> {Details}", ServiceTag, action, details);
     }
 
-    public async Task PublishErrorAsync(string serviceName, string errorType, string message, object? metadata = null)
+    public async Task PublishErrorAsync(string serviceName, string errorType, string message, object? metadata = null, string? intersectionId = null)
     {
         var log = new ErrorLogMessage(Guid.NewGuid(), serviceName, errorType, message, DateTime.UtcNow, metadata);
 

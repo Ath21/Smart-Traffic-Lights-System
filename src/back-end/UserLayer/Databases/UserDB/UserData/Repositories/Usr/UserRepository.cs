@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using UserData;
 using UserData.Entities;
 
-namespace UserData.Repository.Usr;
+namespace UserData.Repositories.Usr;
 
 public class UserRepository : IUserRepository
 {

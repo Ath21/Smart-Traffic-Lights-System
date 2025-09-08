@@ -1,17 +1,16 @@
 using System.Text;
 using DetectionData;
 using DetectionStore.Middleware;
-using DetectionStore.Repositories;
-using DetectionStore.Services;
 using DetectionStore.Publishers;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using DetectionCacheData;
-using DetectionStore.Repositories.EmergencyVehicle;
-using DetectionStore.Repositories.PublicTransport;
-using DetectionStore.Repositories.Incident;
+using DetectionData.Repositories.EmergencyVehicle;
+using DetectionData.Repositories.PublicTransport;
+using DetectionData.Repositories.Incident;
+
 
 namespace DetectionStore;
 
@@ -62,11 +61,11 @@ public class Startup
         services.AddScoped(typeof(IIncidentDetectionRepository), typeof(IncidentDetectionRepository));
 
         /******* [4] Services ********/
-        services.AddScoped<IDetectionService, DetectionService>();
+        //services.AddScoped<IDetectionService, DetectionService>();
 
         /******* [5] Publishers ********/
-        services.AddScoped<ISensorEventPublisher, SensorEventPublisher>();
-        services.AddScoped<IDetectionLogPublisher, DetectionLogPublisher>();
+        //services.AddScoped<ISensorEventPublisher, SensorEventPublisher>();
+        //services.AddScoped<IDetectionLogPublisher, DetectionLogPublisher>();
 
         /******* [6] MassTransit ********/
         services.AddDetectionServiceMassTransit(_configuration);
