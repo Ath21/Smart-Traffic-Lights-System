@@ -73,4 +73,7 @@ services:
       RabbitMQ__RoutingKeys__Log__Audit: log.sensor.detection_service.audit
       RabbitMQ__RoutingKeys__Log__Error: log.sensor.detection_service.error
 
+    depends_on:
+      detection_mongo:
+        condition: service_healthy
     restart: always

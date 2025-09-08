@@ -5,11 +5,11 @@ services:
       - MSSQL_SA_PASSWORD=MyPass@word
       - MSSQL_PID=Express
     ports:
-      - '1433:1433'
+      - "1433:1433"
     volumes:
       - user_mssql_data:/var/opt/mssql
     restart: always
-    
+
 volumes:
   user_mssql_data:
     name: user_mssql_data
