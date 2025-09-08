@@ -9,20 +9,26 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
 # Copy required project folders
-COPY TrafficLayer TrafficLayer/
-COPY SensorLayer/SensorMessages SensorLayer/SensorMessages/
-COPY LogLayer/LogMessages LogLayer/LogMessages/
+## API
+COPY TrafficLayer/Services/TrafficAnalyticsService/TrafficAnalyticsStore TrafficLayer/Services/TrafficAnalyticsService/TrafficAnalyticsStore/
+## Databases
+COPY TrafficLayer/Databases/TrafficAnalyticsDB/TrafficAnalyticsData TrafficLayer/Databases/TrafficAnalyticsDB/TrafficAnalyticsData/
+COPY SensorLayer/Databases/DetectionCacheDB/DetectionCacheData SensorLayer/Databases/DetectionCacheDB/DetectionCacheData/
+## Messages
+COPY MessageLayer/SensorMessages MessageLayer/SensorMessages/
+COPY MessageLayer/TrafficMessages MessageLayer/TrafficMessages/
+COPY MessageLayer/LogMessages MessageLayer/LogMessages/
 
 # Restore dependencies
-RUN dotnet restore TrafficLayer/TrafficAnalyticsService/TrafficAnalyticsAPI/TrafficAnalyticsStore/TrafficAnalyticsStore.csproj
+RUN dotnet restore TrafficLayer/Services/TrafficAnalyticsService/TrafficAnalyticsStore/TrafficAnalyticsStore.csproj
 
 # Build the project
-RUN dotnet build TrafficLayer/TrafficAnalyticsService/TrafficAnalyticsAPI/TrafficAnalyticsStore/TrafficAnalyticsStore.csproj -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build TrafficLayer/Services/TrafficAnalyticsService/TrafficAnalyticsStore/TrafficAnalyticsStore.csproj -c $BUILD_CONFIGURATION -o /app/build
 
 # Publish the project
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish TrafficLayer/TrafficAnalyticsService/TrafficAnalyticsAPI/TrafficAnalyticsStore/TrafficAnalyticsStore.csproj -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish TrafficLayer/Services/TrafficAnalyticsService/TrafficAnalyticsStore/TrafficAnalyticsStore.csproj -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # Final image
 FROM base AS final

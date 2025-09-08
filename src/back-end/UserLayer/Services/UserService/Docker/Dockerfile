@@ -9,20 +9,25 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
 # Copy required project folders
-COPY UserLayer UserLayer/
-COPY TrafficLayer/TrafficMessages TrafficLayer/TrafficMessages/
-COPY LogLayer/LogMessages LogLayer/LogMessages/
+## API
+COPY UserLayer/Services/UserService/UserStore UserLayer/Services/UserService/UserStore/
+## Databases
+COPY UserLayer/Databases/UserDB/UserData UserLayer/Databases/UserDB/UserData/
+## Messages
+COPY MessageLayer/UserMessages MessageLayer/UserMessages/
+COPY MessageLayer/LogMessages MessageLayer/LogMessages/
+COPY MessageLayer/TrafficMessages MessageLayer/TrafficMessages/
 
 # Restore dependencies
-RUN dotnet restore UserLayer/UserService/UserAPI/UserStore/UserStore.csproj
+RUN dotnet restore UserLayer/Services/UserService/UserStore/UserStore.csproj
 
 # Build the application
-RUN dotnet build UserLayer/UserService/UserAPI/UserStore/UserStore.csproj -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build UserLayer/Services/UserService/UserStore/UserStore.csproj -c $BUILD_CONFIGURATION -o /app/build
 
 # Publish the application
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish UserLayer/UserService/UserAPI/UserStore/UserStore.csproj -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish UserLayer/Services/UserService/UserStore/UserStore.csproj -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # Final image
 FROM base AS final

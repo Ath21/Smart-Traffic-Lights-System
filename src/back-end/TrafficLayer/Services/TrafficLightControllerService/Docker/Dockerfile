@@ -11,20 +11,25 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
-# Copy solution sources
-COPY TrafficLayer TrafficLayer/
-COPY LogLayer/LogMessages LogLayer/LogMessages/
+# Copy source code
+## API
+COPY TrafficLayer/Services/TrafficLightControllerService/TrafficLightControllerStore TrafficLayer/Services/TrafficLightControllerService/TrafficLightControllerStore/
+## Databases
+COPY TrafficLayer/Databases/TrafficLightCacheDB/TrafficLightCacheData TrafficLayer/Databases/TrafficLightCacheDB/TrafficLightCacheData/
+## Messages
+COPY MessageLayer/TrafficMessages MessageLayer/TrafficMessages/
+COPY MessageLayer/LogMessages MessageLayer/LogMessages/
 
 # Restore dependencies
-RUN dotnet restore TrafficLayer/TrafficLightControllerService/TrafficLightControllerAPI/TrafficLightControllerStore/TrafficLightControllerStore.csproj
+RUN dotnet restore TrafficLayer/Services/TrafficLightControllerService/TrafficLightControllerStore/TrafficLightControllerStore.csproj
 
 # Build project
-RUN dotnet build TrafficLayer/TrafficLightControllerService/TrafficLightControllerAPI/TrafficLightControllerStore/TrafficLightControllerStore.csproj -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build TrafficLayer/Services/TrafficLightControllerService/TrafficLightControllerStore/TrafficLightControllerStore.csproj -c $BUILD_CONFIGURATION -o /app/build
 
 # Publish project
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish TrafficLayer/TrafficLightControllerService/TrafficLightControllerAPI/TrafficLightControllerStore/TrafficLightControllerStore.csproj -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish TrafficLayer/Services/TrafficLightControllerService/TrafficLightControllerStore/TrafficLightControllerStore.csproj -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # Final image
 FROM base AS final

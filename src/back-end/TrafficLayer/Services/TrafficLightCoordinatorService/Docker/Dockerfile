@@ -12,19 +12,26 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
 # Copy source code
-COPY TrafficLayer TrafficLayer/
-COPY LogLayer/LogMessages LogLayer/LogMessages/
+## API
+COPY TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/
+## Databases
+COPY TrafficLayer/Databases/TrafficLightDB/TrafficLightData TrafficLayer/Databases/TrafficLightDB/TrafficLightData/
+COPY TrafficLayer/Databases/TrafficLightCacheDB/TrafficLightCacheData TrafficLayer/Databases/TrafficLightCacheDB/TrafficLightCacheData/
+## Messages
+COPY MessageLayer/TrafficMessages MessageLayer/TrafficMessages/
+COPY MessageLayer/LogMessages MessageLayer/LogMessages/
+
 
 # Restore NuGet packages
-RUN dotnet restore TrafficLayer/TrafficLightCoordinatorService/TrafficLightCoordinatorAPI/TrafficLightCoordinatorStore/TrafficLightCoordinatorStore.csproj
+RUN dotnet restore TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/TrafficLightCoordinatorStore.csproj
 
 # Build project
-RUN dotnet build TrafficLayer/TrafficLightCoordinatorService/TrafficLightCoordinatorAPI/TrafficLightCoordinatorStore/TrafficLightCoordinatorStore.csproj -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/TrafficLightCoordinatorStore.csproj -c $BUILD_CONFIGURATION -o /app/build
 
 # Publish stage
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish TrafficLayer/TrafficLightCoordinatorService/TrafficLightCoordinatorAPI/TrafficLightCoordinatorStore/TrafficLightCoordinatorStore.csproj -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/TrafficLightCoordinatorStore.csproj -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # Final runtime image
 FROM base AS final

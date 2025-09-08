@@ -11,20 +11,25 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
 # Copy source projects
-COPY UserLayer UserLayer/
-COPY TrafficLayer/TrafficMessages TrafficLayer/TrafficMessages/
-COPY LogLayer/LogMessages LogLayer/LogMessages/
+## API
+COPY UserLayer/Services/NotificationService/NotificationStore UserLayer/Services/NotificationService/NotificationStore/
+## Databases
+COPY UserLayer/Databases/NotificationDB/NotificationData UserLayer/Databases/NotificationDB/NotificationData/
+## Messages
+COPY MessageLayer/UserMessages MessageLayer/UserMessages/
+COPY MessageLayer/LogMessages MessageLayer/LogMessages/
+COPY MessageLayer/TrafficMessages MessageLayer/TrafficMessages/
 
 # Restore dependencies
-RUN dotnet restore UserLayer/NotificationService/NotificationAPI/NotificationStore/NotificationStore.csproj
+RUN dotnet restore UserLayer/Services/NotificationService/NotificationStore/NotificationStore.csproj
 
 # Build the application
-RUN dotnet build UserLayer/NotificationService/NotificationAPI/NotificationStore/NotificationStore.csproj -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build UserLayer/Services/NotificationService/NotificationStore/NotificationStore.csproj -c $BUILD_CONFIGURATION -o /app/build
 
 # Publish stage
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish UserLayer/NotificationService/NotificationAPI/NotificationStore/NotificationStore.csproj -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish UserLayer/Services/NotificationService/NotificationStore/NotificationStore.csproj -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # Final runtime image
 FROM base AS final
