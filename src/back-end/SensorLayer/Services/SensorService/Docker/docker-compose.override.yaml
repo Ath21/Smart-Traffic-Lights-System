@@ -72,5 +72,9 @@ services:
       # --- Publish
       RabbitMQ__RoutingKeys__Log__Audit: log.sensor.sensor_service.audit
       RabbitMQ__RoutingKeys__Log__Error: log.sensor.sensor_service.error
+    
+    depends_on:
+      detection_db:
+        condition: service_started
 
     restart: always

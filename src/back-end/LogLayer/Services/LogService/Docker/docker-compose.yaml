@@ -1,7 +1,7 @@
 services:
   log_api:
     image: ath21/stls:log_api
-    container_name: log_api_container
+    container_name: logapi_container
     networks:
       - log_network
       - rabbitmq_network

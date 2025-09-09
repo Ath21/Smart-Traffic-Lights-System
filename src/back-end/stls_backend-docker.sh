@@ -1,77 +1,97 @@
 #!/bin/bash
 set -e
 
-ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# ================================
+# 🔧 CONFIGURATION
+# ================================
+DOCKER_USERNAME="ath21"
+DOCKER_REPO="stls"
 
-echo "==================================================="
-echo "   Deploying Smart Traffic Lights System (STLS)   "
-echo "        via Docker Compose (layered setup)        "
-echo "==================================================="
+# === All services and their Docker build paths ===
+declare -A SERVICES_PATHS=(
+    # User Layer
+    [user_api]="./UserLayer/Services/UserService/Docker"
+    [notification_api]="./UserLayer/Services/NotificationService/Docker"
 
-# ----------------------------------------------------
-# 0. Create required networks
-# ----------------------------------------------------
-echo "[0] Creating Docker networks..."
-docker network create user_network        || true
-docker network create notification_network || true
-docker network create log_network          || true
-docker network create sensor_network       || true
-docker network create detection_network    || true
-docker network create detection_cache_network || true
-docker network create traffic_network      || true
-docker network create traffic_light_network || true
-docker network create traffic_light_cache_network || true
-docker network create traffic_analytics_network  || true
-docker network create rabbitmq_network     || true
+    # Log Layer
+    [log_api]="./LogLayer/Services/LogService/Docker"
 
-# ----------------------------------------------------
-# Helper function
-# ----------------------------------------------------
-deploy_compose() {
-  local project="$1"
-  local path="$2"
-  if [ -f "$path/docker-compose.yaml" ]; then
-    echo "▶ Deploying $project: $path"
-    docker compose -p "$project" -f "$path/docker-compose.yaml" -f "$path/docker-compose.override.yaml" up -d
-  fi
+    # Traffic Layer
+    [traffic_analytics_api]="./TrafficLayer/Services/TrafficAnalyticsService/Docker"
+    [traffic_light_controller_api]="./TrafficLayer/Services/TrafficLightControllerService/Docker"
+    [traffic_light_coordinator_api]="./TrafficLayer/Services/TrafficLightCoordinatorService/Docker"
+    [intersection_controller_api]="./TrafficLayer/Services/IntersectionControllerService/Docker"
+
+    # Sensor Layer
+    [sensor_api]="./SensorLayer/Services/SensorService/Docker"
+    [detection_api]="./SensorLayer/Services/DetectionService/Docker"
+)
+
+# ================================
+# 🔧 HELPER FUNCTIONS
+# ================================
+print_help() {
+    echo "Usage: ./stls_backend-build.sh [--all] [service...]"
+    echo ""
+    echo "  --all       Build & push all API images"
+    echo "  service...  Build & push specific service(s) by name (e.g. user_api, log_api)"
+    echo ""
+    echo "Examples:"
+    echo "  ./stls_backend-build.sh --all"
+    echo "  ./stls_backend-build.sh user_api log_api"
 }
 
-# ----------------------------------------------------
-# 1. User Layer (User + Notification)
-# ----------------------------------------------------
-echo "[1/4] Deploying User Layer (stls_user)..."
-deploy_compose "stls_user" "$ROOT_DIR/UserLayer/Databases/UserDB/MSSQL/Docker"
-deploy_compose "stls_user" "$ROOT_DIR/UserLayer/Databases/NotificationDB/Mongo/Docker"
-deploy_compose "stls_user" "$ROOT_DIR/UserLayer/Services/UserService/Docker"
-deploy_compose "stls_user" "$ROOT_DIR/UserLayer/Services/NotificationService/Docker"
+build_and_push_image() {
+    local service="$1"
+    local dir="${SERVICES_PATHS[$service]}"
+    local image="$DOCKER_USERNAME/$DOCKER_REPO:$service"
 
-# ----------------------------------------------------
-# 2. Message Layer (RabbitMQ)
-# ----------------------------------------------------
-echo "[2/4] Deploying Message Layer (stls_message)..."
-deploy_compose "stls_message" "$ROOT_DIR/MessageLayer/RabbitMQ/Docker"
+    if [[ -z "$dir" ]]; then
+        echo "❌ Unknown service: $service"
+        exit 1
+    fi
 
-# ----------------------------------------------------
-# 3. Traffic Layer (APIs + DBs)
-# ----------------------------------------------------
-echo "[3/4] Deploying Traffic Layer (stls_traffic)..."
-deploy_compose "stls_traffic" "$ROOT_DIR/TrafficLayer/Databases/TrafficAnalyticsDB/PostgreSQL/Docker"
-deploy_compose "stls_traffic" "$ROOT_DIR/TrafficLayer/Databases/TrafficLightDB/PostgreSQL/Docker"
-deploy_compose "stls_traffic" "$ROOT_DIR/TrafficLayer/Databases/TrafficLightCacheDB/Redis/Docker"
-deploy_compose "stls_traffic" "$ROOT_DIR/TrafficLayer/Services/TrafficAnalyticsService/Docker"
-deploy_compose "stls_traffic" "$ROOT_DIR/TrafficLayer/Services/TrafficLightCoordinatorService/Docker"
-deploy_compose "stls_traffic" "$ROOT_DIR/TrafficLayer/Services/IntersectionControllerService/Docker"
-deploy_compose "stls_traffic" "$ROOT_DIR/TrafficLayer/Services/TrafficLightControllerService/Docker"
+    if [[ -f "$dir/Dockerfile" ]]; then
+        echo "🔨 Building image for $service..."
+        docker build -t "$image" -f "$dir/Dockerfile" . || {
+            echo "❌ Build failed for $service"
+            return 1
+        }
 
-# ----------------------------------------------------
-# 4. Sensor Layer (APIs + DBs)
-# ----------------------------------------------------
-echo "[4/4] Deploying Sensor Layer (stls_sensor)..."
-deploy_compose "stls_sensor" "$ROOT_DIR/SensorLayer/Databases/DetectionDB/Mongo/Docker"
-deploy_compose "stls_sensor" "$ROOT_DIR/SensorLayer/Databases/DetectionCacheDB/Redis/Docker"
-deploy_compose "stls_sensor" "$ROOT_DIR/SensorLayer/Services/DetectionService/Docker"
-deploy_compose "stls_sensor" "$ROOT_DIR/SensorLayer/Services/SensorService/Docker"
+        echo "📤 Pushing image for $service to Docker Hub..."
+        docker push "$image" || {
+            echo "⚠️ Push failed for $service"
+            return 1
+        }
+    else
+        echo "⚠️ No Dockerfile found for $service in $dir"
+    fi
+}
 
-echo "==================================================="
-echo " ✅ STLS system deployed with Docker Compose!"
-echo "==================================================="
+# ================================
+# 🚀 MAIN EXECUTION
+# ================================
+main() {
+    if [[ $# -eq 0 ]]; then
+        print_help
+        exit 0
+    fi
+
+    if [[ "$1" == "--all" ]]; then
+        shift
+        echo "🚀 Building & pushing ALL services..."
+        for service in "${!SERVICES_PATHS[@]}"; do
+            build_and_push_image "$service"
+        done
+    else
+        echo "🚀 Building & pushing selected services: $*"
+        for service in "$@"; do
+            build_and_push_image "$service"
+        done
+    fi
+
+    echo ""
+    echo "✅ Done!"
+}
+
+main "$@"

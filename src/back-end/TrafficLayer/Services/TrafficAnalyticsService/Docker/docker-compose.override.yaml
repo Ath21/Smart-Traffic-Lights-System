@@ -76,5 +76,9 @@ services:
       # --- Publish
       RabbitMQ__RoutingKeys__Log__Audit: log.traffic.analytics_service.audit
       RabbitMQ__RoutingKeys__Log__Error: log.traffic.analytics_service.error
+    
+    depends_on:
+      traffic_analytics_db:
+        condition: service_healthy
 
     restart: always

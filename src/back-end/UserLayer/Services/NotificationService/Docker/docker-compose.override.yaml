@@ -77,4 +77,8 @@ services:
       RabbitMQ__RoutingKeys__Log__Audit: log.user.notification_service.audit
       RabbitMQ__RoutingKeys__Log__Error: log.user.notification_service.error
 
+    depends_on:
+      notification_db:
+        condition: service_started
+
     restart: always

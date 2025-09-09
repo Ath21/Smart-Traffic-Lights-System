@@ -85,6 +85,6 @@ services:
       RabbitMQ__RoutingKeys__Sensor__IncidentError: log.sensor.incident_detection_service.error
 
     depends_on:
-      log_mongo:
+      log_db:
         condition: service_started
     restart: always
