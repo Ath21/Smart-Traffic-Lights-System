@@ -1,5 +1,5 @@
 services:
-  user_mssql:
+  user_db:
     environment:
       - ACCEPT_EULA=Y
       - MSSQL_SA_PASSWORD=MyPass@word
@@ -7,10 +7,10 @@ services:
     ports:
       - "1433:1433"
     volumes:
-      - user_mssql_data:/var/opt/mssql
+      - userdb_data:/var/opt/mssql
     restart: always
 
 volumes:
-  user_mssql_data:
-    name: user_mssql_data
+  userdb_data:
+    name: userdb_data
     driver: local

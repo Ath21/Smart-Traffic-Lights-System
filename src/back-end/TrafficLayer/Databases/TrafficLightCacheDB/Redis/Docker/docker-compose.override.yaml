@@ -1,11 +1,11 @@
 services:
-  traffic_light_cache_redis:
+  traffic_light_cache_db:
     ports:
       - '6379:6379'
     command: ["redis-server", "--appendonly", "yes"]
     restart: always
     volumes:
-      - traffic_light_cache_redis_data:/data
+      - trafficlightcachedb_data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -13,6 +13,6 @@ services:
       retries: 5
 
 volumes:
-  traffic_light_cache_redis_data:
-    name: traffic_light_cache_redis_data
+  trafficlightcachedb_data:
+    name: trafficlightcachedb_data
     driver: local

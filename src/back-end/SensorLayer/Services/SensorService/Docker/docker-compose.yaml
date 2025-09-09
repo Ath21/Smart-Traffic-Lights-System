@@ -1,7 +1,7 @@
 services:
   sensor_api:
     image: ath21/stls:sensor_api
-    container_name: sensor_api_container
+    container_name: sensorapi_container
     networks:
       - detection_cache_network
       - detection_network

@@ -13,7 +13,7 @@ services:
       # ===============================
 
       ## TrafficLightDB (PostgreSQL)
-      PostgreSQL__ConnectionString: Host=traffic_light_postgres;Port=5432;Database=TrafficLightDB;Username=postgres;Password=postgres123;Include Error Detail=true
+      PostgreSQL__ConnectionString: Host=traffic_light_db;Port=5432;Database=TrafficLightDB;Username=postgres;Password=postgres123;Include Error Detail=true
 
       ## TrafficLightCacheDB (Redis)
       Redis__TrafficLight__Host: traffic_light_cache_redis
@@ -74,6 +74,4 @@ services:
       RabbitMQ__RoutingKeys__Log__Audit: log.traffic.coordinator_service.audit
       RabbitMQ__RoutingKeys__Log__Error: log.traffic.coordinator_service.error
 
-    depends_on:
-      traffic_light_coordinator_postgres:
-        condition: service_healthy
+    restart: always

@@ -1,7 +1,7 @@
 services:
   intersection_controller_api:
     image: ath21/stls:intersection_controller_api
-    container_name: intersection_controller_api_container
+    container_name: intersectioncontrollerapi_container
     networks:
       - traffic_light_cache_network
       - detection_cache_network

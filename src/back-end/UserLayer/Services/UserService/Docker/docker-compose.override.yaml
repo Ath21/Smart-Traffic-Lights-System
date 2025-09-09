@@ -13,7 +13,7 @@ services:
       # ===============================
 
       ## UserDB (MSSQL)
-      MSSQL__ConnectionString: Server=user_mssql,1433;Database=UserDB;User Id=sa;Password=MyPass@word;TrustServerCertificate=True
+      MSSQL__ConnectionString: Server=user_db,1433;Database=UserDB;User Id=sa;Password=MyPass@word;TrustServerCertificate=True
 
       # ===============================
       # CORS Policy
@@ -67,7 +67,4 @@ services:
       RabbitMQ__RoutingKeys__Log__Audit: log.user.user_service.audit
       RabbitMQ__RoutingKeys__Log__Error: log.user.user_service.error
 
-    depends_on:
-      user_mssql:
-        condition: service_started
     restart: always

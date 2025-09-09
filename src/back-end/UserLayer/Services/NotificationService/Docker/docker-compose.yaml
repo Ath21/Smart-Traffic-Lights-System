@@ -1,7 +1,7 @@
 services:
   notification_api:
     image: ath21/stls:notification_api
-    container_name: notification_api_container
+    container_name: notificationapi_container
     networks:
       - notification_network
       - rabbitmq_network

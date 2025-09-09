@@ -1,11 +1,11 @@
 services:
-  traffic_light_cache_redis:
+  traffic_light_cache_db:
     image: redis:7.4
-    container_name: traffic_light_cache_redis_container
+    container_name: trafficlightcachedb_container
     networks:
       - traffic_light_cache_network
 
-networks:
+networks: 
   traffic_light_cache_network:
     name: traffic_light_cache_network
     driver: bridge

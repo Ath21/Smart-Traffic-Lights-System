@@ -13,7 +13,7 @@ services:
       # ===============================
 
       ## TrafficLightCacheDB (Redis)
-      Redis__TrafficLight__Host: traffic_light_cache_redis
+      Redis__TrafficLight__Host: traffic_light_cache_db
       Redis__TrafficLight__Port: 6379
       Redis__TrafficLight__Password: ""
       Redis__TrafficLight__Database: 0

@@ -1,7 +1,7 @@
 services:
-  log_mongo:
+  log_db:
     image: mongo:6.0
-    container_name: log_mongo_container
+    container_name: logdb_container
     networks:
       - log_network
 

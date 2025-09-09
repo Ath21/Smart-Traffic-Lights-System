@@ -1,5 +1,5 @@
 services:
-  traffic_light_postgres:
+  traffic_light_db:
     environment:
       POSTGRES_DB: TrafficLightDB
       POSTGRES_USER: postgres
@@ -7,7 +7,7 @@ services:
     ports:
       - '5434:5432'
     volumes:
-      - traffic_light_postgres_data:/var/lib/postgresql/data
+      - trafficlightdb_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB} -h 127.0.0.1"]
       interval: 10s
@@ -16,7 +16,7 @@ services:
     restart: always
 
 volumes:
-  traffic_light_postgres_data:
-    name: traffic_light_postgres_data
+  trafficlightdb_data:
+    name: trafficlightdb_data
     driver: local
 

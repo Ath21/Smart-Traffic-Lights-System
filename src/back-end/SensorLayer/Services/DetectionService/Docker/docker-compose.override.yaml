@@ -13,7 +13,7 @@ services:
       # ===============================
 
       ## DetectionDB (MongoDB)
-      Mongo__ConnectionString: mongodb://mongo:mongo123@detection_mongo:27017
+      Mongo__ConnectionString: mongodb://mongo:mongo123@detection_db:27017
       Mongo__Database: DetectionDB
       Mongo__Collections__VehicleCount: vehicle_count
       Mongo__Collections__PedestrianCount: pedestrian_count
@@ -73,7 +73,4 @@ services:
       RabbitMQ__RoutingKeys__Log__Audit: log.sensor.detection_service.audit
       RabbitMQ__RoutingKeys__Log__Error: log.sensor.detection_service.error
 
-    depends_on:
-      detection_mongo:
-        condition: service_healthy
     restart: always

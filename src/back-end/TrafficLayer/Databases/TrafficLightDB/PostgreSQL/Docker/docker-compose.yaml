@@ -1,7 +1,7 @@
 services:
-  traffic_light_postgres:
+  traffic_light_db:
     image: postgres:16
-    container_name: traffic_light_postgres_container
+    container_name: trafficlightdb_container
     networks:
       - traffic_light_network
 

@@ -1,15 +1,15 @@
 services:
-  log_mongo:
+  log_db:
     ports:
       - '27017:27017'
     environment:
       MONGO_INITDB_ROOT_USERNAME: mongo
       MONGO_INITDB_ROOT_PASSWORD: mongo123
     volumes:
-      - log_mongo_data:/data/db
+      - logdb_data:/data/db
     restart: always
 
 volumes:
-  log_mongo_data:
-    name: log_mongo_data
+  logdb_data:
+    name: logdb_data
     driver: local

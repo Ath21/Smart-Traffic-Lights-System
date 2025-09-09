@@ -1,7 +1,7 @@
 services:
   traffic_light_coordinator_api:
     image: ath21/stls:traffic_light_coordinator_api
-    container_name: traffic_light_coordinator_api_container
+    container_name: trafficlightcoordinatorapi_container
     networks:
       - traffic_light_cache_network
       - traffic_light_network 

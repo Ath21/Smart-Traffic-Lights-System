@@ -1,7 +1,7 @@
 services:
   detection_api:
     image: ath21/stls:detection_api
-    container_name: detection_api_container
+    container_name: detectionapi_container
     networks:
       - detection_network
       - detection_cache_network

@@ -1,7 +1,7 @@
 services:
   user_api:
     image: ath21/stls:user_api
-    container_name: user_api_container
+    container_name: userapi_container
     networks:
       - user_network
       - rabbitmq_network

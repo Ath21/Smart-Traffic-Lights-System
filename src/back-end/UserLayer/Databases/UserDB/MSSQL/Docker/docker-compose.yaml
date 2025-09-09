@@ -1,7 +1,7 @@
 services:  
-  user_mssql:
+  user_db:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: user_mssql_container
+    container_name: userdb_container
     networks:
       - user_network
 

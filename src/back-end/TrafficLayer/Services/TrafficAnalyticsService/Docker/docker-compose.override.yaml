@@ -13,10 +13,10 @@ services:
       # ===============================
 
       ## TrafficAnalyticsDB (PostgreSQL)
-      PostgreSQL__ConnectionString: Host=traffic_analytics_postgres;Port=5432;Database=TrafficAnalyticsDB;Username=postgres;Password=postgres123
+      PostgreSQL__ConnectionString: Host=traffic_analytics_db;Port=5432;Database=TrafficAnalyticsDB;Username=postgres;Password=postgres123
 
       ## DetectionCacheDB (Redis)
-      Redis__Host: detection_cache_redis
+      Redis__Host: detection_cache_db
       Redis__Port: 6379
       Redis__Password: ""
       Redis__Database: 0
@@ -76,9 +76,5 @@ services:
       # --- Publish
       RabbitMQ__RoutingKeys__Log__Audit: log.traffic.analytics_service.audit
       RabbitMQ__RoutingKeys__Log__Error: log.traffic.analytics_service.error
-
-    depends_on:
-      traffic_analytics_postgres:
-        condition: service_healthy
 
     restart: always

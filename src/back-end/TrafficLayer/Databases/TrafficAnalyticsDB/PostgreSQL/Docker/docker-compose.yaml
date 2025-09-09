@@ -1,7 +1,7 @@
 services:
-  traffic_analytics_postgres:
+  traffic_analytics_db:
     image: postgres:16
-    container_name: traffic_analytics_postgres_container
+    container_name: trafficanalyticsdb_container
     networks:
       - traffic_analytics_network
 

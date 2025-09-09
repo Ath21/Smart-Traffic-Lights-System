@@ -1,7 +1,7 @@
 services:
-  detection_mongo:
+  detection_db:
     image: mongo:6.0
-    container_name: detection_mongo_container
+    container_name: detectiondb_container
     networks:
       - detection_network
 
