@@ -14,8 +14,8 @@ WORKDIR /src
 ## API
 COPY TrafficLayer/Services/IntersectionControllerService/IntersectionControllerStore TrafficLayer/Services/IntersectionControllerService/IntersectionControllerAPI/IntersectionControllerStore/
 ## Databases
-COPY TrafficLayer/Databases/TrafficLightCacheData TrafficLayer/Databases/TrafficLightCacheData/
-COPY SensorLayer/Databases/DetectionCacheData SensorLayer/Databases/DetectionCacheData/
+COPY TrafficLayer/Databases/TrafficLightCacheDB/TrafficLightCacheData TrafficLayer/Databases/TrafficLightCacheDB/TrafficLightCacheData/
+COPY SensorLayer/Databases/DetectionCacheDB/DetectionCacheData SensorLayer/Databases/DetectionCacheDB/DetectionCacheData/
 ## Messages
 COPY MessageLayer/TrafficMessages MessageLayer/TrafficMessages/
 COPY MessageLayer/LogMessages MessageLayer/LogMessages/

@@ -7,38 +7,38 @@
 DOCKER_USERNAME="ath21"
 DOCKER_REPO="stls"
 
-# Root directory (assumes script is inside src/back-end/)
+# Root directory (src/back-end/)
 ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-# === Layer services & DB paths ===
+# === Service Dockerfile paths ===
 declare -A SERVICES_PATHS=(
     # User Layer
-    [user_api]="$ROOT_DIR/UserLayer/Services/UserService/Docker"
-    [user_mssql]="$ROOT_DIR/UserLayer/Databases/UserDB/MSSQL/Docker"
-    [notification_api]="$ROOT_DIR/UserLayer/Services/NotificationService/Docker"
-    [notification_mongo]="$ROOT_DIR/UserLayer/Databases/NotificationDB/Mongo/Docker"
+    [user_api]="$ROOT_DIR/UserLayer/Services/UserService/Docker/Dockerfile"
+    [user_mssql]="$ROOT_DIR/UserLayer/Databases/UserDB/MSSQL/Docker/Dockerfile"
+    [notification_api]="$ROOT_DIR/UserLayer/Services/NotificationService/Docker/Dockerfile"
+    [notification_mongo]="$ROOT_DIR/UserLayer/Databases/NotificationDB/Mongo/Docker/Dockerfile"
 
     # Log Layer
-    [log_api]="$ROOT_DIR/LogLayer/Services/LogService/Docker"
-    [log_mongo]="$ROOT_DIR/LogLayer/Databases/Mongo/Docker"
+    [log_api]="$ROOT_DIR/LogLayer/Services/LogService/Docker/Dockerfile"
+    [log_mongo]="$ROOT_DIR/LogLayer/Databases/Mongo/Docker/Dockerfile"
 
     # Traffic Layer
-    [traffic_light_coordinator_api]="$ROOT_DIR/TrafficLayer/Services/TrafficLightCoordinatorService/Docker"
-    [traffic_analytics_api]="$ROOT_DIR/TrafficLayer/Services/TrafficAnalyticsService/Docker"
-    [traffic_light_controller_api]="$ROOT_DIR/TrafficLayer/Services/TrafficLightControllerService/Docker"
-    [intersection_controller_api]="$ROOT_DIR/TrafficLayer/Services/IntersectionControllerService/Docker"
-    [traffic_light_postgres]="$ROOT_DIR/TrafficLayer/Databases/TrafficLightDB/PostgreSQL/Docker"
-    [traffic_analytics_postgres]="$ROOT_DIR/TrafficLayer/Databases/TrafficAnalyticsDB/PostgreSQL/Docker"
-    [traffic_light_cache_redis]="$ROOT_DIR/TrafficLayer/Databases/TrafficLightCacheDB/Redis/Docker"
+    [traffic_light_coordinator_api]="$ROOT_DIR/TrafficLayer/Services/TrafficLightCoordinatorService/Docker/Dockerfile"
+    [traffic_analytics_api]="$ROOT_DIR/TrafficLayer/Services/TrafficAnalyticsService/Docker/Dockerfile"
+    [traffic_light_controller_api]="$ROOT_DIR/TrafficLayer/Services/TrafficLightControllerService/Docker/Dockerfile"
+    [intersection_controller_api]="$ROOT_DIR/TrafficLayer/Services/IntersectionControllerService/Docker/Dockerfile"
+    [traffic_light_postgres]="$ROOT_DIR/TrafficLayer/Databases/TrafficLightDB/PostgreSQL/Docker/Dockerfile"
+    [traffic_analytics_postgres]="$ROOT_DIR/TrafficLayer/Databases/TrafficAnalyticsDB/PostgreSQL/Docker/Dockerfile"
+    [traffic_light_cache_redis]="$ROOT_DIR/TrafficLayer/Databases/TrafficLightCacheDB/Redis/Docker/Dockerfile"
 
     # Sensor Layer
-    [detection_api]="$ROOT_DIR/SensorLayer/Services/DetectionService/Docker"
-    [sensor_api]="$ROOT_DIR/SensorLayer/Services/SensorService/Docker"
-    [detection_mongo]="$ROOT_DIR/SensorLayer/Databases/DetectionDB/Mongo/Docker"
-    [detection_cache_redis]="$ROOT_DIR/SensorLayer/Databases/DetectionCacheDB/Redis/Docker"
+    [detection_api]="$ROOT_DIR/SensorLayer/Services/DetectionService/Docker/Dockerfile"
+    [sensor_api]="$ROOT_DIR/SensorLayer/Services/SensorService/Docker/Dockerfile"
+    [detection_mongo]="$ROOT_DIR/SensorLayer/Databases/DetectionDB/Mongo/Docker/Dockerfile"
+    [detection_cache_redis]="$ROOT_DIR/SensorLayer/Databases/DetectionCacheDB/Redis/Docker/Dockerfile"
 
     # Message Layer
-    [rabbitmq]="$ROOT_DIR/MessageLayer/RabbitMQ/Docker"
+    [rabbitmq]="$ROOT_DIR/MessageLayer/RabbitMQ/Docker/Dockerfile"
 )
 
 # === Groups per Layer ===
@@ -61,20 +61,27 @@ NETWORKS=(
   detection_network
 )
 
+# === Only build & push API services ===
+API_SERVICES=("user_api" "notification_api" "log_api" \
+              "traffic_light_coordinator_api" "traffic_analytics_api" \
+              "traffic_light_controller_api" "intersection_controller_api" \
+              "detection_api" "sensor_api")
+
 # ================================
 # 🔧 Helpers
 # ================================
 print_help() {
-    echo "Usage: ./stls_backend-docker.sh {up|down|restart|status|logs|ps} /{user|traffic|sensor|log|message|all} [--clean]"
+    echo "Usage: ./stls_backend-docker.sh {up|down|restart|status|ps} /{user|traffic|sensor|log|message|all} [--build|--clean]"
 }
 
 compose_cmd() {
-    local base="$1"
-    local compose_yaml="$base/docker-compose.yaml"
-    local override_yaml="$base/docker-compose.override.yaml"
+    local base_dir
+    base_dir="$(dirname "$1")"
+    local compose_yaml="$base_dir/docker-compose.yaml"
+    local override_yaml="$base_dir/docker-compose.override.yaml"
 
     if [[ ! -f "$compose_yaml" ]]; then
-        echo "❌ Missing docker-compose.yaml in $base" >&2
+        echo "❌ Missing docker-compose.yaml in $base_dir" >&2
         exit 1
     fi
 
@@ -104,8 +111,32 @@ remove_networks() {
         fi
     done
 }
+
+build_service() {
+    local service="$1"
+    if [[ ! " ${API_SERVICES[*]} " =~ " ${service} " ]]; then
+        echo "⏩ Skipping build for $service (DB or broker)"
+        return
+    fi
+
+    local dockerfile="${SERVICES_PATHS[$service]}"
+    if [[ ! -f "$dockerfile" ]]; then
+        echo "⚠️  No Dockerfile for $service ($dockerfile), skipping build"
+        return
+    fi
+
+    local image="${DOCKER_USERNAME}/${DOCKER_REPO}:${service}"
+
+    echo "🔨 Building $image from $dockerfile"
+    docker build -f "$dockerfile" -t "$image" "$ROOT_DIR"
+
+    echo "☁️  Pushing $image to Docker Hub"
+    docker push "$image"
+}
+
 start_layer() {
     local layer_name="$1"
+    local build_flag="$2"
     local group_var=""
 
     case "$layer_name" in
@@ -122,34 +153,14 @@ start_layer() {
     echo "🚀 Starting layer: $layer_name"
     compose_args=""
     for s in "${services[@]}"; do
+        if [[ "$build_flag" == "--build" ]]; then
+            build_service "$s"
+        fi
         compose_args="$compose_args $(compose_cmd "${SERVICES_PATHS[$s]}")"
     done
+
     docker compose $compose_args -p "stls_${layer_name}" up -d
 }
-
-stop_layer() {
-    local layer_name="$1"
-    local group_var=""
-
-    case "$layer_name" in
-      user)     group_var="USER_LAYER" ;;
-      traffic)  group_var="TRAFFIC_LAYER" ;;
-      sensor)   group_var="SENSOR_LAYER" ;;
-      log)      group_var="LOG_LAYER" ;;
-      message)  group_var="MESSAGE_LAYER" ;;
-      *) echo "❌ Unknown layer: $layer_name" ; exit 1 ;;
-    esac
-
-    local group="$group_var[@]"
-    local services=("${!group}")
-    echo "🛑 Stopping layer: $layer_name"
-    compose_args=""
-    for s in "${services[@]}"; do
-        compose_args="$compose_args $(compose_cmd "${SERVICES_PATHS[$s]}")"
-    done
-    docker compose $compose_args -p "stls_${layer_name}" down
-}
-
 
 stop_layer() {
     local layer_name="$1"
@@ -180,18 +191,19 @@ stop_layer() {
 case "$1" in
   up)
     create_networks
+    BUILD_FLAG="$3"
     case "$2" in
-      /user)    start_layer user ;;
-      /traffic) start_layer traffic ;;
-      /sensor)  start_layer sensor ;;
-      /log)     start_layer log ;;
-      /message) start_layer message ;;
+      /user)    start_layer user "$BUILD_FLAG" ;;
+      /traffic) start_layer traffic "$BUILD_FLAG" ;;
+      /sensor)  start_layer sensor "$BUILD_FLAG" ;;
+      /log)     start_layer log "$BUILD_FLAG" ;;
+      /message) start_layer message "$BUILD_FLAG" ;;
       /all)
-        start_layer user
-        start_layer traffic
-        start_layer sensor
-        start_layer log
-        start_layer message
+        start_layer user "$BUILD_FLAG"
+        start_layer traffic "$BUILD_FLAG"
+        start_layer sensor "$BUILD_FLAG"
+        start_layer log "$BUILD_FLAG"
+        start_layer message "$BUILD_FLAG"
         ;;
       *) print_help ;;
     esac
@@ -232,9 +244,6 @@ case "$1" in
     docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
     echo -e "\n🌐 Networks Overview:"
     docker network ls
-    ;;
-  logs)
-    docker compose logs -f --tail=100
     ;;
   ps)
     docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
