@@ -1,0 +1,124 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: detection-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: detection-api
+  template:
+    metadata:
+      labels:
+        app: detection-api
+    spec:
+      containers:
+      - name: detection-api
+        image: ath21/stls:detection_api
+        ports:
+        - containerPort: 8080
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Development"
+
+        # Mongo
+        - name: Mongo__ConnectionString
+          value: "mongodb://$(MONGO_ROOT_USERNAME):$(MONGO_ROOT_PASSWORD)@detectiondb:27017"
+        - name: Mongo__Database
+          value: "DetectionDB"
+        - name: Mongo__Collections__VehicleCount
+          value: "vehicle_count"
+        - name: Mongo__Collections__PedestrianCount
+          value: "pedestrian_count"
+        - name: Mongo__Collections__CyclistCount
+          value: "cyclist_count"
+        - name: Mongo__Collections__Emergency
+          value: "emergency_vehicle"
+        - name: Mongo__Collections__PublicTransport
+          value: "public_transport"
+        - name: Mongo__Collections__Incident
+          value: "incident"
+        - name: MONGO_ROOT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: detectiondb-secret
+              key: MONGO_ROOT_USERNAME
+        - name: MONGO_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: detectiondb-secret
+              key: MONGO_ROOT_PASSWORD
+
+        # Redis
+        - name: Redis__Host
+          value: "detectioncachedb"
+        - name: Redis__Port
+          value: "6379"
+        - name: Redis__Password
+          value: ""
+        - name: Redis__Database
+          value: "0"
+        - name: Redis__KeyPrefix__VehicleCount
+          value: "sensor:{intersection_id}:vehicle_count"
+        - name: Redis__KeyPrefix__PedestrianCount
+          value: "sensor:{intersection_id}:pedestrian_count"
+        - name: Redis__KeyPrefix__CyclistCount
+          value: "sensor:{intersection_id}:cyclist_count"
+        - name: Redis__KeyPrefix__EmergencyDetected
+          value: "sensor:{intersection_id}:emergency_detected"
+        - name: Redis__KeyPrefix__PublicTransportDetected
+          value: "sensor:{intersection_id}:public_transport_detected"
+        - name: Redis__KeyPrefix__IncidentDetected
+          value: "sensor:{intersection_id}:incident_detected"
+
+        # JWT
+        - name: Jwt__Issuer
+          value: "http://stls_backend:8080"
+        - name: Jwt__Audience
+          value: "http://stls_backend:8080"
+        - name: Jwt__Key
+          valueFrom:
+            secretKeyRef:
+              name: detectionapi-secret
+              key: JWT_KEY
+
+        # CORS
+        - name: Cors__AllowedOrigins
+          value: "http://localhost:5173"
+        - name: Cors__AllowedMethods
+          value: "GET,POST,PUT,PATCH,DELETE"
+        - name: Cors__AllowedHeaders
+          value: "Content-Type,Authorization"
+
+        # RabbitMQ
+        - name: RabbitMQ__Host
+          value: "rabbitmq"
+        - name: RabbitMQ__Port
+          value: "5672"
+        - name: RabbitMQ__Username
+          valueFrom:
+            secretKeyRef:
+              name: detectionapi-secret
+              key: RABBITMQ_USERNAME
+        - name: RabbitMQ__Password
+          valueFrom:
+            secretKeyRef:
+              name: detectionapi-secret
+              key: RABBITMQ_PASSWORD
+
+        # Exchanges
+        - name: RabbitMQ__Exchanges__Sensor
+          value: "SENSOR.EXCHANGE"
+        - name: RabbitMQ__RoutingKeys__Sensor__EmergencyVehicle
+          value: "sensor.emergency_vehicle.detected.{intersection_id}"
+        - name: RabbitMQ__RoutingKeys__Sensor__PublicTransport
+          value: "sensor.public_transport.detected.{intersection_id}"
+        - name: RabbitMQ__RoutingKeys__Sensor__IncidentDetected
+          value: "sensor.incident.detected.{intersection_id}"
+
+        - name: RabbitMQ__Exchanges__Log
+          value: "LOG.EXCHANGE"
+        - name: RabbitMQ__RoutingKeys__Log__Audit
+          value: "log.sensor.detection_service.audit"
+        - name: RabbitMQ__RoutingKeys__Log__Error
+          value: "log.sensor.detection_service.error"
