@@ -32,14 +32,7 @@ declare -A SERVICES_PATHS=(
 # 🔧 HELPER FUNCTIONS
 # ================================
 print_help() {
-    echo "Usage: ./stls_backend-build.sh [--all] [service...]"
-    echo ""
-    echo "  --all       Build & push all API images"
-    echo "  service...  Build & push specific service(s) by name (e.g. user_api, log_api)"
-    echo ""
-    echo "Examples:"
-    echo "  ./stls_backend-build.sh --all"
-    echo "  ./stls_backend-build.sh user_api log_api"
+    echo "Usage: $0 {all} {user_api|notification_api|log_api|traffic_analytics_api|traffic_light_controller_api|traffic_light_coordinator_api|intersection_controller_api|sensor_api|detection_api}"
 }
 
 build_and_push_image() {

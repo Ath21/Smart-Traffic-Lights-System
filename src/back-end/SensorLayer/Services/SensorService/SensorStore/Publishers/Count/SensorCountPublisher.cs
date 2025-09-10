@@ -46,7 +46,7 @@ public class SensorCountPublisher : ISensorCountPublisher
     {
         var routingKey = _pedestrianKey.Replace("{intersection_id}", intersectionId.ToString());
 
-        var msg = new PedestrianDetectionMessage(Guid.NewGuid(), intersectionId, count, DateTime.UtcNow);
+        var msg = new PedestrianCountMessage(Guid.NewGuid(), intersectionId, count, DateTime.UtcNow);
 
         var endpoint = await _bus.GetSendEndpoint(new Uri($"exchange:{_sensorExchange}"));
         await endpoint.Send(msg, ctx => ctx.SetRoutingKey(routingKey));
@@ -60,7 +60,7 @@ public class SensorCountPublisher : ISensorCountPublisher
     {
         var routingKey = _cyclistKey.Replace("{intersection_id}", intersectionId.ToString());
 
-        var msg = new CyclistDetectionMessage(Guid.NewGuid(), intersectionId, count, DateTime.UtcNow);
+        var msg = new CyclistCountMessage(Guid.NewGuid(), intersectionId, count, DateTime.UtcNow);
 
         var endpoint = await _bus.GetSendEndpoint(new Uri($"exchange:{_sensorExchange}"));
         await endpoint.Send(msg, ctx => ctx.SetRoutingKey(routingKey));
