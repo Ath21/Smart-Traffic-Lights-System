@@ -65,7 +65,7 @@ public static class MassTransitSetup
                     e.Bind(userExchange, s =>
                     {
                         s.RoutingKey = notifRequestKey;
-                        s.ExchangeType = ExchangeType.Direct;
+                        s.ExchangeType = ExchangeType.Topic;
                     });
 
                     e.ConfigureConsumer<NotificationRequestConsumer>(context);

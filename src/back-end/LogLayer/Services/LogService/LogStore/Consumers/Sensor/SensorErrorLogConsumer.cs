@@ -6,7 +6,12 @@ using MassTransit;
 
 namespace LogStore.Consumers.Sensor;
 
-// Queue: sensor.log_service.queue → log.sensor.<service_name>.error
+/*  Queue: log.sensor_layer.error.queue
+    Exchange: LOG.EXCHANGE (topic)
+    Bindings:
+        - log.sensor.sensor_service.error
+        - log.sensor.detection_service.error
+*/
 public class SensorErrorLogConsumer : IConsumer<ErrorLogMessage>
 {
     private readonly ILogService _logService;

@@ -6,7 +6,14 @@ using MassTransit;
 
 namespace LogStore.Consumers.Traffic;
 
-// Queue: traffic.log_service.queue → log.traffic.<service_name>.error
+/*  Queue: log.traffic_layer.error.queue
+    Exchange: LOG.EXCHANGE (topic)
+    Bindings:
+        - log.traffic.analytics_service.error
+        - log.traffic.coordinator_service.error
+        - log.traffic.intersection_controller_service.error
+        - log.traffic.light_controller_service.error
+*/
 public class TrafficErrorLogConsumer : IConsumer<ErrorLogMessage>
 {
     private readonly ILogService _logService;

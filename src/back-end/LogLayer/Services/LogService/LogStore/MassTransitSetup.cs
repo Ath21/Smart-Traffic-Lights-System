@@ -35,17 +35,24 @@ public static class MassTransitSetup
 
                 // Queues
                 var userAuditQueue    = rabbit["Queues:UserAudit"];
-                var trafficAuditQueue = rabbit["Queues:TrafficAudit"];
-                var sensorAuditQueue  = rabbit["Queues:SensorAudit"];
                 var userErrorQueue    = rabbit["Queues:UserError"];
+                var trafficAuditQueue = rabbit["Queues:TrafficAudit"];
                 var trafficErrorQueue = rabbit["Queues:TrafficError"];
+                var sensorAuditQueue  = rabbit["Queues:SensorAudit"];
                 var sensorErrorQueue  = rabbit["Queues:SensorError"];
 
-                // Routing keys (wildcards expanded at binding time)
-                var userAuditKey    = rabbit["RoutingKeys:User:UserServiceAudit"];
-                var userErrorKey    = rabbit["RoutingKeys:User:UserServiceError"];
-                var notifAuditKey   = rabbit["RoutingKeys:User:NotificationServiceAudit"];
-                var notifErrorKey   = rabbit["RoutingKeys:User:NotificationServiceError"];
+                // Routing keys
+                var userAuditKeys = new[]
+                {
+                    rabbit["RoutingKeys:User:UserServiceAudit"],
+                    rabbit["RoutingKeys:User:NotificationServiceAudit"]
+                };
+
+                var userErrorKeys = new[]
+                {
+                    rabbit["RoutingKeys:User:UserServiceError"],
+                    rabbit["RoutingKeys:User:NotificationServiceError"]
+                };
 
                 var trafficAuditKeys = new[]
                 {
@@ -65,55 +72,51 @@ public static class MassTransitSetup
 
                 var sensorAuditKeys = new[]
                 {
-                    rabbit["RoutingKeys:Sensor:VehicleAudit"],
-                    rabbit["RoutingKeys:Sensor:EmergencyAudit"],
-                    rabbit["RoutingKeys:Sensor:PublicTransportAudit"],
-                    rabbit["RoutingKeys:Sensor:PedestrianAudit"],
-                    rabbit["RoutingKeys:Sensor:CyclistAudit"],
-                    rabbit["RoutingKeys:Sensor:IncidentAudit"]
+                    rabbit["RoutingKeys:Sensor:SensorAudit"],
+                    rabbit["RoutingKeys:Sensor:DetectionAudit"]
                 };
 
                 var sensorErrorKeys = new[]
                 {
-                    rabbit["RoutingKeys:Sensor:VehicleError"],
-                    rabbit["RoutingKeys:Sensor:EmergencyError"],
-                    rabbit["RoutingKeys:Sensor:PublicTransportError"],
-                    rabbit["RoutingKeys:Sensor:PedestrianError"],
-                    rabbit["RoutingKeys:Sensor:CyclistError"],
-                    rabbit["RoutingKeys:Sensor:IncidentError"]
+                    rabbit["RoutingKeys:Sensor:SensorError"],
+                    rabbit["RoutingKeys:Sensor:DetectionError"]
                 };
 
-                // ================= USER LOG QUEUE =================
+                // ================= USER AUDIT QUEUE =================
                 cfg.ReceiveEndpoint(userAuditQueue, e =>
                 {
                     e.ConfigureConsumeTopology = false;
 
-                    e.Bind(logsExchange, s =>
+                    foreach (var key in userAuditKeys)
                     {
-                        s.RoutingKey = userAuditKey.Replace("{service_name}", "*");
-                        s.ExchangeType = ExchangeType.Topic;
-                    });
-                    e.Bind(logsExchange, s =>
-                    {
-                        s.RoutingKey = userErrorKey.Replace("{service_name}", "*");
-                        s.ExchangeType = ExchangeType.Topic;
-                    });
-                    e.Bind(logsExchange, s =>
-                    {
-                        s.RoutingKey = notifAuditKey;
-                        s.ExchangeType = ExchangeType.Topic;
-                    });
-                    e.Bind(logsExchange, s =>
-                    {
-                        s.RoutingKey = notifErrorKey;
-                        s.ExchangeType = ExchangeType.Topic;
-                    });
+                        e.Bind(logsExchange, s =>
+                        {
+                            s.RoutingKey = key;
+                            s.ExchangeType = ExchangeType.Topic;
+                        });
+                    }
 
                     e.ConfigureConsumer<UserAuditLogConsumer>(context);
+                });
+
+                // ================= USER ERROR QUEUE =================
+                cfg.ReceiveEndpoint(userErrorQueue, e =>
+                {
+                    e.ConfigureConsumeTopology = false;
+
+                    foreach (var key in userErrorKeys)
+                    {
+                        e.Bind(logsExchange, s =>
+                        {
+                            s.RoutingKey = key;
+                            s.ExchangeType = ExchangeType.Topic;
+                        });
+                    }
+
                     e.ConfigureConsumer<UserErrorLogConsumer>(context);
                 });
 
-                // ================= TRAFFIC LOG QUEUE =================
+                // ================= TRAFFIC AUDIT QUEUE =================
                 cfg.ReceiveEndpoint(trafficAuditQueue, e =>
                 {
                     e.ConfigureConsumeTopology = false;
@@ -127,6 +130,14 @@ public static class MassTransitSetup
                         });
                     }
 
+                    e.ConfigureConsumer<TrafficAuditLogConsumer>(context);
+                });
+
+                // ================= TRAFFIC ERROR QUEUE =================
+                cfg.ReceiveEndpoint(trafficErrorQueue, e =>
+                {
+                    e.ConfigureConsumeTopology = false;
+
                     foreach (var key in trafficErrorKeys)
                     {
                         e.Bind(logsExchange, s =>
@@ -136,11 +147,10 @@ public static class MassTransitSetup
                         });
                     }
 
-                    e.ConfigureConsumer<TrafficAuditLogConsumer>(context);
                     e.ConfigureConsumer<TrafficErrorLogConsumer>(context);
                 });
 
-                // ================= SENSOR LOG QUEUE =================
+                // ================= SENSOR AUDIT QUEUE =================
                 cfg.ReceiveEndpoint(sensorAuditQueue, e =>
                 {
                     e.ConfigureConsumeTopology = false;
@@ -154,6 +164,14 @@ public static class MassTransitSetup
                         });
                     }
 
+                    e.ConfigureConsumer<SensorAuditLogConsumer>(context);
+                });
+
+                // ================= SENSOR ERROR QUEUE =================
+                cfg.ReceiveEndpoint(sensorErrorQueue, e =>
+                {
+                    e.ConfigureConsumeTopology = false;
+
                     foreach (var key in sensorErrorKeys)
                     {
                         e.Bind(logsExchange, s =>
@@ -163,7 +181,6 @@ public static class MassTransitSetup
                         });
                     }
 
-                    e.ConfigureConsumer<SensorAuditLogConsumer>(context);
                     e.ConfigureConsumer<SensorErrorLogConsumer>(context);
                 });
 

@@ -24,7 +24,7 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
-        /******* [1] MongoDb Config (from env vars) ********/
+        /******* [1] MongoDb Config ********/
         services.Configure<LogDbSettings>(options =>
         {
             options.ConnectionString = _configuration["Mongo:ConnectionString"];
@@ -35,11 +35,11 @@ public class Startup
         services.AddSingleton<LogDbContext>();
         
         /******* [2] Repositories ********/
-        services.AddScoped<IAuditLogRepository, AuditLogRepository>();
-        services.AddScoped<IErrorLogRepository, ErrorLogRepository>();
+        services.AddScoped(typeof(IAuditLogRepository), typeof(AuditLogRepository));
+        services.AddScoped(typeof(IErrorLogRepository), typeof(ErrorLogRepository));
 
         /******* [3] Services ********/
-        services.AddScoped<ILogService, LogService>();
+        services.AddScoped(typeof(ILogService), typeof(LogService));
 
         /******* [4] AutoMapper ********/
         services.AddAutoMapper(typeof(LogStoreProfile));
@@ -75,9 +75,9 @@ public class Startup
         /******* [7] MassTransit ********/
         services.AddLogServiceMassTransit(_configuration);
 
-        /******* [8] CORS Policy (from env vars) ********/
+        /******* [8] CORS Policy ********/
         var allowedOrigins = _configuration["Cors:AllowedOrigins"]?.Split(",") ?? Array.Empty<string>();
-        var allowedMethods = _configuration["Cors:AllowedMethods"]?.Split(",") ?? new[] { "GET","POST","PUT","DELETE","PATCH" };
+        var allowedMethods = _configuration["Cors:AllowedMethods"]?.Split(",") ?? new[] { "GET","POST","PUT","PATCH","DELETE" };
         var allowedHeaders = _configuration["Cors:AllowedHeaders"]?.Split(",") ?? new[] { "Content-Type","Authorization" };
 
         services.AddCors(options =>
@@ -98,7 +98,7 @@ public class Startup
         /******* [10] Swagger ********/
         services.AddSwaggerGen(c =>
         {
-            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Log API", Version = "v2.0" });
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Log Service", Version = "v2.0" });
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 In = ParameterLocation.Header,
@@ -132,16 +132,21 @@ public class Startup
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Log API");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Log Service");
             });
         }
 
         app.UseHttpsRedirection();
+
         app.UseMiddleware<ExceptionMiddleware>();
+
         app.UseCors("AllowFrontend");
+
         app.UseAuthentication();
         app.UseAuthorization();
+
         app.MapControllers();
+
         app.Run();
     }
 }

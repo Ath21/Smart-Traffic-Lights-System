@@ -6,7 +6,12 @@ using MassTransit;
 
 namespace LogStore.Consumers.User;
 
-// Queue: user.log_service.queue → log.user.<service_name>.error
+/*  Queue: log.user_layer.error.queue
+    Exchange: LOG.EXCHANGE (topic)
+    Bindings:
+        - log.user.user_service.error
+        - log.user.notification_service.error
+*/
 public class UserErrorLogConsumer : IConsumer<ErrorLogMessage>
 {
     private readonly ILogService _logService;

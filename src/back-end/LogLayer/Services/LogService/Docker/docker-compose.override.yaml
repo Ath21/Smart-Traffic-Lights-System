@@ -13,7 +13,7 @@ services:
       # ===============================
 
       ## LogDB (MongoDB)
-      Mongo__ConnectionString: mongodb://mongo:mongo123@log_mongo:27017
+      Mongo__ConnectionString: mongodb://mongo:mongo123@log_db:27017
       Mongo__Database: LogDB
       Mongo__AuditLogsCollection: audit_logs
       Mongo__ErrorLogsCollection: error_logs
@@ -71,18 +71,10 @@ services:
       RabbitMQ__RoutingKeys__Traffic__LightControllerError: log.traffic.light_controller_service.error
 
       # --- Consume (Routing Keys - Sensor Layer)
-      RabbitMQ__RoutingKeys__Sensor__VehicleAudit: log.sensor.vehicle_detection_service.audit
-      RabbitMQ__RoutingKeys__Sensor__EmergencyAudit: log.sensor.emergency_vehicle_detection_service.audit
-      RabbitMQ__RoutingKeys__Sensor__PublicTransportAudit: log.sensor.public_transport_detection_service.audit
-      RabbitMQ__RoutingKeys__Sensor__PedestrianAudit: log.sensor.pedestrian_detection_service.audit
-      RabbitMQ__RoutingKeys__Sensor__CyclistAudit: log.sensor.cyclist_detection_service.audit
-      RabbitMQ__RoutingKeys__Sensor__IncidentAudit: log.sensor.incident_detection_service.audit
-      RabbitMQ__RoutingKeys__Sensor__VehicleError: log.sensor.vehicle_detection_service.error
-      RabbitMQ__RoutingKeys__Sensor__EmergencyError: log.sensor.emergency_vehicle_detection_service.error
-      RabbitMQ__RoutingKeys__Sensor__PublicTransportError: log.sensor.public_transport_detection_service.error
-      RabbitMQ__RoutingKeys__Sensor__PedestrianError: log.sensor.pedestrian_detection_service.error
-      RabbitMQ__RoutingKeys__Sensor__CyclistError: log.sensor.cyclist_detection_service.error
-      RabbitMQ__RoutingKeys__Sensor__IncidentError: log.sensor.incident_detection_service.error
+      RabbitMQ__RoutingKeys__Sensor__SensorAudit: log.sensor.sensor_service.audit
+      RabbitMQ__RoutingKeys__Sensor__DetectionAudit: log.sensor.detection_service.audit
+      RabbitMQ__RoutingKeys__Sensor__SensorError: log.sensor.sensor_service.error
+      RabbitMQ__RoutingKeys__Sensor__DetectionError: log.sensor.detection_service.error
 
     depends_on:
       log_db:

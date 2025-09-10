@@ -6,7 +6,14 @@ using MassTransit;
 
 namespace LogStore.Consumers.Traffic;
 
-// Queue: traffic.log_service.queue → log.traffic.<service_name>.audit
+/*  Queue: log.traffic_layer.audit.queue
+    Exchange: LOG.EXCHANGE (topic)
+    Bindings:
+        - log.traffic.analytics_service.audit
+        - log.traffic.coordinator_service.audit
+        - log.traffic.intersection_controller_service.audit
+        - log.traffic.light_controller_service.audit
+*/
 public class TrafficAuditLogConsumer : IConsumer<AuditLogMessage>
 {
     private readonly ILogService _logService;

@@ -24,7 +24,7 @@ public class NotificationController : ControllerBase
     // Purpose: Send a direct notification to a specific user
     // ============================================================
     [HttpPost("send")]
-    [Authorize(Roles = "Admin,TrafficOperator")]
+    //[Authorize(Roles = "Admin,TrafficOperator")]
     [ProducesResponseType(typeof(NotificationResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<NotificationResponse>> SendUserNotification([FromBody] SendNotificationRequest request)
@@ -63,7 +63,7 @@ public class NotificationController : ControllerBase
     // Purpose: Publish a notification for a group/audience
     // ============================================================
     [HttpPost("public-notice")]
-    [Authorize(Roles = "Admin,TrafficOperator")]
+    //[Authorize(Roles = "Admin,TrafficOperator")]
     [ProducesResponseType(typeof(NotificationResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<NotificationResponse>> SendPublicNotice([FromBody] PublicNoticeRequest request)
@@ -96,7 +96,7 @@ public class NotificationController : ControllerBase
     // Purpose: Retrieve notifications by recipient email
     // ============================================================
     [HttpGet("recipient/{email}")]
-    [Authorize(Roles = "User,Admin,TrafficOperator")]
+    //[Authorize(Roles = "User,Admin,TrafficOperator")]
     [ProducesResponseType(typeof(IEnumerable<NotificationResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<IEnumerable<NotificationResponse>>> GetByRecipientEmail(string email)
@@ -124,7 +124,7 @@ public class NotificationController : ControllerBase
     // Purpose: Retrieve delivery history logs for a user
     // ============================================================
     [HttpGet("history/{userId:guid}")]
-    [Authorize(Roles = "Admin")]
+    //[Authorize(Roles = "Admin")]
     [ProducesResponseType(typeof(IEnumerable<DeliveryLogResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<IEnumerable<DeliveryLogResponse>>> GetUserHistory(Guid userId)
@@ -150,7 +150,7 @@ public class NotificationController : ControllerBase
     // Purpose: Mark a single notification as read
     // ============================================================
     [HttpPatch("{notificationId:guid}/read")]
-    [Authorize(Roles = "User,Admin,TrafficOperator")]
+    //[Authorize(Roles = "User,Admin,TrafficOperator")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult> MarkAsRead(Guid notificationId)
@@ -169,7 +169,7 @@ public class NotificationController : ControllerBase
     // Purpose: Mark all notifications for current user as read
     // ============================================================
     [HttpPatch("read-all")]
-    [Authorize(Roles = "User,Admin,TrafficOperator")]
+    //[Authorize(Roles = "User,Admin,TrafficOperator")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult> MarkAllAsRead()

@@ -6,7 +6,12 @@ using MassTransit;
 
 namespace LogStore.Consumers.Sensor;
 
-// Queue: sensor.log_service.queue → log.sensor.<service_name>.audit
+/*  Queue: log.sensor_layer.audit.queue
+    Exchange: LOG.EXCHANGE (topic)
+    Bindings:
+        - log.sensor.sensor_service.audit
+        - log.sensor.detection_service.audit
+*/
 public class SensorAuditLogConsumer : IConsumer<AuditLogMessage>
 {
     private readonly ILogService _logService;

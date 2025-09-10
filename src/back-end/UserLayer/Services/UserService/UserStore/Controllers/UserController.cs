@@ -67,7 +67,7 @@ public class UserController : ControllerBase
     // Purpose: Invalidate JWT token
     // ============================================================
     [HttpPost("logout")]
-    [Authorize(Roles = "User,TrafficOperator,Admin")]
+    //[Authorize(Roles = "User,TrafficOperator,Admin")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> Logout()
     {
@@ -82,7 +82,7 @@ public class UserController : ControllerBase
     // Purpose: Get current user profile
     // ============================================================
     [HttpGet("profile")]
-    [Authorize(Roles = "User,TrafficOperator,Admin")]
+    //[Authorize(Roles = "User,TrafficOperator,Admin")]
     [ProducesResponseType(typeof(UserProfileResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<UserProfileResponse>> GetProfile()
@@ -98,7 +98,7 @@ public class UserController : ControllerBase
     // Purpose: Update user profile (username, email, password)
     // ============================================================
     [HttpPut("update")]
-    [Authorize(Roles = "User,TrafficOperator,Admin")]
+    //[Authorize(Roles = "User,TrafficOperator,Admin")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request)
@@ -144,7 +144,7 @@ public class UserController : ControllerBase
     // Purpose: Request sending a notification (delegated to Notification Service)
     // ============================================================
     [HttpPost("send-notification-request")]
-    [Authorize(Roles = "User,TrafficOperator,Admin")]
+    //[Authorize(Roles = "User,TrafficOperator,Admin")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> SendNotification([FromBody] NotificationRequest request)

@@ -5,7 +5,12 @@ using MassTransit;
 
 namespace LogStore.Consumers.User;
 
-// Queue: user.log_service.queue → log.user.<service_name>.audit
+/*  Queue: log.user_layer.audit.queue
+    Exchange: LOG.EXCHANGE (topic)
+    Bindings:
+        - log.user.user_service.audit
+        - log.user.notification_service.audit
+*/
 public class UserAuditLogConsumer : IConsumer<AuditLogMessage>
 {
     private readonly ILogService _logService;
