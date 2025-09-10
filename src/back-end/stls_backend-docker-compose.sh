@@ -125,7 +125,7 @@ deploy_layer() {
       ;;
     log)
       docker compose -p stls_log \
-        -f "$ROOT_DIR/LogLayer/Databases/Mongo/Docker/docker-compose.yaml" -f "$ROOT_DIR/LogLayer/Databases/Mongo/Docker/docker-compose.override.yaml" \
+        -f "$ROOT_DIR/LogLayer/Databases/LogDB/Mongo/Docker/docker-compose.yaml" -f "$ROOT_DIR/LogLayer/Databases/LogDB/Mongo/Docker/docker-compose.override.yaml" \
         -f "$ROOT_DIR/LogLayer/Services/LogService/Docker/docker-compose.yaml" -f "$ROOT_DIR/LogLayer/Services/LogService/Docker/docker-compose.override.yaml" \
         up -d
   ;;

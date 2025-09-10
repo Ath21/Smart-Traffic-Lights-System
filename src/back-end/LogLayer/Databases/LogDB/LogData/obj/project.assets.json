@@ -760,11 +760,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/Databases/LogData/LogData.csproj",
+      "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/Databases/LogDB/LogData/LogData.csproj",
       "projectName": "LogData",
-      "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/Databases/LogData/LogData.csproj",
+      "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/Databases/LogDB/LogData/LogData.csproj",
       "packagesPath": "/home/ath/.nuget/packages/",
-      "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/Databases/LogData/obj/",
+      "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/Databases/LogDB/LogData/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/home/ath/.nuget/NuGet/NuGet.Config"

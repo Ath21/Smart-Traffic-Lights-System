@@ -138,3 +138,4 @@
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/IntersectionControllerService/IntersectionControllerStore/obj/Debug/net9.0/Intersec.0C47F79C.Up2Date
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/IntersectionControllerService/IntersectionControllerStore/obj/Debug/net9.0/IntersectionControllerStore.genruntimeconfig.cache
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/IntersectionControllerService/IntersectionControllerStore/obj/Debug/net9.0/ref/IntersectionControllerStore.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/IntersectionControllerService/IntersectionControllerStore/bin/Debug/net9.0/Newtonsoft.Json.dll

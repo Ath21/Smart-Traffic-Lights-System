@@ -19,7 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../../../../MessageLayer/LogMessages/LogMessages.csproj" />
-    <ProjectReference Include="../../../Databases/LogData/LogData.csproj" />
+    <ProjectReference Include="../../../Databases/LogDB/LogData/LogData.csproj" />
   </ItemGroup>
 
 </Project>

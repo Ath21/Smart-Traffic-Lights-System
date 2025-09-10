@@ -8,9 +8,9 @@ namespace IntersectionControllerStore.Consumers;
 public class SensorDataConsumer :
     IConsumer<VehicleCountMessage>,
     IConsumer<EmergencyVehicleMessage>,
-    IConsumer<PedestrianDetectionMessage>,
-    IConsumer<PublicTransportMessage>,
-    IConsumer<CyclistDetectionMessage>,
+    IConsumer<PedestrianCountMessage>,
+    IConsumer<PublicTransportDetectionMessage>,
+    IConsumer<CyclistCountMessage>,
     IConsumer<IncidentDetectionMessage>
 {
     private readonly IPriorityManager _priorityManager;
@@ -42,28 +42,28 @@ public class SensorDataConsumer :
         await _priorityManager.ProcessEmergencyVehicleAsync(msg.IntersectionId, msg.DetectionId, msg.Detected, msg.Timestamp);
     }
 
-    public async Task Consume(ConsumeContext<PedestrianDetectionMessage> context)
+    public async Task Consume(ConsumeContext<PedestrianCountMessage> context)
     {
         var msg = context.Message;
-        _logger.LogInformation("{Tag} PedestrianDetectionMessage received: Intersection={IntersectionId}, DetectionId={DetectionId}, Count={Count}",
+        _logger.LogInformation("{Tag} PedestrianCountMessage received: Intersection={IntersectionId}, DetectionId={DetectionId}, Count={Count}",
             ServiceTag, msg.IntersectionId, msg.DetectionId, msg.Count);
 
         await _priorityManager.ProcessPedestrianAsync(msg.IntersectionId, msg.DetectionId, msg.Count, msg.Timestamp);
     }
 
-    public async Task Consume(ConsumeContext<PublicTransportMessage> context)
+    public async Task Consume(ConsumeContext<PublicTransportDetectionMessage> context)
     {
         var msg = context.Message;
-        _logger.LogInformation("{Tag} PublicTransportMessage received: Intersection={IntersectionId}, DetectionId={DetectionId}, Route={RouteId}",
+        _logger.LogInformation("{Tag} PublicTransportDetectionMessage received: Intersection={IntersectionId}, DetectionId={DetectionId}, Route={RouteId}",
             ServiceTag, msg.IntersectionId, msg.DetectionId, msg.RouteId);
 
         await _priorityManager.ProcessPublicTransportAsync(msg.IntersectionId, msg.DetectionId, msg.RouteId, msg.Timestamp);
     }
 
-    public async Task Consume(ConsumeContext<CyclistDetectionMessage> context)
+    public async Task Consume(ConsumeContext<CyclistCountMessage> context)
     {
         var msg = context.Message;
-        _logger.LogInformation("{Tag} CyclistDetectionMessage received: Intersection={IntersectionId}, DetectionId={DetectionId}, Count={Count}",
+        _logger.LogInformation("{Tag} CyclistCountMessage received: Intersection={IntersectionId}, DetectionId={DetectionId}, Count={Count}",
             ServiceTag, msg.IntersectionId, msg.DetectionId, msg.Count);
 
         await _priorityManager.ProcessCyclistAsync(msg.IntersectionId, msg.DetectionId, msg.Count, msg.Timestamp);

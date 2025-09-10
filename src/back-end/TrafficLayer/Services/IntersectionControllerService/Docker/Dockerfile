@@ -3,8 +3,6 @@ FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 WORKDIR /app
 EXPOSE 8080
 
-RUN apt-get update && apt-get install -y libgssapi-krb5-2
-
 # Build stage
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
@@ -12,7 +10,7 @@ WORKDIR /src
 
 # Copy source code
 ## API
-COPY TrafficLayer/Services/IntersectionControllerService/IntersectionControllerStore TrafficLayer/Services/IntersectionControllerService/IntersectionControllerAPI/IntersectionControllerStore/
+COPY TrafficLayer/Services/IntersectionControllerService/IntersectionControllerStore TrafficLayer/Services/IntersectionControllerService/IntersectionControllerStore/
 ## Databases
 COPY TrafficLayer/Databases/TrafficLightCacheDB/TrafficLightCacheData TrafficLayer/Databases/TrafficLightCacheDB/TrafficLightCacheData/
 COPY SensorLayer/Databases/DetectionCacheDB/DetectionCacheData SensorLayer/Databases/DetectionCacheDB/DetectionCacheData/

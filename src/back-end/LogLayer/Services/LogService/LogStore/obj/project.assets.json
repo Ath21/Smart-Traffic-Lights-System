@@ -2230,8 +2230,8 @@
     },
     "LogData/1.0.0": {
       "type": "project",
-      "path": "../../../Databases/LogData/LogData.csproj",
-      "msbuildProject": "../../../Databases/LogData/LogData.csproj"
+      "path": "../../../Databases/LogDB/LogData/LogData.csproj",
+      "msbuildProject": "../../../Databases/LogDB/LogData/LogData.csproj"
     },
     "LogMessages/1.0.0": {
       "type": "project",
@@ -2278,8 +2278,8 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
-            "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/Databases/LogData/LogData.csproj": {
-              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/Databases/LogData/LogData.csproj"
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/Databases/LogDB/LogData/LogData.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/Databases/LogDB/LogData/LogData.csproj"
             },
             "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/LogMessages/LogMessages.csproj": {
               "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/LogMessages/LogMessages.csproj"

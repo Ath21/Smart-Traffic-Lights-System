@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "RY13XZwoIyE=",
+  "dgSpecHash": "hsuLzdyqI4s=",
   "success": true,
-  "projectFilePath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/Databases/LogData/LogData.csproj",
+  "projectFilePath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/Databases/LogDB/LogData/LogData.csproj",
   "expectedPackageFiles": [
     "/home/ath/.nuget/packages/dnsclient/1.6.1/dnsclient.1.6.1.nupkg.sha512",
     "/home/ath/.nuget/packages/microsoft.extensions.dependencyinjection.abstractions/9.0.5/microsoft.extensions.dependencyinjection.abstractions.9.0.5.nupkg.sha512",
