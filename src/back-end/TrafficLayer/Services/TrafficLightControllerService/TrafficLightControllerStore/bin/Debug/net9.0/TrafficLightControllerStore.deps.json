@@ -9,7 +9,6 @@
       "TrafficLightControllerStore/1.0.0": {
         "dependencies": {
           "AutoMapper": "14.0.0",
-          "IntersectionControllerData": "1.0.0",
           "LogMessages": "1.0.0",
           "MassTransit": "8.5.0",
           "MassTransit.RabbitMQ": "8.5.0",
@@ -19,6 +18,7 @@
           "RabbitMQ.Client": "7.1.2",
           "StackExchange.Redis": "2.9.11",
           "Swashbuckle.AspNetCore": "9.0.1",
+          "TrafficLightCacheData": "1.0.0",
           "TrafficMessages": "1.0.0"
         },
         "runtime": {
@@ -400,22 +400,22 @@
       },
       "System.IO.Pipelines/8.0.0": {},
       "System.Threading.RateLimiting/8.0.0": {},
-      "IntersectionControllerData/1.0.0": {
+      "LogMessages/1.0.0": {
+        "runtime": {
+          "LogMessages.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "TrafficLightCacheData/1.0.0": {
         "dependencies": {
           "Microsoft.Extensions.Configuration.Abstractions": "9.0.0",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.6",
           "StackExchange.Redis": "2.9.11"
         },
         "runtime": {
-          "IntersectionControllerData.dll": {
-            "assemblyVersion": "1.0.0.0",
-            "fileVersion": "1.0.0.0"
-          }
-        }
-      },
-      "LogMessages/1.0.0": {
-        "runtime": {
-          "LogMessages.dll": {
+          "TrafficLightCacheData.dll": {
             "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
@@ -724,12 +724,12 @@
       "path": "system.threading.ratelimiting/8.0.0",
       "hashPath": "system.threading.ratelimiting.8.0.0.nupkg.sha512"
     },
-    "IntersectionControllerData/1.0.0": {
+    "LogMessages/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
     },
-    "LogMessages/1.0.0": {
+    "TrafficLightCacheData/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

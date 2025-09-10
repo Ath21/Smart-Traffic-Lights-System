@@ -17,6 +17,7 @@ public class TrafficLightRepository : ITrafficLightRepository
     public async Task SetLightStateAsync(Guid intersectionId, Guid lightId, string state)
         => await _redis.SetHashAsync($"traffic:light:status:{intersectionId}", lightId.ToString(), state);
 
-    public async Task<Dictionary<string,string>> GetLightStatesAsync(Guid intersectionId)
+    public async Task<Dictionary<string, string>> GetLightStatesAsync(Guid intersectionId)
         => await _redis.GetAllHashAsync($"traffic:light:status:{intersectionId}");
 }
+    
