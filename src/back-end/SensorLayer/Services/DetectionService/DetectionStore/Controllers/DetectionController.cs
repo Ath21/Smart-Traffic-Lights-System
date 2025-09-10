@@ -11,10 +11,10 @@ namespace DetectionStore.Controllers;
 [Route("api/detections")]
 public class DetectionController : ControllerBase
 {
-    private readonly IDetectionBusiness _business;
+    private readonly ISensorDetectionService _business;
     private readonly IMapper _mapper;
 
-    public DetectionController(IDetectionBusiness business, IMapper mapper)
+    public DetectionController(ISensorDetectionService business, IMapper mapper)
     {
         _business = business;
         _mapper = mapper;

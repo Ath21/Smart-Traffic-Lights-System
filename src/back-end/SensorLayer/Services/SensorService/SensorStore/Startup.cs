@@ -10,10 +10,12 @@ using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using SensorStore.Business;
 using SensorStore.Middleware;
 using SensorStore.Publishers;
 using SensorStore.Publishers.Count;
 using SensorStore.Publishers.Logs;
+using SensorStore.Workers;
 
 
 namespace SensorStore;
@@ -67,16 +69,19 @@ public class Startup
         services.AddScoped(typeof(IMetricRepository), typeof(MetricRepository));
 
         /******* [4] Services ********/
-        //services.AddScoped(typeof(ISensorService), typeof(SensorService));
+        services.AddScoped(typeof(ISensorCountService), typeof(SensorCountService));
 
-        /******* [5] Publishers ********/
+        /******* [5] Workers ********/
+        services.AddHostedService<TrafficSensorWorker>();
+
+        /******* [67] Publishers ********/
         services.AddScoped(typeof(ISensorCountPublisher), typeof(SensorCountPublisher));
         services.AddScoped(typeof(ISensorLogPublisher), typeof(SensorLogPublisher));
 
         /******* [6] MassTransit ********/
         services.AddSensorServiceMassTransit(_configuration);
 
-        /******* [7] Jwt Config ********/
+        /******* [8] Jwt Config ********/
         var jwtSettings = _configuration.GetSection("Jwt");
         var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]);
 
@@ -96,7 +101,7 @@ public class Startup
                 };
             });
 
-        /******* [8] CORS Policy ********/
+        /******* [9] CORS Policy ********/
         var allowedOrigins = _configuration["Cors:AllowedOrigins"]?.Split(",") ?? Array.Empty<string>();
         var allowedMethods = _configuration["Cors:AllowedMethods"]?.Split(",") ?? new[] { "GET","POST","PUT","PATCH","DELETE" };
         var allowedHeaders = _configuration["Cors:AllowedHeaders"]?.Split(",") ?? new[] { "Content-Type","Authorization" };
@@ -111,11 +116,11 @@ public class Startup
             });
         });
 
-        /******* [9] Controllers ********/
+        /******* [10] Controllers ********/
         services.AddControllers()
             .AddJsonOptions(opts => opts.JsonSerializerOptions.PropertyNamingPolicy = null);
 
-        /******* [10] Swagger ********/
+        /******* [11] Swagger ********/
         services.AddSwaggerGen(c =>
         {
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "Sensor API", Version = "v2.0" });

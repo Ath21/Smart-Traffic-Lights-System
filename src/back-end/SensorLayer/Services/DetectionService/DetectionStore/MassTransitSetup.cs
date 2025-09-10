@@ -37,8 +37,8 @@ public static class MassTransitSetup
                 cfg.Message<SensorMessages.EmergencyVehicleMessage>(e => e.SetEntityName(sensorExchange));
                 cfg.Publish<SensorMessages.EmergencyVehicleMessage>(e => e.ExchangeType = ExchangeType.Topic);
 
-                cfg.Message<SensorMessages.PublicTransportMessage>(e => e.SetEntityName(sensorExchange));
-                cfg.Publish<SensorMessages.PublicTransportMessage>(e => e.ExchangeType = ExchangeType.Topic);
+                cfg.Message<SensorMessages.PublicTransportDetectionMessage>(e => e.SetEntityName(sensorExchange));
+                cfg.Publish<SensorMessages.PublicTransportDetectionMessage>(e => e.ExchangeType = ExchangeType.Topic);
 
                 cfg.Message<SensorMessages.IncidentDetectionMessage>(e => e.SetEntityName(sensorExchange));
                 cfg.Publish<SensorMessages.IncidentDetectionMessage>(e => e.ExchangeType = ExchangeType.Topic);

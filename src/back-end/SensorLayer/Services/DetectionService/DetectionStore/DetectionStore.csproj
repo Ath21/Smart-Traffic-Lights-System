@@ -22,10 +22,8 @@
   <ItemGroup>
     <Folder Include="Business/" />
     <Folder Include="Controllers/" />
-    <Folder Include="Models/" />
     <Folder Include="Models/Dtos/" />
     <Folder Include="Models/Requests/" />
-    <Folder Include="Models/Responses/" />
     <Folder Include="Publishers/" />
   </ItemGroup>
 

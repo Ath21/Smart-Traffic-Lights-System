@@ -1,3 +1,5 @@
+using DetectionStore.Models.Dtos;
+
 namespace DetectionStore.Business;
 
 

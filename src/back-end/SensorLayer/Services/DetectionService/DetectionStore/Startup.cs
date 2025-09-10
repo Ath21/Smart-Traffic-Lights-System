@@ -10,6 +10,10 @@ using DetectionCacheData;
 using DetectionData.Repositories.EmergencyVehicle;
 using DetectionData.Repositories.PublicTransport;
 using DetectionData.Repositories.Incident;
+using DetectionStore.Business;
+using DetectionStore.Publishers.Logs;
+using DetectionStore.Publishers.Event;
+using DetectionStore.Workers;
 
 
 namespace DetectionStore;
@@ -61,16 +65,22 @@ public class Startup
         services.AddScoped(typeof(IIncidentDetectionRepository), typeof(IncidentDetectionRepository));
 
         /******* [4] Services ********/
-        //services.AddScoped<IDetectionService, DetectionService>();
+        services.AddScoped(typeof(ISensorDetectionService), typeof(SensorDetectionService));
 
-        /******* [5] Publishers ********/
-        //services.AddScoped<ISensorEventPublisher, SensorEventPublisher>();
-        //services.AddScoped<IDetectionLogPublisher, DetectionLogPublisher>();
+        /******* [5] AutoMapper ********/
+        services.AddAutoMapper(typeof(DetectionStoreProfile));
 
-        /******* [6] MassTransit ********/
+        /******* [6] Workers ********/
+        services.AddHostedService<DetectionWorker>();
+
+        /******* [7] Publishers ********/
+        services.AddScoped(typeof(IDetectionEventPublisher), typeof(DetectionEventPublisher));
+        services.AddScoped(typeof(IDetectionLogPublisher), typeof(DetectionLogPublisher));
+
+        /******* [8] MassTransit ********/
         services.AddDetectionServiceMassTransit(_configuration);
 
-        /******* [7] Jwt Config ********/
+        /******* [9] Jwt Config ********/
         var jwtSettings = _configuration.GetSection("Jwt");
         var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]);
 
@@ -90,7 +100,7 @@ public class Startup
                 };
             });
 
-        /******* [8] CORS Policy ********/
+        /******* [10] CORS Policy ********/
         var allowedOrigins = _configuration["Cors:AllowedOrigins"]?.Split(",") ?? Array.Empty<string>();
         var allowedMethods = _configuration["Cors:AllowedMethods"]?.Split(",") ?? new[] { "GET","POST","PUT","PATCH","DELETE" };
         var allowedHeaders = _configuration["Cors:AllowedHeaders"]?.Split(",") ?? new[] { "Content-Type","Authorization" };
@@ -105,11 +115,11 @@ public class Startup
             });
         });
 
-        /******* [9] Controllers ********/
+        /******* [11] Controllers ********/
         services.AddControllers()
             .AddJsonOptions(opts => opts.JsonSerializerOptions.PropertyNamingPolicy = null);
 
-        /******* [10] Swagger ********/
+        /******* [12] Swagger ********/
         services.AddSwaggerGen(c =>
         {
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "Detection API", Version = "v2.0" });

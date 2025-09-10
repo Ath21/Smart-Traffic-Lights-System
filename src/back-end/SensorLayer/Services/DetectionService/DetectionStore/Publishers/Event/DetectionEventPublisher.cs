@@ -46,7 +46,7 @@ public class DetectionEventPublisher : IDetectionEventPublisher
     {
         var routingKey = _publicTransportKey.Replace("{intersection_id}", intersectionId.ToString());
 
-        var msg = new PublicTransportMessage(Guid.NewGuid(), intersectionId, routeId, DateTime.UtcNow);
+        var msg = new PublicTransportDetectionMessage(Guid.NewGuid(), intersectionId, routeId, DateTime.UtcNow);
 
         var endpoint = await _bus.GetSendEndpoint(new Uri($"exchange:{_sensorExchange}"));
         await endpoint.Send(msg, ctx => ctx.SetRoutingKey(routingKey));

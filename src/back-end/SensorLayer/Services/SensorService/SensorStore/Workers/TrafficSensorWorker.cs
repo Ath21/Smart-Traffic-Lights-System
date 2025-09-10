@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SensorStore.Business;
+using SensorStore.Models.Dtos;
 
 
 namespace SensorStore.Workers;

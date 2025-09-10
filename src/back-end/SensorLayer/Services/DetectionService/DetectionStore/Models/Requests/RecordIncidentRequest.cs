@@ -1,6 +1,6 @@
 namespace DetectionStore.Models.Requests;
 
-public class RecordIcidentRequest
+public class RecordIncidentRequest
 {
     public Guid IntersectionId { get; set; }
     public string Type { get; set; } = string.Empty;

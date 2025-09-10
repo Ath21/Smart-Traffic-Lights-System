@@ -1,3 +1,5 @@
+using SensorStore.Models.Dtos;
+
 namespace SensorStore.Business;
 
 public interface ISensorCountService

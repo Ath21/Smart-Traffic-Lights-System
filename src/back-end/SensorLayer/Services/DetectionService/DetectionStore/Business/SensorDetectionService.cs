@@ -1,3 +1,12 @@
+using AutoMapper;
+using DetectionData.Collection.Detection;
+using DetectionData.Repositories.EmergencyVehicle;
+using DetectionData.Repositories.Incident;
+using DetectionData.Repositories.PublicTransport;
+using DetectionStore.Models.Dtos;
+using DetectionStore.Publishers.Event;
+using DetectionStore.Publishers.Logs;
+
 namespace DetectionStore.Business;
 
 public class SensorDetectionService : ISensorDetectionService

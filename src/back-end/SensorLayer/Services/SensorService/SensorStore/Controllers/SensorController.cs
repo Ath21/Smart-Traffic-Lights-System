@@ -11,10 +11,10 @@ namespace SensorStore.Controllers;
 [Route("api/sensors")]
 public class SensorsController : ControllerBase
 {
-    private readonly ISensorBusiness _business;
+    private readonly ISensorCountService _business;
     private readonly IMapper _mapper;
 
-    public SensorsController(ISensorBusiness business, IMapper mapper)
+    public SensorsController(ISensorCountService business, IMapper mapper)
     {
         _business = business;
         _mapper = mapper;

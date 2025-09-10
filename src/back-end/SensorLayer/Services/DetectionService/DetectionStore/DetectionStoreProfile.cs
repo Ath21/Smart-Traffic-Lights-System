@@ -1,4 +1,9 @@
 using System;
+using AutoMapper;
+using DetectionData.Collection.Detection;
+using DetectionStore.Models.Dtos;
+using DetectionStore.Models.Requests;
+using DetectionStore.Models.Responses;
 
 namespace DetectionStore;
 

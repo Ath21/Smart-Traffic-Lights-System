@@ -7,11 +7,11 @@ namespace DetectionStore.Workers;
 
 public class DetectionWorker : BackgroundService
 {
-    private readonly IDetectionBusiness _business;
+    private readonly ISensorDetectionService _business;
     private readonly ILogger<DetectionWorker> _logger;
     private readonly Random _rand = new();
 
-    public DetectionWorker(IDetectionBusiness business, ILogger<DetectionWorker> logger)
+    public DetectionWorker(ISensorDetectionService business, ILogger<DetectionWorker> logger)
     {
         _business = business;
         _logger = logger;
