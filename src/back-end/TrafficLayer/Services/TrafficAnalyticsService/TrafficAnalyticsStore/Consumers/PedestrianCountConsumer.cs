@@ -5,15 +5,15 @@ using TrafficAnalyticsStore.Models.Dtos;
 
 namespace TrafficAnalyticsStore.Consumers;
 
-public class PedestrianDetectionConsumer : IConsumer<PedestrianDetectionMessage>
+public class PedestrianCountConsumer : IConsumer<PedestrianCountMessage>
 {
-    private readonly ILogger<PedestrianDetectionConsumer> _logger;
+    private readonly ILogger<PedestrianCountConsumer> _logger;
     private readonly ITrafficAnalyticsService _analyticsService;
 
-    private const string ServiceTag = "[" + nameof(PedestrianDetectionConsumer) + "]";
+    private const string ServiceTag = "[" + nameof(PedestrianCountConsumer) + "]";
 
-    public PedestrianDetectionConsumer(
-        ILogger<PedestrianDetectionConsumer> logger,
+    public PedestrianCountConsumer(
+        ILogger<PedestrianCountConsumer> logger,
         ITrafficAnalyticsService analyticsService)
     {
         _logger = logger;
@@ -21,7 +21,7 @@ public class PedestrianDetectionConsumer : IConsumer<PedestrianDetectionMessage>
     }
 
     // sensor.pedestrian.request.{intersection_id}
-    public async Task Consume(ConsumeContext<PedestrianDetectionMessage> context)
+    public async Task Consume(ConsumeContext<PedestrianCountMessage> context)
     {
         var msg = context.Message;
 

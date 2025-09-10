@@ -22,7 +22,7 @@
           "Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite": "9.0.4",
           "Swashbuckle.AspNetCore": "6.6.2",
           "TrafficLightCacheData": "1.0.0",
-          "TrafficLightCoordinatorData": "1.0.0",
+          "TrafficLightData": "1.0.0",
           "TrafficMessages": "1.0.0"
         },
         "runtime": {
@@ -960,7 +960,7 @@
           }
         }
       },
-      "TrafficLightCoordinatorData/1.0.0": {
+      "TrafficLightData/1.0.0": {
         "dependencies": {
           "Microsoft.EntityFrameworkCore": "9.0.8",
           "Microsoft.EntityFrameworkCore.Abstractions": "9.0.8",
@@ -972,7 +972,7 @@
           "Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite": "9.0.4"
         },
         "runtime": {
-          "TrafficLightCoordinatorData.dll": {
+          "TrafficLightData.dll": {
             "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
@@ -1543,7 +1543,7 @@
       "serviceable": false,
       "sha512": ""
     },
-    "TrafficLightCoordinatorData/1.0.0": {
+    "TrafficLightData/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

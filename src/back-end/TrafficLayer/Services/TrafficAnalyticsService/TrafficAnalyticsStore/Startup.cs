@@ -65,10 +65,10 @@ public class Startup
 
         /******* [7] Consumers ********/
         services.AddScoped<VehicleCountConsumer>();
-        services.AddScoped<EmergencyVehicleConsumer>();
-        services.AddScoped<PublicTransportConsumer>();
-        services.AddScoped<PedestrianDetectionConsumer>();
-        services.AddScoped<CyclistDetectionConsumer>();
+        services.AddScoped<EmergencyVehicleDetectionConsumer>();
+        services.AddScoped<PublicTransportDetectionConsumer>();
+        services.AddScoped<PedestrianCountConsumer>();
+        services.AddScoped<CyclistCountConsumer>();
         services.AddScoped<IncidentDetectionConsumer>();
 
         /******* [8] MassTransit ********/

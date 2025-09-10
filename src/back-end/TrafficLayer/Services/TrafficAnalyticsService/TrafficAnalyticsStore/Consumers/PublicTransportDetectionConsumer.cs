@@ -5,15 +5,15 @@ using TrafficAnalyticsStore.Models.Dtos;
 
 namespace TrafficAnalyticsStore.Consumers;
 
-public class PublicTransportConsumer : IConsumer<PublicTransportMessage>
+public class PublicTransportDetectionConsumer : IConsumer<PublicTransportDetectionMessage>
 {
-    private readonly ILogger<PublicTransportConsumer> _logger;
+    private readonly ILogger<PublicTransportDetectionConsumer> _logger;
     private readonly ITrafficAnalyticsService _analyticsService;
 
-    private const string ServiceTag = "[" + nameof(PublicTransportConsumer) + "]";
+    private const string ServiceTag = "[" + nameof(PublicTransportDetectionConsumer) + "]";
 
-    public PublicTransportConsumer(
-        ILogger<PublicTransportConsumer> logger,
+    public PublicTransportDetectionConsumer(
+        ILogger<PublicTransportDetectionConsumer> logger,
         ITrafficAnalyticsService analyticsService)
     {
         _logger = logger;
@@ -21,7 +21,7 @@ public class PublicTransportConsumer : IConsumer<PublicTransportMessage>
     }
 
     // sensor.public_transport.request.{intersection_id}
-    public async Task Consume(ConsumeContext<PublicTransportMessage> context)
+    public async Task Consume(ConsumeContext<PublicTransportDetectionMessage> context)
     {
         var msg = context.Message;
 

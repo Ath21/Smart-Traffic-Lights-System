@@ -12,10 +12,10 @@ public static class MassTransitSetup
         {
             // Consumers
             x.AddConsumer<VehicleCountConsumer>();
-            x.AddConsumer<EmergencyVehicleConsumer>();
-            x.AddConsumer<PublicTransportConsumer>();
-            x.AddConsumer<PedestrianDetectionConsumer>();
-            x.AddConsumer<CyclistDetectionConsumer>();
+            x.AddConsumer<EmergencyVehicleDetectionConsumer>();
+            x.AddConsumer<PublicTransportDetectionConsumer>();
+            x.AddConsumer<PedestrianCountConsumer>();
+            x.AddConsumer<CyclistCountConsumer>();
             x.AddConsumer<IncidentDetectionConsumer>();
 
             x.UsingRabbitMq((context, cfg) =>
@@ -103,10 +103,10 @@ public static class MassTransitSetup
 
                     // Consumers
                     e.ConfigureConsumer<VehicleCountConsumer>(context);
-                    e.ConfigureConsumer<EmergencyVehicleConsumer>(context);
-                    e.ConfigureConsumer<PublicTransportConsumer>(context);
-                    e.ConfigureConsumer<PedestrianDetectionConsumer>(context);
-                    e.ConfigureConsumer<CyclistDetectionConsumer>(context);
+                    e.ConfigureConsumer<EmergencyVehicleDetectionConsumer>(context);
+                    e.ConfigureConsumer<PublicTransportDetectionConsumer>(context);
+                    e.ConfigureConsumer<PedestrianCountConsumer>(context);
+                    e.ConfigureConsumer<CyclistCountConsumer>(context);
                     e.ConfigureConsumer<IncidentDetectionConsumer>(context);
                 });
 

@@ -1,8 +1,8 @@
 using System;
 using System.Text.Json;
 using AutoMapper;
-using TrafficLightCacheData.Repositories.Config;
-using TrafficLightCacheData.Repositories.Intersect;
+using TrafficLightData.Repositories.TrafficConfig;
+using TrafficLightData.Repositories.Intersections;
 using TrafficLightCoordinatorStore.Models.Dtos;
 using TrafficLightCoordinatorStore.Publishers.Logs;
 using TrafficLightCoordinatorStore.Publishers.Update;

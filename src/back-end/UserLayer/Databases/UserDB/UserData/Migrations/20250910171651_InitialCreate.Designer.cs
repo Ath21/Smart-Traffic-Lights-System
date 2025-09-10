@@ -12,8 +12,8 @@ using UserData;
 namespace UserData.Migrations
 {
     [DbContext(typeof(UserDbContext))]
-    [Migration("20250823161339_AddUserRoleEnum")]
-    partial class AddUserRoleEnum
+    [Migration("20250910171651_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

@@ -5,15 +5,15 @@ using TrafficAnalyticsStore.Models.Dtos;
 
 namespace TrafficAnalyticsStore.Consumers;
 
-public class EmergencyVehicleConsumer : IConsumer<EmergencyVehicleMessage>
+public class EmergencyVehicleDetectionConsumer : IConsumer<EmergencyVehicleMessage>
 {
-    private readonly ILogger<EmergencyVehicleConsumer> _logger;
+    private readonly ILogger<EmergencyVehicleDetectionConsumer> _logger;
     private readonly ITrafficAnalyticsService _analyticsService;
 
-    private const string ServiceTag = "[" + nameof(EmergencyVehicleConsumer) + "]";
+    private const string ServiceTag = "[" + nameof(EmergencyVehicleDetectionConsumer) + "]";
 
-    public EmergencyVehicleConsumer(
-        ILogger<EmergencyVehicleConsumer> logger,
+    public EmergencyVehicleDetectionConsumer(
+        ILogger<EmergencyVehicleDetectionConsumer> logger,
         ITrafficAnalyticsService analyticsService)
     {
         _logger = logger;

@@ -301,12 +301,10 @@
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/bin/Debug/net9.0/zh-Hant/Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/bin/Debug/net9.0/LogMessages.dll
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/bin/Debug/net9.0/TrafficLightCacheData.dll
-/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/bin/Debug/net9.0/TrafficLightCoordinatorData.dll
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/bin/Debug/net9.0/TrafficMessages.dll
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/bin/Debug/net9.0/LogMessages.pdb
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/bin/Debug/net9.0/TrafficMessages.pdb
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/bin/Debug/net9.0/TrafficLightCacheData.pdb
-/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/bin/Debug/net9.0/TrafficLightCoordinatorData.pdb
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/obj/Debug/net9.0/rjimswa.dswa.cache.json
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/obj/Debug/net9.0/rjsmrazor.dswa.cache.json
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/obj/Debug/net9.0/rjsmcshtml.dswa.cache.json
@@ -318,3 +316,5 @@
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/obj/Debug/net9.0/TrafficL.E11C44D8.Up2Date
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/obj/Debug/net9.0/TrafficLightCoordinatorStore.genruntimeconfig.cache
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/obj/Debug/net9.0/ref/TrafficLightCoordinatorStore.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/bin/Debug/net9.0/TrafficLightData.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/bin/Debug/net9.0/TrafficLightData.pdb

@@ -5,15 +5,15 @@ using TrafficAnalyticsStore.Models.Dtos;
 
 namespace TrafficAnalyticsStore.Consumers;
 
-public class CyclistDetectionConsumer : IConsumer<CyclistDetectionMessage>
+public class CyclistCountConsumer : IConsumer<CyclistCountMessage>
 {
-    private readonly ILogger<CyclistDetectionConsumer> _logger;
+    private readonly ILogger<CyclistCountConsumer> _logger;
     private readonly ITrafficAnalyticsService _analyticsService;
 
-    private const string ServiceTag = "[" + nameof(CyclistDetectionConsumer) + "]";
+    private const string ServiceTag = "[" + nameof(CyclistCountConsumer) + "]";
 
-    public CyclistDetectionConsumer(
-        ILogger<CyclistDetectionConsumer> logger,
+    public CyclistCountConsumer(
+        ILogger<CyclistCountConsumer> logger,
         ITrafficAnalyticsService analyticsService)
     {
         _logger = logger;
@@ -21,7 +21,7 @@ public class CyclistDetectionConsumer : IConsumer<CyclistDetectionMessage>
     }
 
     // sensor.cyclist.request.{intersection_id}
-    public async Task Consume(ConsumeContext<CyclistDetectionMessage> context)
+    public async Task Consume(ConsumeContext<CyclistCountMessage> context)
     {
         var msg = context.Message;
 

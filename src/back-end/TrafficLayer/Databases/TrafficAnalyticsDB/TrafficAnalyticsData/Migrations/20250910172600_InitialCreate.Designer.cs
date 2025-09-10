@@ -12,7 +12,7 @@ using TrafficAnalyticsData;
 namespace TrafficAnalyticsData.Migrations
 {
     [DbContext(typeof(TrafficAnalyticsDbContext))]
-    [Migration("20250827213507_InitialCreate")]
+    [Migration("20250910172600_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
