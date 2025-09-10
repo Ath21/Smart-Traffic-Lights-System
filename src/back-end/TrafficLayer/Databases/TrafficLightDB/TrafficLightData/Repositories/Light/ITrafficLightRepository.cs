@@ -1,7 +1,8 @@
 using System;
-using TrafficLightCoordinatorData.Entities;
+using TrafficLightData.Entities;
 
-namespace TrafficLightCoordinatorStore.Repositories.Light;
+
+namespace TrafficLightData.Repositories.Light;
 
 public interface ITrafficLightRepository
 {

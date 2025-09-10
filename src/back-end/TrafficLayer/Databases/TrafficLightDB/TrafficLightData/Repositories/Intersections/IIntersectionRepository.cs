@@ -1,6 +1,6 @@
-using TrafficLightCoordinatorData.Entities;
+using TrafficLightData.Entities;
 
-namespace TrafficLightCoordinatorStore.Repositories.Intersections;
+namespace TrafficLightData.Repositories.Intersections;
 
 public interface IIntersectionRepository
 {

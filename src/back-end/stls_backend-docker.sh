@@ -4,27 +4,28 @@ set -e
 # ================================
 # 🔧 CONFIGURATION
 # ================================
+ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"   # always src/back-end
 DOCKER_USERNAME="ath21"
 DOCKER_REPO="stls"
 
-# === All services and their Docker build paths ===
+# === All services and their Dockerfile paths (relative to ROOT_DIR) ===
 declare -A SERVICES_PATHS=(
     # User Layer
-    [user_api]="./UserLayer/Services/UserService/Docker"
-    [notification_api]="./UserLayer/Services/NotificationService/Docker"
+    [user_api]="UserLayer/Services/UserService/Docker/Dockerfile"
+    [notification_api]="UserLayer/Services/NotificationService/Docker/Dockerfile"
 
     # Log Layer
-    [log_api]="./LogLayer/Services/LogService/Docker"
+    [log_api]="LogLayer/Services/LogService/Docker/Dockerfile"
 
     # Traffic Layer
-    [traffic_analytics_api]="./TrafficLayer/Services/TrafficAnalyticsService/Docker"
-    [traffic_light_controller_api]="./TrafficLayer/Services/TrafficLightControllerService/Docker"
-    [traffic_light_coordinator_api]="./TrafficLayer/Services/TrafficLightCoordinatorService/Docker"
-    [intersection_controller_api]="./TrafficLayer/Services/IntersectionControllerService/Docker"
+    [traffic_analytics_api]="TrafficLayer/Services/TrafficAnalyticsService/Docker/Dockerfile"
+    [traffic_light_controller_api]="TrafficLayer/Services/TrafficLightControllerService/Docker/Dockerfile"
+    [traffic_light_coordinator_api]="TrafficLayer/Services/TrafficLightCoordinatorService/Docker/Dockerfile"
+    [intersection_controller_api]="TrafficLayer/Services/IntersectionControllerService/Docker/Dockerfile"
 
     # Sensor Layer
-    [sensor_api]="./SensorLayer/Services/SensorService/Docker"
-    [detection_api]="./SensorLayer/Services/DetectionService/Docker"
+    [sensor_api]="SensorLayer/Services/SensorService/Docker/Dockerfile"
+    [detection_api]="SensorLayer/Services/DetectionService/Docker/Dockerfile"
 )
 
 # ================================
@@ -43,17 +44,18 @@ print_help() {
 
 build_and_push_image() {
     local service="$1"
-    local dir="${SERVICES_PATHS[$service]}"
+    local dockerfile="${SERVICES_PATHS[$service]}"
     local image="$DOCKER_USERNAME/$DOCKER_REPO:$service"
 
-    if [[ -z "$dir" ]]; then
+    if [[ -z "$dockerfile" ]]; then
         echo "❌ Unknown service: $service"
         exit 1
     fi
 
-    if [[ -f "$dir/Dockerfile" ]]; then
+    local path="$ROOT_DIR/$dockerfile"
+    if [[ -f "$path" ]]; then
         echo "🔨 Building image for $service..."
-        docker build -t "$image" -f "$dir/Dockerfile" . || {
+        docker build -t "$image" -f "$path" "$ROOT_DIR" || {
             echo "❌ Build failed for $service"
             return 1
         }
@@ -64,7 +66,7 @@ build_and_push_image() {
             return 1
         }
     else
-        echo "⚠️ No Dockerfile found for $service in $dir"
+        echo "⚠️ No Dockerfile found at $path"
     fi
 }
 

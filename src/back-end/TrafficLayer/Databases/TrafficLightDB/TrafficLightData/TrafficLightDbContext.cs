@@ -1,15 +1,15 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using TrafficLightCoordinatorData.Entities;
+using TrafficLightData.Entities;
 
-namespace TrafficLightCoordinatorData;
+namespace TrafficLightData;
 
-public class TrafficLightCoordinatorDbContext : DbContext
+public class TrafficLightDbContext : DbContext
 {
     private readonly IConfiguration _configuration;
 
-    public TrafficLightCoordinatorDbContext(
-        DbContextOptions<TrafficLightCoordinatorDbContext> options,
+    public TrafficLightDbContext(
+        DbContextOptions<TrafficLightDbContext> options,
         IConfiguration configuration) : base(options)
     {
         _configuration = configuration;

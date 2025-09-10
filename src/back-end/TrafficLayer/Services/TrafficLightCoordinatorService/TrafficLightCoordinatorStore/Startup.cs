@@ -5,15 +5,16 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using TrafficLightCacheData;
-using TrafficLightCoordinatorData;
+using TrafficLightData;
 using TrafficLightCoordinatorStore.Business.Coordination;
 using TrafficLightCoordinatorStore.Consumers;
 using TrafficLightCoordinatorStore.Middleware;
 using TrafficLightCoordinatorStore.Publishers.Logs;
 using TrafficLightCoordinatorStore.Publishers.Update;
-using TrafficLightCoordinatorStore.Repositories.Intersections;
-using TrafficLightCoordinatorStore.Repositories.Light;
-using TrafficLightCoordinatorStore.Repositories.TrafficConfig;
+using TrafficLightCacheData.Repositories.Config;
+using TrafficLightCacheData.Repositories.Light;
+using TrafficLightCacheData.Repositories.Intersect;
+
 
 namespace TrafficLightCoordinatorStore;
 
@@ -29,7 +30,7 @@ public class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         /******* [1] ORM / PostgreSQL ********/
-        services.AddDbContext<TrafficLightCoordinatorDbContext>();
+        services.AddDbContext<TrafficLightDbContext>();
 
         /******* [2] Redis (TrafficLight Cache) ********/
         services.Configure<TrafficLightCacheDbSettings>(options =>

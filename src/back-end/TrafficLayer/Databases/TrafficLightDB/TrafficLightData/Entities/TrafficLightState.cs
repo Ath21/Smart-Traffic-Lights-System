@@ -1,4 +1,4 @@
-namespace TrafficLightCoordinatorData.Entities;
+namespace TrafficLightData.Entities;
 
 public enum TrafficLightState
 {

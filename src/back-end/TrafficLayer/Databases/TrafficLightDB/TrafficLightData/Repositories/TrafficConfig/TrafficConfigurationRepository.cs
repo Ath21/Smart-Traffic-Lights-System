@@ -1,15 +1,15 @@
 using System;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
-using TrafficLightCoordinatorData;
-using TrafficLightCoordinatorData.Entities;
+using TrafficLightData.Entities;
 
-namespace TrafficLightCoordinatorStore.Repositories.TrafficConfig;
+
+namespace TrafficLightData.Repositories.TrafficConfig;
 
 public class TrafficConfigurationRepository : ITrafficConfigurationRepository
 {
-    private readonly TrafficLightCoordinatorDbContext _db;
-    public TrafficConfigurationRepository(TrafficLightCoordinatorDbContext db) => _db = db;
+    private readonly TrafficLightDbContext _db;
+    public TrafficConfigurationRepository(TrafficLightDbContext db) => _db = db;
 
     public Task<TrafficConfiguration?> GetActiveAsync(Guid intersectionId, DateTimeOffset atUtc, CancellationToken ct) =>
         _db.TrafficConfigurations.AsNoTracking()

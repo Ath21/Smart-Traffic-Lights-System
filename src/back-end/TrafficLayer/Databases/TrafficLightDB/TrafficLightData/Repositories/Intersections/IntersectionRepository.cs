@@ -1,14 +1,14 @@
 using System;
 using Microsoft.EntityFrameworkCore;
-using TrafficLightCoordinatorData;
-using TrafficLightCoordinatorData.Entities;
+using TrafficLightData.Entities;
 
-namespace TrafficLightCoordinatorStore.Repositories.Intersections;
+
+namespace TrafficLightData.Repositories.Intersections;
 
 public class IntersectionRepository : IIntersectionRepository
 {
-    private readonly TrafficLightCoordinatorDbContext _db;
-    public IntersectionRepository(TrafficLightCoordinatorDbContext db) => _db = db;
+    private readonly TrafficLightDbContext _db;
+    public IntersectionRepository(TrafficLightDbContext db) => _db = db;
 
     public Task<bool> ExistsAsync(Guid id, CancellationToken ct) =>
         _db.Intersections.AsNoTracking().AnyAsync(i => i.IntersectionId == id, ct);

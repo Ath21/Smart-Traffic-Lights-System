@@ -2,7 +2,7 @@ using System.Text.Json;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace TrafficLightCoordinatorData.Entities;
+namespace TrafficLightData.Entities;
 
 [Table("traffic_configurations")]
 public class TrafficConfiguration

@@ -1,5 +1,5 @@
 using AutoMapper;
-using TrafficLightCoordinatorData.Entities;
+using TrafficLightData.Entities;
 using TrafficLightCoordinatorStore.Models.Dtos;
 using TrafficLightCoordinatorStore.Models.Responses;
 

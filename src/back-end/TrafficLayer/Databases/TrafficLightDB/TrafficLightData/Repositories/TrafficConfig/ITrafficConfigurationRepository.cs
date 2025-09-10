@@ -1,8 +1,8 @@
 using System;
 using System.Text.Json;
-using TrafficLightCoordinatorData.Entities;
+using TrafficLightData.Entities;
 
-namespace TrafficLightCoordinatorStore.Repositories.TrafficConfig;
+namespace TrafficLightData.Repositories.TrafficConfig;
 
 public interface ITrafficConfigurationRepository
 {
