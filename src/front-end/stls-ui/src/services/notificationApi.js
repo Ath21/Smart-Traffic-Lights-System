@@ -17,7 +17,7 @@ export async function sendNotificationApi(token, { userId, recipientEmail, messa
 
 // 📜 Get user notification history
 export async function getUserNotificationsApi(token, email) {
-  const response = await notificationApi.get(`user/${email}`, {
+  const response = await notificationApi.get(`recipient/${email}`, {
     headers: { Authorization: `Bearer ${token}` },
   })
   return response.data

@@ -5,47 +5,48 @@ import '../assets/map.css'
 
 const mapEl = ref(null)
 
-// === Updated coordinates ===
+// === Replace with your chosen Leaflet coordinates ===
 const sites = [
   {
-    name: 'Edessis',
+    name: "Ekklhsia / Edessis",
     points: [
-      [38.001555631630424, 23.67370752082095], // E
-      [38.00161242321305, 23.673639242930516], // W
-      [38.0016348409309, 23.673686658132205],  // N
-    ],
+      { label: "Edessis West", coords: [38.001575, 23.673565] },
+      { label: "Edessis East", coords: [38.001593, 23.673690] },
+      { label: "Dimitsanas", coords: [38.001638, 23.673619] },
+    ]
   },
   {
-    name: 'West Gate',
+    name: "Dytikh Pylh",
     points: [
-      [38.00263542684669, 23.674509442640147], // E
-      [38.00267363798658, 23.6744970376112],   // N
-      [38.0026247632692, 23.674456439334644],  // S
-    ],
+      { label: "Dytikh Pylh", coords: [38.002632, 23.674535] },
+      { label: "Dimitsanas South", coords: [38.002590, 23.674503] },
+      { label: "Dimitsanas North", coords: [38.002698, 23.674467] },
+    ]
   },
   {
-    name: 'Dimitsanas',
+    name: "Agiou Spyridonos",
     points: [
-      [38.004671829254214, 23.676075006015218], // S
-      [38.00467538368099, 23.67613928661976],   // E
-    ],
+      { label: "Dimitsanas", coords: [38.004633, 23.676105] },
+      { label: "Agiou Spyridonos", coords: [38.004679, 23.676150] },
+    ]
   },
   {
-    name: 'Central Gate',
+    name: "Kentrikh Pylh",
     points: [
-      [38.00445589750435, 23.676479861054602], // S
-      [38.00445856333231, 23.67653399209],     // E
-    ],
+      { label: "Kentrikh Pylh", coords: [38.004443, 23.676423] },
+      { label: "Agiou Spyridonos", coords: [38.004483, 23.676533] },
+    ]
   },
   {
-    name: 'East Gate',
+    name: "Anatolikh Pylh",
     points: [
-      [38.00366275759531, 23.67771229700096], // E
-    ],
-  },
+      { label: "Anatolikh Pylh", coords: [38.003604, 23.677619] },
+      { label: "Agioy Spyridonos", coords: [38.003683, 23.677760] },
+    ]
+  }
 ]
 
-// Custom CSS-based traffic light icons
+// --- Custom traffic light icons ---
 function trafficIcon(color = 'green') {
   return L.divIcon({
     html: `<div class="traffic-light ${color}"></div>`,
@@ -54,6 +55,13 @@ function trafficIcon(color = 'green') {
     iconAnchor: [10, 10],
     popupAnchor: [0, -10],
   })
+}
+
+// --- Utility: Get intersection center ---
+function getCenter(points) {
+  const lat = points.reduce((sum, p) => sum + p.coords[0], 0) / points.length
+  const lng = points.reduce((sum, p) => sum + p.coords[1], 0) / points.length
+  return [lat, lng]
 }
 
 onMounted(() => {
@@ -66,17 +74,32 @@ onMounted(() => {
 
   const group = L.featureGroup().addTo(map)
 
+  // Add all categorized points + perimeter circles
   sites.forEach(site => {
     site.points.forEach((p, idx) => {
-      // Alternate red / green for demo
-      L.marker(p, { icon: trafficIcon(idx % 2 === 0 ? 'green' : 'red') })
+      L.marker(p.coords, { icon: trafficIcon(idx % 2 === 0 ? 'green' : 'red') })
         .addTo(group)
-        .bindPopup(`<b>${site.name}</b><br/>Point ${idx + 1}<br/>${p[0].toFixed(6)}, ${p[1].toFixed(6)}`)
+        .bindPopup(
+          `<b>${site.name}</b><br/>${p.label}<br/>${p.coords[0].toFixed(6)}, ${p.coords[1].toFixed(6)}`
+        )
     })
+
+    // Add perimeter circle for the whole intersection
+    if (site.points.length > 1) {
+      const center = getCenter(site.points)
+      L.circle(center, {
+        radius: 20,        // meters
+        color: 'blue',
+        fillColor: '#3f82ff',
+        fillOpacity: 0.1,
+      })
+        .addTo(group)
+        .bindPopup(`<b>${site.name}</b><br/>Perimeter Circle`)
+    }
   })
 
-  // Fit to all
-  const all = sites.flatMap(s => s.points)
+  // Fit map to all points
+  const all = sites.flatMap(s => s.points.map(p => p.coords))
   map.fitBounds(L.latLngBounds(all), { padding: [40, 40] })
 })
 </script>
