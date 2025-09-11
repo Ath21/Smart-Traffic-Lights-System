@@ -2,7 +2,7 @@
   <div class="brand-block">
     <img src="/PADA.png" alt="PADA Logo" class="logo" />
     <h1>UNIWA <span>STLS</span></h1>
-    <img src="/SmartCityLog.png" alt="Smart City Logo" class="logo" />
+    <img src="/STLS-Logo-TopBar.png" alt="Smart Traffic Light Logo" class="logo" />
   </div>
 </template>
 

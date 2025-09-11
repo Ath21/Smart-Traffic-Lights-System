@@ -3,7 +3,11 @@ using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using StackExchange.Redis;
 using TrafficLightCacheData;
+using TrafficLightCacheData.Repositories;
+using TrafficLightCacheData.Repositories.Config;
+using TrafficLightCacheData.Repositories.Intersect;
 using TrafficLightCacheData.Repositories.Light;
 using TrafficLightControllerStore.Business;
 using TrafficLightControllerStore.Consumers;
@@ -40,19 +44,23 @@ public class Startup
         services.AddSingleton<TrafficLightCacheDbContext>();
 
         /******* [2] Repositories ********/
-        services.AddScoped<ITrafficLightRepository, TrafficLightRepository>();
+        /******* [2.1] TrafficLightCacheDB Repositories ********/
+        services.AddScoped(typeof(ITrafficLightRepository), typeof(TrafficLightRepository));
+        services.AddScoped(typeof(IIntersectRepository), typeof(IntersectRepository));
+        services.AddScoped(typeof(IRedisRepository), typeof(RedisRepository));
+        services.AddScoped(typeof(ITrafficConfigRepository), typeof(TrafficConfigRepository));
 
         /******* [3] Services ********/
-        services.AddScoped<ITrafficLightControlService, TrafficLightControlService>();
+        services.AddScoped(typeof(ITrafficLightControlService), typeof(TrafficLightControlService));
 
         /******* [4] Automapper ********/
         services.AddAutoMapper(typeof(TrafficLightControlStoreProfile));
 
         /******* [5] Publishers ********/
-        services.AddScoped<ITrafficLogPublisher, TrafficLogPublisher>();
+        services.AddScoped(typeof(ITrafficLogPublisher), typeof(TrafficLogPublisher));
 
         /******* [6] Consumers ********/
-        services.AddScoped<TrafficLightControlConsumer>();
+        services.AddScoped(typeof(TrafficLightControlConsumer));
 
         /******* [7] MassTransit ********/
         services.AddTrafficLightControlMassTransit(_configuration);
@@ -99,7 +107,7 @@ public class Startup
         /******* [11] Swagger ********/
         services.AddSwaggerGen(c =>
         {
-            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Traffic Light Controller API", Version = "v2.0" });
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Traffic Light Controller Service", Version = "v2.0" });
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 In = ParameterLocation.Header,
@@ -133,16 +141,22 @@ public class Startup
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Traffic Light Controller API");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Traffic Light Controller Service");
+                c.DocumentTitle = "Traffic Light Controller Service";
             });
         }
 
         app.UseHttpsRedirection();
+
         app.UseMiddleware<ExceptionMiddleware>();
+
         app.UseCors("AllowFrontend");
+
         app.UseAuthentication();
         app.UseAuthorization();
+
         app.MapControllers();
+
         app.Run();
     }
 }

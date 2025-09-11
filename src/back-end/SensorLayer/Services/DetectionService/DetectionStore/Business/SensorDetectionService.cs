@@ -12,8 +12,8 @@ namespace DetectionStore.Business;
 public class SensorDetectionService : ISensorDetectionService
 {
     private readonly IEmergencyVehicleDetectionRepository _emergencyRepo;
-    private readonly PublicTransportDetectionRepository _transportRepo;
-    private readonly IncidentDetectionRepository _incidentRepo;
+    private readonly IPublicTransportDetectionRepository _transportRepo;
+    private readonly IIncidentDetectionRepository _incidentRepo;
     private readonly IDetectionEventPublisher _eventPublisher;
     private readonly IDetectionLogPublisher _logPublisher;
     private readonly IMapper _mapper;
@@ -21,8 +21,8 @@ public class SensorDetectionService : ISensorDetectionService
 
     public SensorDetectionService(
         IEmergencyVehicleDetectionRepository emergencyRepo,
-        PublicTransportDetectionRepository transportRepo,
-        IncidentDetectionRepository incidentRepo,
+        IPublicTransportDetectionRepository transportRepo,
+        IIncidentDetectionRepository incidentRepo,
         IDetectionEventPublisher eventPublisher,
         IDetectionLogPublisher logPublisher,
         IMapper mapper,

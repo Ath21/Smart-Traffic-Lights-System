@@ -8,10 +8,10 @@ namespace IntersectionControllerStore.Business.Intersection;
 
 public class IntersectionService : IIntersectionService
 {
-    private readonly IIntersectionRepository _repo;
+    private readonly IIntersectRepository _repo;
     private readonly IMapper _mapper;
 
-    public IntersectionService(IIntersectionRepository repo, IMapper mapper)
+    public IntersectionService(IIntersectRepository repo, IMapper mapper)
     {
         _repo = repo;
         _mapper = mapper;

@@ -7,10 +7,10 @@ namespace IntersectionControllerStore.Business.TrafficConfig;
 
 public class TrafficConfigurationService : ITrafficConfigurationService
 {
-    private readonly ITrafficConfigurationRepository _repo;
+    private readonly ITrafficConfigRepository _repo;
     private readonly IMapper _mapper;
 
-    public TrafficConfigurationService(ITrafficConfigurationRepository repo, IMapper mapper)
+    public TrafficConfigurationService(ITrafficConfigRepository repo, IMapper mapper)
     {
         _repo = repo;
         _mapper = mapper;

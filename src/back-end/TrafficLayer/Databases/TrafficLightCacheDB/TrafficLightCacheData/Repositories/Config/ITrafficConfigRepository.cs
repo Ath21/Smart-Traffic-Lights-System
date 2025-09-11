@@ -3,7 +3,7 @@ using TrafficLightCacheData.Entities;
 
 namespace TrafficLightCacheData.Repositories.Config;
 
-public interface ITrafficConfigurationRepository
+public interface ITrafficConfigRepository
 {
     Task SaveAsync(TrafficConfiguration config);
     Task<TrafficConfiguration?> GetAsync(Guid configId);

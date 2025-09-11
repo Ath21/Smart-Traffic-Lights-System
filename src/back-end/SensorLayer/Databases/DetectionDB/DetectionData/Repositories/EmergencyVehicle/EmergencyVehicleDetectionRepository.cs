@@ -9,7 +9,7 @@ public class EmergencyVehicleDetectionRepository : IEmergencyVehicleDetectionRep
 {
     private readonly DetectionDbContext _context;
 
-    public EmergencyVehicleDetectionRepository(DetectionDbContext context, DetectionDbSettings settings)
+    public EmergencyVehicleDetectionRepository(DetectionDbContext context)
     {
         _context = context;
     }

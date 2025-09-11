@@ -158,7 +158,7 @@ if [[ "$ACTION" == "up" ]]; then
     # Always deploy message first
     echo "▶ Bringing up message (RabbitMQ)..."
     deploy_layer "message"
-    for layer in "log" "traffic" "user"; do
+    for layer in "log" "traffic" "user" "sensor"; do
       echo "▶ Bringing up $layer..."
       deploy_layer "$layer"
     done

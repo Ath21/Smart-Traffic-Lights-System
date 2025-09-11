@@ -3,10 +3,10 @@ using TrafficLightCacheData.Entities;
 
 namespace TrafficLightCacheData.Repositories.Config;
 
-public class TrafficConfigurationRepository : ITrafficConfigurationRepository
+public class TrafficConfigRepository : ITrafficConfigRepository
 {
     private readonly IRedisRepository _redis;
-    public TrafficConfigurationRepository(IRedisRepository redis) => _redis = redis;
+    public TrafficConfigRepository(IRedisRepository redis) => _redis = redis;
 
     public async Task SaveAsync(TrafficConfiguration config)
         => await _redis.SetAsync($"trafficconfig:{config.ConfigId}", config);

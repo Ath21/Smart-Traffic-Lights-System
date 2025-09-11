@@ -4,7 +4,10 @@ using DetectionCacheData.Repositories.Cache;
 using DetectionCacheData.Repositories.Metrics;
 using DetectionData;
 using DetectionData.Repositories.Cyclist;
+using DetectionData.Repositories.EmergencyVehicle;
+using DetectionData.Repositories.Incident;
 using DetectionData.Repositories.Pedestrian;
+using DetectionData.Repositories.PublicTransport;
 using DetectionData.Repositories.Vehicle;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -62,9 +65,15 @@ public class Startup
         });
 
         /******* [3] Repositories ********/
+        /******* [3.1] DetectionDB Repositories ********/
         services.AddScoped(typeof(IVehicleCountRepository), typeof(VehicleCountRepository));
         services.AddScoped(typeof(IPedestrianCountRepository), typeof(PedestrianCountRepository));
         services.AddScoped(typeof(ICyclistCountRepository), typeof(CyclistCountRepository));
+        services.AddScoped(typeof(IEmergencyVehicleDetectionRepository), typeof(EmergencyVehicleDetectionRepository));
+        services.AddScoped(typeof(IPublicTransportDetectionRepository), typeof(PublicTransportDetectionRepository));
+        services.AddScoped(typeof(IIncidentDetectionRepository), typeof(IncidentDetectionRepository));
+
+        /******* [3.2] DetectionCacheDB Repositories ********/
         services.AddScoped(typeof(ISensorCacheRepository), typeof(SensorCacheRepository));
         services.AddScoped(typeof(IMetricRepository), typeof(MetricRepository));
 
@@ -123,7 +132,7 @@ public class Startup
         /******* [11] Swagger ********/
         services.AddSwaggerGen(c =>
         {
-            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Sensor API", Version = "v2.0" });
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Sensor Service", Version = "v2.0" });
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 In = ParameterLocation.Header,
@@ -158,15 +167,21 @@ public class Startup
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Sensor API");
+                c.DocumentTitle = "Sensor Service";
             });
         }
 
         app.UseHttpsRedirection();
+
         app.UseMiddleware<ExceptionMiddleware>();
+
         app.UseCors("AllowFrontend");
+
         app.UseAuthentication();
         app.UseAuthorization();
+
         app.MapControllers();
+
         app.Run();
     }
 }

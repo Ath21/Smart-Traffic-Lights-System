@@ -3,7 +3,7 @@ using TrafficLightCacheData.Entities;
 
 namespace TrafficLightCacheData.Repositories.Intersect;
 
-public interface IIntersectionRepository
+public interface IIntersectRepository
 {
     Task SaveAsync(Intersection intersection);
     Task<Intersection?> GetAsync(Guid intersectionId);

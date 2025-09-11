@@ -37,6 +37,7 @@ public class Startup
         services.AddSingleton<NotificationDbContext>();
 
         /******* [2] Repositories ********/
+        /******* [2.1] NotificationDB Repositories ********/
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<IDeliveryLogRepository, DeliveryLogRepository>();
 
@@ -115,7 +116,7 @@ public class Startup
         /******* [11] Swagger ********/
         services.AddSwaggerGen(c =>
         {
-            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Notification API", Version = "v2.0" });
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Notification Service", Version = "v2.0" });
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 In = ParameterLocation.Header,
@@ -149,16 +150,22 @@ public class Startup
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Notification API");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Notification Service");
+                c.DocumentTitle = "Notification Service";
             });
         }
 
         app.UseHttpsRedirection();
+
         app.UseMiddleware<ExceptionMiddleware>();
+
         app.UseCors("AllowFrontend");
+
         app.UseAuthentication();
         app.UseAuthorization();
+
         app.MapControllers();
+
         app.Run();
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 using TrafficLightCacheData.Entities;
 
@@ -9,17 +10,17 @@ public class TrafficLightCacheDbContext
     private readonly ConnectionMultiplexer _connection;
     public IDatabase Database { get; }
 
-    public TrafficLightCacheDbContext(TrafficLightCacheDbSettings settings)
+    public TrafficLightCacheDbContext(IOptions<TrafficLightCacheDbSettings> settings)
     {
         var configOptions = new ConfigurationOptions
         {
-            EndPoints = { $"{settings.Host}:{settings.Port}" },
+            EndPoints = { $"{settings.Value.Host}:{settings.Value.Port}" },
             AbortOnConnectFail = false,
-            DefaultDatabase = settings.Database
+            DefaultDatabase = settings.Value.Database
         };
 
-        if (!string.IsNullOrEmpty(settings.Password))
-            configOptions.Password = settings.Password;
+        if (!string.IsNullOrEmpty(settings.Value.Password))
+            configOptions.Password = settings.Value.Password;
 
         _connection = ConnectionMultiplexer.Connect(configOptions);
         Database = _connection.GetDatabase();

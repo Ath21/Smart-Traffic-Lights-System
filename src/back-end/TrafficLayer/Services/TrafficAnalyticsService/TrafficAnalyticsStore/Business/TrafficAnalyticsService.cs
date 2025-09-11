@@ -1,11 +1,12 @@
 using AutoMapper;
 using TrafficAnalyticsData.Entities;
+using TrafficAnalyticsData.Repositories.Alerts;
+using TrafficAnalyticsData.Repositories.Summary;
 using TrafficAnalyticsStore.Models.Dtos;
 using TrafficAnalyticsStore.Publishers.Congestion;
 using TrafficAnalyticsStore.Publishers.Incident;
 using TrafficAnalyticsStore.Publishers.Summary;
-using TrafficAnalyticsStore.Repository.Alerts;
-using TrafficAnalyticsStore.Repository.Summary;
+
 using TrafficMessages;
 
 namespace TrafficAnalyticsStore.Business;

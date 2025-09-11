@@ -11,13 +11,15 @@
         :home-path="homePath"
       />
 
-      <UserMenu
-        v-if="auth.isAuthenticated"
-        :username="username"
-        :home-path="homePath"
-        :notification-count="unreadCount"
-        @logout="logout"
-        @alert="alertMe"
+<UserMenu
+  :is-authenticated="auth.isAuthenticated"
+  :username="username"
+  :home-path="homePath"
+  :notification-count="unreadCount"
+  @logout="logout"
+  @alert="alertMe"
+
+
       />
     </div>
   </header>

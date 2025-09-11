@@ -1,11 +1,9 @@
 <template>
-  <div class="flex items-center gap-3 relative">
+  <div v-if="isAuthenticated" class="flex items-center gap-3 relative">
     <!-- Alert Me -->
-<!-- Alert Me -->
-<button class="alert-btn" @click="$emit('alert')">
-  Alert Me
-</button>
-
+    <button class="alert-btn" @click="$emit('alert')">
+      Alert Me
+    </button>
 
     <!-- Dropdown -->
     <div class="relative" ref="menuRef">
@@ -46,7 +44,8 @@ import '../assets/user-menu.css'
 defineProps({
   username: { type: String, required: true },
   homePath: { type: String, required: true },
-  notificationCount: { type: Number, default: 0 }
+  notificationCount: { type: Number, default: 0 },
+  isAuthenticated: { type: Boolean, default: false } // ✅ new
 })
 
 const emit = defineEmits(['logout', 'alert'])

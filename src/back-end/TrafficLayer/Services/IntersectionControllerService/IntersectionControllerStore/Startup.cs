@@ -22,6 +22,8 @@ using TrafficLightCacheData.Repositories;
 using TrafficLightCacheData.Repositories.Config;
 using TrafficLightCacheData.Repositories.Light;
 using TrafficLightCacheData.Repositories.Intersect;
+using DetectionCacheData.Repositories.Cache;
+using DetectionCacheData.Repositories.Metrics;
 
 namespace IntersectionControllerStore;
 
@@ -50,6 +52,7 @@ public class Startup
             options.KeyPrefix_Priority = _configuration["Redis:TrafficLight:KeyPrefix:Priority"];
             options.KeyPrefix_QueueLength = _configuration["Redis:TrafficLight:KeyPrefix:QueueLength"];
         });
+        services.AddSingleton<TrafficLightCacheDbContext>();
 
         services.Configure<DetectionCacheDbSettings>(options =>
         {
@@ -65,30 +68,35 @@ public class Startup
             options.KeyPrefix_PublicTransportDetected = _configuration["Redis:Detection:KeyPrefix:PublicTransportDetected"];
             options.KeyPrefix_IncidentDetected = _configuration["Redis:Detection:KeyPrefix:IncidentDetected"];
         });
+        services.AddSingleton<DetectionCacheDbContext>();
 
-        services.AddSingleton<TrafficLightCacheDbContext>();
 
         /******* [2] Repositories ********/
-        services.AddScoped<IRedisRepository, RedisRepository>();
-        services.AddScoped<ITrafficConfigurationRepository, TrafficConfigurationRepository>();
-        services.AddScoped<ITrafficLightRepository, TrafficLightRepository>();
-        services.AddScoped<IIntersectionRepository, IntersectionRepository>();
+        /******* [2.1] DetectionCacheDB Repositories ********/
+        services.AddScoped(typeof(ISensorCacheRepository), typeof(SensorCacheRepository));
+        services.AddScoped(typeof(IMetricRepository), typeof(MetricRepository));
+
+        /******* [2.2] TrafficLightCacheDB Repositories ********/
+        services.AddScoped(typeof(ITrafficLightRepository), typeof(TrafficLightRepository));
+        services.AddScoped(typeof(ITrafficConfigRepository), typeof(TrafficConfigRepository));
+        services.AddScoped(typeof(IIntersectRepository), typeof(IntersectRepository));
+        services.AddScoped(typeof(IRedisRepository), typeof(RedisRepository));
 
         /******* [3] Services ********/
-        services.AddScoped<ITrafficConfigurationService, TrafficConfigurationService>();
-        services.AddScoped<ITrafficLightService, TrafficLightService>();
-        services.AddScoped<IIntersectionService, IntersectionService>();
-        services.AddScoped<IPriorityManager, PriorityManager>();
-        services.AddScoped<ICommandLogService, CommandLogService>();
-        services.AddScoped<ITrafficLightCoordinatorService, TrafficLightCoordinatorService>();
+        services.AddScoped(typeof(ITrafficConfigurationService), typeof(TrafficConfigurationService));
+        services.AddScoped(typeof(ITrafficLightService), typeof(TrafficLightService));
+        services.AddScoped(typeof(IIntersectionService), typeof(IntersectionService));
+        services.AddScoped(typeof(IPriorityManager), typeof(PriorityManager));
+        services.AddScoped(typeof(ICommandLogService), typeof(CommandLogService));
+        services.AddScoped(typeof(ITrafficLightCoordinatorService), typeof(TrafficLightCoordinatorService));
 
         /******* [4] AutoMapper ********/
         services.AddAutoMapper(typeof(IntersectionControllerStoreProfile));
 
         /******* [5] Publishers ********/
-        services.AddScoped<IPriorityPublisher, PriorityPublisher>();
-        services.AddScoped<ITrafficLightControlPublisher, TrafficLightControlPublisher>();
-        services.AddScoped<ITrafficLogPublisher, TrafficLogPublisher>();
+        services.AddScoped(typeof(IPriorityPublisher), typeof(PriorityPublisher));
+        services.AddScoped(typeof(ITrafficLightControlPublisher), typeof(TrafficLightControlPublisher));
+        services.AddScoped(typeof(ITrafficLogPublisher), typeof(TrafficLogPublisher));
 
         /******* [6] Consumers ********/
         services.AddScoped<TrafficLightUpdateConsumer>();
@@ -139,7 +147,7 @@ public class Startup
         /******* [11] Swagger ********/
         services.AddSwaggerGen(c =>
         {
-            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Intersection Controller API", Version = "v2.0" });
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Intersection Controller Service", Version = "v2.0" });
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 In = ParameterLocation.Header,
@@ -173,16 +181,22 @@ public class Startup
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Intersection Controller API");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Intersection Controller Service");
+                c.DocumentTitle = "Intersection Controller Service";
             });
         }
 
         app.UseHttpsRedirection();
+
         app.UseMiddleware<ExceptionMiddleware>();
+
         app.UseCors("AllowFrontend");
+
         app.UseAuthentication();
         app.UseAuthorization();
+
         app.MapControllers();
+
         app.Run();
     }
 }

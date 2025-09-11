@@ -14,7 +14,11 @@ using TrafficLightCoordinatorStore.Publishers.Update;
 using TrafficLightCacheData.Repositories.Config;
 using TrafficLightCacheData.Repositories.Light;
 using TrafficLightCacheData.Repositories.Intersect;
-
+using StackExchange.Redis;
+using TrafficLightCacheData.Repositories;
+using TrafficLightData.Repositories.Intersections;
+using TrafficLightData.Repositories.Light;
+using TrafficLightData.Repositories.TrafficConfig;
 
 namespace TrafficLightCoordinatorStore;
 
@@ -49,19 +53,26 @@ public class Startup
         services.AddSingleton<TrafficLightCacheDbContext>();
 
         /******* [3] Repositories ********/
-        services.AddScoped<ITrafficConfigurationRepository, TrafficConfigurationRepository>();
-        services.AddScoped<IIntersectionRepository, IntersectionRepository>();
-        services.AddScoped<ITrafficLightRepository, TrafficLightRepository>();
+        /******* [3.1] TrafficLightCacheDB Repositories ********/
+        services.AddScoped(typeof(ITrafficConfigRepository), typeof(TrafficConfigRepository));
+        services.AddScoped(typeof(IIntersectRepository), typeof(IntersectRepository));
+        services.AddScoped(typeof(ITrafficLightRepository), typeof(TrafficLightRepository));
+        services.AddScoped(typeof(IRedisRepository), typeof(RedisRepository));
+
+        /******* [3.2] TrafficLightDB Repositories ********/
+        services.AddScoped(typeof(ILightRepository), typeof(LightRepository));
+        services.AddScoped(typeof(IIntersectionRepository), typeof(IntersectionRepository));
+        services.AddScoped(typeof(ITrafficConfigurationRepository), typeof(TrafficConfigurationRepository));
 
         /******* [4] Services ********/
-        services.AddScoped<ICoordinatorService, CoordinatorService>();
+        services.AddScoped(typeof(ICoordinatorService), typeof(CoordinatorService));
 
         /******* [5] AutoMapper ********/
         services.AddAutoMapper(typeof(TrafficLightCoordinatorStoreProfile));
 
         /******* [6] Publishers ********/
-        services.AddScoped<ILightUpdatePublisher, LightUpdatePublisher>();
-        services.AddScoped<ITrafficLogPublisher, TrafficLogPublisher>();
+        services.AddScoped(typeof(ILightUpdatePublisher), typeof(LightUpdatePublisher));
+        services.AddScoped(typeof(ITrafficLogPublisher), typeof(TrafficLogPublisher));
 
         /******* [7] Consumers ********/
         services.AddScoped<TrafficCongestionAlertConsumer>();
@@ -116,7 +127,7 @@ public class Startup
         /******* [12] Swagger ********/
         services.AddSwaggerGen(c =>
         {
-            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Traffic Light Coordinator API", Version = "v2.0" });
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Traffic Light Coordinator Service", Version = "v2.0" });
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 In = ParameterLocation.Header,
@@ -150,16 +161,22 @@ public class Startup
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Traffic Light Coordinator API");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Traffic Light Coordinator Service");
+                c.DocumentTitle = "Traffic Light Coordinator Service";
             });
         }
 
         app.UseHttpsRedirection();
+
         app.UseMiddleware<ExceptionMiddleware>();
+
         app.UseCors("AllowFrontend");
+
         app.UseAuthentication();
         app.UseAuthorization();
+
         app.MapControllers();
+
         app.Run();
     }
 }

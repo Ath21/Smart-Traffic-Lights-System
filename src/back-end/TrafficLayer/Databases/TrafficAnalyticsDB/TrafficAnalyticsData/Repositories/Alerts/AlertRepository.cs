@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using TrafficAnalyticsData;
 using TrafficAnalyticsData.Entities;
 
-namespace TrafficAnalyticsStore.Repository.Alerts;
+namespace TrafficAnalyticsData.Repositories.Alerts;
 
 public class AlertRepository : IAlertRepository
 {

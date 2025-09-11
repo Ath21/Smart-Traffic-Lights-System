@@ -1,6 +1,6 @@
 using TrafficAnalyticsData.Entities;
 
-namespace TrafficAnalyticsStore.Repository.Summary;
+namespace TrafficAnalyticsData.Repositories.Summary;
 
 public interface IDailySummaryRepository
 {

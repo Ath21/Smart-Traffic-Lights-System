@@ -23,7 +23,7 @@ services:
       Mongo__Collections__Incident: incident
 
       ## DetectionCacheDB (Redis)
-      Redis__Host: detection_cache_redis
+      Redis__Host: detection_cache_db
       Redis__Port: 6379
       Redis__Password: ""
       Redis__Database: 0

@@ -26,7 +26,7 @@ const routes = [
   { path: '/login', name: 'login', component: Login, meta: { public: true } },
   { path: '/register', name: 'register', component: Register, meta: { public: true } },
 
-  { path: '/', name: 'viewer', component: ViewerLayout, meta: { role: 'viewer' } },
+  { path: '/', name: 'viewer', component: ViewerLayout, meta: { public: true } },
   { path: '/app', name: 'user', component: UserLayout, meta: { role: 'user' } },
   { path: '/operator', name: 'operator', component: OperatorLayout, meta: { role: 'operator' } },
   { path: '/admin', name: 'admin', component: AdminLayout, meta: { role: 'admin' } },

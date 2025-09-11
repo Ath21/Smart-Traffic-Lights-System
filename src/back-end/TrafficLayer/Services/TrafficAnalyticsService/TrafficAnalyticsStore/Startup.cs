@@ -1,8 +1,6 @@
 using Microsoft.OpenApi.Models;
 using TrafficAnalyticsData;
 using TrafficAnalyticsStore.Middleware;
-using TrafficAnalyticsStore.Repository.Summary;
-using TrafficAnalyticsStore.Repository.Alerts;
 using TrafficAnalyticsStore.Publishers.Congestion;
 using TrafficAnalyticsStore.Publishers.Incident;
 using TrafficAnalyticsStore.Publishers.Summary;
@@ -13,6 +11,10 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using DetectionCacheData;
+using TrafficAnalyticsData.Repositories.Summary;
+using TrafficAnalyticsData.Repositories.Alerts;
+using DetectionCacheData.Repositories.Cache;
+using DetectionCacheData.Repositories.Metrics;
 
 namespace TrafficAnalyticsStore;
 
@@ -48,20 +50,25 @@ public class Startup
         services.AddSingleton<DetectionCacheDbContext>();
 
         /******* [3] Repositories ********/
-        services.AddScoped<IDailySummaryRepository, DailySummaryRepository>();
-        services.AddScoped<IAlertRepository, AlertRepository>();
+        /******* [3.1] TrafficAnalyticsDB Repositories ********/
+        services.AddScoped(typeof(IDailySummaryRepository), typeof(DailySummaryRepository));
+        services.AddScoped(typeof(IAlertRepository), typeof(AlertRepository));
+
+        /******* [3.2] DetectionCacheDB Repositories ********/
+        services.AddScoped(typeof(ISensorCacheRepository), typeof(SensorCacheRepository));
+        services.AddScoped(typeof(IMetricRepository), typeof(MetricRepository));
 
         /******* [4] Services ********/
-        services.AddScoped<ITrafficAnalyticsService, TrafficAnalyticsService>();
+        services.AddScoped(typeof(ITrafficAnalyticsService), typeof(TrafficAnalyticsService));
 
         /******* [5] AutoMapper ********/
         services.AddAutoMapper(typeof(TrafficAnalyticsStoreProfile));
 
         /******* [6] Publishers ********/
-        services.AddScoped<ITrafficCongestionPublisher, TrafficCongestionPublisher>();
-        services.AddScoped<ITrafficIncidentPublisher, TrafficIncidentPublisher>();
-        services.AddScoped<ITrafficSummaryPublisher, TrafficSummaryPublisher>();
-        services.AddScoped<IAnalyticsLogPublisher, AnalyticsLogPublisher>();
+        services.AddScoped(typeof(ITrafficCongestionPublisher), typeof(TrafficCongestionPublisher));
+        services.AddScoped(typeof(ITrafficIncidentPublisher), typeof(TrafficIncidentPublisher));
+        services.AddScoped(typeof(ITrafficSummaryPublisher), typeof(TrafficSummaryPublisher));
+        services.AddScoped(typeof(IAnalyticsLogPublisher), typeof(AnalyticsLogPublisher));
 
         /******* [7] Consumers ********/
         services.AddScoped<VehicleCountConsumer>();
@@ -120,7 +127,7 @@ public class Startup
         /******* [12] Swagger ********/
         services.AddSwaggerGen(c =>
         {
-            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Traffic Analytics API", Version = "v2.0" });
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Traffic Analytics Service", Version = "v2.0" });
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 In = ParameterLocation.Header,
@@ -154,16 +161,22 @@ public class Startup
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Traffic Analytics API");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Traffic Analytics Service");
+                c.DocumentTitle = "Traffic Analytics Service";
             });
         }
 
         app.UseHttpsRedirection();
+
         app.UseMiddleware<ExceptionMiddleware>();
+
         app.UseCors("AllowFrontend");
+
         app.UseAuthentication();
         app.UseAuthorization();
+
         app.MapControllers();
+
         app.Run();
     }
 }

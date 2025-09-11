@@ -3,18 +3,17 @@ using Microsoft.Extensions.Logging;
 using SensorStore.Business;
 using SensorStore.Models.Dtos;
 
-
 namespace SensorStore.Workers;
 
 public class TrafficSensorWorker : BackgroundService
 {
-    private readonly ISensorCountService _business;
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<TrafficSensorWorker> _logger;
     private readonly Random _rand = new();
 
-    public TrafficSensorWorker(ISensorCountService business, ILogger<TrafficSensorWorker> logger)
+    public TrafficSensorWorker(IServiceScopeFactory scopeFactory, ILogger<TrafficSensorWorker> logger)
     {
-        _business = business;
+        _scopeFactory = scopeFactory;
         _logger = logger;
     }
 
@@ -26,6 +25,9 @@ public class TrafficSensorWorker : BackgroundService
         {
             try
             {
+                using var scope = _scopeFactory.CreateScope();
+                var business = scope.ServiceProvider.GetRequiredService<ISensorCountService>();
+
                 // Simulate 3 intersections
                 foreach (var intersectionId in new[] { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() })
                 {
@@ -39,7 +41,7 @@ public class TrafficSensorWorker : BackgroundService
                     };
 
                     var avgSpeed = _rand.Next(20, 60); // km/h
-                    await _business.UpdateSnapshotAsync(snapshot, avgSpeed);
+                    await business.UpdateSnapshotAsync(snapshot, avgSpeed);
 
                     _logger.LogInformation("Published sensor snapshot for {Intersection}", intersectionId);
                 }

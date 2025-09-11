@@ -28,7 +28,7 @@ const error = ref(null)
 
 async function fetchUser() {
   try {
-    const res = await auth.apiFetch('http://localhost:5055/api/users/me')
+    const res = await auth.apiFetch('http://localhost:5055/api/users/profile')
     if (!res.ok) throw new Error(`HTTP error ${res.status}`)
     const data = await res.json()
 

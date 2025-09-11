@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using TrafficAnalyticsData;
 using TrafficAnalyticsData.Entities;
 
-namespace TrafficAnalyticsStore.Repository.Summary;
+namespace TrafficAnalyticsData.Repositories.Summary;
 
 public class DailySummaryRepository : IDailySummaryRepository
 {

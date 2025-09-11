@@ -1,6 +1,6 @@
 using TrafficAnalyticsData.Entities;
 
-namespace TrafficAnalyticsStore.Repository.Alerts;
+namespace TrafficAnalyticsData.Repositories.Alerts;
 
 public interface IAlertRepository
 {

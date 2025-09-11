@@ -5,7 +5,7 @@ using MongoDB.Driver;
 
 namespace DetectionData.Repositories.Incident;
 
-public class IncidentDetectionRepository
+public class IncidentDetectionRepository : IIncidentDetectionRepository
 {
     private readonly DetectionDbContext _context;
 

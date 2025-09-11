@@ -7,13 +7,13 @@ namespace DetectionStore.Workers;
 
 public class DetectionWorker : BackgroundService
 {
-    private readonly ISensorDetectionService _business;
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<DetectionWorker> _logger;
     private readonly Random _rand = new();
 
-    public DetectionWorker(ISensorDetectionService business, ILogger<DetectionWorker> logger)
+    public DetectionWorker(IServiceScopeFactory scopeFactory, ILogger<DetectionWorker> logger)
     {
-        _business = business;
+        _scopeFactory = scopeFactory;
         _logger = logger;
     }
 
@@ -25,6 +25,9 @@ public class DetectionWorker : BackgroundService
         {
             try
             {
+                using var scope = _scopeFactory.CreateScope();
+                var business = scope.ServiceProvider.GetRequiredService<ISensorDetectionService>();
+
                 var intersectionId = Guid.NewGuid();
 
                 // Emergency vehicle detection ~10% chance
@@ -39,7 +42,7 @@ public class DetectionWorker : BackgroundService
                         Timestamp = DateTime.UtcNow
                     };
 
-                    await _business.RecordEmergencyAsync(emergency);
+                    await business.RecordEmergencyAsync(emergency);
                     _logger.LogInformation("Emergency vehicle detected at {Intersection}", intersectionId);
                 }
 
@@ -55,8 +58,10 @@ public class DetectionWorker : BackgroundService
                         Timestamp = DateTime.UtcNow
                     };
 
-                    await _business.RecordPublicTransportAsync(transport);
-                    _logger.LogInformation("Public transport detected at {Intersection}, Route {Route}", intersectionId, transport.RouteId);
+                    await business.RecordPublicTransportAsync(transport);
+                    _logger.LogInformation(
+                        "Public transport detected at {Intersection}, Route {Route}",
+                        intersectionId, transport.RouteId);
                 }
 
                 // Incident detection ~5% chance
@@ -71,7 +76,7 @@ public class DetectionWorker : BackgroundService
                         Timestamp = DateTime.UtcNow
                     };
 
-                    await _business.RecordIncidentAsync(incident);
+                    await business.RecordIncidentAsync(incident);
                     _logger.LogWarning("Incident detected at {Intersection}: {Desc}", intersectionId, incident.Description);
                 }
             }

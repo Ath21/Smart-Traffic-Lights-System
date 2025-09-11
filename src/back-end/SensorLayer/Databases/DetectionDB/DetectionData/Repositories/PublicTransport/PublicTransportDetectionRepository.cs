@@ -5,7 +5,7 @@ using MongoDB.Driver;
 
 namespace DetectionData.Repositories.PublicTransport;
 
-public class PublicTransportDetectionRepository
+public class PublicTransportDetectionRepository : IPublicTransportDetectionRepository
 {
     private readonly DetectionDbContext _context;
 

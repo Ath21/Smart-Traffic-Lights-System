@@ -14,6 +14,11 @@ using DetectionStore.Business;
 using DetectionStore.Publishers.Logs;
 using DetectionStore.Publishers.Event;
 using DetectionStore.Workers;
+using DetectionData.Repositories.Vehicle;
+using DetectionData.Repositories.Pedestrian;
+using DetectionData.Repositories.Cyclist;
+using DetectionCacheData.Repositories.Cache;
+using DetectionCacheData.Repositories.Metrics;
 
 
 namespace DetectionStore;
@@ -58,11 +63,20 @@ public class Startup
             options.KeyPrefix_PublicTransportDetected = _configuration["Redis:KeyPrefix:PublicTransportDetected"];
             options.KeyPrefix_IncidentDetected = _configuration["Redis:KeyPrefix:IncidentDetected"];
         });
+        services.AddSingleton<DetectionCacheDbContext>();
 
         /******* [3] Repositories ********/
+        /******* [3.1] DetectionDB Repositories ********/
+        services.AddScoped(typeof(IVehicleCountRepository), typeof(VehicleCountRepository));
+        services.AddScoped(typeof(IPedestrianCountRepository), typeof(PedestrianCountRepository));
+        services.AddScoped(typeof(ICyclistCountRepository), typeof(CyclistCountRepository));
         services.AddScoped(typeof(IEmergencyVehicleDetectionRepository), typeof(EmergencyVehicleDetectionRepository));
         services.AddScoped(typeof(IPublicTransportDetectionRepository), typeof(PublicTransportDetectionRepository));
         services.AddScoped(typeof(IIncidentDetectionRepository), typeof(IncidentDetectionRepository));
+
+        /******* [3.2] DetectionCacheDB Repositories ********/
+        services.AddScoped(typeof(ISensorCacheRepository), typeof(SensorCacheRepository));
+        services.AddScoped(typeof(IMetricRepository), typeof(MetricRepository));
 
         /******* [4] Services ********/
         services.AddScoped(typeof(ISensorDetectionService), typeof(SensorDetectionService));
@@ -122,7 +136,7 @@ public class Startup
         /******* [12] Swagger ********/
         services.AddSwaggerGen(c =>
         {
-            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Detection API", Version = "v2.0" });
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Detection Service", Version = "v2.0" });
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 In = ParameterLocation.Header,
@@ -156,16 +170,22 @@ public class Startup
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Detection API");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Detection Service");
+                c.DocumentTitle = "Detection Service";
             });
         }
 
         app.UseHttpsRedirection();
+
         app.UseMiddleware<ExceptionMiddleware>();
+
         app.UseCors("AllowFrontend");
+
         app.UseAuthentication();
         app.UseAuthorization();
+
         app.MapControllers();
+
         app.Run();
     }
 }

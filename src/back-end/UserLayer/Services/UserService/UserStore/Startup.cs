@@ -37,15 +37,16 @@ public class Startup
             options.UseSqlServer(mssqlConn));
 
         /******* [2] Repositories ********/
-        services.AddScoped<IAuditLogRepository, AuditLogRepository>();
-        services.AddScoped<IUserRepository, UserRepository>();
-        services.AddScoped<ISessionRepository, SessionRepository>();
+        /******* [2.1] UserDB Repositories ********/
+        services.AddScoped(typeof(IAuditLogRepository), typeof(AuditLogRepository));
+        services.AddScoped(typeof(IUserRepository), typeof(UserRepository));
+        services.AddScoped(typeof(ISessionRepository), typeof(SessionRepository));
 
         /******* [3] Services ********/
-        services.AddScoped<IPasswordHasher, PasswordHasher>();
-        services.AddScoped<ITokenService, TokenService>();
-        services.AddScoped<IUsrService, UsrService>();
-        services.AddScoped<ITrafficService, TrafficService>();
+        services.AddScoped(typeof(IPasswordHasher), typeof(PasswordHasher));
+        services.AddScoped(typeof(ITokenService), typeof(TokenService));
+        services.AddScoped(typeof(IUsrService), typeof(UsrService));
+        services.AddScoped(typeof(ITrafficService), typeof(TrafficService));
 
         /******* [4] AutoMapper ********/
         services.AddAutoMapper(typeof(UserStoreProfile));
@@ -71,9 +72,9 @@ public class Startup
             });
 
         /******* [6] Publishers ********/
-        services.AddScoped<IUserLogPublisher, UserLogPublisher>();
-        services.AddScoped<IUserNotificationPublisher, UserNotificationPublisher>();
-        services.AddScoped<ITrafficPublisher, TrafficPublisher>();
+        services.AddScoped(typeof(IUserLogPublisher), typeof(UserLogPublisher));
+        services.AddScoped(typeof(IUserNotificationPublisher), typeof(UserNotificationPublisher));
+        services.AddScoped(typeof(ITrafficPublisher), typeof(TrafficPublisher));
 
         /******* [7] Consumers ********/
         services.AddScoped<UserNotificationAlertConsumer>();
@@ -111,7 +112,7 @@ public class Startup
         /******* [11] Swagger ********/
         services.AddSwaggerGen(c =>
         {
-            c.SwaggerDoc("v1", new OpenApiInfo { Title = "User API", Version = "v2.0" });
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "User Service", Version = "v2.0" });
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 In = ParameterLocation.Header,
@@ -145,7 +146,8 @@ public class Startup
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "User API");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "User Service");
+                c.DocumentTitle = "User Service";
             });
         }
 

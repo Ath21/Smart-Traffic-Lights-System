@@ -33,8 +33,9 @@ public class Startup
             options.ErrorLogsCollection = _configuration["Mongo:ErrorLogsCollection"];
         });
         services.AddSingleton<LogDbContext>();
-        
+
         /******* [2] Repositories ********/
+        /******* [2.1] LogDB Repositories ********/
         services.AddScoped(typeof(IAuditLogRepository), typeof(AuditLogRepository));
         services.AddScoped(typeof(IErrorLogRepository), typeof(ErrorLogRepository));
 
@@ -133,6 +134,7 @@ public class Startup
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Log Service");
+                c.DocumentTitle = "Log Service";
             });
         }
 

@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "vdBQkAZ8wPw=",
+  "dgSpecHash": "B69QD7hgvHg=",
   "success": true,
   "projectFilePath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/TrafficLightCoordinatorStore.csproj",
   "expectedPackageFiles": [
