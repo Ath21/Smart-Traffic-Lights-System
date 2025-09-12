@@ -1,6 +1,6 @@
 using System;
 using AutoMapper;
-using DetectionData.Collection.Detection;
+using DetectionData.Collections.Detection;
 using DetectionStore.Models.Dtos;
 using DetectionStore.Models.Requests;
 using DetectionStore.Models.Responses;

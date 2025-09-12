@@ -1,5 +1,5 @@
-﻿using DetectionData.Collection.Count;
-using DetectionData.Collection.Detection;
+﻿using DetectionData.Collections.Count;
+using DetectionData.Collections.Detection;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 

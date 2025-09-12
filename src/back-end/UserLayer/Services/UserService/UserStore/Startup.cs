@@ -32,9 +32,7 @@ public class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         /******* [1] Database (MSSQL) ********/
-        var mssqlConn = _configuration["MSSQL:ConnectionString"];
-        services.AddDbContext<UserDbContext>(options =>
-            options.UseSqlServer(mssqlConn));
+        services.AddDbContext<UserDbContext>();
 
         /******* [2] Repositories ********/
         /******* [2.1] UserDB Repositories ********/

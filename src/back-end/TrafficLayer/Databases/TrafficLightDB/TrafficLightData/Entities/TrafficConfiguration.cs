@@ -15,8 +15,10 @@ public class TrafficConfiguration
 
     public Intersection? Intersection { get; set; }
 
-    [Column("pattern", TypeName = "jsonb")]
-    public JsonDocument Pattern { get; set; } = JsonDocument.Parse("""{"phases":[],"cycle":0}""");
+    // PostgreSQL jsonb → MSSQL nvarchar(max)
+    [Column("pattern", TypeName = "nvarchar(max)")]
+    public string Pattern { get; set; } = """{"phases":[],"cycle":0}""";
+
 
     [Column("effective_from")]
     public DateTimeOffset EffectiveFrom { get; set; } = DateTimeOffset.UtcNow;
@@ -24,7 +26,6 @@ public class TrafficConfiguration
     [Column("reason")]
     public string? Reason { get; set; }
 
-    // Idempotency key for config upserts
     [Column("change_ref"), MaxLength(128)]
     public string? ChangeRef { get; set; }
 

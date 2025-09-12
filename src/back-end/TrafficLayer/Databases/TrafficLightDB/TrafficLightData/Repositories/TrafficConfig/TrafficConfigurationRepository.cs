@@ -34,7 +34,7 @@ public class TrafficConfigurationRepository : ITrafficConfigurationRepository
         _db.TrafficConfigurations.AsNoTracking()
             .AnyAsync(c => c.ChangeRef == changeRef, ct);
 
-    public async Task<TrafficConfiguration> AddAsync(
+        public async Task<TrafficConfiguration> AddAsync(
         Guid intersectionId,
         JsonDocument pattern,
         DateTimeOffset effectiveFromUtc,
@@ -47,7 +47,8 @@ public class TrafficConfigurationRepository : ITrafficConfigurationRepository
         {
             ConfigId = Guid.NewGuid(),
             IntersectionId = intersectionId,
-            Pattern = pattern,
+            // store as string
+            Pattern = pattern.RootElement.GetRawText(),
             EffectiveFrom = effectiveFromUtc,
             Reason = reason,
             ChangeRef = changeRef,
@@ -59,4 +60,5 @@ public class TrafficConfigurationRepository : ITrafficConfigurationRepository
         await _db.SaveChangesAsync(ct);
         return row;
     }
+
 }

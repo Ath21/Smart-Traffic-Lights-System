@@ -10,7 +10,7 @@ public class UserDbContextFactory : IDesignTimeDbContextFactory<UserDbContext>
     {
         var optionsBuilder = new DbContextOptionsBuilder<UserDbContext>();
         optionsBuilder.UseSqlServer(
-            "Server=user_db,1433;Database=UserDb;User Id=sa;Password=MyPass@word;TrustServerCertificate=True");
+            "Server=user_db,1433;Database=UserDB;User Id=sa;Password=MyPass@word;TrustServerCertificate=True");
 
         return new UserDbContext(optionsBuilder.Options, new ConfigurationBuilder().Build());
     }

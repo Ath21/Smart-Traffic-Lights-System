@@ -9,8 +9,8 @@ public class TrafficLightDbContextFactory : IDesignTimeDbContextFactory<TrafficL
     public TrafficLightDbContext CreateDbContext(string[] args)
     {
         var options = new DbContextOptionsBuilder<TrafficLightDbContext>()
-            .UseNpgsql(
-                "Host=traffic_light_db;Port=5432;Database=TrafficLightDb;Username=postgres;Password=postgres123;Include Error Detail=true"
+            .UseSqlServer(
+                "Server=traffic_light_db,1433;Database=TrafficLightDB;User Id=sa;Password=MyPass@word;TrustServerCertificate=True"
             )
             .Options;
 

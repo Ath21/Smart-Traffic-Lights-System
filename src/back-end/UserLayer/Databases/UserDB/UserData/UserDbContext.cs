@@ -52,7 +52,7 @@ public class UserDbContext : DbContext
     {
         if (!optionsBuilder.IsConfigured)
         {
-            var connectionString = _configuration.GetConnectionString("DefaultConnection");
+            var connectionString = _configuration.GetConnectionString("ConnectionString");
             optionsBuilder.UseSqlServer(connectionString);
         }
     }

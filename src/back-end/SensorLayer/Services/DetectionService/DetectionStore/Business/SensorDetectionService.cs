@@ -1,5 +1,5 @@
 using AutoMapper;
-using DetectionData.Collection.Detection;
+using DetectionData.Collections.Detection;
 using DetectionData.Repositories.EmergencyVehicle;
 using DetectionData.Repositories.Incident;
 using DetectionData.Repositories.PublicTransport;

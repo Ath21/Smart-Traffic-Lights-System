@@ -12,7 +12,7 @@ public class Intersection
     [Column("name"), MaxLength(255)]
     public string Name { get; set; } = string.Empty;
 
-    [Column("location", TypeName = "jsonb")]
+    [Column("location", TypeName = "nvarchar(max)")]
     public string? Location { get; set; }
 
     [Column("description")]

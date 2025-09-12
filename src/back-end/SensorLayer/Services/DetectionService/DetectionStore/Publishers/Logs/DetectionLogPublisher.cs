@@ -10,7 +10,6 @@ public class DetectionLogPublisher : IDetectionLogPublisher
     private readonly IBus _bus;
     private readonly ILogger<DetectionLogPublisher> _logger;
     private readonly string _serviceName = "detection_service";
-    private readonly string _logExchange;
     private readonly string _auditKey;
     private readonly string _errorKey;
 
@@ -21,9 +20,8 @@ public class DetectionLogPublisher : IDetectionLogPublisher
         _bus = bus;
         _logger = logger;
 
-        _logExchange = config["RabbitMQ:Exchanges:Log"] ?? "LOG.EXCHANGE";
-        _auditKey    = config["RabbitMQ:RoutingKeys:Log:Audit"] ?? "log.sensor.detection_service.audit";
-        _errorKey    = config["RabbitMQ:RoutingKeys:Log:Error"] ?? "log.sensor.detection_service.error";
+        _auditKey = config["RabbitMQ:RoutingKeys:Log:Audit"] ?? "log.sensor.detection_service.audit";
+        _errorKey = config["RabbitMQ:RoutingKeys:Log:Error"] ?? "log.sensor.detection_service.error";
     }
 
     // log.sensor.detection_service.audit
@@ -31,8 +29,7 @@ public class DetectionLogPublisher : IDetectionLogPublisher
     {
         var log = new AuditLogMessage(Guid.NewGuid(), _serviceName, action, details, DateTime.UtcNow, metadata);
 
-        var endpoint = await _bus.GetSendEndpoint(new Uri($"exchange:{_logExchange}"));
-        await endpoint.Send(log, ctx => ctx.SetRoutingKey(_auditKey));
+        await _bus.Publish(log, ctx => ctx.SetRoutingKey(_auditKey));
 
         _logger.LogInformation("{Tag} AUDIT {Action} -> {Details}", ServiceTag, action, details);
     }
@@ -42,8 +39,7 @@ public class DetectionLogPublisher : IDetectionLogPublisher
     {
         var log = new ErrorLogMessage(Guid.NewGuid(), _serviceName, errorType, message, DateTime.UtcNow, metadata);
 
-        var endpoint = await _bus.GetSendEndpoint(new Uri($"exchange:{_logExchange}"));
-        await endpoint.Send(log, ctx => ctx.SetRoutingKey(_errorKey));
+        await _bus.Publish(log, ctx => ctx.SetRoutingKey(_errorKey));
 
         _logger.LogError("{Tag} ERROR {Type} -> {Message}", ServiceTag, errorType, message);
     }

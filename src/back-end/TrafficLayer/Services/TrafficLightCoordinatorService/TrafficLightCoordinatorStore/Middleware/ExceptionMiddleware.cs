@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Json;
 using MassTransit;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using RabbitMQ.Client.Exceptions;
@@ -107,10 +108,11 @@ public class ExceptionMiddleware
         {
             await HandleAsync(context, HttpStatusCode.Conflict, "Database update failed", "DB_UPDATE_ERROR", ex);
         }
-        catch (PostgresException ex)
+        catch (SqlException ex) // MSSQL-specific errors
         {
-            await HandleAsync(context, HttpStatusCode.BadGateway, "PostgreSQL database error", "DB_POSTGRES_ERROR", ex);
+            await HandleAsync(context, HttpStatusCode.BadGateway, "SQL Server database error", "DB_MSSQL_ERROR", ex);
         }
+
 
         // ============================
         // FALLBACK

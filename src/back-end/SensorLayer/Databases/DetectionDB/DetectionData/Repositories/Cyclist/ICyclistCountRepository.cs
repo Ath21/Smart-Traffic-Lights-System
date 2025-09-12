@@ -1,5 +1,5 @@
 using System;
-using DetectionData.Collection.Count;
+using DetectionData.Collections.Count;
 
 namespace DetectionData.Repositories.Cyclist;
 

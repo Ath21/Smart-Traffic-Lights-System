@@ -12,11 +12,11 @@ services:
       # Databases
       # ===============================
 
-      ## TrafficLightDB (PostgreSQL)
-      PostgreSQL__ConnectionString: Host=traffic_light_db;Port=5432;Database=TrafficLightDB;Username=postgres;Password=postgres123;Include Error Detail=true
+      ## TrafficLightDB (MSSQL)
+      MSSQL__ConnectionString: Server=traffic_light_db,1433;Database=TrafficLightDB;User Id=sa;Password=MyPass@word;TrustServerCertificate=True;
 
       ## TrafficLightCacheDB (Redis)
-      Redis__TrafficLight__Host: traffic_light_cache_redis
+      Redis__TrafficLight__Host: traffic_light_cache_db
       Redis__TrafficLight__Port: 6379
       Redis__TrafficLight__Password: ""
       Redis__TrafficLight__Database: 0
@@ -76,6 +76,6 @@ services:
     
     depends_on:
       traffic_light_db:
-        condition: service_healthy
+        condition: service_started
 
     restart: always

@@ -1,6 +1,6 @@
 using System;
 using DetectionData;
-using DetectionData.Collection.Count;
+using DetectionData.Collections.Count;
 using MongoDB.Driver;
 
 namespace DetectionData.Repositories.Vehicle;

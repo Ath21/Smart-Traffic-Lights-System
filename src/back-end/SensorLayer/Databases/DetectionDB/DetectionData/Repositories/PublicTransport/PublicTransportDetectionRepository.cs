@@ -1,6 +1,6 @@
 using System;
 using DetectionData;
-using DetectionData.Collection.Detection;
+using DetectionData.Collections.Detection;
 using MongoDB.Driver;
 
 namespace DetectionData.Repositories.PublicTransport;

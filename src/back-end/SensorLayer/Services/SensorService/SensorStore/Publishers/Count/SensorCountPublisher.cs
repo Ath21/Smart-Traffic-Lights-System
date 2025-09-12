@@ -9,7 +9,6 @@ public class SensorCountPublisher : ISensorCountPublisher
 {
     private readonly IBus _bus;
     private readonly ILogger<SensorCountPublisher> _logger;
-    private readonly string _sensorExchange;
     private readonly string _vehicleKey;
     private readonly string _pedestrianKey;
     private readonly string _cyclistKey;
@@ -21,7 +20,6 @@ public class SensorCountPublisher : ISensorCountPublisher
         _bus = bus;
         _logger = logger;
 
-        _sensorExchange = config["RabbitMQ:Exchanges:Sensor"] ?? "SENSOR.EXCHANGE";
         _vehicleKey     = config["RabbitMQ:RoutingKeys:Sensor:VehicleCount"] ?? "sensor.vehicle.count.{intersection_id}";
         _pedestrianKey  = config["RabbitMQ:RoutingKeys:Sensor:PedestrianCount"] ?? "sensor.pedestrian.request.{intersection_id}";
         _cyclistKey     = config["RabbitMQ:RoutingKeys:Sensor:CyclistCount"] ?? "sensor.cyclist.request.{intersection_id}";
@@ -34,8 +32,7 @@ public class SensorCountPublisher : ISensorCountPublisher
 
         var msg = new VehicleCountMessage(Guid.NewGuid(), intersectionId, count, avgSpeed, DateTime.UtcNow);
 
-        var endpoint = await _bus.GetSendEndpoint(new Uri($"exchange:{_sensorExchange}"));
-        await endpoint.Send(msg, ctx => ctx.SetRoutingKey(routingKey));
+        await _bus.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
 
         _logger.LogInformation("{Tag} Vehicle count published for {IntersectionId}: {Count}, Speed {Speed}", 
             ServiceTag, intersectionId, count, avgSpeed);
@@ -48,8 +45,7 @@ public class SensorCountPublisher : ISensorCountPublisher
 
         var msg = new PedestrianCountMessage(Guid.NewGuid(), intersectionId, count, DateTime.UtcNow);
 
-        var endpoint = await _bus.GetSendEndpoint(new Uri($"exchange:{_sensorExchange}"));
-        await endpoint.Send(msg, ctx => ctx.SetRoutingKey(routingKey));
+        await _bus.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
 
         _logger.LogInformation("{Tag} Pedestrian count published for {IntersectionId}: {Count}", 
             ServiceTag, intersectionId, count);
@@ -62,8 +58,7 @@ public class SensorCountPublisher : ISensorCountPublisher
 
         var msg = new CyclistCountMessage(Guid.NewGuid(), intersectionId, count, DateTime.UtcNow);
 
-        var endpoint = await _bus.GetSendEndpoint(new Uri($"exchange:{_sensorExchange}"));
-        await endpoint.Send(msg, ctx => ctx.SetRoutingKey(routingKey));
+        await _bus.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
 
         _logger.LogInformation("{Tag} Cyclist count published for {IntersectionId}: {Count}", 
             ServiceTag, intersectionId, count);

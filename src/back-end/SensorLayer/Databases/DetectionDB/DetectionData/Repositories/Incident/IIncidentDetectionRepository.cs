@@ -1,5 +1,5 @@
 using System;
-using DetectionData.Collection.Detection;
+using DetectionData.Collections.Detection;
 
 namespace DetectionData.Repositories.Incident;
 

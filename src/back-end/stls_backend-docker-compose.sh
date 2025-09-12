@@ -102,7 +102,7 @@ deploy_layer() {
       # Then Postgres DBs + APIs
       docker compose -p stls_traffic \
         -f "$ROOT_DIR/TrafficLayer/Databases/TrafficAnalyticsDB/PostgreSQL/Docker/docker-compose.yaml" -f "$ROOT_DIR/TrafficLayer/Databases/TrafficAnalyticsDB/PostgreSQL/Docker/docker-compose.override.yaml" \
-        -f "$ROOT_DIR/TrafficLayer/Databases/TrafficLightDB/PostgreSQL/Docker/docker-compose.yaml" -f "$ROOT_DIR/TrafficLayer/Databases/TrafficLightDB/PostgreSQL/Docker/docker-compose.override.yaml" \
+        -f "$ROOT_DIR/TrafficLayer/Databases/TrafficLightDB/MSSQL/Docker/docker-compose.yaml" -f "$ROOT_DIR/TrafficLayer/Databases/TrafficLightDB/MSSQL/Docker/docker-compose.override.yaml" \
         -f "$ROOT_DIR/TrafficLayer/Services/TrafficAnalyticsService/Docker/docker-compose.yaml" -f "$ROOT_DIR/TrafficLayer/Services/TrafficAnalyticsService/Docker/docker-compose.override.yaml" \
         -f "$ROOT_DIR/TrafficLayer/Services/TrafficLightCoordinatorService/Docker/docker-compose.yaml" -f "$ROOT_DIR/TrafficLayer/Services/TrafficLightCoordinatorService/Docker/docker-compose.override.yaml" \
         -f "$ROOT_DIR/TrafficLayer/Services/IntersectionControllerService/Docker/docker-compose.yaml" -f "$ROOT_DIR/TrafficLayer/Services/IntersectionControllerService/Docker/docker-compose.override.yaml" \

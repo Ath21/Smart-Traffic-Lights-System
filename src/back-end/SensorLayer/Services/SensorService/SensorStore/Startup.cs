@@ -63,6 +63,10 @@ public class Startup
             options.KeyPrefix_PublicTransportDetected = _configuration["Redis:KeyPrefix:PublicTransportDetected"];
             options.KeyPrefix_IncidentDetected = _configuration["Redis:KeyPrefix:IncidentDetected"];
         });
+        services.AddSingleton<DetectionCacheDbContext>();   
+
+        /******* [3] AutoMapper ********/
+        services.AddAutoMapper(typeof(SensorStoreProfile));
 
         /******* [3] Repositories ********/
         /******* [3.1] DetectionDB Repositories ********/
@@ -166,7 +170,7 @@ public class Startup
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Sensor API");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Sensor Service");
                 c.DocumentTitle = "Sensor Service";
             });
         }

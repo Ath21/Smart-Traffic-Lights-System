@@ -37,14 +37,13 @@ public class TrafficLightDbContext : DbContext
         modelBuilder.Entity<TrafficLight>(e =>
         {
             e.HasIndex(l => new { l.IntersectionId, l.UpdatedAt });
-            e.Property(p => p.UpdatedAt).HasDefaultValueSql("(now() at time zone 'utc')");
+            e.Property(p => p.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
 
-            // Store enum as string instead of int
+            // Enum stored as string
             e.Property(l => l.CurrentState)
-                .HasConversion<string>()      // enum → string
+                .HasConversion<string>()
                 .HasMaxLength(20);
 
-            // Explicit check constraint for allowed enum values
             e.ToTable(t => t.HasCheckConstraint("ck_traffic_lights_state",
                 "current_state IN ('RED','ORANGE','GREEN','FLASHING','OFF')"));
         });
@@ -52,25 +51,21 @@ public class TrafficLightDbContext : DbContext
         // TRAFFIC_CONFIGURATIONS
         modelBuilder.Entity<TrafficConfiguration>(e =>
         {
-            // Fast "latest config" lookup per intersection and time
             e.HasIndex(c => new { c.IntersectionId, c.EffectiveFrom })
                 .HasDatabaseName("ix_cfg_intersection_effective");
             e.HasIndex(c => c.ChangeRef).IsUnique();
 
-            e.Property(c => c.EffectiveFrom)
-                .HasDefaultValueSql("(now() at time zone 'utc')");
-            e.Property(c => c.CreatedAt)
-                .HasDefaultValueSql("(now() at time zone 'utc')");
+            e.Property(c => c.EffectiveFrom).HasDefaultValueSql("GETUTCDATE()");
+            e.Property(c => c.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
         });
     }
-
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         if (!optionsBuilder.IsConfigured)
         {
-            var cs = _configuration.GetConnectionString("DefaultConnection");
-            optionsBuilder.UseNpgsql(cs);
+            var cs = _configuration.GetConnectionString("ConnectionString");
+            optionsBuilder.UseSqlServer(cs);
         }
     }
 }
