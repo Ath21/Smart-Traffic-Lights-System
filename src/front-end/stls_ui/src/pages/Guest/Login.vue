@@ -91,11 +91,11 @@
 
 <script setup>
 import { ref } from 'vue'
-import { loginApi } from '../services/userApi'
-import { useAuth } from '../stores/users'
+import { loginApi } from '../../services/userApi'
+import { useAuth } from '../../stores/users'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
-import '../assets/login.css'
+import '../../assets/login.css'
 
 const email = ref('')
 const password = ref('')

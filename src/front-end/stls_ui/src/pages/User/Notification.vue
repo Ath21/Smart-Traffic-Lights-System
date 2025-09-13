@@ -36,8 +36,8 @@
 <script setup>
 import { onMounted, onUnmounted } from "vue"
 import { storeToRefs } from "pinia"
-import { useNotifications } from "../stores/notifications"
-import "../assets/notifications.css"
+import { useNotifications } from "../../stores/notifications"
+import "../../assets/notifications.css"
 
 const notificationsStore = useNotifications()
 const { notifications, isLoading, error, unreadCount } =

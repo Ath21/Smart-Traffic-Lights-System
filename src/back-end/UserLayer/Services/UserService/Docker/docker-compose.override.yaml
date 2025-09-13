@@ -13,7 +13,7 @@ services:
       # ===============================
 
       ## UserDB (MSSQL)
-      MSSQL__ConnectionString: Server=user_db,1433;Database=UserDB;User Id=sa;Password=MyPass@word;TrustServerCertificate=True
+      ConnectionStrings__MSSQLConnection: Server=user_db,1433;Database=UserDB;User Id=sa;Password=MyPass@word;TrustServerCertificate=True
 
       # ===============================
       # CORS Policy

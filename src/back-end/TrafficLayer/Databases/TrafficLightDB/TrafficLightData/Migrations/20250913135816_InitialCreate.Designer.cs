@@ -12,7 +12,7 @@ using TrafficLightData;
 namespace TrafficLightData.Migrations
 {
     [DbContext(typeof(TrafficLightDbContext))]
-    [Migration("20250911192505_InitialCreate")]
+    [Migration("20250913135816_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

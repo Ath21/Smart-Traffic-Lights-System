@@ -13,7 +13,7 @@ services:
       # ===============================
 
       ## TrafficAnalyticsDB (PostgreSQL)
-      PostgreSQL__ConnectionString: Host=traffic_analytics_db;Port=5432;Database=TrafficAnalyticsDB;Username=postgres;Password=postgres123
+      ConnectionStrings__PostgreSQLConnection: Host=traffic_analytics_db;Port=5432;Database=TrafficAnalyticsDB;Username=postgres;Password=postgres123
 
       ## DetectionCacheDB (Redis)
       Redis__Host: detection_cache_db

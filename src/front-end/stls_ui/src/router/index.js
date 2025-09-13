@@ -9,14 +9,14 @@ const TrafficOperatorLayout = () => import('../layouts/TrafficOperatorLayout.vue
 const AdminLayout = () => import('../layouts/AdminLayout.vue')
 
 // Auth pages
-const Login = () => import('../pages/Login.vue')
+const Login = () => import('../pages/Guest/Login.vue')
 const Register = () => import('../pages/Guest/Register.vue')
-const ResetPassword = () => import('../pages/ResetPassword.vue')
+const ResetPassword = () => import('../pages/Guest/ResetPassword.vue')
 
 // User pages
-const Profile = () => import('../pages/Profile.vue')
-const UpdateProfile = () => import('../pages/UpdateProfile.vue')
-const Notifications = () => import('../pages/Notification.vue')
+const Profile = () => import('../pages/User/Profile.vue')
+const UpdateProfile = () => import('../pages/User/UpdateProfile.vue')
+const Notifications = () => import('../pages/User/Notification.vue')
 
 // Traffic Operator pages
 const TrafficOperatorDetections = () => import('../pages/TrafficOperator/Detections.vue')

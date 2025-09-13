@@ -51,9 +51,9 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useAuth } from '../stores/users'
-import { updateProfileApi } from "../services/userApi"
-import '../assets/update-profile.css'
+import { useAuth } from '../../stores/users'
+import { updateProfileApi } from "../../services/userApi"
+import '../../assets/update-profile.css'
 
 const auth = useAuth()
 

@@ -13,7 +13,7 @@ services:
       # ===============================
 
       ## TrafficLightDB (MSSQL)
-      MSSQL__ConnectionString: Server=traffic_light_db,1433;Database=TrafficLightDB;User Id=sa;Password=MyPass@word;TrustServerCertificate=True;
+      ConnectionStrings__MSSQLConnection: Server=traffic_light_db,1433;Database=TrafficLightDB;User Id=sa;Password=MyPass@word;TrustServerCertificate=True;
 
       ## TrafficLightCacheDB (Redis)
       Redis__TrafficLight__Host: traffic_light_cache_db

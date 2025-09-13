@@ -42,7 +42,7 @@ public class TrafficAnalyticsDbContext : DbContext
     {
         if (!optionsBuilder.IsConfigured)
         {
-            var connectionString = _configuration.GetConnectionString("ConnectionString");
+            var connectionString = _configuration.GetConnectionString("PostgreSQLConnection");
             optionsBuilder.UseNpgsql(connectionString);
         }
     }

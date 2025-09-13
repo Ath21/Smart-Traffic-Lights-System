@@ -52,8 +52,14 @@ public class UserDbContext : DbContext
     {
         if (!optionsBuilder.IsConfigured)
         {
-            var connectionString = _configuration.GetConnectionString("ConnectionString");
-            optionsBuilder.UseSqlServer(connectionString);
+            var connectionString = _configuration.GetConnectionString("MSSQLConnection");
+            optionsBuilder.UseSqlServer(connectionString, sqlOptions =>
+            {
+                sqlOptions.EnableRetryOnFailure(
+                    maxRetryCount: 5,
+                    maxRetryDelay: TimeSpan.FromSeconds(10),
+                    errorNumbersToAdd: null);
+            });
         }
     }
 }

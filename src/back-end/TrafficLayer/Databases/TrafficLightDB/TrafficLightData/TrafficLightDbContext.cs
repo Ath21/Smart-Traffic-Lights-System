@@ -64,8 +64,14 @@ public class TrafficLightDbContext : DbContext
     {
         if (!optionsBuilder.IsConfigured)
         {
-            var cs = _configuration.GetConnectionString("ConnectionString");
-            optionsBuilder.UseSqlServer(cs);
+            var connectionString = _configuration.GetConnectionString("MSSQLConnection");
+            optionsBuilder.UseSqlServer(connectionString, sqlOptions =>
+            {
+                sqlOptions.EnableRetryOnFailure(
+                    maxRetryCount: 5,
+                    maxRetryDelay: TimeSpan.FromSeconds(10),
+                    errorNumbersToAdd: null);
+            });
         }
     }
 }
