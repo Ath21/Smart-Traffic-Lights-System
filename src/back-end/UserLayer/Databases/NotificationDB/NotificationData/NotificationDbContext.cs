@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Options;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using NotificationData.Collections;
 
@@ -20,4 +21,19 @@ public class NotificationDbContext
     // Exposed collections
     public IMongoCollection<Notification> Notifications { get; }
     public IMongoCollection<DeliveryLog> DeliveryLogs { get; }
+
+
+    public async Task<bool> CanConnectAsync()
+    {
+        try
+        {
+            var command = new BsonDocument("ping", 1);
+            await _database.RunCommandAsync<BsonDocument>(command);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
 }

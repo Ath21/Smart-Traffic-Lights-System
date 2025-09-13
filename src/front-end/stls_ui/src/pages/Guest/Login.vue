@@ -131,7 +131,7 @@ async function submit() {
     isSuccess.value = true
     isError.value = false
     message.value = "✅ Login successful!"
-    router.push('/app')
+    router.push('/stls')
   } catch (err) {
     const details = err.response?.data?.details || err.response?.data?.error || err.message
     message.value = "❌ " + details

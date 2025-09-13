@@ -24,7 +24,7 @@ services:
       Redis__TrafficLight__KeyPrefix__QueueLength: traffic_light:{intersection_id}:queue_length
 
       ## DetectionCacheDB (Redis)
-      Redis__Detection__Host: detection_cache_redis
+      Redis__Detection__Host: detection_cache_db
       Redis__Detection__Port: 6379
       Redis__Detection__Password: ""
       Redis__Detection__Database: 0

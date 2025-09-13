@@ -140,7 +140,7 @@ async function submit() {
       confirmPassword: confirmPassword.value
     })
     auth.login(token)
-    router.push('/app')
+    router.push('/stls')
   } catch (err) {
     const details = err.response?.data?.details || err.response?.data?.error || err.message
     message.value = "❌ " + details

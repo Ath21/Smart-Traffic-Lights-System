@@ -5,7 +5,7 @@ using TrafficLightCacheData.Entities;
 
 namespace TrafficLightCacheData;
 
-public class TrafficLightCacheDbContext
+public class TrafficLightCacheDbContext : IDisposable
 {
     private readonly ConnectionMultiplexer _connection;
     public IDatabase Database { get; }
@@ -29,5 +29,18 @@ public class TrafficLightCacheDbContext
     public void Dispose()
     {
         _connection.Dispose();
+    }
+
+    public async Task<bool> CanConnectAsync()
+    {
+        try
+        {
+            var pong = await Database.PingAsync();
+            return pong != TimeSpan.Zero;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }

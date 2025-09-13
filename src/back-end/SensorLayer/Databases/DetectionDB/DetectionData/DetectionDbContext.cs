@@ -1,6 +1,7 @@
 ﻿using DetectionData.Collections.Count;
 using DetectionData.Collections.Detection;
 using Microsoft.Extensions.Options;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace DetectionData;
@@ -28,4 +29,19 @@ public class DetectionDbContext
     public IMongoCollection<EmergencyVehicleDetection> EmergencyVehicles { get; }
     public IMongoCollection<PublicTransportDetection> PublicTransports { get; }
     public IMongoCollection<IncidentDetection> Incidents { get; }
+
+
+    public async Task<bool> CanConnectAsync()
+    {
+        try
+        {
+            var command = new BsonDocument("ping", 1);
+            await _database.RunCommandAsync<BsonDocument>(command);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
 }

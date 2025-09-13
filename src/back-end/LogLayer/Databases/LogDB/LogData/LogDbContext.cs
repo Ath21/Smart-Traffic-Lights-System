@@ -1,5 +1,6 @@
 using LogData.Collections;
 using Microsoft.Extensions.Options;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace LogData;
@@ -19,4 +20,19 @@ public class LogDbContext
 
     public IMongoCollection<AuditLog> AuditLogs { get; }
     public IMongoCollection<ErrorLog> ErrorLogs { get; }
+
+
+    public async Task<bool> CanConnectAsync()
+    {
+        try
+        {
+            var command = new BsonDocument("ping", 1);
+            await _database.RunCommandAsync<BsonDocument>(command);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
 }

@@ -36,34 +36,54 @@ function canAccess(requiredRole, userRole) {
 }
 
 const routes = [
+  // Guest routes
   { path: '/login', name: 'login', component: Login, meta: { public: true } },
   { path: '/register', name: 'register', component: Register, meta: { public: true } },
   { path: '/reset-password', name: 'reset-password', component: ResetPassword, meta: { public: true } },
 
-  // Guest
-  { path: '/', name: 'guest', component: GuestLayout, meta: { public: true }, children: [
-    { path: '', name: 'guest-congestion', component: GuestCongestion }
-  ]},
+  {
+    path: '/',
+    component: GuestLayout,
+    meta: { public: true },
+    children: [
+      { path: '', name: 'guest-map', component: GuestCongestion }
+    ]
+  },
 
   // User
-  { path: '/stls', name: 'user', component: UserLayout, meta: { role: 'user' }, children: [
-    { path: 'profile', name: 'profile', component: Profile },
-    { path: 'update', name: 'update', component: UpdateProfile },
-    { path: 'notifications', name: 'notifications', component: Notifications }
-  ]},
+  {
+    path: '/stls',
+    component: UserLayout,
+    meta: { role: 'user' },
+    children: [
+      { path: 'profile', name: 'profile', component: Profile, alias: '/profile' },
+      { path: 'update', name: 'update', component: UpdateProfile, alias: '/update' },
+      { path: 'notifications', name: 'notifications', component: Notifications, alias: '/notifications' }
+    ]
+  },
 
   // Traffic Operator
-  { path: '/operator', name: 'operator', component: TrafficOperatorLayout, meta: { role: 'traffic_operator' }, children: [
-    { path: 'detections', name: 'detections', component: TrafficOperatorDetections },
-    { path: 'sensors', name: 'sensors', component: TrafficOperatorSensors }
-  ]},
+  {
+    path: '/stls/operator',
+    component: TrafficOperatorLayout,
+    meta: { role: 'traffic_operator' },
+    children: [
+      { path: 'detections', name: 'detections', component: TrafficOperatorDetections, alias: '/detections' },
+      { path: 'sensors', name: 'sensors', component: TrafficOperatorSensors, alias: '/sensors' }
+    ]
+  },
 
   // Admin
-  { path: '/admin', name: 'admin', component: AdminLayout, meta: { role: 'admin' }, children: [
-    { path: 'logs', name: 'logs', component: AdminLogs },
-    { path: 'reports', name: 'reports', component: AdminReports },
-    { path: 'config', name: 'config', component: AdminConfig }
-  ]}
+  {
+    path: '/stls/admin',
+    component: AdminLayout,
+    meta: { role: 'admin' },
+    children: [
+      { path: 'logs', name: 'logs', component: AdminLogs, alias: '/logs' },
+      { path: 'reports', name: 'reports', component: AdminReports, alias: '/reports' },
+      { path: 'config', name: 'config', component: AdminConfig, alias: '/config' }
+    ]
+  }
 ]
 
 const router = createRouter({ history: createWebHistory(), routes })
@@ -81,7 +101,7 @@ router.beforeEach(async (to) => {
 
   if (!canAccess(required, role)) {
     return auth.isAuthenticated
-      ? { name: 'guest' }
+      ? { name: 'guest-map' }
       : { name: 'login', query: { redirect: to.fullPath } }
   }
 

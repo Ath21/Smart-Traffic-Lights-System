@@ -62,4 +62,16 @@ public class UserDbContext : DbContext
             });
         }
     }
+
+    public async Task<bool> CanConnectAsync()
+    {
+        try
+        {
+            return await Database.CanConnectAsync();
+        }
+        catch
+        {
+            return false;
+        }
+    }
 }

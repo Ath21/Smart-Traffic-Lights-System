@@ -46,4 +46,17 @@ public class TrafficAnalyticsDbContext : DbContext
             optionsBuilder.UseNpgsql(connectionString);
         }
     }
+
+    public async Task<bool> CanConnectAsync()
+    {
+        try
+        {
+            return await Database.CanConnectAsync();
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
 }

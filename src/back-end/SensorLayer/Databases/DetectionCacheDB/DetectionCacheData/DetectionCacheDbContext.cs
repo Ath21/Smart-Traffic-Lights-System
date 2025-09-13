@@ -25,4 +25,17 @@ public class DetectionCacheDbContext : IDisposable
     }
 
     public void Dispose() => _connection.Dispose();
+
+    public async Task<bool> CanConnectAsync()
+    {
+        try
+        {
+            var pong = await Database.PingAsync();
+            return pong != TimeSpan.Zero;
+        }
+        catch
+        {
+            return false;
+        }
+    }
 }

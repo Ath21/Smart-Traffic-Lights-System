@@ -10,10 +10,8 @@ using UserStore.Business.Usr;
 using UserStore.Middleware;
 using UserStore.Publishers.Logs;
 using UserStore.Publishers.Notifications;
-using UserStore.Publishers.Traffic;
 using UserStore.Consumers.Traffic;
 using UserStore.Consumers.Usr;
-using UserStore.Business.Traffic;
 using UserData.Repositories.Usr;
 using UserData.Repositories.Ses;
 using UserData.Repositories.Audit;
@@ -44,7 +42,6 @@ public class Startup
         services.AddScoped(typeof(IPasswordHasher), typeof(PasswordHasher));
         services.AddScoped(typeof(ITokenService), typeof(TokenService));
         services.AddScoped(typeof(IUsrService), typeof(UsrService));
-        services.AddScoped(typeof(ITrafficService), typeof(TrafficService));
 
         /******* [4] AutoMapper ********/
         services.AddAutoMapper(typeof(UserStoreProfile));
@@ -72,7 +69,6 @@ public class Startup
         /******* [6] Publishers ********/
         services.AddScoped(typeof(IUserLogPublisher), typeof(UserLogPublisher));
         services.AddScoped(typeof(IUserNotificationPublisher), typeof(UserNotificationPublisher));
-        services.AddScoped(typeof(ITrafficPublisher), typeof(TrafficPublisher));
 
         /******* [7] Consumers ********/
         services.AddScoped<UserNotificationAlertConsumer>();
