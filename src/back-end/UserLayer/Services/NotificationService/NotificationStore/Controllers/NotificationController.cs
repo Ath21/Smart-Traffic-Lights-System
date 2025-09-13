@@ -97,6 +97,30 @@ public class NotificationController : ControllerBase
     }
 
     // ============================================================
+    // GET: /api/notifications/public
+    // Roles: Anonymous
+    // Purpose: Retrieve all public notifications
+    // ============================================================
+    [HttpGet("public")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(IEnumerable<NotificationResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<IEnumerable<NotificationResponse>>> GetPublicNotices()
+    {
+        var notifications = await _notificationService.GetPublicNoticesAsync();
+        return Ok(notifications.Select(n => new NotificationResponse
+        {
+            NotificationId = n.NotificationId,
+            Type = n.Type,
+            Title = n.Title,
+            Message = n.Message,
+            RecipientEmail = n.RecipientEmail,
+            Status = n.Status,
+            CreatedAt = n.CreatedAt
+        }));
+    }
+
+    // ============================================================
     // GET: /api/notifications/recipient/{email}
     // Roles: User, Admin, TrafficOperator
     // Purpose: Retrieve notifications by recipient email

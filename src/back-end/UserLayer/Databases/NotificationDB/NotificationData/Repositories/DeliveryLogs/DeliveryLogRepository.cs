@@ -42,4 +42,11 @@ public class DeliveryLogRepository : IDeliveryLogRepository
         await _context.DeliveryLogs.UpdateManyAsync(filter, update);
     }
 
+    public async Task<IEnumerable<Guid>> GetBroadcastedNotificationIdsAsync()
+    {
+        return await _context.DeliveryLogs
+            .Find(l => l.Status == "Broadcasted")
+            .Project(l => l.NotificationId)
+            .ToListAsync();
+    }
 }

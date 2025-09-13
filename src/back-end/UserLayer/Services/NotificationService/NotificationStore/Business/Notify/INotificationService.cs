@@ -18,4 +18,6 @@ public interface INotificationService
     Task MarkAsReadAsync(Guid notificationId, string email);
     // [PATCH] /api/notifications/read-all
     Task MarkAllAsReadAsync(string email);
+    // New method to get broadcasted notification IDs
+    Task<IEnumerable<NotificationDto>> GetPublicNoticesAsync();
 }

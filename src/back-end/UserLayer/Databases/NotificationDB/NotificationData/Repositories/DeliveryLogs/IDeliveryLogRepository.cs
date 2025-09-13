@@ -10,4 +10,5 @@ public interface IDeliveryLogRepository
     Task<IEnumerable<DeliveryLog>> GetByUserIdAsync(Guid userId);
     Task MarkAsReadAsync(Guid notificationId, string email);
     Task MarkAllAsReadAsync(string email);
+    Task<IEnumerable<Guid>> GetBroadcastedNotificationIdsAsync();
 }

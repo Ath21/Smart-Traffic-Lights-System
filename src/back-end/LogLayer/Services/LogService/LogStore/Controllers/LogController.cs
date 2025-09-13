@@ -11,7 +11,6 @@ namespace LogStore.Controllers;
 // Log Layer / Log Service - Audit & Error Logs
 //
 // Centralized logging and auditing.
-
 // ===========================================================
 
 [ApiController]

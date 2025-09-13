@@ -105,8 +105,10 @@ public class NotificationService : INotificationService
         _logger.LogInformation("{Tag} Publishing public notice {Title} for {Audience}",
             ServiceTag, title, audience);
 
+        // 1. Publish to topic
         await _publisher.PublishPublicNoticeAsync(notifId, title, message, audience);
 
+        // 2. Log broadcast event
         var log = new DeliveryLog
         {
             DeliveryId = Guid.NewGuid(),
@@ -116,9 +118,31 @@ public class NotificationService : INotificationService
             Status = "Broadcasted",
             SentAt = DateTime.UtcNow
         };
-
         await _deliveryLogRepository.InsertAsync(log);
     }
+
+    // [GET] /api/notifications/public
+    public async Task<IEnumerable<NotificationDto>> GetPublicNoticesAsync()
+    {
+        _logger.LogInformation("{Tag} Fetching public notices", ServiceTag);
+
+        var ids = await _deliveryLogRepository.GetBroadcastedNotificationIdsAsync();
+
+        var results = new List<NotificationDto>();
+        foreach (var id in ids)
+        {
+            var notif = await _notificationRepository.GetByIdAsync(id);
+            if (notif != null)
+            {
+                results.Add(_mapper.Map<NotificationDto>(notif));
+            }
+        }
+
+        return results.OrderByDescending(n => n.CreatedAt);
+    }
+
+
+
 
     // [GET]   /api/notifications/recipient/{email}
     public async Task<IEnumerable<NotificationDto>> GetNotificationsByRecipientEmailAsync(string recipientEmail)
