@@ -24,7 +24,7 @@ public class LogController : ControllerBase
     // Purpose: Query audit logs by service
     // ============================================================
     [HttpGet("audit/{serviceName}")]
-    //[Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType(typeof(List<AuditLogResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<List<AuditLogResponse>>> GetAuditLogs(string serviceName)
@@ -42,7 +42,7 @@ public class LogController : ControllerBase
     // Purpose: Query error logs by service
     // ============================================================
     [HttpGet("error/{serviceName}")]
-    //[Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType(typeof(List<ErrorLogResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<List<ErrorLogResponse>>> GetErrorLogs(string serviceName)

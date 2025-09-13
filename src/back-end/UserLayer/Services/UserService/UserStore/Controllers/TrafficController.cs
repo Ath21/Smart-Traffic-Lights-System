@@ -26,7 +26,7 @@ public class TrafficController : ControllerBase
     // Purpose: Manually control a specific traffic light (send command)
     // ============================================================
     [HttpPost("{intersectionId:guid}/lights/{lightId:guid}/control")]
-    //[Authorize(Roles = "TrafficOperator,Admin")]
+    [Authorize(Roles = "TrafficOperator,Admin")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ControlLight(Guid intersectionId, Guid lightId, [FromBody] ControlLightRequest request)
@@ -56,7 +56,7 @@ public class TrafficController : ControllerBase
     // Purpose: Publish an update for a traffic light (state synchronization)
     // ============================================================
     [HttpPost("{intersectionId:guid}/lights/{lightId:guid}/update")]
-    //[Authorize(Roles = "TrafficOperator,Admin")]
+    [Authorize(Roles = "TrafficOperator,Admin")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UpdateLight(Guid intersectionId, Guid lightId, [FromBody] UpdateLightRequest request)
