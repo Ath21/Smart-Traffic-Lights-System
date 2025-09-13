@@ -7,6 +7,12 @@ using NotificationStore.Models.Responses;
 
 namespace NotificationStore.Controllers;
 
+// ============================================================
+// User Layer / Notification Service - Messaging & Alerts
+//
+// Manages direct, public, and system notifications.
+// ============================================================
+
 [ApiController]
 [Route("api/notifications")]
 public class NotificationController : ControllerBase
@@ -59,11 +65,11 @@ public class NotificationController : ControllerBase
 
     // ============================================================
     // POST: /api/notifications/public-notice
-    // Roles: Admin, TrafficOperator
+    // Roles: Admin
     // Purpose: Publish a notification for a group/audience
     // ============================================================
     [HttpPost("public-notice")]
-    [Authorize(Roles = "Admin,TrafficOperator")]
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType(typeof(NotificationResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<NotificationResponse>> SendPublicNotice([FromBody] PublicNoticeRequest request)

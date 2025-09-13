@@ -7,6 +7,12 @@ using DetectionStore.Models.Responses;
 
 namespace DetectionStore.Controllers;
 
+// ============================================================
+// Sensor Layer / Detection Service - Detection Events
+//
+// Handles detection of vehicles, incidents, and anomalies.
+// ===========================================================
+
 [ApiController]
 [Route("api/detections")]
 public class DetectionController : ControllerBase
@@ -20,6 +26,11 @@ public class DetectionController : ControllerBase
         _mapper = mapper;
     }
 
+    // ============================================================
+    // GET: api/detections/{intersectionId}
+    // Role: Anonymous
+    // Description: Get the latest detection snapshot for a specific intersection.
+    // ============================================================
     [HttpGet("{intersectionId:guid}")]
     [AllowAnonymous]
     public async Task<IActionResult> GetSnapshot(Guid intersectionId)
@@ -30,6 +41,11 @@ public class DetectionController : ControllerBase
         return Ok(_mapper.Map<DetectionSnapshotResponse>(dto));
     }
 
+    // ============================================================
+    // GET: api/detections/{intersectionId}/history
+    // Role: TrafficOperator, Admin
+    // Description: Get historical detection data for a specific intersection.
+    // ============================================================
     [HttpGet("{intersectionId:guid}/history")]
     [Authorize(Roles = "TrafficOperator,Admin")]
     public async Task<IActionResult> GetHistory(Guid intersectionId)
@@ -38,6 +54,11 @@ public class DetectionController : ControllerBase
         return Ok(_mapper.Map<IEnumerable<DetectionHistoryResponse>>(dtos));
     }
 
+    // ============================================================
+    // POST: api/detections/emergency
+    // Role: TrafficOperator, Admin
+    // Description: Record an emergency vehicle detection event.
+    // ============================================================
     [HttpPost("emergency")]
     [Authorize(Roles = "TrafficOperator,Admin")]
     public async Task<IActionResult> RecordEmergency([FromBody] RecordEmergencyVehicleRequest request)
@@ -48,6 +69,11 @@ public class DetectionController : ControllerBase
         return Ok(_mapper.Map<EmergencyVehicleResponse>(result));
     }
 
+    // ============================================================
+    // POST: api/detections/public-transport
+    // Role: TrafficOperator, Admin
+    // Description: Record a public transport detection event.
+    // ============================================================
     [HttpPost("public-transport")]
     [Authorize(Roles = "TrafficOperator,Admin")]
     public async Task<IActionResult> RecordPublicTransport([FromBody] RecordPublicTransportRequest request)
@@ -58,6 +84,11 @@ public class DetectionController : ControllerBase
         return Ok(_mapper.Map<PublicTransportResponse>(result));
     }
 
+    // ============================================================
+    // POST: api/detections/incident
+    // Role: TrafficOperator, Admin
+    // Description: Record an incident detection event.
+    // ============================================================
     [HttpPost("incident")]
     [Authorize(Roles = "TrafficOperator,Admin")]
     public async Task<IActionResult> RecordIncident([FromBody] RecordIncidentRequest request)

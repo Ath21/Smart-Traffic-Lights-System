@@ -7,6 +7,13 @@ using LogStore.Models.Requests;
 
 namespace LogStore.Controllers;
 
+// ============================================================
+// Log Layer / Log Service - Audit & Error Logs
+//
+// Centralized logging and auditing.
+
+// ===========================================================
+
 [ApiController]
 [Route("api/logs")]
 public class LogController : ControllerBase

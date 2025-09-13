@@ -7,6 +7,13 @@ using UserStore.Models.Responses;
 
 namespace UserStore.Controllers;
 
+// ============================================================
+// User Layer / User Service - Identity & Profile
+//
+// Handles registration, authentication, profile management, 
+// password reset, and user-initiated notification requests.
+// ===========================================================
+
 [ApiController]
 [Route("api/users")]
 public class UserController : ControllerBase
@@ -98,7 +105,7 @@ public class UserController : ControllerBase
     // Purpose: Update user profile (username, email, password)
     // ============================================================
     [HttpPut("update")]
-    //[Authorize(Roles = "User,TrafficOperator,Admin")]
+    [Authorize(Roles = "User,TrafficOperator,Admin")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request)
@@ -123,7 +130,7 @@ public class UserController : ControllerBase
     // ============================================================
     // POST: /api/users/reset-password
     // Roles: Anonymous
-    // Purpose: Reset password via email or token
+    // Purpose: Reset password by entering email and new password
     // ============================================================
     [HttpPost("reset-password")]
     [AllowAnonymous]
@@ -144,7 +151,7 @@ public class UserController : ControllerBase
     // Purpose: Request sending a notification (delegated to Notification Service)
     // ============================================================
     [HttpPost("send-notification-request")]
-    [Authorize(Roles = "User,TrafficOperator,Admin")]
+    [Authorize(Roles = "User")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> SendNotification([FromBody] NotificationRequest request)

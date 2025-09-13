@@ -6,6 +6,12 @@ using TrafficAnalyticsStore.Business;
 
 namespace TrafficAnalyticsStore.Controllers;
 
+// ============================================================
+// Traffic Layer / Traffic Analytics Service - Data Insights
+//
+// Provides congestion, incident, and summary reports.
+// ============================================================
+
 [ApiController]
 [Route("api/traffic/analytics")]
 public class TrafficAnalyticsController : ControllerBase
@@ -39,11 +45,11 @@ public class TrafficAnalyticsController : ControllerBase
 
     // ============================================================
     // GET: /api/traffic/analytics/incidents/{intersectionId}
-    // Roles: User, TrafficOperator, Admin
+    // Roles: TrafficOperator, Admin
     // Purpose: Get all incidents detected for a specific intersection
     // ============================================================
     [HttpGet("incidents/{intersectionId:guid}")]
-    [Authorize(Roles = "User,TrafficOperator,Admin")]
+    [Authorize(Roles = "TrafficOperator,Admin")]
     [ProducesResponseType(typeof(IEnumerable<IncidentResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetIncidents(Guid intersectionId)
     {
@@ -72,11 +78,11 @@ public class TrafficAnalyticsController : ControllerBase
 
     // ============================================================
     // GET: /api/traffic/analytics/reports/daily
-    // Roles: User, TrafficOperator, Admin
+    // Roles: TrafficOperator, Admin
     // Purpose: Get all daily traffic reports (system-wide)
     // ============================================================
     [HttpGet("reports/daily")]
-    [Authorize(Roles = "User,TrafficOperator,Admin")]
+    [Authorize(Roles = "TrafficOperator,Admin")]
     [ProducesResponseType(typeof(IEnumerable<SummaryResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetDailyReport()
     {

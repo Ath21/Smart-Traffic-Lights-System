@@ -7,6 +7,12 @@ using TrafficLightControllerStore.Models.Responses;
 
 namespace TrafficLightControllerStore.Controllers;
 
+// ============================================================
+// Traffic Layer / Traffic Light Controller Service - Direct Control
+//
+// Handles real-time state management of traffic lights.
+// ============================================================
+
 [ApiController]
 [Route("api/traffic/controller")]
 public class TrafficLightController : ControllerBase

@@ -9,6 +9,12 @@ using TrafficLightCoordinatorStore.Business.Coordination;
 
 namespace TrafficLightCoordinatorStore.Controllers;
 
+// ============================================================
+// Traffic Layer / Traffic Light Coordinator Service - Patterns & Overrides
+//
+// Manages configuration patterns and priority overrides.
+// ============================================================
+
 [ApiController]
 [Route("api/traffic/coordinator")]
 public class TrafficLightCoordinatorController : ControllerBase

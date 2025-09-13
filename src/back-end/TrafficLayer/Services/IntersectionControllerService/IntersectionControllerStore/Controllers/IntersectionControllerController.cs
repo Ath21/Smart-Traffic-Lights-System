@@ -7,6 +7,12 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace IntersectionControllerStore.Controllers;
 
+// ============================================================
+// Traffic Layer /Intersection Controller Service - Intersection State
+//
+// Exposes status and command history for intersections.
+// ============================================================
+
 [ApiController]
 [Route("api/intersections")]
 public class IntersectionController : ControllerBase

@@ -7,6 +7,12 @@ using SensorStore.Models.Responses;
 
 namespace SensorStore.Controllers;
 
+// ============================================================
+// Sensor Layer / Sensor Service - Raw Sensor Data
+//
+// Provides real-time and historical sensor snapshots.
+// ============================================================
+
 [ApiController]
 [Route("api/sensors")]
 public class SensorsController : ControllerBase
@@ -20,6 +26,11 @@ public class SensorsController : ControllerBase
         _mapper = mapper;
     }
 
+    // ============================================================
+    // GET: api/sensors/{intersectionId}
+    // Role: Anonymous
+    // Description: Get the latest sensor snapshot for a specific intersection.
+    // ============================================================
     [HttpGet("{intersectionId:guid}")]
     [AllowAnonymous]
     public async Task<IActionResult> GetSnapshot(Guid intersectionId)
@@ -30,6 +41,11 @@ public class SensorsController : ControllerBase
         return Ok(_mapper.Map<SensorSnapshotResponse>(dto));
     }
 
+    // ============================================================
+    // GET: api/sensors/{intersectionId}/history
+    // Role: TrafficOperator, Admin
+    // Description: Get historical sensor snapshots for a specific intersection.
+    // ============================================================
     [HttpGet("{intersectionId:guid}/history")]
     [Authorize(Roles = "TrafficOperator,Admin")]
     public async Task<IActionResult> GetHistory(Guid intersectionId)
@@ -38,6 +54,11 @@ public class SensorsController : ControllerBase
         return Ok(_mapper.Map<IEnumerable<SensorHistoryResponse>>(dtos));
     }
 
+    // ============================================================
+    // POST: api/sensors/update
+    // Role: TrafficOperator, Admin
+    // Description: Update the sensor snapshot for a specific intersection.
+    // ============================================================
     [HttpPost("update")]
     [Authorize(Roles = "TrafficOperator,Admin")]
     public async Task<IActionResult> Update([FromBody] UpdateSensorSnapshotRequest request)
