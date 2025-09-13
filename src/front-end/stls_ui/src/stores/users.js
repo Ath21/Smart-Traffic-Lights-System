@@ -41,7 +41,7 @@ export const useAuth = defineStore('auth', () => {
     }
 
     startLogoutTimer()
-    return user.value?.role?.toLowerCase() || 'viewer'
+    return user.value?.role?.toLowerCase() || 'guest'
   }
 
   function logout() {

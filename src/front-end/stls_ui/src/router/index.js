@@ -3,14 +3,14 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useAuth } from '../stores/users'
 
 // Layouts
-const ViewerLayout = () => import('../layouts/ViewerLayout.vue')
+const GuestLayout = () => import('../layouts/GuestLayout.vue')
 const UserLayout = () => import('../layouts/UserLayout.vue')
-const OperatorLayout = () => import('../layouts/OperatorLayout.vue')
+const TrafficOperatorLayout = () => import('../layouts/TrafficOperatorLayout.vue')
 const AdminLayout = () => import('../layouts/AdminLayout.vue')
 
 // Auth pages
 const Login = () => import('../pages/Login.vue')
-const Register = () => import('../pages/Register.vue')
+const Register = () => import('../pages/Guest/Register.vue')
 const ResetPassword = () => import('../pages/ResetPassword.vue')
 
 // User pages
@@ -18,19 +18,19 @@ const Profile = () => import('../pages/Profile.vue')
 const UpdateProfile = () => import('../pages/UpdateProfile.vue')
 const Notifications = () => import('../pages/Notification.vue')
 
-// Operator pages
-const OperatorDetections = () => import('../pages/Operator/Detections.vue')
-const OperatorSensors = () => import('../pages/Operator/Sensors.vue')
+// Traffic Operator pages
+const TrafficOperatorDetections = () => import('../pages/TrafficOperator/Detections.vue')
+const TrafficOperatorSensors = () => import('../pages/TrafficOperator/Sensors.vue')
 
 // Admin pages
 const AdminLogs = () => import('../pages/Admin/Logs.vue')
 const AdminReports = () => import('../pages/Admin/Reports.vue')
 const AdminConfig = () => import('../pages/Admin/Config.vue')
 
-// Viewer pages
-const ViewerCongestion = () => import('../pages/Viewer/Congestion.vue')
+// Guest pages
+const GuestCongestion = () => import('../pages/Guest/Congestion.vue')
 
-const ROLE_ORDER = ['viewer', 'user', 'operator', 'admin']
+const ROLE_ORDER = ['guest', 'user', 'traffic_operator', 'admin']
 function canAccess(requiredRole, userRole) {
   return ROLE_ORDER.indexOf(userRole) >= ROLE_ORDER.indexOf(requiredRole)
 }
@@ -40,22 +40,22 @@ const routes = [
   { path: '/register', name: 'register', component: Register, meta: { public: true } },
   { path: '/reset-password', name: 'reset-password', component: ResetPassword, meta: { public: true } },
 
-  // Viewer
-  { path: '/', name: 'viewer', component: ViewerLayout, meta: { public: true }, children: [
-    { path: '', name: 'viewer-congestion', component: ViewerCongestion }
+  // Guest
+  { path: '/', name: 'guest', component: GuestLayout, meta: { public: true }, children: [
+    { path: '', name: 'guest-congestion', component: GuestCongestion }
   ]},
 
   // User
-  { path: '/app', name: 'user', component: UserLayout, meta: { role: 'user' }, children: [
+  { path: '/stls', name: 'user', component: UserLayout, meta: { role: 'user' }, children: [
     { path: 'profile', name: 'profile', component: Profile },
     { path: 'update', name: 'update', component: UpdateProfile },
     { path: 'notifications', name: 'notifications', component: Notifications }
   ]},
 
-  // Operator
-  { path: '/operator', name: 'operator', component: OperatorLayout, meta: { role: 'operator' }, children: [
-    { path: 'detections', name: 'detections', component: OperatorDetections },
-    { path: 'sensors', name: 'sensors', component: OperatorSensors }
+  // Traffic Operator
+  { path: '/operator', name: 'operator', component: TrafficOperatorLayout, meta: { role: 'traffic_operator' }, children: [
+    { path: 'detections', name: 'detections', component: TrafficOperatorDetections },
+    { path: 'sensors', name: 'sensors', component: TrafficOperatorSensors }
   ]},
 
   // Admin
@@ -76,12 +76,12 @@ router.beforeEach(async (to) => {
 
   if (to.meta?.public) return true
 
-  const required = to.meta?.role || 'viewer'
-  const role = auth.user?.role?.toLowerCase() || 'viewer'
+  const required = to.meta?.role || 'guest'
+  const role = auth.user?.role?.toLowerCase() || 'guest'
 
   if (!canAccess(required, role)) {
     return auth.isAuthenticated
-      ? { name: 'viewer' }
+      ? { name: 'guest' }
       : { name: 'login', query: { redirect: to.fullPath } }
   }
 

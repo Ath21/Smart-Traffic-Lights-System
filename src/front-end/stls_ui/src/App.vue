@@ -16,7 +16,7 @@ const route = useRoute()
 // Pages where Topbar should be visible
 const topbarPages = [
   '/',                // viewer home
-  '/app',             // user home
+  '/stls',             // user home
   '/login',
   '/register',
   '/reset-password',
