@@ -10,6 +10,7 @@ using LogStore.Consumers.Sensor;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using LogData.Repositories.Failover;
 
 namespace LogStore;
 
@@ -38,6 +39,7 @@ public class Startup
         /******* [2.1] LogDB Repositories ********/
         services.AddScoped(typeof(IAuditLogRepository), typeof(AuditLogRepository));
         services.AddScoped(typeof(IErrorLogRepository), typeof(ErrorLogRepository));
+        services.AddScoped(typeof(IFailoverRepository), typeof(FailoverRepository));
 
         /******* [3] Services ********/
         services.AddScoped(typeof(ILogService), typeof(LogService));
@@ -68,10 +70,13 @@ public class Startup
         /******* [6] Consumers ********/
         services.AddScoped<UserErrorLogConsumer>();
         services.AddScoped<UserAuditLogConsumer>();
+        services.AddScoped<UserFailoverLogConsumer>();
         services.AddScoped<TrafficErrorLogConsumer>();
         services.AddScoped<TrafficAuditLogConsumer>();
+        services.AddScoped<TrafficFailoverLogConsumer>();
         services.AddScoped<SensorErrorLogConsumer>();
         services.AddScoped<SensorAuditLogConsumer>();
+        services.AddScoped<SensorFailoverLogConsumer>();
 
         /******* [7] MassTransit ********/
         services.AddLogServiceMassTransit(_configuration);

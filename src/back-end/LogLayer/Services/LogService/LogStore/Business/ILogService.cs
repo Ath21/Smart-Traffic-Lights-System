@@ -12,4 +12,6 @@ public interface ILogService
     // New store methods
     Task StoreAuditLogAsync(AuditLogDto logDto);
     Task StoreErrorLogAsync(ErrorLogDto logDto);
+    Task StoreFailoverLogAsync(FailoverLogDto log);
+    Task<List<FailoverLogDto>> GetAllFailoverLogsAsync();
 }

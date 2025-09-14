@@ -4,6 +4,7 @@ using LogStore.Models.Dtos;
 using LogData.Repositories.Audit;
 using LogData.Repositories.Error;
 using MongoDB.Driver;
+using LogData.Repositories.Failover;
 
 namespace LogStore.Business;
 
@@ -11,12 +12,14 @@ public class LogService : ILogService
 {
     private readonly IAuditLogRepository _auditRepo;
     private readonly IErrorLogRepository _errorRepo;
+    private readonly IFailoverRepository _failoverRepo;
     private readonly IMapper _mapper;
 
-    public LogService(IAuditLogRepository auditRepo, IErrorLogRepository errorRepo, IMapper mapper)
+    public LogService(IAuditLogRepository auditRepo, IErrorLogRepository errorRepo, IFailoverRepository failoverRepo, IMapper mapper)
     {
         _auditRepo = auditRepo;
         _errorRepo = errorRepo;
+        _failoverRepo = failoverRepo;
         _mapper = mapper;
     }
 
@@ -156,4 +159,25 @@ public class LogService : ILogService
 
         return results;
     }
+
+    public async Task StoreFailoverLogAsync(FailoverLogDto log) =>
+    await _failoverRepo.CreateAsync(new FailoverLog
+    {
+        LogId = log.LogId,
+        ServiceName = log.ServiceName,
+        Context = log.Context,
+        Reason = log.Reason,
+        Mode = log.Mode,
+        Timestamp = log.Timestamp,
+        Metadata = log.Metadata != null
+            ? new MongoDB.Bson.BsonDocument(log.Metadata)
+            : new MongoDB.Bson.BsonDocument()
+    });
+    
+    public async Task<List<FailoverLogDto>> GetAllFailoverLogsAsync()
+    {
+        var logs = await _failoverRepo.GetAllAsync();
+        return _mapper.Map<List<FailoverLogDto>>(logs);
+    }
+
 }

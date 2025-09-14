@@ -16,11 +16,12 @@ public class LogDbContext
 
         AuditLogs = _database.GetCollection<AuditLog>(logDbSettings.Value.AuditLogsCollection);
         ErrorLogs = _database.GetCollection<ErrorLog>(logDbSettings.Value.ErrorLogsCollection);
+        FailoverLogs = _database.GetCollection<FailoverLog>(logDbSettings.Value.FailoverLogsCollection);
     }
 
     public IMongoCollection<AuditLog> AuditLogs { get; }
     public IMongoCollection<ErrorLog> ErrorLogs { get; }
-
+    public IMongoCollection<FailoverLog> FailoverLogs { get; }
 
     public async Task<bool> CanConnectAsync()
     {

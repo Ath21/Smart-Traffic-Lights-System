@@ -12,7 +12,6 @@ public static class MassTransitSetup
     {
         services.AddMassTransit(x =>
         {
-            // Consumers
             x.AddConsumer<TrafficLightControlConsumer>();
 
             x.UsingRabbitMq((context, cfg) =>
@@ -25,18 +24,13 @@ public static class MassTransitSetup
                     h.Password(rabbit["Password"]);
                 });
 
-                // Exchanges
                 var trafficExchange = rabbit["Exchanges:Traffic"];
                 var logExchange     = rabbit["Exchanges:Log"];
-
-                // Queues
-                var controlQueue = rabbit["Queues:Traffic:LightControl"];
-
-                // Routing Keys
-                var controlKey = rabbit["RoutingKeys:Traffic:LightControl"];
+                var controlQueue    = rabbit["Queues:Traffic:LightControl"];
+                var controlKey      = rabbit["RoutingKeys:Traffic:LightControl"];
 
                 // =========================
-                // TRAFFIC LIGHT CONTROL (Consume)
+                // TRAFFIC LIGHT CONTROL
                 // =========================
                 cfg.Message<TrafficLightControlMessage>(e => e.SetEntityName(trafficExchange));
                 cfg.Publish<TrafficLightControlMessage>(e => e.ExchangeType = ExchangeType.Topic);
@@ -44,28 +38,25 @@ public static class MassTransitSetup
                 cfg.ReceiveEndpoint(controlQueue, e =>
                 {
                     e.ConfigureConsumeTopology = false;
-
                     e.Bind(trafficExchange, s =>
                     {
-                        // Use wildcard binding for any intersection/light
-                        s.RoutingKey = controlKey
-                            .Replace("{intersection}", "*")
-                            .Replace("{light}", "*");
-
+                        s.RoutingKey = controlKey.Replace("{intersection}", "*").Replace("{light}", "*");
                         s.ExchangeType = ExchangeType.Topic;
                     });
-
                     e.ConfigureConsumer<TrafficLightControlConsumer>(context);
                 });
 
                 // =========================
-                // LOGS (Publish)
+                // LOGGING (Audit, Error, Failover)
                 // =========================
                 cfg.Message<AuditLogMessage>(e => e.SetEntityName(logExchange));
                 cfg.Publish<AuditLogMessage>(e => e.ExchangeType = ExchangeType.Topic);
 
                 cfg.Message<ErrorLogMessage>(e => e.SetEntityName(logExchange));
                 cfg.Publish<ErrorLogMessage>(e => e.ExchangeType = ExchangeType.Topic);
+
+                cfg.Message<FailoverMessage>(e => e.SetEntityName(logExchange));
+                cfg.Publish<FailoverMessage>(e => e.ExchangeType = ExchangeType.Topic);
 
                 cfg.ConfigureEndpoints(context);
             });

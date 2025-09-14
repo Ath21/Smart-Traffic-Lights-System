@@ -71,9 +71,10 @@ services:
       ## LOG.EXCHANGE
       RabbitMQ__Exchanges__Log: LOG.EXCHANGE
       # --- Publish
-      RabbitMQ__RoutingKeys__Log__Audit: log.traffic.coordinator.{intersection}.audit
-      RabbitMQ__RoutingKeys__Log__Error: log.traffic.coordinator.{intersection}.error
-    
+      RabbitMQ__RoutingKeys__Log__Audit: log.traffic.coordinator_service.audit
+      RabbitMQ__RoutingKeys__Log__Error: log.traffic.coordinator_service.error
+      RabbitMQ__RoutingKeys__Log__Failover: log.traffic.coordinator_service.failover
+
     depends_on:
       traffic_light_db:
         condition: service_started

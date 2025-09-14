@@ -1,4 +1,6 @@
 using System;
+using TrafficLightCacheData.Repositories.Light;
+using TrafficLightControllerStore.Publishers.Logs;
 
 namespace TrafficLightControllerStore.Failover;
 
@@ -6,13 +8,18 @@ public class FailoverService : IFailoverService
 {
     private readonly ITrafficLightRepository _repository;
     private readonly ILogger<FailoverService> _logger;
+    private readonly ITrafficLogPublisher _logPublisher;
 
     private const string FailoverState = "BlinkingYellow";
 
-    public FailoverService(ITrafficLightRepository repository, ILogger<FailoverService> logger)
+    public FailoverService(
+        ITrafficLightRepository repository,
+        ILogger<FailoverService> logger,
+        ITrafficLogPublisher logPublisher)
     {
         _repository = repository;
         _logger = logger;
+        _logPublisher = logPublisher;
     }
 
     /// <summary>
@@ -25,6 +32,14 @@ public class FailoverService : IFailoverService
             intersection, light, FailoverState);
 
         await _repository.SetLightStateAsync(intersection, light, FailoverState);
+
+        // Publish failover log
+        await _logPublisher.PublishFailoverAsync(
+            intersection: intersection,
+            light: light,
+            reason: "Repository/Dependency failure",
+            mode: FailoverState,
+            metadata: new { Intersection = intersection, Light = light, AppliedAt = DateTime.UtcNow });
     }
 
     /// <summary>
@@ -41,6 +56,14 @@ public class FailoverService : IFailoverService
         foreach (var light in lights.Keys)
         {
             await _repository.SetLightStateAsync(intersection, light, FailoverState);
+
+            // Publish failover log for each light
+            await _logPublisher.PublishFailoverAsync(
+                intersection: intersection,
+                light: light,
+                reason: "Repository/Dependency failure",
+                mode: FailoverState,
+                metadata: new { Intersection = intersection, Light = light, AppliedAt = DateTime.UtcNow });
         }
     }
 }

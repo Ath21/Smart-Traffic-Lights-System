@@ -38,6 +38,21 @@ public class LogStoreProfile : Profile
                 src.Metadata != null
                     ? src.Metadata.ToDictionary()
                     : new Dictionary<string, object>()));
+
+        // ==========================
+        // FAILOVER LOGS
+        // ==========================
+        CreateMap<FailoverLogDto, FailoverLog>()
+            .ForMember(dest => dest.Metadata, opt => opt.MapFrom(src =>
+                src.Metadata != null
+                    ? new BsonDocument(src.Metadata)
+                    : new BsonDocument()));
+
+        CreateMap<FailoverLog, FailoverLogDto>()
+            .ForMember(dest => dest.Metadata, opt => opt.MapFrom(src =>
+                src.Metadata != null
+                    ? src.Metadata.ToDictionary()
+                    : new Dictionary<string, object>()));
     }
 }
 

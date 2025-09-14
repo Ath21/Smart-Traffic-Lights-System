@@ -16,4 +16,10 @@ public interface ITrafficLogPublisher
         string intersection,
         string light,
         object? metadata = null);
+    Task PublishFailoverAsync(
+        string intersection,
+        string light,
+        string reason,
+        string mode,
+        object? metadata = null);
 }

@@ -11,6 +11,7 @@ public class TrafficLogPublisher : ITrafficLogPublisher
     private readonly string _logExchange;
     private readonly string _auditKeyTemplate;
     private readonly string _errorKeyTemplate;
+    private readonly string _failoverKeyTemplate;
 
     private const string ServiceTag = "[" + nameof(TrafficLogPublisher) + "]";
 
@@ -19,11 +20,13 @@ public class TrafficLogPublisher : ITrafficLogPublisher
         _bus = bus;
         _logger = logger;
 
-        _logExchange     = configuration["RabbitMQ:Exchanges:Log"] ?? "LOG.EXCHANGE";
-        _auditKeyTemplate = configuration["RabbitMQ:RoutingKeys:Log:Audit"] 
+        _logExchange = configuration["RabbitMQ:Exchanges:Log"] ?? "LOG.EXCHANGE";
+        _auditKeyTemplate = configuration["RabbitMQ:RoutingKeys:Log:Audit"]
                             ?? "log.traffic.light_controller.{intersection}.{light}.audit";
-        _errorKeyTemplate = configuration["RabbitMQ:RoutingKeys:Log:Error"] 
+        _errorKeyTemplate = configuration["RabbitMQ:RoutingKeys:Log:Error"]
                             ?? "log.traffic.light_controller.{intersection}.{light}.error";
+        _failoverKeyTemplate = configuration["RabbitMQ:RoutingKeys:Log:Failover"]
+                            ?? "log.traffic.light_controller.{intersection}.{light}.failover";
     }
 
     private async Task PublishAsync<T>(T message, string routingKey)
@@ -87,6 +90,36 @@ public class TrafficLogPublisher : ITrafficLogPublisher
         _logger.LogError(
             "{Tag} ERROR published: Intersection={Intersection}, Light={Light}, Type={Type}, Message={Message}, Metadata={Metadata}",
             ServiceTag, intersection, light, errorType, message, metadata ?? "{}"
+        );
+    }
+
+    // Publishes a failover log (service-specific context)
+    public async Task PublishFailoverAsync(
+        string intersection,
+        string light,
+        string reason,
+        string mode,
+        object? metadata = null)
+    {
+        var msg = new FailoverMessage(
+            Guid.NewGuid(),
+            _serviceName,
+            $"{intersection}.{light}", // generic Context field (service decides how to fill it)
+            reason,
+            mode,
+            DateTime.UtcNow,
+            metadata
+        );
+
+        var routingKey = _failoverKeyTemplate
+            .Replace("{intersection}", intersection)
+            .Replace("{light}", light);
+
+        await PublishAsync(msg, routingKey);
+
+        _logger.LogWarning(
+            "[Failover] {Service} → Intersection={Intersection}, Light={Light}, Reason={Reason}, Mode={Mode}, Metadata={Metadata}",
+            _serviceName, intersection, light, reason, mode, metadata ?? "{}"
         );
     }
 }

@@ -80,4 +80,23 @@ public class LogController : ControllerBase
 
         return Ok(logs);
     }
+
+    // ============================================================
+    // GET: /api/logs/failover
+    // Roles: Admin
+    // Purpose: Retrieve all failover logs
+    // ============================================================
+    [HttpGet("failover")]
+    [Authorize(Roles = "Admin")]
+    [ProducesResponseType(typeof(List<FailoverLogResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<List<FailoverLogResponse>>> GetFailoverLogs()
+    {
+        var logs = await _logService.GetAllFailoverLogsAsync();
+        if (logs == null || logs.Count == 0)
+            return NotFound("No failover logs found.");
+
+        return Ok(logs);
+    }
+
 }

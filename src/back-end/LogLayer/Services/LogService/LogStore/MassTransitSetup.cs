@@ -15,10 +15,13 @@ public static class MassTransitSetup
             // Consumers
             x.AddConsumer<UserAuditLogConsumer>();
             x.AddConsumer<UserErrorLogConsumer>();
+            x.AddConsumer<UserFailoverLogConsumer>();
             x.AddConsumer<TrafficAuditLogConsumer>();
             x.AddConsumer<TrafficErrorLogConsumer>();
+            x.AddConsumer<TrafficFailoverLogConsumer>();
             x.AddConsumer<SensorAuditLogConsumer>();
             x.AddConsumer<SensorErrorLogConsumer>();
+            x.AddConsumer<SensorFailoverLogConsumer>();
 
             x.UsingRabbitMq((context, cfg) =>
             {
@@ -30,18 +33,20 @@ public static class MassTransitSetup
                     h.Password(rabbit["Password"]);
                 });
 
-                // Exchanges
                 var logsExchange = rabbit["Exchanges:Log"];
 
                 // Queues
-                var userAuditQueue    = rabbit["Queues:UserAudit"];
-                var userErrorQueue    = rabbit["Queues:UserError"];
-                var trafficAuditQueue = rabbit["Queues:TrafficAudit"];
-                var trafficErrorQueue = rabbit["Queues:TrafficError"];
-                var sensorAuditQueue  = rabbit["Queues:SensorAudit"];
-                var sensorErrorQueue  = rabbit["Queues:SensorError"];
+                var userAuditQueue     = rabbit["Queues:UserAudit"];
+                var userErrorQueue     = rabbit["Queues:UserError"];
+                var userFailoverQueue  = rabbit["Queues:UserFailover"];
+                var trafficAuditQueue  = rabbit["Queues:TrafficAudit"];
+                var trafficErrorQueue  = rabbit["Queues:TrafficError"];
+                var trafficFailoverQueue = rabbit["Queues:TrafficFailover"];
+                var sensorAuditQueue   = rabbit["Queues:SensorAudit"];
+                var sensorErrorQueue   = rabbit["Queues:SensorError"];
+                var sensorFailoverQueue = rabbit["Queues:SensorFailover"];
 
-                // Routing keys
+                // Routing key sets from config
                 var userAuditKeys = new[]
                 {
                     rabbit["RoutingKeys:User:UserServiceAudit"],
@@ -52,6 +57,12 @@ public static class MassTransitSetup
                 {
                     rabbit["RoutingKeys:User:UserServiceError"],
                     rabbit["RoutingKeys:User:NotificationServiceError"]
+                };
+
+                var userFailoverKeys = new[]
+                {
+                    rabbit["RoutingKeys:User:UserServiceFailover"],
+                    rabbit["RoutingKeys:User:NotificationServiceFailover"]
                 };
 
                 var trafficAuditKeys = new[]
@@ -70,6 +81,14 @@ public static class MassTransitSetup
                     rabbit["RoutingKeys:Traffic:LightControllerError"]
                 };
 
+                var trafficFailoverKeys = new[]
+                {
+                    rabbit["RoutingKeys:Traffic:AnalyticsFailover"],
+                    rabbit["RoutingKeys:Traffic:CoordinatorFailover"],
+                    rabbit["RoutingKeys:Traffic:IntersectionFailover"],
+                    rabbit["RoutingKeys:Traffic:LightControllerFailover"]
+                };
+
                 var sensorAuditKeys = new[]
                 {
                     rabbit["RoutingKeys:Sensor:SensorAudit"],
@@ -82,106 +101,100 @@ public static class MassTransitSetup
                     rabbit["RoutingKeys:Sensor:DetectionError"]
                 };
 
-                // ================= USER AUDIT QUEUE =================
+                var sensorFailoverKeys = new[]
+                {
+                    rabbit["RoutingKeys:Sensor:SensorFailover"],
+                    rabbit["RoutingKeys:Sensor:DetectionFailover"]
+                };
+
+                // ================= USER AUDIT =================
                 cfg.ReceiveEndpoint(userAuditQueue, e =>
                 {
                     e.ConfigureConsumeTopology = false;
-
                     foreach (var key in userAuditKeys)
-                    {
-                        e.Bind(logsExchange, s =>
-                        {
-                            s.RoutingKey = key;
-                            s.ExchangeType = ExchangeType.Topic;
-                        });
-                    }
+                        e.Bind(logsExchange, s => { s.RoutingKey = key; s.ExchangeType = ExchangeType.Topic; });
 
                     e.ConfigureConsumer<UserAuditLogConsumer>(context);
                 });
 
-                // ================= USER ERROR QUEUE =================
+                // ================= USER ERROR =================
                 cfg.ReceiveEndpoint(userErrorQueue, e =>
                 {
                     e.ConfigureConsumeTopology = false;
-
                     foreach (var key in userErrorKeys)
-                    {
-                        e.Bind(logsExchange, s =>
-                        {
-                            s.RoutingKey = key;
-                            s.ExchangeType = ExchangeType.Topic;
-                        });
-                    }
+                        e.Bind(logsExchange, s => { s.RoutingKey = key; s.ExchangeType = ExchangeType.Topic; });
 
                     e.ConfigureConsumer<UserErrorLogConsumer>(context);
                 });
 
-                // ================= TRAFFIC AUDIT QUEUE =================
+                // ================= USER FAILOVER =================
+                cfg.ReceiveEndpoint(userFailoverQueue, e =>
+                {
+                    e.ConfigureConsumeTopology = false;
+                    foreach (var key in userFailoverKeys)
+                        e.Bind(logsExchange, s => { s.RoutingKey = key; s.ExchangeType = ExchangeType.Topic; });
+
+                    e.ConfigureConsumer<UserFailoverLogConsumer>(context);
+                });
+
+                // ================= TRAFFIC AUDIT =================
                 cfg.ReceiveEndpoint(trafficAuditQueue, e =>
                 {
                     e.ConfigureConsumeTopology = false;
-
                     foreach (var key in trafficAuditKeys)
-                    {
-                        e.Bind(logsExchange, s =>
-                        {
-                            s.RoutingKey = key;
-                            s.ExchangeType = ExchangeType.Topic;
-                        });
-                    }
+                        e.Bind(logsExchange, s => { s.RoutingKey = key; s.ExchangeType = ExchangeType.Topic; });
 
                     e.ConfigureConsumer<TrafficAuditLogConsumer>(context);
                 });
 
-                // ================= TRAFFIC ERROR QUEUE =================
+                // ================= TRAFFIC ERROR =================
                 cfg.ReceiveEndpoint(trafficErrorQueue, e =>
                 {
                     e.ConfigureConsumeTopology = false;
-
                     foreach (var key in trafficErrorKeys)
-                    {
-                        e.Bind(logsExchange, s =>
-                        {
-                            s.RoutingKey = key;
-                            s.ExchangeType = ExchangeType.Topic;
-                        });
-                    }
+                        e.Bind(logsExchange, s => { s.RoutingKey = key; s.ExchangeType = ExchangeType.Topic; });
 
                     e.ConfigureConsumer<TrafficErrorLogConsumer>(context);
                 });
 
-                // ================= SENSOR AUDIT QUEUE =================
+                // ================= TRAFFIC FAILOVER =================
+                cfg.ReceiveEndpoint(trafficFailoverQueue, e =>
+                {
+                    e.ConfigureConsumeTopology = false;
+                    foreach (var key in trafficFailoverKeys)
+                        e.Bind(logsExchange, s => { s.RoutingKey = key; s.ExchangeType = ExchangeType.Topic; });
+
+                    e.ConfigureConsumer<TrafficFailoverLogConsumer>(context);
+                });
+
+                // ================= SENSOR AUDIT =================
                 cfg.ReceiveEndpoint(sensorAuditQueue, e =>
                 {
                     e.ConfigureConsumeTopology = false;
-
                     foreach (var key in sensorAuditKeys)
-                    {
-                        e.Bind(logsExchange, s =>
-                        {
-                            s.RoutingKey = key;
-                            s.ExchangeType = ExchangeType.Topic;
-                        });
-                    }
+                        e.Bind(logsExchange, s => { s.RoutingKey = key; s.ExchangeType = ExchangeType.Topic; });
 
                     e.ConfigureConsumer<SensorAuditLogConsumer>(context);
                 });
 
-                // ================= SENSOR ERROR QUEUE =================
+                // ================= SENSOR ERROR =================
                 cfg.ReceiveEndpoint(sensorErrorQueue, e =>
                 {
                     e.ConfigureConsumeTopology = false;
-
                     foreach (var key in sensorErrorKeys)
-                    {
-                        e.Bind(logsExchange, s =>
-                        {
-                            s.RoutingKey = key;
-                            s.ExchangeType = ExchangeType.Topic;
-                        });
-                    }
+                        e.Bind(logsExchange, s => { s.RoutingKey = key; s.ExchangeType = ExchangeType.Topic; });
 
                     e.ConfigureConsumer<SensorErrorLogConsumer>(context);
+                });
+
+                // ================= SENSOR FAILOVER =================
+                cfg.ReceiveEndpoint(sensorFailoverQueue, e =>
+                {
+                    e.ConfigureConsumeTopology = false;
+                    foreach (var key in sensorFailoverKeys)
+                        e.Bind(logsExchange, s => { s.RoutingKey = key; s.ExchangeType = ExchangeType.Topic; });
+
+                    e.ConfigureConsumer<SensorFailoverLogConsumer>(context);
                 });
 
                 cfg.ConfigureEndpoints(context);

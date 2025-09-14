@@ -53,28 +53,33 @@ services:
       RabbitMQ__Queues__UserError: log.user_layer.error.queue
       RabbitMQ__Queues__TrafficError: log.traffic_layer.error.queue
       RabbitMQ__Queues__SensorError: log.sensor_layer.error.queue
+      RabbitMQ__Queues__UserFailover: log.user_layer.failover.queue
+      RabbitMQ__Queues__TrafficFailover: log.traffic_layer.failover.queue
+      RabbitMQ__Queues__SensorFailover: log.sensor_layer.failover.queue
 
       # --- Consume (Routing Keys - User Layer)
       RabbitMQ__RoutingKeys__User__UserServiceAudit: log.user.user_service.audit
       RabbitMQ__RoutingKeys__User__NotificationServiceAudit: log.user.notification_service.audit
       RabbitMQ__RoutingKeys__User__UserServiceError: log.user.user_service.error
       RabbitMQ__RoutingKeys__User__NotificationServiceError: log.user.notification_service.error
+      RabbitMQ__RoutingKeys__User__UserServiceFailover: log.user.user_service.failover
+      RabbitMQ__RoutingKeys__User__NotificationServiceFailover: log.user.notification_service.fail
 
       # --- Consume (Routing Keys - Traffic Layer)
       RabbitMQ__RoutingKeys__Traffic__AnalyticsAudit: log.traffic.analytics_service.audit
       RabbitMQ__RoutingKeys__Traffic__CoordinatorAudit: log.traffic.coordinator_service.audit
-      RabbitMQ__RoutingKeys__Traffic__IntersectionAudit: log.traffic.intersection_controller_service.audit
-      RabbitMQ__RoutingKeys__Traffic__LightControllerAudit: log.traffic.light_controller_service.audit
+      RabbitMQ__RoutingKeys__Traffic__IntersectionAudit: log.traffic.intersection_controller_service.{intersection}.audit
+      RabbitMQ__RoutingKeys__Traffic__LightControllerAudit: log.traffic.light_controller_service.{intersection}.{light}.audit
       RabbitMQ__RoutingKeys__Traffic__AnalyticsError: log.traffic.analytics_service.error
       RabbitMQ__RoutingKeys__Traffic__CoordinatorError: log.traffic.coordinator_service.error
-      RabbitMQ__RoutingKeys__Traffic__IntersectionError: log.traffic.intersection_controller_service.error
-      RabbitMQ__RoutingKeys__Traffic__LightControllerError: log.traffic.light_controller_service.error
+      RabbitMQ__RoutingKeys__Traffic__IntersectionError: log.traffic.intersection_controller_service.{intersection}.error
+      RabbitMQ__RoutingKeys__Traffic__LightControllerError: log.traffic.light_controller_service.{intersection}.{light}.error
 
       # --- Consume (Routing Keys - Sensor Layer)
-      RabbitMQ__RoutingKeys__Sensor__SensorAudit: log.sensor.sensor_service.audit
-      RabbitMQ__RoutingKeys__Sensor__DetectionAudit: log.sensor.detection_service.audit
-      RabbitMQ__RoutingKeys__Sensor__SensorError: log.sensor.sensor_service.error
-      RabbitMQ__RoutingKeys__Sensor__DetectionError: log.sensor.detection_service.error
+      RabbitMQ__RoutingKeys__Sensor__SensorAudit: log.sensor.sensor_service.{intersection}.audit
+      RabbitMQ__RoutingKeys__Sensor__DetectionAudit: log.sensor.detection_service.{intersection}.audit
+      RabbitMQ__RoutingKeys__Sensor__SensorError: log.sensor.sensor_service.{intersection}.error
+      RabbitMQ__RoutingKeys__Sensor__DetectionError: log.sensor.detection_service.{intersection}.error
 
     depends_on:
       log_db:

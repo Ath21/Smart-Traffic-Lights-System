@@ -60,5 +60,6 @@ services:
       # --- Publish
       RabbitMQ__RoutingKeys__Log__Audit: log.traffic.light_controller.{intersection}.{light}.audit
       RabbitMQ__RoutingKeys__Log__Error: log.traffic.light_controller.{intersection}.{light}.error
+      RabbitMQ__RoutingKeys__Log__Failover: log.traffic.light_controller.{intersection}.{light}.failover
 
     restart: always

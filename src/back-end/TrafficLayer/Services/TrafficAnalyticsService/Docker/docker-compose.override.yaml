@@ -74,9 +74,10 @@ services:
       ## LOG.EXCHANGE
       RabbitMQ__Exchanges__Log: LOG.EXCHANGE
       # --- Publish
-      RabbitMQ__RoutingKeys__Log__Audit: log.traffic.analytics.{intersection}.audit
-      RabbitMQ__RoutingKeys__Log__Error: log.traffic.analytics.{intersection}.error
-    
+      RabbitMQ__RoutingKeys__Log__Audit: log.traffic.analytics_service.audit
+      RabbitMQ__RoutingKeys__Log__Error: log.traffic.analytics_service.error
+      RabbitMQ__RoutingKeys__Log__Failover: log.traffic.analytics_service.failover
+
     depends_on:
       traffic_analytics_db:
         condition: service_healthy
