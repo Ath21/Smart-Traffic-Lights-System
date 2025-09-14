@@ -65,11 +65,11 @@ public class NotificationController : ControllerBase
 
     // ============================================================
     // POST: /api/notifications/public-notice
-    // Roles: Admin
+    // Roles: Admin, TrafficOperator
     // Purpose: Publish a notification for a group/audience
     // ============================================================
     [HttpPost("public-notice")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,TrafficOperator")]
     [ProducesResponseType(typeof(NotificationResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<NotificationResponse>> SendPublicNotice([FromBody] PublicNoticeRequest request)
