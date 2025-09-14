@@ -1,4 +1,3 @@
-using System;
 using TrafficLightCacheData.Entities;
 
 namespace TrafficLightCacheData.Repositories.Intersect;
@@ -9,8 +8,8 @@ public class IntersectRepository : IIntersectRepository
     public IntersectRepository(IRedisRepository redis) => _redis = redis;
 
     public async Task SaveAsync(Intersection intersection)
-        => await _redis.SetAsync($"intersection:{intersection.IntersectionId}", intersection);
+        => await _redis.SetAsync($"intersection:{intersection.Name}", intersection);
 
-    public async Task<Intersection?> GetAsync(Guid intersectionId)
-        => await _redis.GetAsync<Intersection>($"intersection:{intersectionId}");
+    public async Task<Intersection?> GetAsync(string name)
+        => await _redis.GetAsync<Intersection>($"intersection:{name}");
 }

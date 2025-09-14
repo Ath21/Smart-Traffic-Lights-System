@@ -1,13 +1,17 @@
-using System;
-
 namespace TrafficLightControllerStore.Models.Dtos;
 
 public class TrafficLightDto
 {
-    public Guid IntersectionId { get; set; }
-    public Guid LightId { get; set; }
+    public string Intersection { get; set; } = string.Empty;
+    public string Light { get; set; } = string.Empty;
+
     public string State { get; set; } = string.Empty;
 
-    // Extra metadata for monitoring
+    // Manual override info
+    public int? Duration { get; set; }
+    public string? OverrideReason { get; set; }
+    public DateTime? OverrideExpiresAt { get; set; }
+
+    // Metadata
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }

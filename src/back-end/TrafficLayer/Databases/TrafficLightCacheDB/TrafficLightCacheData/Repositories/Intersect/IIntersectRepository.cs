@@ -6,5 +6,5 @@ namespace TrafficLightCacheData.Repositories.Intersect;
 public interface IIntersectRepository
 {
     Task SaveAsync(Intersection intersection);
-    Task<Intersection?> GetAsync(Guid intersectionId);
+    Task<Intersection?> GetAsync(string name);
 }

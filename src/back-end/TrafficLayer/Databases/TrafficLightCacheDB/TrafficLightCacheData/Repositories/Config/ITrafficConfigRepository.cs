@@ -6,5 +6,5 @@ namespace TrafficLightCacheData.Repositories.Config;
 public interface ITrafficConfigRepository
 {
     Task SaveAsync(TrafficConfiguration config);
-    Task<TrafficConfiguration?> GetAsync(Guid configId);
+    Task<TrafficConfiguration?> GetAsync(string name);
 }

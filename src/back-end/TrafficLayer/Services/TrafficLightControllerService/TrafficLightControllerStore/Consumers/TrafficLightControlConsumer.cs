@@ -8,9 +8,6 @@ using TrafficLightControllerStore.Models.Dtos;
 
 namespace TrafficLightControllerStore.Consumers;
 
-/// <summary>
-/// Consumes control commands for specific traffic lights and applies them to Redis.
-/// </summary>
 public class TrafficLightControlConsumer : IConsumer<TrafficLightControlMessage>
 {
     private readonly ILogger<TrafficLightControlConsumer> _logger;
@@ -32,17 +29,31 @@ public class TrafficLightControlConsumer : IConsumer<TrafficLightControlMessage>
         var msg = context.Message;
 
         _logger.LogInformation(
-            "[TrafficLightControlConsumer] Received CONTROL → Intersection={IntersectionId}, Light={LightId}, NewState={State}, IssuedAt={IssuedAt}",
-            msg.IntersectionId, msg.LightId, msg.NewState, msg.IssuedAt);
+            "[TrafficLightControlConsumer] Received CONTROL → Intersection={Intersection}, Light={Light}, State={State}, Duration={Duration}, Reason={Reason}, IssuedAt={IssuedAt}",
+            msg.Intersection, msg.Light, msg.NewState, msg.Duration, msg.Reason, msg.IssuedAt);
 
         // 1. Update Redis hash with the new light state
-        await _repository.SetLightStateAsync(msg.IntersectionId, msg.LightId, msg.NewState);
+        await _repository.SetLightStateAsync(msg.Intersection, msg.Light, msg.NewState);
 
-        // 2. Map DTO → Entity and save full traffic light state
+        // 2. If override info is provided, persist it too
+        if (msg.Duration.HasValue)
+        {
+            var expiresAt = msg.IssuedAt.AddSeconds(msg.Duration.Value);
+            await _repository.SetOverrideAsync(
+                msg.Intersection,
+                msg.Light,
+                msg.NewState,
+                msg.Duration.Value,
+                msg.Reason,
+                expiresAt
+            );
+        }
+
+        // 3. Map DTO → Entity and save full traffic light state
         var dto = new TrafficLightDto
         {
-            IntersectionId = msg.IntersectionId,
-            LightId = msg.LightId,
+            Intersection = msg.Intersection,
+            Light = msg.Light,
             State = msg.NewState,
             UpdatedAt = DateTime.UtcNow
         };
@@ -51,7 +62,7 @@ public class TrafficLightControlConsumer : IConsumer<TrafficLightControlMessage>
         await _repository.SaveAsync(entity);
 
         _logger.LogInformation(
-            "[TrafficLightControlConsumer] Applied CONTROL → {IntersectionId}-{LightId} set to {State}",
-            msg.IntersectionId, msg.LightId, msg.NewState);
+            "[TrafficLightControlConsumer] Applied CONTROL → {Intersection}-{Light} set to {State}",
+            msg.Intersection, msg.Light, msg.NewState);
     }
 }

@@ -27,12 +27,12 @@ services:
       Redis__Port: 6379
       Redis__Password: ""
       Redis__Database: 0
-      Redis__KeyPrefix__VehicleCount: sensor:{intersection_id}:vehicle_count
-      Redis__KeyPrefix__PedestrianCount: sensor:{intersection_id}:pedestrian_count
-      Redis__KeyPrefix__CyclistCount: sensor:{intersection_id}:cyclist_count
-      Redis__KeyPrefix__EmergencyDetected: sensor:{intersection_id}:emergency_detected
-      Redis__KeyPrefix__PublicTransportDetected: sensor:{intersection_id}:public_transport_detected
-      Redis__KeyPrefix__IncidentDetected: sensor:{intersection_id}:incident_detected
+      Redis__KeyPrefix__VehicleCount: sensor:{intersection}.vehicle_count
+      Redis__KeyPrefix__PedestrianCount: sensor:{intersection}.pedestrian_count
+      Redis__KeyPrefix__CyclistCount: sensor:{intersection}.cyclist_count
+      Redis__KeyPrefix__EmergencyDetected: sensor:{intersection}.emergency_detected
+      Redis__KeyPrefix__PublicTransportDetected: sensor:{intersection}.public_transport_detected
+      Redis__KeyPrefix__IncidentDetected: sensor:{intersection}.incident_detected
 
       # ===============================
       # CORS Policy
@@ -63,15 +63,15 @@ services:
       ## SENSOR.EXCHANGE
       RabbitMQ__Exchanges__Sensor: SENSOR.EXCHANGE
       # --- Publish
-      RabbitMQ__RoutingKeys__Sensor__EmergencyVehicle: sensor.emergency_vehicle.detected.{intersection_id}
-      RabbitMQ__RoutingKeys__Sensor__PublicTransport: sensor.public_transport.detected.{intersection_id}
-      RabbitMQ__RoutingKeys__Sensor__IncidentDetected: sensor.incident.detected.{intersection_id}
+      RabbitMQ__RoutingKeys__Sensor__EmergencyVehicle: sensor.emergency_vehicle.detected.{intersection}
+      RabbitMQ__RoutingKeys__Sensor__PublicTransport: sensor.public_transport.detected.{intersection}
+      RabbitMQ__RoutingKeys__Sensor__IncidentDetected: sensor.incident.detected.{intersection}
 
       ## LOG.EXCHANGE
       RabbitMQ__Exchanges__Log: LOG.EXCHANGE
       # --- Publish
-      RabbitMQ__RoutingKeys__Log__Audit: log.sensor.detection_service.audit
-      RabbitMQ__RoutingKeys__Log__Error: log.sensor.detection_service.error
+      RabbitMQ__RoutingKeys__Log__Audit: log.sensor.detection.{intersection}.audit
+      RabbitMQ__RoutingKeys__Log__Error: log.sensor.detection.{intersection}.error
     
     depends_on:
       detection_db:

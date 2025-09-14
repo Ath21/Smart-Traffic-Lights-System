@@ -30,96 +30,88 @@ public class TrafficLightControlService : ITrafficLightControlService
         _logger = logger;
 
         _controlKey = configuration["RabbitMQ:RoutingKeys:TrafficLightControl"]
-            ?? "traffic.light.control.{intersection_id}.{light_id}";
+            ?? "traffic.light.control.{intersection}.{light}";
     }
 
     /// <summary>
-    /// Force state change for a light (manual override).
-    /// Updates Redis and publishes control message.
+    /// Force state change (manual override or direct control).
+    /// Saves to Redis, sets override if duration given, and publishes to RabbitMQ.
     /// </summary>
-    public async Task<TrafficLightDto> ForceStateChangeAsync(Guid intersectionId, Guid lightId, string newState)
+    public async Task<TrafficLightDto> ForceStateChangeAsync(
+        string intersection,
+        string light,
+        string newState,
+        int? duration = null,
+        string? reason = null)
     {
         var updatedAt = DateTime.UtcNow;
+        var expiresAt = duration.HasValue ? updatedAt.AddSeconds(duration.Value) : (DateTime?)null;
 
-        try
+        // Save state in Redis
+        await _repository.SetLightStateAsync(intersection, light, newState);
+
+        // Save manual override if provided
+        if (duration.HasValue)
         {
-            // Save state & control event in Redis
-            await _repository.SetLightStateAsync(intersectionId, lightId, newState);
-
-            // Publish to RabbitMQ
-            var key = _controlKey
-                .Replace("{intersection_id}", intersectionId.ToString())
-                .Replace("{light_id}", lightId.ToString());
-
-            var msg = new TrafficLightControlMessage(intersectionId, lightId, newState, updatedAt);
-            await _bus.Publish(msg, ctx => ctx.SetRoutingKey(key));
-
-            _logger.LogInformation(
-                "{Tag} Manual override applied: Intersection={IntersectionId}, Light={LightId}, State={State}",
-                ServiceTag, intersectionId, lightId, newState);
-
-            // New simplified audit log call
-            await _logPublisher.PublishAuditAsync(
-                "LightStateOverride",
-                $"Intersection={intersectionId}, Light={lightId}, NewState={newState}",
-                new { updatedAt });
-
-            return new TrafficLightDto
-            {
-                IntersectionId = intersectionId,
-                LightId = lightId,
-                State = newState,
-                UpdatedAt = updatedAt
-            };
+            await _repository.SetOverrideAsync(intersection, light, newState, duration.Value, reason, expiresAt);
         }
-        catch (Exception ex)
+
+        // Publish to RabbitMQ
+        var key = _controlKey
+            .Replace("{intersection}", intersection)
+            .Replace("{light}", light);
+
+        var msg = new TrafficLightControlMessage(intersection, light, newState, updatedAt, duration, reason);
+        await _bus.Publish(msg, ctx => ctx.SetRoutingKey(key));
+
+        // Audit log
+        await _logPublisher.PublishAuditAsync(
+            "LightStateOverride",
+            $"Intersection={intersection}, Light={light}, NewState={newState}, Duration={duration}, Reason={reason}",
+            intersection,
+            light,
+            new { updatedAt, expiresAt });
+
+        return new TrafficLightDto
         {
-            // New simplified error log call
-            await _logPublisher.PublishErrorAsync(
-                "OverrideFailed",
-                $"Failed to override light {lightId} in intersection {intersectionId}",
-                new { newState, ex });
-
-            throw;
-        }
+            Intersection = intersection,
+            Light = light,
+            State = newState,
+            Duration = duration,
+            OverrideReason = reason,
+            OverrideExpiresAt = expiresAt,
+            UpdatedAt = updatedAt
+        };
     }
 
     /// <summary>
-    /// Get all light states of an intersection.
+    /// Get all current states of lights at an intersection.
     /// </summary>
-    public async Task<IEnumerable<TrafficLightDto>> GetCurrentStatesAsync(Guid intersectionId)
+    public async Task<IEnumerable<TrafficLightDto>> GetCurrentStatesAsync(string intersection)
     {
-        var lights = new List<TrafficLightDto>();
-
-        var lastControl = await _repository.GetLightStatesAsync(intersectionId); 
-        if (lastControl != null)
+        var states = await _repository.GetAllStatesAsync(intersection);
+        return states.Select(kvp => new TrafficLightDto
         {
-            foreach (var kvp in lastControl)
-            {
-                // If you have a way to map kvp.Key (string) to Guid, do it here. Otherwise, keep as Guid.Empty.
-                lights.Add(new TrafficLightDto
-                {
-                    IntersectionId = intersectionId,
-                    LightId = Guid.TryParse(kvp.Key, out var lid) ? lid : Guid.Empty,
-                    State = kvp.Value,
-                    UpdatedAt = DateTime.UtcNow
-                });
-            }
-        }
-
-        return lights;
+            Intersection = intersection,
+            Light = kvp.Key,
+            State = kvp.Value,
+            UpdatedAt = DateTime.UtcNow
+        });
     }
 
-    public async Task<IEnumerable<ControlEventDto>> GetLastControlEventsAsync(Guid intersectionId)
+    /// <summary>
+    /// Get last applied control events at an intersection.
+    /// </summary>
+    public async Task<IEnumerable<ControlEventDto>> GetLastControlEventsAsync(string intersection)
     {
-        var events = await _repository.GetLightStatesAsync(intersectionId);
+        var events = await _repository.GetAllStatesAsync(intersection);
 
         return events.Select(e => new ControlEventDto
         {
-            IntersectionId = intersectionId,
-            LightId = Guid.TryParse(e.Key, out var lid) ? lid : Guid.Empty,
-            Command = e.Value, // Assuming e.Value is the command string
-            Timestamp = DateTime.UtcNow // Or replace with actual timestamp if available
+            Intersection = intersection,
+            Light = e.Key,
+            Command = e.Value,
+            Timestamp = DateTime.UtcNow // could be replaced with Redis-stored timestamp
         });
     }
 }

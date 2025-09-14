@@ -1790,19 +1790,19 @@
     ]
   },
   "packageFolders": {
-    "/home/ath/.nuget/packages/": {}
+    "C:\\Users\\billa\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightControllerService/TrafficLightControllerStore/TrafficLightControllerStore.csproj",
+      "projectUniqueName": "F:\\REPOS\\Smart-Traffic-Lights-System\\src\\back-end\\TrafficLayer\\Services\\TrafficLightControllerService\\TrafficLightControllerStore\\TrafficLightControllerStore.csproj",
       "projectName": "TrafficLightControllerStore",
-      "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightControllerService/TrafficLightControllerStore/TrafficLightControllerStore.csproj",
-      "packagesPath": "/home/ath/.nuget/packages/",
-      "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightControllerService/TrafficLightControllerStore/obj/",
+      "projectPath": "F:\\REPOS\\Smart-Traffic-Lights-System\\src\\back-end\\TrafficLayer\\Services\\TrafficLightControllerService\\TrafficLightControllerStore\\TrafficLightControllerStore.csproj",
+      "packagesPath": "C:\\Users\\billa\\.nuget\\packages\\",
+      "outputPath": "F:\\REPOS\\Smart-Traffic-Lights-System\\src\\back-end\\TrafficLayer\\Services\\TrafficLightControllerService\\TrafficLightControllerStore\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "/home/ath/.nuget/NuGet/NuGet.Config"
+        "C:\\Users\\billa\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net9.0"
@@ -1814,14 +1814,14 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
-            "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/LogMessages/LogMessages.csproj": {
-              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/LogMessages/LogMessages.csproj"
+            "F:\\REPOS\\Smart-Traffic-Lights-System\\src\\back-end\\MessageLayer\\LogMessages\\LogMessages.csproj": {
+              "projectPath": "F:\\REPOS\\Smart-Traffic-Lights-System\\src\\back-end\\MessageLayer\\LogMessages\\LogMessages.csproj"
             },
-            "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/TrafficMessages/TrafficMessages.csproj": {
-              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/TrafficMessages/TrafficMessages.csproj"
+            "F:\\REPOS\\Smart-Traffic-Lights-System\\src\\back-end\\MessageLayer\\TrafficMessages\\TrafficMessages.csproj": {
+              "projectPath": "F:\\REPOS\\Smart-Traffic-Lights-System\\src\\back-end\\MessageLayer\\TrafficMessages\\TrafficMessages.csproj"
             },
-            "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Databases/TrafficLightCacheDB/TrafficLightCacheData/TrafficLightCacheData.csproj": {
-              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Databases/TrafficLightCacheDB/TrafficLightCacheData/TrafficLightCacheData.csproj"
+            "F:\\REPOS\\Smart-Traffic-Lights-System\\src\\back-end\\TrafficLayer\\Databases\\TrafficLightCacheDB\\TrafficLightCacheData\\TrafficLightCacheData.csproj": {
+              "projectPath": "F:\\REPOS\\Smart-Traffic-Lights-System\\src\\back-end\\TrafficLayer\\Databases\\TrafficLightCacheDB\\TrafficLightCacheData\\TrafficLightCacheData.csproj"
             }
           }
         }
@@ -1898,7 +1898,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/9.0.304/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

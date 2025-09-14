@@ -6,7 +6,7 @@ using TrafficLightCacheData;
 namespace TrafficLightControllerStore.Controllers
 {
     [ApiController]
-    [Route("notification_service")]
+    [Route("traffic_light_controller_service")]
     public class ReadyController : ControllerBase
     {
         private readonly TrafficLightCacheDbContext _dbcontext;
@@ -18,23 +18,21 @@ namespace TrafficLightControllerStore.Controllers
             _bus = bus;
         }
 
-        [HttpGet("/ready")]
+        [HttpGet("ready")]
         public async Task<IActionResult> Ready()
         {
-            try
-            {
-                if (!await _dbcontext.CanConnectAsync())
-                    return StatusCode(503, new { status = "Not Ready", reason = "TrafficLightCacheDB Redis unreachable" });
+            var issues = new List<string>();
 
-                if (!_bus.Topology.TryGetPublishAddress(typeof(LogMessages.AuditLogMessage), out _))
-                    return StatusCode(503, new { status = "Not Ready", reason = "RabbitMQ not connected" });
+            if (!await _dbcontext.CanConnectAsync())
+                issues.Add("TrafficLightCacheDB Redis unreachable");
 
-                return Ok(new { status = "Ready", service = "Traffic Light Controller Service" });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(503, new { status = "Not Ready", error = ex.Message });
-            }
+            if (!_bus.Topology.TryGetPublishAddress(typeof(LogMessages.AuditLogMessage), out _))
+                issues.Add("RabbitMQ not connected");
+
+            if (issues.Any())
+                return StatusCode(503, new { status = "Not Ready", service = "Traffic Light Controller Service", issues });
+
+            return Ok(new { status = "Ready", service = "Traffic Light Controller Service" });
         }
     }
 }

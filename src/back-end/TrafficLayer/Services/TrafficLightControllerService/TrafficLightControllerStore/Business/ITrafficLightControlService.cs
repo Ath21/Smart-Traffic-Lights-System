@@ -5,8 +5,12 @@ namespace TrafficLightControllerStore.Business;
 
 public interface ITrafficLightControlService
 {
-    Task<TrafficLightDto> ForceStateChangeAsync(Guid intersectionId, Guid lightId, string newState);
-    Task<IEnumerable<TrafficLightDto>> GetCurrentStatesAsync(Guid intersectionId);
-        // NEW
-    Task<IEnumerable<ControlEventDto>> GetLastControlEventsAsync(Guid intersectionId);
+    Task<TrafficLightDto> ForceStateChangeAsync(
+        string intersection,
+        string light,
+        string newState,
+        int? duration = null,
+        string? reason = null);
+    Task<IEnumerable<TrafficLightDto>> GetCurrentStatesAsync(string intersection);
+    Task<IEnumerable<ControlEventDto>> GetLastControlEventsAsync(string intersection);
 }

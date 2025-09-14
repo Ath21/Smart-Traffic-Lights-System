@@ -47,7 +47,11 @@ public static class MassTransitSetup
 
                     e.Bind(trafficExchange, s =>
                     {
-                        s.RoutingKey = controlKey.Replace("{intersection_id}", "*").Replace("{light_id}", "*");
+                        // Use wildcard binding for any intersection/light
+                        s.RoutingKey = controlKey
+                            .Replace("{intersection}", "*")
+                            .Replace("{light}", "*");
+
                         s.ExchangeType = ExchangeType.Topic;
                     });
 

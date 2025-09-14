@@ -1,11 +1,9 @@
-using System;
-
 namespace TrafficLightControllerStore.Models.Dtos;
 
 public class ControlEventDto
 {
-    public Guid IntersectionId { get; set; }
-    public Guid LightId { get; set; }
+    public string Intersection { get; set; } = string.Empty;  // e.g., "ekklhsia"
+    public string Light { get; set; } = string.Empty;         // e.g., "west"
     public string Command { get; set; } = string.Empty;
     public DateTime Timestamp { get; set; }
 }

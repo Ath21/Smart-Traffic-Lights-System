@@ -11,6 +11,7 @@ using TrafficLightCacheData.Repositories.Intersect;
 using TrafficLightCacheData.Repositories.Light;
 using TrafficLightControllerStore.Business;
 using TrafficLightControllerStore.Consumers;
+using TrafficLightControllerStore.Failover;
 using TrafficLightControllerStore.Middleware;
 using TrafficLightControllerStore.Publishers.Logs;
 
@@ -53,19 +54,22 @@ public class Startup
         /******* [3] Services ********/
         services.AddScoped(typeof(ITrafficLightControlService), typeof(TrafficLightControlService));
 
-        /******* [4] Automapper ********/
+        /******* [4] Failover Service ********/
+        services.AddScoped(typeof(IFailoverService), typeof(FailoverService));
+
+        /******* [6] Automapper ********/
         services.AddAutoMapper(typeof(TrafficLightControlStoreProfile));
 
-        /******* [5] Publishers ********/
+        /******* [6] Publishers ********/
         services.AddScoped(typeof(ITrafficLogPublisher), typeof(TrafficLogPublisher));
 
-        /******* [6] Consumers ********/
+        /******* [7] Consumers ********/
         services.AddScoped(typeof(TrafficLightControlConsumer));
 
-        /******* [7] MassTransit ********/
+        /******* [8] MassTransit ********/
         services.AddTrafficLightControlMassTransit(_configuration);
 
-        /******* [8] Jwt Config ********/
+        /******* [9] Jwt Config ********/
         var jwtSettings = _configuration.GetSection("Jwt");
         var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]);
 
@@ -85,7 +89,7 @@ public class Startup
                 };
             });
 
-        /******* [9] CORS Policy ********/
+        /******* [10] CORS Policy ********/
         var allowedOrigins = _configuration["Cors:AllowedOrigins"]?.Split(",") ?? Array.Empty<string>();
         var allowedMethods = _configuration["Cors:AllowedMethods"]?.Split(",") ?? new[] { "GET","POST","PUT","DELETE","PATCH" };
         var allowedHeaders = _configuration["Cors:AllowedHeaders"]?.Split(",") ?? new[] { "Content-Type","Authorization" };
@@ -100,11 +104,11 @@ public class Startup
             });
         });
 
-        /******* [10] Controllers ********/
+        /******* [11] Controllers ********/
         services.AddControllers()
             .AddJsonOptions(opts => opts.JsonSerializerOptions.PropertyNamingPolicy = null);
 
-        /******* [11] Swagger ********/
+        /******* [12] Swagger ********/
         services.AddSwaggerGen(c =>
         {
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "Traffic Light Controller Service", Version = "v2.0" });

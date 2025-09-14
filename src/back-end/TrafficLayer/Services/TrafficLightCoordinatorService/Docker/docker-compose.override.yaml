@@ -20,11 +20,11 @@ services:
       Redis__TrafficLight__Port: 6379
       Redis__TrafficLight__Password: ""
       Redis__TrafficLight__Database: 0
-      Redis__TrafficLight__KeyPrefix__State: traffic_light:{intersection_id}:state
-      Redis__TrafficLight__KeyPrefix__Duration: traffic_light:{intersection_id}:duration
-      Redis__TrafficLight__KeyPrefix__LastUpdate: traffic_light:{intersection_id}:last_update
-      Redis__TrafficLight__KeyPrefix__Priority: traffic_light:{intersection_id}:priority
-      Redis__TrafficLight__KeyPrefix__QueueLength: traffic_light:{intersection_id}:queue_length
+      Redis__TrafficLight__KeyPrefix__State: traffic_light:{intersection}.{light}:state
+      Redis__TrafficLight__KeyPrefix__Duration: traffic_light:{intersection}.{light}:duration
+      Redis__TrafficLight__KeyPrefix__LastUpdate: traffic_light:{intersection}.{light}:last_update
+      Redis__TrafficLight__KeyPrefix__Priority: traffic_light:{intersection}.{light}:priority
+      Redis__TrafficLight__KeyPrefix__QueueLength: traffic_light:{intersection}.{light}:queue_length
 
       # ===============================
       # CORS Policy
@@ -55,24 +55,24 @@ services:
       ## TRAFFIC.EXCHANGE
       RabbitMQ__Exchanges__Traffic: TRAFFIC.EXCHANGE
       # --- Publish
-      RabbitMQ__RoutingKeys__Traffic__LightUpdate: traffic.light.update.{intersection_id}
+      RabbitMQ__RoutingKeys__Traffic__LightUpdate: traffic.light.update.{intersection}.{light}
       # --- Consume
       RabbitMQ__Queues__Traffic__Analytics: traffic.analytics.coordinator.queue
-      RabbitMQ__RoutingKeys__Traffic__Congestion: traffic.analytics.congestion.{intersection_id}
+      RabbitMQ__RoutingKeys__Traffic__Congestion: traffic.analytics.congestion.{intersection}
 
       ## PRIORITY (handled inside TRAFFIC.EXCHANGE)
       RabbitMQ__Queues__Priority__Coordinator: priority.coordinator.queue
-      RabbitMQ__RoutingKeys__Priority__EmergencyVehicle: priority.emergency_vehicle.{intersection_id}
-      RabbitMQ__RoutingKeys__Priority__PublicTransport: priority.public_transport.{intersection_id}
-      RabbitMQ__RoutingKeys__Priority__Cyclist: priority.cyclist.{intersection_id}
-      RabbitMQ__RoutingKeys__Priority__Pedestrian: priority.pedestrian.{intersection_id}
-      RabbitMQ__RoutingKeys__Priority__Incident: priority.incident.{intersection_id}
+      RabbitMQ__RoutingKeys__Priority__EmergencyVehicle: priority.emergency_vehicle.{intersection}
+      RabbitMQ__RoutingKeys__Priority__PublicTransport: priority.public_transport.{intersection}
+      RabbitMQ__RoutingKeys__Priority__Cyclist: priority.cyclist.{intersection}
+      RabbitMQ__RoutingKeys__Priority__Pedestrian: priority.pedestrian.{intersection}
+      RabbitMQ__RoutingKeys__Priority__Incident: priority.incident.{intersection}
 
       ## LOG.EXCHANGE
       RabbitMQ__Exchanges__Log: LOG.EXCHANGE
       # --- Publish
-      RabbitMQ__RoutingKeys__Log__Audit: log.traffic.coordinator_service.audit
-      RabbitMQ__RoutingKeys__Log__Error: log.traffic.coordinator_service.error
+      RabbitMQ__RoutingKeys__Log__Audit: log.traffic.coordinator.{intersection}.audit
+      RabbitMQ__RoutingKeys__Log__Error: log.traffic.coordinator.{intersection}.error
     
     depends_on:
       traffic_light_db:

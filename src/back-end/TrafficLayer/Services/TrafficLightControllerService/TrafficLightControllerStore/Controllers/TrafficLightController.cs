@@ -34,63 +34,63 @@ public class TrafficLightController : ControllerBase
     }
 
     // ============================================================
-    // POST: /api/traffic/controller/lights/{intersectionId}/{lightId}/state
+    // POST: /api/traffic/controller/lights/{intersection}/{light}/state
     // Roles: TrafficOperator, Admin
     // Purpose: Manual override -> update Redis + publish to RabbitMQ
     // ============================================================
-    [HttpPost("lights/{intersectionId:guid}/{lightId:guid}/state")]
+    [HttpPost("lights/{intersection}/{light}/state")]
     [Authorize(Roles = "TrafficOperator,Admin")]
     [ProducesResponseType(typeof(TrafficLightStatusResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ForceStateChange(
-        Guid intersectionId,
-        Guid lightId,
+        string intersection,
+        string light,
         [FromBody] UpdateLightRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.CurrentState))
             return BadRequest(new { error = "CurrentState is required." });
 
-        var dto = await _service.ForceStateChangeAsync(intersectionId, lightId, request.CurrentState);
+        var dto = await _service.ForceStateChangeAsync(intersection, light, request.CurrentState, request.Duration, request.Reason);
 
         _logger.LogInformation(
-            "{Tag} POST override applied: Intersection={IntersectionId}, Light={LightId}, State={State}",
-            ServiceTag, intersectionId, lightId, request.CurrentState);
+            "{Tag} POST override applied: Intersection={Intersection}, Light={Light}, State={State}, Duration={Duration}, Reason={Reason}",
+            ServiceTag, intersection, light, request.CurrentState, request.Duration, request.Reason);
 
         var response = _mapper.Map<TrafficLightStatusResponse>(dto);
         return Ok(response);
     }
 
     // ============================================================
-    // GET: /api/traffic/controller/lights/{intersectionId}
+    // GET: /api/traffic/controller/lights/{intersection}
     // Roles: User, TrafficOperator, Admin
     // Purpose: Retrieve current state of lights at an intersection
     // ============================================================
-    [HttpGet("lights/{intersectionId:guid}")]
+    [HttpGet("lights/{intersection}")]
     [Authorize(Roles = "User,TrafficOperator,Admin")]
     [ProducesResponseType(typeof(IEnumerable<TrafficLightStatusResponse>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetStates(Guid intersectionId)
+    public async Task<IActionResult> GetStates(string intersection)
     {
-        _logger.LogInformation("{Tag} GET states for intersection {IntersectionId}", ServiceTag, intersectionId);
+        _logger.LogInformation("{Tag} GET states for intersection {Intersection}", ServiceTag, intersection);
 
-        var dtos = await _service.GetCurrentStatesAsync(intersectionId);
+        var dtos = await _service.GetCurrentStatesAsync(intersection);
         var response = _mapper.Map<IEnumerable<TrafficLightStatusResponse>>(dtos);
 
         return Ok(response);
     }
 
     // ============================================================
-    // GET: /api/traffic/controller/events/{intersectionId}
+    // GET: /api/traffic/controller/events/{intersection}
     // Roles: TrafficOperator, Admin
     // Purpose: Retrieve last applied control events
     // ============================================================
-    [HttpGet("events/{intersectionId:guid}")]
+    [HttpGet("events/{intersection}")]
     [Authorize(Roles = "TrafficOperator,Admin")]
     [ProducesResponseType(typeof(IEnumerable<ControlEventResponse>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetEvents(Guid intersectionId)
+    public async Task<IActionResult> GetEvents(string intersection)
     {
-        _logger.LogInformation("{Tag} GET events for intersection {IntersectionId}", ServiceTag, intersectionId);
+        _logger.LogInformation("{Tag} GET events for intersection {Intersection}", ServiceTag, intersection);
 
-        var dtos = await _service.GetLastControlEventsAsync(intersectionId);
+        var dtos = await _service.GetLastControlEventsAsync(intersection);
         var response = _mapper.Map<IEnumerable<ControlEventResponse>>(dtos);
 
         return Ok(response);

@@ -1,4 +1,3 @@
-using System;
 using AutoMapper;
 using TrafficLightCacheData.Entities;
 using TrafficLightControllerStore.Models.Dtos;

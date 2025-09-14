@@ -17,11 +17,11 @@ services:
       Redis__TrafficLight__Port: 6379
       Redis__TrafficLight__Password: ""
       Redis__TrafficLight__Database: 0
-      Redis__TrafficLight__KeyPrefix__State: traffic_light:{intersection_id}:state
-      Redis__TrafficLight__KeyPrefix__Duration: traffic_light:{intersection_id}:duration
-      Redis__TrafficLight__KeyPrefix__LastUpdate: traffic_light:{intersection_id}:last_update
-      Redis__TrafficLight__KeyPrefix__Priority: traffic_light:{intersection_id}:priority
-      Redis__TrafficLight__KeyPrefix__QueueLength: traffic_light:{intersection_id}:queue_length
+      Redis__TrafficLight__KeyPrefix__State: traffic_light:{intersection}.{light}:state
+      Redis__TrafficLight__KeyPrefix__Duration: traffic_light:{intersection}.{light}:duration
+      Redis__TrafficLight__KeyPrefix__LastUpdate: traffic_light:{intersection}.{light}:last_update
+      Redis__TrafficLight__KeyPrefix__Priority: traffic_light:{intersection}.{light}:priority
+      Redis__TrafficLight__KeyPrefix__QueueLength: traffic_light:{intersection}.{light}:queue_length
 
       # ===============================
       # CORS Policy
@@ -53,12 +53,12 @@ services:
       RabbitMQ__Exchanges__Traffic: TRAFFIC.EXCHANGE
       # --- Consume
       RabbitMQ__Queues__Traffic__LightControl: traffic.light.controller.queue
-      RabbitMQ__RoutingKeys__Traffic__LightControl: traffic.light.control.{intersection_id}
+      RabbitMQ__RoutingKeys__Traffic__LightControl: traffic.light.control.{intersection}.{light}
 
       ## LOG.EXCHANGE
       RabbitMQ__Exchanges__Log: LOG.EXCHANGE
       # --- Publish
-      RabbitMQ__RoutingKeys__Log__Audit: log.traffic.light_controller_service.audit
-      RabbitMQ__RoutingKeys__Log__Error: log.traffic.light_controller_service.error
+      RabbitMQ__RoutingKeys__Log__Audit: log.traffic.light_controller.{intersection}.{light}.audit
+      RabbitMQ__RoutingKeys__Log__Error: log.traffic.light_controller.{intersection}.{light}.error
 
     restart: always
