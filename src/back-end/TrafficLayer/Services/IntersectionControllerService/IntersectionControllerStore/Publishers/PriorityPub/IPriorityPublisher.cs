@@ -4,6 +4,6 @@ namespace IntersectionControllerStore.Publishers.PriorityPub;
 
 public interface IPriorityPublisher
 {
-    Task PublishPriorityAsync(Guid intersectionId, string priorityType, Guid? detectionId, string? reason);
+    Task PublishPriorityAsync(string intersection, string type, string? detectionId, string? reason);
 }
 

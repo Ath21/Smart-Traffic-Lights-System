@@ -24,21 +24,22 @@ public class TrafficLightControlPublisher : ITrafficLightControlPublisher
                            ?? "traffic.light.control.{intersection_id}.{light_id}";
     }
 
-    public async Task PublishControlAsync(Guid intersectionId, Guid lightId, string newState)
+    public async Task PublishControlAsync(string intersection, string light, string newState)
     {
         var routingKey = _lightControlKey
-            .Replace("{intersection_id}", intersectionId.ToString())
-            .Replace("{light_id}", lightId.ToString());
+            .Replace("{intersection}", intersection)
+            .Replace("{light}", light);
 
-        var message = new TrafficLightControlMessage(intersectionId, lightId, newState, DateTime.UtcNow);
+        var message = new TrafficLightControlMessage(intersection, light, newState, DateTime.UtcNow);
 
         _logger.LogInformation(
-            "{Tag} Publishing control for light {LightId} -> {State} at intersection {IntersectionId} ({RoutingKey})",
-            ServiceTag, lightId, newState, intersectionId, routingKey);
+            "{Tag} Publishing control for {Intersection}-{Light} -> {State} ({RoutingKey})",
+            ServiceTag, intersection, light, newState, routingKey);
 
         var endpoint = await _bus.GetSendEndpoint(new Uri($"exchange:{_trafficExchange}"));
         await endpoint.Send(message, ctx => ctx.SetRoutingKey(routingKey));
 
         _logger.LogInformation("{Tag} Control command published successfully", ServiceTag);
     }
+
 }

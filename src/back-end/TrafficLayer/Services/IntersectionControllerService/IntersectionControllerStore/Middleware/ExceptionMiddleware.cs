@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using IntersectionControllerStore.Failover;
 using IntersectionControllerStore.Publishers.LogPub;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
@@ -150,6 +151,20 @@ public class ExceptionMiddleware
             );
 
             _logger.LogInformation("{Tag} Error published to log exchange: {ErrorType}", ServiceTag, errorType);
+
+            if (errorType is "REDIS_CONNECTION" or "BROKER_CONNECTION" or "DB_UPDATE_ERROR")
+            {
+                var intersection = context.Request.RouteValues.TryGetValue("intersection", out var iVal)
+                    ? iVal?.ToString() ?? "unknown"
+                    : "unknown";
+
+                if (intersection != "unknown")
+                {
+                    var failoverService = scope.ServiceProvider.GetRequiredService<IFailoverService>();
+                    await failoverService.HandleIntersectionFailureAsync(intersection, errorType);
+                }
+            }
+
         }
         catch (Exception pubEx)
         {

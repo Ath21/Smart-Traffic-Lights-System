@@ -24,31 +24,32 @@ public class PriorityPublisher : IPriorityPublisher
         _logger = logger;
 
         _trafficExchange    = configuration["RabbitMQ:Exchanges:Traffic"] ?? "TRAFFIC.EXCHANGE";
-        _emergencyKey       = configuration["RabbitMQ:RoutingKeys:Priority:EmergencyVehicle"] ?? "priority.emergency_vehicle.{intersection_id}";
-        _publicTransportKey = configuration["RabbitMQ:RoutingKeys:Priority:PublicTransport"] ?? "priority.public_transport.{intersection_id}";
-        _cyclistKey         = configuration["RabbitMQ:RoutingKeys:Priority:Cyclist"] ?? "priority.cyclist.{intersection_id}";
+        _emergencyKey       = configuration["RabbitMQ:RoutingKeys:Priority:EmergencyVehicle"] ?? "priority.emergency_vehicle.{intersection}";
+        _publicTransportKey = configuration["RabbitMQ:RoutingKeys:Priority:PublicTransport"] ?? "priority.public_transport.{intersection}";
+        _cyclistKey         = configuration["RabbitMQ:RoutingKeys:Priority:Cyclist"] ?? "priority.cyclist.{intersection}";
         _pedestrianKey      = configuration["RabbitMQ:RoutingKeys:Priority:Pedestrian"] ?? "priority.pedestrian.{intersection_id}";
         _incidentKey        = configuration["RabbitMQ:RoutingKeys:Priority:Incident"] ?? "priority.incident.{intersection_id}";
     }
 
-    public async Task PublishPriorityAsync(Guid intersectionId, string type, Guid? detectionId, string? reason)
+    public async Task PublishPriorityAsync(string intersection, string type, string? detectionId, string? reason)
     {
         string routingKey = type switch
         {
-            "emergency"       => _emergencyKey.Replace("{intersection_id}", intersectionId.ToString()),
-            "public_transport"=> _publicTransportKey.Replace("{intersection_id}", intersectionId.ToString()),
-            "cyclist"         => _cyclistKey.Replace("{intersection_id}", intersectionId.ToString()),
-            "pedestrian"      => _pedestrianKey.Replace("{intersection_id}", intersectionId.ToString()),
-            "incident"        => _incidentKey.Replace("{intersection_id}", intersectionId.ToString()),
+            "emergency"        => _emergencyKey.Replace("{intersection}", intersection),
+            "public_transport" => _publicTransportKey.Replace("{intersection}", intersection),
+            "cyclist"          => _cyclistKey.Replace("{intersection}", intersection),
+            "pedestrian"       => _pedestrianKey.Replace("{intersection}", intersection),
+            "incident"         => _incidentKey.Replace("{intersection}", intersection),
             _ => throw new ArgumentException($"Unsupported priority type '{type}'", nameof(type))
         };
 
-        var message = new PriorityMessage(intersectionId, type, detectionId, reason, DateTime.UtcNow);
+        var message = new PriorityMessage(intersection, type, detectionId, reason, DateTime.UtcNow);
 
         var endpoint = await _bus.GetSendEndpoint(new Uri($"exchange:{_trafficExchange}"));
         await endpoint.Send(message, ctx => ctx.SetRoutingKey(routingKey));
 
-        _logger.LogInformation("{Tag} Priority {Type} published for {IntersectionId} ({RoutingKey})",
-            ServiceTag, type, intersectionId, routingKey);
+        _logger.LogInformation("{Tag} Priority {Type} published for {Intersection} ({RoutingKey})",
+            ServiceTag, type, intersection, routingKey);
     }
+
 }

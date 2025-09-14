@@ -1,10 +1,10 @@
 namespace TrafficMessages;
 
-// traffic.priority.*.{intersection_id}
+// priority.*.{intersection}
 public record PriorityMessage(
-    Guid IntersectionId,
-    string PriorityType,    
-    Guid? DetectionId,      
+    string Intersection,   // e.g. "ekklhsia"
+    string PriorityType,   // emergency, public_transport, cyclist, pedestrian, incident
+    string? DetectionId,   // optional string (sensor id, camera id, etc.)
     string? Reason,
     DateTime Timestamp
 );

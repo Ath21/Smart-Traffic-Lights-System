@@ -90,5 +90,6 @@ services:
       # --- Publish
       RabbitMQ__RoutingKeys__Log__Audit: log.traffic.intersection_controller.{intersection}.audit
       RabbitMQ__RoutingKeys__Log__Error: log.traffic.intersection_controller.{intersection}.error
+      RabbitMQ__RoutingKeys__Log__Failover: log.traffic.intersection_controller.{intersection}.failover
 
     restart: always

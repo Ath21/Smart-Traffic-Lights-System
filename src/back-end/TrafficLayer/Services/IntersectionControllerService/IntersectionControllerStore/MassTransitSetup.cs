@@ -73,7 +73,7 @@ public static class MassTransitSetup
 
                     e.Bind(trafficExchange, s =>
                     {
-                        s.RoutingKey = lightUpdateKey.Replace("{intersection_id}", "*");
+                        s.RoutingKey = s.RoutingKey = lightUpdateKey.Replace("{intersection}", "*").Replace("{light}", "*");
                         s.ExchangeType = ExchangeType.Topic;
                     });
 
@@ -89,32 +89,32 @@ public static class MassTransitSetup
 
                     e.Bind(sensorExchange, s =>
                     {
-                        s.RoutingKey = vehicleCountKey.Replace("{intersection_id}", "*");
+                        s.RoutingKey = vehicleCountKey.Replace("{intersection}", "*");
                         s.ExchangeType = ExchangeType.Topic;
                     });
                     e.Bind(sensorExchange, s =>
                     {
-                        s.RoutingKey = emergencyKey.Replace("{intersection_id}", "*");
+                        s.RoutingKey = emergencyKey.Replace("{intersection}", "*");
                         s.ExchangeType = ExchangeType.Topic;
                     });
                     e.Bind(sensorExchange, s =>
                     {
-                        s.RoutingKey = publicTransportKey.Replace("{intersection_id}", "*");
+                        s.RoutingKey = publicTransportKey.Replace("{intersection}", "*");
                         s.ExchangeType = ExchangeType.Topic;
                     });
                     e.Bind(sensorExchange, s =>
                     {
-                        s.RoutingKey = pedestrianKey.Replace("{intersection_id}", "*");
+                        s.RoutingKey = pedestrianKey.Replace("{intersection}", "*");
                         s.ExchangeType = ExchangeType.Topic;
                     });
                     e.Bind(sensorExchange, s =>
                     {
-                        s.RoutingKey = cyclistKey.Replace("{intersection_id}", "*");
+                        s.RoutingKey = cyclistKey.Replace("{intersection}", "*");
                         s.ExchangeType = ExchangeType.Topic;
                     });
                     e.Bind(sensorExchange, s =>
                     {
-                        s.RoutingKey = incidentKey.Replace("{intersection_id}", "*");
+                        s.RoutingKey = incidentKey.Replace("{intersection}", "*");
                         s.ExchangeType = ExchangeType.Topic;
                     });
 

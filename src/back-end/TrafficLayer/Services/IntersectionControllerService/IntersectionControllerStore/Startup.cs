@@ -24,6 +24,7 @@ using TrafficLightCacheData.Repositories.Light;
 using TrafficLightCacheData.Repositories.Intersect;
 using DetectionCacheData.Repositories.Cache;
 using DetectionCacheData.Repositories.Metrics;
+using IntersectionControllerStore.Failover;
 
 namespace IntersectionControllerStore;
 
@@ -90,22 +91,25 @@ public class Startup
         services.AddScoped(typeof(ICommandLogService), typeof(CommandLogService));
         services.AddScoped(typeof(ITrafficLightCoordinatorService), typeof(TrafficLightCoordinatorService));
 
-        /******* [4] AutoMapper ********/
+        /******* [4] Failover ********/
+        services.AddScoped(typeof(IFailoverService), typeof(FailoverService));
+
+        /******* [5] AutoMapper ********/
         services.AddAutoMapper(typeof(IntersectionControllerStoreProfile));
 
-        /******* [5] Publishers ********/
+        /******* [6] Publishers ********/
         services.AddScoped(typeof(IPriorityPublisher), typeof(PriorityPublisher));
         services.AddScoped(typeof(ITrafficLightControlPublisher), typeof(TrafficLightControlPublisher));
         services.AddScoped(typeof(ITrafficLogPublisher), typeof(TrafficLogPublisher));
 
-        /******* [6] Consumers ********/
+        /******* [7] Consumers ********/
         services.AddScoped<TrafficLightUpdateConsumer>();
         services.AddScoped<SensorDataConsumer>();
 
-        /******* [7] MassTransit ********/
+        /******* [8] MassTransit ********/
         services.AddIntersectionControllerMassTransit(_configuration);
 
-        /******* [8] Jwt Config ********/
+        /******* [9] Jwt Config ********/
         var jwtSettings = _configuration.GetSection("Jwt");
         var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]);
 
@@ -125,7 +129,7 @@ public class Startup
                 };
             });
 
-        /******* [9] CORS Policy ********/
+        /******* [10] CORS Policy ********/
         var allowedOrigins = _configuration["Cors:AllowedOrigins"]?.Split(",") ?? Array.Empty<string>();
         var allowedMethods = _configuration["Cors:AllowedMethods"]?.Split(",") ?? new[] { "GET","POST","PUT","PATCH","DELETE" };
         var allowedHeaders = _configuration["Cors:AllowedHeaders"]?.Split(",") ?? new[] { "Content-Type","Authorization" };
@@ -140,11 +144,11 @@ public class Startup
             });
         });
 
-        /******* [10] Controllers ********/
+        /******* [11] Controllers ********/
         services.AddControllers()
             .AddJsonOptions(opts => opts.JsonSerializerOptions.PropertyNamingPolicy = null);
 
-        /******* [11] Swagger ********/
+        /******* [12] Swagger ********/
         services.AddSwaggerGen(c =>
         {
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "Intersection Controller Service", Version = "v2.0" });

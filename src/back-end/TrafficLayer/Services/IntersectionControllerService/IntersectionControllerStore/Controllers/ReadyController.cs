@@ -24,23 +24,22 @@ namespace IntersectionControllerStore.Controllers
         [HttpGet("/ready")]
         public async Task<IActionResult> Ready()
         {
-            try
-            {
-                if (!await _lightCacheDbContext.CanConnectAsync())
-                    return StatusCode(503, new { status = "Not Ready", reason = "TrafficLightCacheDB Redis unreachable" });
+            var issues = new List<string>();
 
-                if (!await _detectionCacheDbContext.CanConnectAsync())
-                    return StatusCode(503, new { status = "Not Ready", reason = "DetectionCacheDB Redis unreachable" });
+            if (!await _lightCacheDbContext.CanConnectAsync())
+                issues.Add("TrafficLightCacheDB Redis unreachable");
+            
+            if (!await _detectionCacheDbContext.CanConnectAsync())
+                issues.Add("DetectionCacheDB Redis unreachable");
 
-                if (!_bus.Topology.TryGetPublishAddress(typeof(LogMessages.AuditLogMessage), out _))
-                    return StatusCode(503, new { status = "Not Ready", reason = "RabbitMQ not connected" });
+            if (!_bus.Topology.TryGetPublishAddress(typeof(LogMessages.AuditLogMessage), out _))
+                issues.Add("RabbitMQ not connected");
 
-                return Ok(new { status = "Ready", service = "Intersection Controller Service" });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(503, new { status = "Not Ready", error = ex.Message });
-            }
+            if (issues.Any())
+                return StatusCode(503, new { status = "Not Ready", service = "Traffic Light Controller Service", issues });
+
+            return Ok(new { status = "Ready", service = "Traffic Light Controller Service" });
         }
+
     }
 }
