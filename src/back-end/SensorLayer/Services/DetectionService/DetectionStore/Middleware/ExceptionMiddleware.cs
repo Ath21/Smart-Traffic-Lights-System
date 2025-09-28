@@ -11,13 +11,18 @@ public class ExceptionMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionMiddleware> _logger;
+    private readonly IDetectionLogPublisher _logPublisher;
 
     private const string ServiceTag = "[" + nameof(ExceptionMiddleware) + "]";
 
-    public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
+    public ExceptionMiddleware(
+        RequestDelegate next,
+        ILogger<ExceptionMiddleware> logger,
+        IDetectionLogPublisher logPublisher)
     {
         _next = next;
         _logger = logger;
+        _logPublisher = logPublisher;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -36,22 +41,22 @@ public class ExceptionMiddleware
     {
         var (statusCode, userMessage, errorType) = MapException(ex);
 
+        // Local log
         _logger.LogError(ex, "{Tag} {Message}", ServiceTag, userMessage);
 
+        // Distributed log via RabbitMQ
         try
         {
-            var publisher = context.RequestServices.GetRequiredService<IDetectionLogPublisher>();
-
-            await publisher.PublishErrorAsync(
+            await _logPublisher.PublishErrorAsync(
                 errorType,
-                $"{ServiceTag} {ex.Message}",
-                new
+                ex.Message,
+                new Dictionary<string, object?>
                 {
-                    Path = context.Request.Path,
-                    Method = context.Request.Method,
-                    TraceId = context.TraceIdentifier,
-                    Exception = ex.GetType().Name,
-                    StackTrace = ex.StackTrace
+                    ["path"] = context.Request.Path,
+                    ["method"] = context.Request.Method,
+                    ["traceId"] = context.TraceIdentifier,
+                    ["exception"] = ex.GetType().Name,
+                    ["stackTrace"] = ex.StackTrace
                 });
         }
         catch (Exception pubEx)
@@ -59,15 +64,18 @@ public class ExceptionMiddleware
             _logger.LogError(pubEx, "{Tag} Failed to publish error log", ServiceTag);
         }
 
+        // Return HTTP error response
         context.Response.StatusCode = (int)statusCode;
         context.Response.ContentType = "application/json";
 
-        await context.Response.WriteAsync(JsonSerializer.Serialize(new
+        var result = JsonSerializer.Serialize(new
         {
             error = userMessage,
             details = ex.Message,
             traceId = context.TraceIdentifier
-        }));
+        });
+
+        await context.Response.WriteAsync(result);
     }
 
     private static (HttpStatusCode statusCode, string userMessage, string errorType) MapException(Exception ex) =>

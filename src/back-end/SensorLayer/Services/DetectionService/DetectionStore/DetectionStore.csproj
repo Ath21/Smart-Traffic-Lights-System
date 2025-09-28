@@ -20,9 +20,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Business/" />
-    <Folder Include="Models/Dtos/" />
-    <Folder Include="Models/Requests/" />
     <Folder Include="Publishers/" />
   </ItemGroup>
 

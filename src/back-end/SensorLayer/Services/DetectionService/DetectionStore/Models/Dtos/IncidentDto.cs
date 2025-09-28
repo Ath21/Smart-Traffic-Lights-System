@@ -1,10 +1,12 @@
+using System;
+
 namespace DetectionStore.Models.Dtos;
 
 public class IncidentDto
 {
-    public Guid IntersectionId { get; set; }
-    public string Type { get; set; } = string.Empty;
+    public int IntersectionId { get; set; }
+    public string Type { get; set; } = default!;
     public int Severity { get; set; }
-    public string Description { get; set; } = string.Empty;
+    public string Description { get; set; } = default!;
     public DateTime Timestamp { get; set; }
 }

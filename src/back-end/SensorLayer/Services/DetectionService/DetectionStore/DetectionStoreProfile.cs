@@ -1,4 +1,3 @@
-using System;
 using AutoMapper;
 using DetectionData.Collections.Detection;
 using DetectionStore.Models.Dtos;
@@ -11,21 +10,24 @@ public class DetectionStoreProfile : Profile
 {
     public DetectionStoreProfile()
     {
-        // Entities ↔ DTO
-        CreateMap<EmergencyVehicleDetection, EmergencyVehicleDto>().ReverseMap();
-        CreateMap<PublicTransportDetection, PublicTransportDto>().ReverseMap();
-        CreateMap<IncidentDetection, IncidentDto>().ReverseMap();
+        // Request → Entities
+        CreateMap<DetectionEventRequest, EmergencyVehicleDetection>()
+            .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.SubType ?? "unknown"));
 
-        // DTO ↔ Responses
-        CreateMap<EmergencyVehicleDto, EmergencyVehicleResponse>();
-        CreateMap<PublicTransportDto, PublicTransportResponse>();
-        CreateMap<IncidentDto, IncidentResponse>();
-        CreateMap<DetectionSnapshotDto, DetectionSnapshotResponse>();
-        CreateMap<DetectionHistoryDto, DetectionHistoryResponse>();
+        CreateMap<DetectionEventRequest, PublicTransportDetection>()
+            .ForMember(dest => dest.Mode, opt => opt.MapFrom(src => src.SubType ?? "unknown"))
+            .ForMember(dest => dest.RouteId, opt => opt.MapFrom(src => src.Description ?? string.Empty));
 
-        // Requests ↔ DTOs
-        CreateMap<RecordEmergencyVehicleRequest, EmergencyVehicleDto>();
-        CreateMap<RecordPublicTransportRequest, PublicTransportDto>();
-        CreateMap<RecordIncidentRequest, IncidentDto>();
+        CreateMap<DetectionEventRequest, IncidentDetection>();
+
+        // Worker DTOs → Entities
+        CreateMap<EmergencyVehicleDto, EmergencyVehicleDetection>();
+        CreateMap<PublicTransportDto, PublicTransportDetection>();
+        CreateMap<IncidentDto, IncidentDetection>();
+
+        // Entities → Response
+        CreateMap<EmergencyVehicleDetection, DetectionEventResponse>();
+        CreateMap<PublicTransportDetection, DetectionEventResponse>();
+        CreateMap<IncidentDetection, DetectionEventResponse>();
     }
 }

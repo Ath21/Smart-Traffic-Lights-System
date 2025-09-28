@@ -45,7 +45,7 @@ public class SensorsController : ControllerBase
     // Description: Report new sensor data for a specific intersection.
     // ============================================================
     [HttpPost("report")]
-    [Authorize(Roles = "TrafficOperator,Admin")]
+    //[Authorize(Roles = "TrafficOperator,Admin")]
     public async Task<IActionResult> Report([FromBody] SensorReportRequest request)
     {
         if (!ModelState.IsValid)

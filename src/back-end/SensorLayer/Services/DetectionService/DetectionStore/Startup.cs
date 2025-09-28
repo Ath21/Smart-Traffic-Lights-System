@@ -17,9 +17,8 @@ using DetectionStore.Workers;
 using DetectionData.Repositories.Vehicle;
 using DetectionData.Repositories.Pedestrian;
 using DetectionData.Repositories.Cyclist;
-using DetectionCacheData.Repositories.Cache;
-using DetectionCacheData.Repositories.Metrics;
-
+using DetectionCacheData.Repositories;
+using DetectionStore.Publishers.Events;
 
 namespace DetectionStore;
 
@@ -75,11 +74,10 @@ public class Startup
         services.AddScoped(typeof(IIncidentDetectionRepository), typeof(IncidentDetectionRepository));
 
         /******* [3.2] DetectionCacheDB Repositories ********/
-        services.AddScoped(typeof(ISensorCacheRepository), typeof(SensorCacheRepository));
-        services.AddScoped(typeof(IMetricRepository), typeof(MetricRepository));
+        services.AddScoped(typeof(IDetectionCacheRepository), typeof(DetectionCacheRepository));
 
         /******* [4] Services ********/
-        services.AddScoped(typeof(ISensorDetectionService), typeof(SensorDetectionService));
+        services.AddScoped(typeof(IDetectionEventService), typeof(DetectionEventService));
 
         /******* [5] AutoMapper ********/
         services.AddAutoMapper(typeof(DetectionStoreProfile));
@@ -136,7 +134,7 @@ public class Startup
         /******* [12] Swagger ********/
         services.AddSwaggerGen(c =>
         {
-            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Detection Service", Version = "v2.0" });
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Detection Service", Version = "v3.0" });
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 In = ParameterLocation.Header,

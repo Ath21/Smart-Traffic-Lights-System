@@ -11,6 +11,16 @@ public class DetectionWorker : BackgroundService
     private readonly ILogger<DetectionWorker> _logger;
     private readonly Random _rand = new();
 
+    // Map physical intersections → stable identifiers
+    private readonly Dictionary<int, string> _intersections = new()
+    {
+        { 1, "Agiou Spyridonos" },
+        { 2, "Kentriki Pyli" },
+        { 3, "Anatoliki Pyli" },
+        { 4, "Dytiki Pyli" },
+        { 5, "Ekklisia" }
+    };
+
     public DetectionWorker(IServiceScopeFactory scopeFactory, ILogger<DetectionWorker> logger)
     {
         _scopeFactory = scopeFactory;
@@ -26,58 +36,63 @@ public class DetectionWorker : BackgroundService
             try
             {
                 using var scope = _scopeFactory.CreateScope();
-                var business = scope.ServiceProvider.GetRequiredService<ISensorDetectionService>();
+                var business = scope.ServiceProvider.GetRequiredService<IDetectionEventService>();
 
-                var intersectionId = Guid.NewGuid();
-
-                // Emergency vehicle detection ~10% chance
-                if (_rand.NextDouble() < 0.1)
+                foreach (var intersection in _intersections)
                 {
-                    var emergency = new EmergencyVehicleDto
+                    var intersectionId = intersection.Key;
+
+                    // Emergency vehicle detection ~10% chance
+                    if (_rand.NextDouble() < 0.1)
                     {
-                        IntersectionId = intersectionId,
-                        Detected = true,
-                        Type = _rand.NextDouble() < 0.5 ? "ambulance" : "firetruck",
-                        PriorityLevel = 1,
-                        Timestamp = DateTime.UtcNow
-                    };
+                        var emergency = new EmergencyVehicleDto
+                        {
+                            IntersectionId = intersectionId,
+                            Detected = true,
+                            Type = _rand.NextDouble() < 0.5 ? "ambulance" : "firetruck",
+                            PriorityLevel = 1,
+                            Timestamp = DateTime.UtcNow
+                        };
 
-                    await business.RecordEmergencyAsync(emergency);
-                    _logger.LogInformation("Emergency vehicle detected at {Intersection}", intersectionId);
-                }
+                        await business.RecordEmergencyAsync(emergency);
+                        _logger.LogInformation("Emergency vehicle detected at {IntersectionName} (Id={IntersectionId})",
+                            intersection.Value, intersectionId);
+                    }
 
-                // Public transport detection ~30% chance
-                if (_rand.NextDouble() < 0.3)
-                {
-                    var transport = new PublicTransportDto
+                    // Public transport detection ~30% chance
+                    if (_rand.NextDouble() < 0.3)
                     {
-                        IntersectionId = intersectionId,
-                        Detected = true,
-                        Mode = _rand.NextDouble() < 0.5 ? "bus" : "tram",
-                        RouteId = $"R{_rand.Next(1, 50)}",
-                        Timestamp = DateTime.UtcNow
-                    };
+                        var transport = new PublicTransportDto
+                        {
+                            IntersectionId = intersectionId,
+                            Detected = true,
+                            Mode = _rand.NextDouble() < 0.5 ? "bus" : "tram",
+                            RouteId = $"R{_rand.Next(1, 50)}",
+                            Timestamp = DateTime.UtcNow
+                        };
 
-                    await business.RecordPublicTransportAsync(transport);
-                    _logger.LogInformation(
-                        "Public transport detected at {Intersection}, Route {Route}",
-                        intersectionId, transport.RouteId);
-                }
+                        await business.RecordPublicTransportAsync(transport);
+                        _logger.LogInformation(
+                            "Public transport detected at {IntersectionName} (Id={IntersectionId}), Route {RouteId}",
+                            intersection.Value, intersectionId, transport.RouteId);
+                    }
 
-                // Incident detection ~5% chance
-                if (_rand.NextDouble() < 0.05)
-                {
-                    var incident = new IncidentDto
+                    // Incident detection ~5% chance
+                    if (_rand.NextDouble() < 0.05)
                     {
-                        IntersectionId = intersectionId,
-                        Type = "collision",
-                        Severity = _rand.Next(1, 5),
-                        Description = "Random simulated incident",
-                        Timestamp = DateTime.UtcNow
-                    };
+                        var incident = new IncidentDto
+                        {
+                            IntersectionId = intersectionId,
+                            Type = "collision",
+                            Severity = _rand.Next(1, 5),
+                            Description = "Random simulated incident",
+                            Timestamp = DateTime.UtcNow
+                        };
 
-                    await business.RecordIncidentAsync(incident);
-                    _logger.LogWarning("Incident detected at {Intersection}: {Desc}", intersectionId, incident.Description);
+                        await business.RecordIncidentAsync(incident);
+                        _logger.LogWarning("Incident detected at {IntersectionName} (Id={IntersectionId}): {Desc}",
+                            intersection.Value, intersectionId, incident.Description);
+                    }
                 }
             }
             catch (Exception ex)
@@ -85,7 +100,7 @@ public class DetectionWorker : BackgroundService
                 _logger.LogError(ex, "Error in DetectionWorker loop");
             }
 
-            await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken); // every 30s
+            await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
         }
     }
 }

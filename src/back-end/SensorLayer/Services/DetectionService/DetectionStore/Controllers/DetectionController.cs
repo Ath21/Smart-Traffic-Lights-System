@@ -17,85 +17,41 @@ namespace DetectionStore.Controllers;
 [Route("api/detections")]
 public class DetectionController : ControllerBase
 {
-    private readonly ISensorDetectionService _business;
+    private readonly IDetectionEventService _business;
     private readonly IMapper _mapper;
 
-    public DetectionController(ISensorDetectionService business, IMapper mapper)
+    public DetectionController(IDetectionEventService business, IMapper mapper)
     {
         _business = business;
         _mapper = mapper;
     }
 
     // ============================================================
-    // GET: api/detections/{intersectionId}
+    // GET: api/detection/{intersectionId}
     // Role: Anonymous
-    // Description: Get the latest detection snapshot for a specific intersection.
+    // Description: Get active detection events for an intersection.
     // ============================================================
-    [HttpGet("{intersectionId:guid}")]
+    [HttpGet("{intersectionId:int}")]
     [AllowAnonymous]
-    public async Task<IActionResult> GetSnapshot(Guid intersectionId)
+    public async Task<IActionResult> GetActiveEvents(int intersectionId)
     {
-        var dto = await _business.GetSnapshotAsync(intersectionId);
-        if (dto == null) return NotFound();
-
-        return Ok(_mapper.Map<DetectionSnapshotResponse>(dto));
+        var events = await _business.GetActiveEventsAsync(intersectionId);
+        return Ok(events);
     }
 
     // ============================================================
-    // GET: api/detections/{intersectionId}/history
+    // POST: api/detection/event
     // Role: TrafficOperator, Admin
-    // Description: Get historical detection data for a specific intersection.
+    // Description: Report a new detection event.
     // ============================================================
-    [HttpGet("{intersectionId:guid}/history")]
-    [Authorize(Roles = "TrafficOperator,Admin")]
-    public async Task<IActionResult> GetHistory(Guid intersectionId)
+    [HttpPost("event")]
+    //[Authorize(Roles = "TrafficOperator,Admin")]
+    public async Task<IActionResult> ReportEvent([FromBody] DetectionEventRequest request)
     {
-        var dtos = await _business.GetHistoryAsync(intersectionId);
-        return Ok(_mapper.Map<IEnumerable<DetectionHistoryResponse>>(dtos));
-    }
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
 
-    // ============================================================
-    // POST: api/detections/emergency
-    // Role: TrafficOperator, Admin
-    // Description: Record an emergency vehicle detection event.
-    // ============================================================
-    [HttpPost("emergency")]
-    [Authorize(Roles = "TrafficOperator,Admin")]
-    public async Task<IActionResult> RecordEmergency([FromBody] RecordEmergencyVehicleRequest request)
-    {
-        var dto = _mapper.Map<Models.Dtos.EmergencyVehicleDto>(request);
-        var result = await _business.RecordEmergencyAsync(dto);
-
-        return Ok(_mapper.Map<EmergencyVehicleResponse>(result));
-    }
-
-    // ============================================================
-    // POST: api/detections/public-transport
-    // Role: TrafficOperator, Admin
-    // Description: Record a public transport detection event.
-    // ============================================================
-    [HttpPost("public-transport")]
-    [Authorize(Roles = "TrafficOperator,Admin")]
-    public async Task<IActionResult> RecordPublicTransport([FromBody] RecordPublicTransportRequest request)
-    {
-        var dto = _mapper.Map<Models.Dtos.PublicTransportDto>(request);
-        var result = await _business.RecordPublicTransportAsync(dto);
-
-        return Ok(_mapper.Map<PublicTransportResponse>(result));
-    }
-
-    // ============================================================
-    // POST: api/detections/incident
-    // Role: TrafficOperator, Admin
-    // Description: Record an incident detection event.
-    // ============================================================
-    [HttpPost("incident")]
-    [Authorize(Roles = "TrafficOperator,Admin")]
-    public async Task<IActionResult> RecordIncident([FromBody] RecordIncidentRequest request)
-    {
-        var dto = _mapper.Map<Models.Dtos.IncidentDto>(request);
-        var result = await _business.RecordIncidentAsync(dto);
-
-        return Ok(_mapper.Map<IncidentResponse>(result));
+        var result = await _business.ReportEventAsync(request);
+        return Ok(result);
     }
 }

@@ -7,7 +7,5 @@ namespace DetectionStore.Publishers.Event;
 
 public interface IDetectionEventPublisher
 {
-    Task PublishEmergencyVehicleAsync(Guid intersectionId, bool detected);
-    Task PublishPublicTransportAsync(Guid intersectionId, string? routeId);
-    Task PublishIncidentAsync(Guid intersectionId, string description);
+    Task PublishDetectionAsync(int intersectionId, string eventType, string? details = null);
 }
