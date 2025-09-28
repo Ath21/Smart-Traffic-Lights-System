@@ -1,29 +1,62 @@
+# Deployment
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: detection-api
+  name: detectionapi-dytiki-pyli
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: detection-api
+      app: detectionapi-dytiki-pyli
   template:
     metadata:
       labels:
-        app: detection-api
+        app: detectionapi-dytiki-pyli
     spec:
       containers:
-      - name: detection-api
+      - name: detectionapi
         image: ath21/stls:detection_api
         ports:
         - containerPort: 8080
         env:
+        # ===============================
+        # ASP.NET Core
+        # ===============================
         - name: ASPNETCORE_ENVIRONMENT
           value: "Development"
 
-        # Mongo
+        # ===============================
+        # Intersection identity
+        # ===============================
+        ## SECRET
+        - name: INTERSECTION_ID
+          valueFrom:
+            secretKeyRef:
+              name: detectionapi-secret
+              key: INTERSECTION_Dytiki_Pyli_ID
+
+        - name: INTERSECTION_NAME
+          value: "Dytiki Pyli"
+
+        # ===============================
+        # Databases
+        # ===============================
+        # DetectionDB (MongoDB - Time Series)
+        ## SECRET
+        - name: MONGO_ROOT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: detectionapi-secret
+              key: MONGO_ROOT_USERNAME
+        - name: MONGO_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: detectionapi-secret
+              key: MONGO_ROOT_PASSWORD
         - name: Mongo__ConnectionString
           value: "mongodb://$(MONGO_ROOT_USERNAME):$(MONGO_ROOT_PASSWORD)@detectiondb:27017"
+        
         - name: Mongo__Database
           value: "DetectionDB"
         - name: Mongo__Collections__VehicleCount
@@ -38,51 +71,37 @@ spec:
           value: "public_transport"
         - name: Mongo__Collections__Incident
           value: "incident"
-        - name: MONGO_ROOT_USERNAME
-          valueFrom:
-            secretKeyRef:
-              name: detectiondb-secret
-              key: MONGO_ROOT_USERNAME
-        - name: MONGO_ROOT_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: detectiondb-secret
-              key: MONGO_ROOT_PASSWORD
 
-        # Redis
+        # DetectionCacheDB (Redis - Real Time)
         - name: Redis__Host
           value: "detectioncachedb"
         - name: Redis__Port
           value: "6379"
+        ## SECRET
         - name: Redis__Password
-          value: ""
-        - name: Redis__Database
-          value: "0"
-        - name: Redis__KeyPrefix__VehicleCount
-          value: "sensor:{intersection_id}:vehicle_count"
-        - name: Redis__KeyPrefix__PedestrianCount
-          value: "sensor:{intersection_id}:pedestrian_count"
-        - name: Redis__KeyPrefix__CyclistCount
-          value: "sensor:{intersection_id}:cyclist_count"
-        - name: Redis__KeyPrefix__EmergencyDetected
-          value: "sensor:{intersection_id}:emergency_detected"
-        - name: Redis__KeyPrefix__PublicTransportDetected
-          value: "sensor:{intersection_id}:public_transport_detected"
-        - name: Redis__KeyPrefix__IncidentDetected
-          value: "sensor:{intersection_id}:incident_detected"
-
-        # JWT
-        - name: Jwt__Issuer
-          value: "http://stls_backend:8080"
-        - name: Jwt__Audience
-          value: "http://stls_backend:8080"
-        - name: Jwt__Key
           valueFrom:
             secretKeyRef:
               name: detectionapi-secret
-              key: JWT_KEY
+              key: REDIS_PASSWORD
 
+        - name: Redis__Database
+          value: "0"
+        - name: Redis__KeyPrefix__VehicleCount
+          value: "sensor.count.{intersection}.vehicle"
+        - name: Redis__KeyPrefix__PedestrianCount
+          value: "sensor.count.{intersection}.pedestrian"
+        - name: Redis__KeyPrefix__CyclistCount
+          value: "sensor.count.{intersection}.cyclist"
+        - name: Redis__KeyPrefix__EmergencyDetected
+          value: "sensor.detection.{intersection}.emergency"
+        - name: Redis__KeyPrefix__PublicTransportDetected
+          value: "sensor.detection.{intersection}.public_transport"
+        - name: Redis__KeyPrefix__IncidentDetected
+          value: "sensor.detection.{intersection}.incident"
+
+        # ===============================
         # CORS
+        # ===============================
         - name: Cors__AllowedOrigins
           value: "http://localhost:5173"
         - name: Cors__AllowedMethods
@@ -90,11 +109,28 @@ spec:
         - name: Cors__AllowedHeaders
           value: "Content-Type,Authorization"
 
+        # ===============================
+        # JWT
+        # ===============================
+        - name: Jwt__Issuer
+          value: "http://stls_backend:8080"
+        - name: Jwt__Audience
+          value: "http://stls_backend:8080"
+        ## SECRET
+        - name: Jwt__Key
+          valueFrom:
+            secretKeyRef:
+              name: detectionapi-secret
+              key: JWT_KEY
+
+        # ===============================
         # RabbitMQ
+        # ===============================
         - name: RabbitMQ__Host
           value: "rabbitmq"
         - name: RabbitMQ__Port
           value: "5672"
+        ## SECRET
         - name: RabbitMQ__Username
           valueFrom:
             secretKeyRef:
@@ -106,22 +142,20 @@ spec:
               name: detectionapi-secret
               key: RABBITMQ_PASSWORD
 
-        # Exchanges
         - name: RabbitMQ__Exchanges__Sensor
           value: "SENSOR.EXCHANGE"
         - name: RabbitMQ__RoutingKeys__Sensor__EmergencyVehicle
-          value: "sensor.emergency_vehicle.detected.{intersection_id}"
+          value: "sensor.detection.{intersection}.emergency"
         - name: RabbitMQ__RoutingKeys__Sensor__PublicTransport
-          value: "sensor.public_transport.detected.{intersection_id}"
+          value: "sensor.detection.{intersection}.public_transport"
         - name: RabbitMQ__RoutingKeys__Sensor__IncidentDetected
-          value: "sensor.incident.detected.{intersection_id}"
-
+          value: "sensor.detection.{intersection}.incident"
         - name: RabbitMQ__Exchanges__Log
           value: "LOG.EXCHANGE"
         - name: RabbitMQ__RoutingKeys__Log__Audit
-          value: "log.sensor.detection_service.audit"
+          value: "log.sensor.detection_service.{intersection}.audit"
         - name: RabbitMQ__RoutingKeys__Log__Error
-          value: "log.sensor.detection_service.error"
+          value: "log.sensor.detection_service.{intersection}.error"
 
         livenessProbe:
           httpGet:
@@ -140,3 +174,18 @@ spec:
           periodSeconds: 20
           timeoutSeconds: 3
           failureThreshold: 3
+
+# Service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: detectionapi-dytiki-pyli
+spec:
+  type: NodePort
+  ports:
+  - port: 8080
+    targetPort: 8080
+    nodePort: 30123
+  selector:
+    app: detectionapi-dytiki-pyli

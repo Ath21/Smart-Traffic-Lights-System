@@ -1,7 +1,9 @@
+version: '3.9'
+
 services:
-  detection_db:
+  detectiondb:
     image: mongo:6.0
-    container_name: detectiondb_container
+    container_name: detectiondb
     networks:
       - detection_network
 

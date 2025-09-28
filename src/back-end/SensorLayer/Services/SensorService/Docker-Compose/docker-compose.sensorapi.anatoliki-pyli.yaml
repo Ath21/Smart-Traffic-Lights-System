@@ -1,0 +1,55 @@
+version: "3.9"
+
+services:
+  sensorapi-anatoliki-pyli:
+    image: ath21/stls:sensor_api
+    container_name: sensorapi-anatoliki-pyli
+    ports:
+      - "5072:8080"
+    env_file:
+      - ./secret.env
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      INTERSECTION_ID: ${INTERSECTION_Anatoliki_Pyli_ID}
+      INTERSECTION_NAME: "Anatoliki Pyli"
+
+      Mongo__ConnectionString: mongodb://${MONGO_ROOT_USERNAME}:${MONGO_ROOT_PASSWORD}@detectiondb:27017
+      Mongo__Database: DetectionDB
+      Mongo__Collections__VehicleCount: vehicle_count
+      Mongo__Collections__PedestrianCount: pedestrian_count
+      Mongo__Collections__CyclistCount: cyclist_count
+
+      Redis__Host: detectioncachedb
+      Redis__Port: 6379
+      Redis__Database: 0
+
+      Jwt__Issuer: http://stls_backend:8080
+      Jwt__Audience: http://stls_backend:8080
+      Jwt__Key: ${JWT_KEY}
+
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Port: 5672
+      RabbitMQ__Username: ${RABBITMQ_USERNAME}
+      RabbitMQ__Password: ${RABBITMQ_PASSWORD}
+
+      RabbitMQ__Exchanges__Sensor: SENSOR.EXCHANGE
+      RabbitMQ__RoutingKeys__Sensor__VehicleCount: sensor.count.{intersection}.vehicle
+      RabbitMQ__RoutingKeys__Sensor__PedestrianCount: sensor.count.{intersection}.pedestrian
+      RabbitMQ__RoutingKeys__Sensor__CyclistCount: sensor.count.{intersection}.cyclist
+
+      RabbitMQ__Exchanges__Log: LOG.EXCHANGE
+      RabbitMQ__RoutingKeys__Log__Audit: log.sensor.sensor_service.{intersection}.audit
+      RabbitMQ__RoutingKeys__Log__Error: log.sensor.sensor_service.{intersection}.error
+
+    networks:
+      - detection_cache_network
+      - detection_network
+      - rabbitmq_network
+
+networks:
+  detection_network:
+    external: true
+  detection_cache_network:
+    external: true
+  rabbitmq_network:
+    external: true

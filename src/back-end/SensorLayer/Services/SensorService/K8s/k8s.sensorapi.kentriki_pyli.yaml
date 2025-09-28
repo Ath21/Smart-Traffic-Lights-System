@@ -1,27 +1,56 @@
+# Deployment
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: sensor-api
+  name: sensorapi-kentriki-pyli
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: sensor-api
+      app: sensorapi-kentriki-pyli
   template:
     metadata:
       labels:
-        app: sensor-api
+        app: sensorapi-kentriki-pyli
     spec:
       containers:
-      - name: sensor-api
+      - name: sensorapi
         image: ath21/stls:sensor_api
         ports:
         - containerPort: 8080
         env:
+        # ===============================
+        # ASP.NET Core
+        # ===============================
         - name: ASPNETCORE_ENVIRONMENT
           value: "Development"
 
-        # Mongo
+        # ===============================
+        # Intersection identity
+        # ===============================
+        - name: INTERSECTION_ID
+          valueFrom:
+            secretKeyRef:
+              name: sensorapi-secret
+              key: INTERSECTION_Kentriki_Pyli_ID
+        - name: INTERSECTION_NAME
+          value: "Kentriki Pyli"
+
+        # ===============================
+        # Databases
+        # ===============================
+        # DetectionDB (MongoDB - Time Series)
+        - name: MONGO_ROOT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: sensorapi-secret
+              key: MONGO_ROOT_USERNAME
+        - name: MONGO_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: sensorapi-secret
+              key: MONGO_ROOT_PASSWORD
         - name: Mongo__ConnectionString
           value: "mongodb://$(MONGO_ROOT_USERNAME):$(MONGO_ROOT_PASSWORD)@detectiondb:27017"
         - name: Mongo__Database
@@ -32,46 +61,39 @@ spec:
           value: "pedestrian_count"
         - name: Mongo__Collections__CyclistCount
           value: "cyclist_count"
-        - name: Mongo__Collections__Emergency
-          value: "emergency_vehicle"
-        - name: Mongo__Collections__PublicTransport
-          value: "public_transport"
-        - name: Mongo__Collections__Incident
-          value: "incident"
-        - name: MONGO_ROOT_USERNAME
-          valueFrom:
-            secretKeyRef:
-              name: detectiondb-secret
-              key: MONGO_ROOT_USERNAME
-        - name: MONGO_ROOT_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: detectiondb-secret
-              key: MONGO_ROOT_PASSWORD
 
-        # Redis
+        # DetectionCacheDB (Redis - Real Time)
         - name: Redis__Host
           value: "detectioncachedb"
         - name: Redis__Port
           value: "6379"
         - name: Redis__Password
-          value: ""
+          valueFrom:
+            secretKeyRef:
+              name: sensorapi-secret
+              key: REDIS_PASSWORD
         - name: Redis__Database
           value: "0"
         - name: Redis__KeyPrefix__VehicleCount
-          value: "sensor:{intersection_id}:vehicle_count"
+          value: "sensor.count.{intersection}.vehicle"
         - name: Redis__KeyPrefix__PedestrianCount
-          value: "sensor:{intersection_id}:pedestrian_count"
+          value: "sensor.count.{intersection}.pedestrian"
         - name: Redis__KeyPrefix__CyclistCount
-          value: "sensor:{intersection_id}:cyclist_count"
-        - name: Redis__KeyPrefix__EmergencyDetected
-          value: "sensor:{intersection_id}:emergency_detected"
-        - name: Redis__KeyPrefix__PublicTransportDetected
-          value: "sensor:{intersection_id}:public_transport_detected"
-        - name: Redis__KeyPrefix__IncidentDetected
-          value: "sensor:{intersection_id}:incident_detected"
+          value: "sensor.count.{intersection}.cyclist"
 
+        # ===============================
+        # CORS
+        # ===============================
+        - name: Cors__AllowedOrigins
+          value: "http://localhost:5173"
+        - name: Cors__AllowedMethods
+          value: "GET,POST,PUT,PATCH,DELETE"
+        - name: Cors__AllowedHeaders
+          value: "Content-Type,Authorization"
+
+        # ===============================
         # JWT
+        # ===============================
         - name: Jwt__Issuer
           value: "http://stls_backend:8080"
         - name: Jwt__Audience
@@ -82,15 +104,9 @@ spec:
               name: sensorapi-secret
               key: JWT_KEY
 
-        # CORS
-        - name: Cors__AllowedOrigins
-          value: "http://localhost:5173"
-        - name: Cors__AllowedMethods
-          value: "GET,POST,PUT,PATCH,DELETE"
-        - name: Cors__AllowedHeaders
-          value: "Content-Type,Authorization"
-
+        # ===============================
         # RabbitMQ
+        # ===============================
         - name: RabbitMQ__Host
           value: "rabbitmq"
         - name: RabbitMQ__Port
@@ -106,22 +122,26 @@ spec:
               name: sensorapi-secret
               key: RABBITMQ_PASSWORD
 
-        # Exchanges
+        # ===============================
+        # RabbitMQ Exchanges
+        # ===============================
+        ## SENSOR.EXCHANGE
         - name: RabbitMQ__Exchanges__Sensor
           value: "SENSOR.EXCHANGE"
         - name: RabbitMQ__RoutingKeys__Sensor__VehicleCount
-          value: "sensor.vehicle.count.{intersection_id}"
+          value: "sensor.count.{intersection}.vehicle"
         - name: RabbitMQ__RoutingKeys__Sensor__PedestrianCount
-          value: "sensor.pedestrian.count.{intersection_id}"
+          value: "sensor.count.{intersection}.pedestrian"
         - name: RabbitMQ__RoutingKeys__Sensor__CyclistCount
-          value: "sensor.cyclist.count.{intersection_id}"
+          value: "sensor.count.{intersection}.cyclist"
 
+        ## LOG.EXCHANGE
         - name: RabbitMQ__Exchanges__Log
           value: "LOG.EXCHANGE"
         - name: RabbitMQ__RoutingKeys__Log__Audit
-          value: "log.sensor.sensor_service.audit"
+          value: "log.sensor.sensor_service.{intersection}.audit"
         - name: RabbitMQ__RoutingKeys__Log__Error
-          value: "log.sensor.sensor_service.error"
+          value: "log.sensor.sensor_service.{intersection}.error"
 
         livenessProbe:
           httpGet:
@@ -140,3 +160,18 @@ spec:
           periodSeconds: 20
           timeoutSeconds: 3
           failureThreshold: 3
+
+# Service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sensorapi-kentriki-pyli
+spec:
+  type: NodePort
+  ports:
+  - port: 8080
+    targetPort: 8080
+    nodePort: 30124
+  selector:
+    app: sensorapi-kentriki-pyli

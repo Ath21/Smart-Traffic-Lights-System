@@ -1,7 +1,7 @@
 services:
-  detection_cache_db:
+  detectioncachedb:
     image: redis:7.4
-    container_name: detectioncachedb_container
+    container_name: detectioncachedb
     networks:
       - detection_cache_network
 

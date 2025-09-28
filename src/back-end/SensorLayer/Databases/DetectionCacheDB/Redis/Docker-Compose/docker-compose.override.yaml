@@ -1,5 +1,7 @@
+version: '3.9'
+
 services:
-  detection_cache_db:
+  detectioncachedb:
     ports:
       - '6380:6379'
     command: ["redis-server", "--appendonly", "yes"]

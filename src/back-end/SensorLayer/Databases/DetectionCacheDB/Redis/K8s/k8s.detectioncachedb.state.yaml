@@ -1,8 +1,9 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: detectioncachedb
 spec:
+  serviceName: detectioncachedb
   replicas: 1
   selector:
     matchLabels:
@@ -19,9 +20,16 @@ spec:
         ports:
         - containerPort: 6379
         volumeMounts:
-        - name: redis-storage
+        - name: detectioncache-data
           mountPath: /data
+        livenessProbe:
+          exec:
+            command: ["redis-cli", "ping"]
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 5
       volumes:
-      - name: redis-storage
+      - name: detectioncache-data
         persistentVolumeClaim:
           claimName: detectioncachedb-pvc

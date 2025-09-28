@@ -1,8 +1,9 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: detectiondb
 spec:
+  serviceName: detectiondb
   replicas: 1
   selector:
     matchLabels:
@@ -22,16 +23,23 @@ spec:
           valueFrom:
             secretKeyRef:
               name: detectiondb-secret
-              key: MONGO_ROOT_USERNAME
+              key: MONGO_INITDB_ROOT_USERNAME
         - name: MONGO_INITDB_ROOT_PASSWORD
           valueFrom:
             secretKeyRef:
               name: detectiondb-secret
-              key: MONGO_ROOT_PASSWORD
+              key: MONGO_INITDB_ROOT_PASSWORD
         volumeMounts:
-        - name: mongo-storage
+        - name: mongo-data
           mountPath: /data/db
+        livenessProbe:
+          exec:
+            command: ["mongosh", "--eval", "db.adminCommand('ping')"]
+          initialDelaySeconds: 15
+          periodSeconds: 20
+          timeoutSeconds: 5
+          failureThreshold: 5
       volumes:
-      - name: mongo-storage
+      - name: mongo-data
         persistentVolumeClaim:
           claimName: detectiondb-pvc
