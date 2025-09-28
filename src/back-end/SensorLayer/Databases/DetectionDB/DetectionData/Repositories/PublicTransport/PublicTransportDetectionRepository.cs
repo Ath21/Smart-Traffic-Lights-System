@@ -14,23 +14,9 @@ public class PublicTransportDetectionRepository : IPublicTransportDetectionRepos
         _context = context;
     }
 
-    public async Task<PublicTransportDetection?> GetLatestAsync(Guid intersectionId)
-    {
-        return await _context.PublicTransports.Find(d => d.IntersectionId == intersectionId)
-            .SortByDescending(d => d.Timestamp)
-            .FirstOrDefaultAsync();
-    }
+    public async Task InsertAsync(PublicTransportDetection entity) =>
+        await _context.PublicTransports.InsertOneAsync(entity);
 
-    public async Task AddAsync(PublicTransportDetection detection)
-    {
-        await _context.PublicTransports.InsertOneAsync(detection);
-    }
-
-    public async Task<List<PublicTransportDetection>> GetHistoryAsync(Guid intersectionId, int limit = 50)
-    {
-        return await _context.PublicTransports.Find(d => d.IntersectionId == intersectionId)
-            .SortByDescending(d => d.Timestamp)
-            .Limit(limit)
-            .ToListAsync();
-    }
+    public async Task<List<PublicTransportDetection>> GetByIntersectionAsync(int intersectionId) =>
+        await _context.PublicTransports.Find(x => x.IntersectionId == intersectionId).ToListAsync();
 }

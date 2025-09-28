@@ -14,23 +14,9 @@ public class IncidentDetectionRepository : IIncidentDetectionRepository
         _context = context;
     }
 
-    public async Task<IncidentDetection?> GetLatestAsync(Guid intersectionId)
-    {
-        return await _context.Incidents.Find(d => d.IntersectionId == intersectionId)
-            .SortByDescending(d => d.Timestamp)
-            .FirstOrDefaultAsync();
-    }
+    public async Task InsertAsync(IncidentDetection entity) =>
+        await _context.Incidents.InsertOneAsync(entity);
 
-    public async Task AddAsync(IncidentDetection incident)
-    {
-        await _context.Incidents.InsertOneAsync(incident);
-    }
-
-    public async Task<List<IncidentDetection>> GetHistoryAsync(Guid intersectionId, int limit = 50)
-    {
-        return await _context.Incidents.Find(d => d.IntersectionId == intersectionId)
-            .SortByDescending(d => d.Timestamp)
-            .Limit(limit)
-            .ToListAsync();
-    }
+    public async Task<List<IncidentDetection>> GetByIntersectionAsync(int intersectionId) =>
+        await _context.Incidents.Find(x => x.IntersectionId == intersectionId).ToListAsync();
 }

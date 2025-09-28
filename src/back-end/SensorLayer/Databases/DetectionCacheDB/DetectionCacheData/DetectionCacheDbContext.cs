@@ -38,4 +38,17 @@ public class DetectionCacheDbContext : IDisposable
             return false;
         }
     }
+
+    // 🔹 Helper methods for repositories
+    public async Task SetValueAsync(string key, string value, TimeSpan? expiry = null) =>
+        await Database.StringSetAsync(key, value, expiry);
+
+    public async Task<string?> GetValueAsync(string key) =>
+        await Database.StringGetAsync(key);
+
+    public async Task<long> IncrementAsync(string key, long value = 1) =>
+        await Database.StringIncrementAsync(key, value);
+
+    public async Task<bool> KeyExistsAsync(string key) =>
+        await Database.KeyExistsAsync(key);
 }

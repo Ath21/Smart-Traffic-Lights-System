@@ -1,4 +1,5 @@
 using System;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace DetectionData.Collections.Count;
@@ -6,13 +7,14 @@ namespace DetectionData.Collections.Count;
 public class PedestrianCount
 {
     [BsonId]
-    [BsonRepresentation(MongoDB.Bson.BsonType.String)]
-    public Guid Id { get; set; } = Guid.NewGuid();
+    public ObjectId Id { get; set; }
+
     [BsonElement("timestamp")]
     public DateTime Timestamp { get; set; }
-    [BsonElement("intersectionId")]
-    [BsonRepresentation(MongoDB.Bson.BsonType.String)]
-    public Guid IntersectionId { get; set; }
+
+    [BsonElement("intersection_id")]
+    public int IntersectionId { get; set; }
+
     [BsonElement("count")]
     public int Count { get; set; }
 }

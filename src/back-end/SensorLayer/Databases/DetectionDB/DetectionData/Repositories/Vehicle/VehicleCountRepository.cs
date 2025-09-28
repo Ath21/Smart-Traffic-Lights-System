@@ -14,15 +14,9 @@ public class VehicleCountRepository : IVehicleCountRepository
         _context = context;
     }
 
-    public async Task AddAsync(VehicleCount record) =>
-        await _context.VehicleCounts.InsertOneAsync(record);
+    public async Task InsertAsync(VehicleCount entity) =>
+        await _context.VehicleCounts.InsertOneAsync(entity);
 
-    public async Task<List<VehicleCount>> GetHistoryAsync(Guid intersectionId, int limit = 50)
-    {
-        return await _context.VehicleCounts
-            .Find(r => r.IntersectionId == intersectionId)
-            .SortByDescending(r => r.Timestamp)
-            .Limit(limit)
-            .ToListAsync();
-    }
+    public async Task<List<VehicleCount>> GetByIntersectionAsync(int intersectionId) =>
+        await _context.VehicleCounts.Find(x => x.IntersectionId == intersectionId).ToListAsync();
 }

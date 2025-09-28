@@ -1,6 +1,5 @@
 using AutoMapper;
-using DetectionCacheData.Entities;
-using SensorStore.Models.Dtos;
+using DetectionData.Collections.Count;
 using SensorStore.Models.Requests;
 using SensorStore.Models.Responses;
 
@@ -10,14 +9,13 @@ public class SensorStoreProfile : Profile
 {
     public SensorStoreProfile()
     {
-        // Entities ↔ DTO
-        CreateMap<DetectionCache, SensorSnapshotDto>().ReverseMap();
+        CreateMap<SensorReportRequest, VehicleCount>()
+            .ForMember(dest => dest.Count, opt => opt.MapFrom(src => src.VehicleCount));
 
-        // DTO ↔ Response
-        CreateMap<SensorSnapshotDto, SensorSnapshotResponse>();
-        CreateMap<SensorHistoryDto, SensorHistoryResponse>();
+        CreateMap<SensorReportRequest, PedestrianCount>()
+            .ForMember(dest => dest.Count, opt => opt.MapFrom(src => src.PedestrianCount));
 
-        // Request ↔ DTO
-        CreateMap<UpdateSensorSnapshotRequest, SensorSnapshotDto>();
+        CreateMap<SensorReportRequest, CyclistCount>()
+            .ForMember(dest => dest.Count, opt => opt.MapFrom(src => src.CyclistCount));
     }
 }

@@ -5,6 +5,6 @@ namespace DetectionData.Repositories.Pedestrian;
 
 public interface IPedestrianCountRepository
 {
-    Task AddAsync(PedestrianCount record);
-    Task<List<PedestrianCount>> GetHistoryAsync(Guid intersectionId, int limit = 50);
+    Task InsertAsync(PedestrianCount entity);
+    Task<List<PedestrianCount>> GetByIntersectionAsync(int intersectionId);
 }

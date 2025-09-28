@@ -5,6 +5,6 @@ namespace DetectionData.Repositories.Cyclist;
 
 public interface ICyclistCountRepository
 {
-    Task AddAsync(CyclistCount record);
-    Task<List<CyclistCount>> GetHistoryAsync(Guid intersectionId, int limit = 50);
+    Task InsertAsync(CyclistCount entity);
+    Task<List<CyclistCount>> GetByIntersectionAsync(int intersectionId);
 }

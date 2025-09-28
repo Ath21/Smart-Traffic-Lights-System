@@ -32,7 +32,7 @@ namespace SensorStore.Controllers
                 if (!await _detectionCacheDbContext.CanConnectAsync())
                     return StatusCode(503, new { status = "Not Ready", reason = "DetectionCacheDB Redis unreachable" });
 
-                if (!_bus.Topology.TryGetPublishAddress(typeof(LogMessages.AuditLogMessage), out _))
+                if (!_bus.Topology.TryGetPublishAddress(typeof(LogMessages.LogMessage), out _))
                     return StatusCode(503, new { status = "Not Ready", reason = "RabbitMQ not connected" });
 
                 return Ok(new { status = "Ready", service = "Sensor Service" });

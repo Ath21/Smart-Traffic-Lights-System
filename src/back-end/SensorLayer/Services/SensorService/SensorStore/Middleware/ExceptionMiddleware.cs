@@ -1,8 +1,7 @@
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Text.Json;
-using MassTransit;
-using Microsoft.EntityFrameworkCore;
-using RabbitMQ.Client.Exceptions;
 using SensorStore.Publishers.Logs;
 
 namespace SensorStore.Middleware;
@@ -11,13 +10,16 @@ public class ExceptionMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionMiddleware> _logger;
+    private readonly ISensorLogPublisher _logPublisher;
 
-    private const string ServiceTag = "[" + nameof(ExceptionMiddleware) + "]";
-
-    public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
+    public ExceptionMiddleware(
+        RequestDelegate next,
+        ILogger<ExceptionMiddleware> logger,
+        ISensorLogPublisher logPublisher)
     {
         _next = next;
         _logger = logger;
+        _logPublisher = logPublisher;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -28,65 +30,56 @@ public class ExceptionMiddleware
         }
         catch (Exception ex)
         {
-            await HandleErrorAsync(context, ex);
-        }
-    }
+            // Local log
+            _logger.LogError(ex, "Unhandled exception occurred: {Message}", ex.Message);
 
-    private async Task HandleErrorAsync(HttpContext context, Exception ex)
-    {
-        var (statusCode, userMessage, errorType) = MapException(ex);
+            // Try to extract intersection id if available (from route or query)
+            var intersectionId = ExtractIntersectionId(context);
 
-        _logger.LogError(ex, "{Tag} {Message}", ServiceTag, userMessage);
-
-        try
-        {
-            var publisher = context.RequestServices.GetRequiredService<ISensorLogPublisher>();
-
-            await publisher.PublishErrorAsync(
-                errorType,
-                $"{ServiceTag} {ex.Message}",
-                new
+            // Publish to RabbitMQ
+            await _logPublisher.PublishErrorAsync(
+                intersectionId,
+                errorType: ex.GetType().Name,
+                message: ex.Message,
+                metadata: new Dictionary<string, object?>
                 {
-                    Path = context.Request.Path,
-                    Method = context.Request.Method,
-                    TraceId = context.TraceIdentifier,
-                    Exception = ex.GetType().Name,
-                    StackTrace = ex.StackTrace
-                });
-        }
-        catch (Exception pubEx)
-        {
-            _logger.LogError(pubEx, "{Tag} Failed to publish error log", ServiceTag);
-        }
+                    ["path"] = context.Request.Path,
+                    ["method"] = context.Request.Method,
+                    ["stackTrace"] = ex.StackTrace
+                }
+            );
 
-        context.Response.StatusCode = (int)statusCode;
-        context.Response.ContentType = "application/json";
+            // Return response
+            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+            context.Response.ContentType = "application/json";
 
-        await context.Response.WriteAsync(JsonSerializer.Serialize(new
-        {
-            error = userMessage,
-            details = ex.Message,
-            traceId = context.TraceIdentifier
-        }));
+            var result = JsonSerializer.Serialize(new
+            {
+                error = "Internal Server Error",
+                message = ex.Message,
+                traceId = context.TraceIdentifier
+            });
+
+            await context.Response.WriteAsync(result);
+        }
     }
 
-    private static (HttpStatusCode statusCode, string userMessage, string errorType) MapException(Exception ex) =>
-        ex switch
+    private int ExtractIntersectionId(HttpContext context)
+    {
+        // Example: GET /api/sensors/{intersectionId}
+        if (context.Request.RouteValues.TryGetValue("intersectionId", out var routeVal) &&
+            int.TryParse(routeVal?.ToString(), out var id))
         {
-            UnauthorizedAccessException => (HttpStatusCode.Unauthorized, "Unauthorized access", "AUTH_ERROR"),
-            KeyNotFoundException => (HttpStatusCode.NotFound, "Resource not found", "NOT_FOUND"),
-            InvalidOperationException => (HttpStatusCode.BadRequest, "Invalid operation", "INVALID_OPERATION"),
-            ArgumentNullException => (HttpStatusCode.BadRequest, "Missing required parameter", "ARGUMENT_NULL"),
-            ArgumentException => (HttpStatusCode.BadRequest, "Invalid parameter", "ARGUMENT_ERROR"),
-            FormatException => (HttpStatusCode.BadRequest, "Invalid data format", "FORMAT_ERROR"),
-            JsonException => (HttpStatusCode.BadRequest, "Invalid JSON payload", "JSON_ERROR"),
-            TimeoutException or TaskCanceledException => (HttpStatusCode.RequestTimeout, "Operation timed out", "TIMEOUT"),
-            HttpRequestException => (HttpStatusCode.BadGateway, "External service unavailable", "HTTP_REQUEST_ERROR"),
-            RequestTimeoutException => (HttpStatusCode.GatewayTimeout, "Message broker timeout", "BROKER_TIMEOUT"),
-            BrokerUnreachableException => (HttpStatusCode.BadGateway, "Message broker unreachable", "BROKER_UNREACHABLE"),
-            OperationInterruptedException => (HttpStatusCode.ServiceUnavailable, "Broker operation interrupted", "BROKER_INTERRUPTED"),
-            DbUpdateConcurrencyException => (HttpStatusCode.Conflict, "Database concurrency conflict", "DB_CONCURRENCY_ERROR"),
-            DbUpdateException => (HttpStatusCode.Conflict, "Database update failed", "DB_UPDATE_ERROR"),
-            _ => (HttpStatusCode.InternalServerError, "An unexpected error occurred", "UNEXPECTED")
-        };
+            return id;
+        }
+
+        // Optional: look into query ?intersectionId=123
+        if (context.Request.Query.TryGetValue("intersectionId", out var queryVal) &&
+            int.TryParse(queryVal, out var qid))
+        {
+            return qid;
+        }
+
+        return -1; // default: unknown
+    }
 }

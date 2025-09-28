@@ -1,4 +1,5 @@
 using System;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace DetectionData.Collections.Detection;
@@ -6,17 +7,11 @@ namespace DetectionData.Collections.Detection;
 public class IncidentDetection
 {
     [BsonId]
-    [BsonRepresentation(MongoDB.Bson.BsonType.String)]
-    public Guid Id { get; set; } = Guid.NewGuid();
-    [BsonElement("timestamp")]
+    public ObjectId Id { get; set; }
+
     public DateTime Timestamp { get; set; }
-    [BsonElement("intersectionId")]
-    [BsonRepresentation(MongoDB.Bson.BsonType.String)]
-    public Guid IntersectionId { get; set; }
-    [BsonElement("type")]
-    public string Type { get; set; } = string.Empty;
-    [BsonElement("severity")]   
-    public int Severity { get; set; }
-    [BsonElement("description")]
-    public string Description { get; set; } = string.Empty;
+    public int IntersectionId { get; set; }
+    public string Type { get; set; } // collision
+    public int Severity { get; set; } // 1-5
+    public string Description { get; set; }
 }

@@ -12,7 +12,7 @@ services:
       # Databases
       # ===============================
 
-      ## DetectionDB (MongoDB)
+      ## DetectionDB (MongoDB - Time Series)
       Mongo__ConnectionString: mongodb://mongo:mongo123@detection_db:27017
       Mongo__Database: DetectionDB
       Mongo__Collections__VehicleCount: vehicle_count
@@ -22,17 +22,17 @@ services:
       Mongo__Collections__PublicTransport: public_transport
       Mongo__Collections__Incident: incident
 
-      ## DetectionCacheDB (Redis)
+      ## DetectionCacheDB (Redis - Real Time)
       Redis__Host: detection_cache_db
       Redis__Port: 6379
       Redis__Password: ""
       Redis__Database: 0
-      Redis__KeyPrefix__VehicleCount: sensor:{intersection}.vehicle_count
-      Redis__KeyPrefix__PedestrianCount: sensor:{intersection}.pedestrian_count
-      Redis__KeyPrefix__CyclistCount: sensor:{intersection}.cyclist_count
-      Redis__KeyPrefix__EmergencyDetected: sensor:{intersection}.emergency_detected
-      Redis__KeyPrefix__PublicTransportDetected: sensor:{intersection}.public_transport_detected
-      Redis__KeyPrefix__IncidentDetected: sensor:{intersection}.incident_detected
+      Redis__KeyPrefix__VehicleCount: sensor.count.{intersection}.vehicle
+      Redis__KeyPrefix__PedestrianCount: sensor.count.{intersection}.pedestrian
+      Redis__KeyPrefix__CyclistCount: sensor.count.{intersection}.cyclist
+      Redis__KeyPrefix__EmergencyDetected: sensor.detection.{intersection}.emergency
+      Redis__KeyPrefix__PublicTransportDetected: sensor.detection.{intersection}.public_transport
+      Redis__KeyPrefix__IncidentDetected: sensor.detection.{intersection}.incident
 
       # ===============================
       # CORS Policy
@@ -63,16 +63,16 @@ services:
       ## SENSOR.EXCHANGE
       RabbitMQ__Exchanges__Sensor: SENSOR.EXCHANGE
       # --- Publish
-      RabbitMQ__RoutingKeys__Sensor__EmergencyVehicle: sensor.emergency_vehicle.detected.{intersection}
-      RabbitMQ__RoutingKeys__Sensor__PublicTransport: sensor.public_transport.detected.{intersection}
-      RabbitMQ__RoutingKeys__Sensor__IncidentDetected: sensor.incident.detected.{intersection}
+      RabbitMQ__RoutingKeys__Sensor__EmergencyVehicle: sensor.detection.{intersection}.emergency
+      RabbitMQ__RoutingKeys__Sensor__PublicTransport: sensor.detection.{intersection}.public_transport
+      RabbitMQ__RoutingKeys__Sensor__IncidentDetected: sensor.detection.{intersection}.incident
 
       ## LOG.EXCHANGE
       RabbitMQ__Exchanges__Log: LOG.EXCHANGE
       # --- Publish
-      RabbitMQ__RoutingKeys__Log__Audit: log.sensor.detection.{intersection}.audit
-      RabbitMQ__RoutingKeys__Log__Error: log.sensor.detection.{intersection}.error
-    
+      RabbitMQ__RoutingKeys__Log__Audit: log.sensor.detection_service.{intersection}.audit
+      RabbitMQ__RoutingKeys__Log__Error: log.sensor.detection_service.{intersection}.error
+
     depends_on:
       detection_db:
         condition: service_started

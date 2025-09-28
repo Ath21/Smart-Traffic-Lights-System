@@ -1,62 +1,78 @@
+using System;
 using AutoMapper;
-using DetectionCacheData.Entities;
-using DetectionCacheData.Repositories.Cache;
-using SensorStore.Models.Dtos;
+using DetectionCacheData.Repositories;
+using DetectionData.Collections.Count;
+using DetectionData.Repositories.Cyclist;
+using DetectionData.Repositories.Pedestrian;
+using DetectionData.Repositories.Vehicle;
+using SensorStore.Models.Requests;
+using SensorStore.Models.Responses;
 using SensorStore.Publishers.Count;
-using SensorStore.Publishers.Logs;
 
 namespace SensorStore.Business;
 
-public class SensorCountService : ISensorCountService
+public class SensorCountService
 {
-    private readonly ISensorCacheRepository _cacheRepo;
-    private readonly ISensorCountPublisher _countPublisher;
-    private readonly ISensorLogPublisher _logPublisher;
+    private readonly IVehicleCountRepository _vehicleRepo;
+    private readonly IPedestrianCountRepository _pedestrianRepo;
+    private readonly ICyclistCountRepository _cyclistRepo;
+    private readonly IDetectionCacheRepository _cacheRepo;
+    private readonly ISensorCountPublisher _publisher;
     private readonly IMapper _mapper;
-    private readonly ILogger<SensorCountService> _logger;
 
     public SensorCountService(
-        ISensorCacheRepository cacheRepo,
-        ISensorCountPublisher countPublisher,
-        ISensorLogPublisher logPublisher,
-        IMapper mapper,
-        ILogger<SensorCountService> logger)
+        IVehicleCountRepository vehicleRepo,
+        IPedestrianCountRepository pedestrianRepo,
+        ICyclistCountRepository cyclistRepo,
+        IDetectionCacheRepository cacheRepo,
+        ISensorCountPublisher publisher,
+        IMapper mapper)
     {
+        _vehicleRepo = vehicleRepo;
+        _pedestrianRepo = pedestrianRepo;
+        _cyclistRepo = cyclistRepo;
         _cacheRepo = cacheRepo;
-        _countPublisher = countPublisher;
-        _logPublisher = logPublisher;
+        _publisher = publisher;
         _mapper = mapper;
-        _logger = logger;
     }
 
-    public async Task<SensorSnapshotDto?> GetSnapshotAsync(Guid intersectionId)
+    public async Task<SensorResponse> GetSensorDataAsync(int intersectionId)
     {
-        var entity = await _cacheRepo.GetSnapshotAsync(intersectionId);
-        return entity == null ? null : _mapper.Map<SensorSnapshotDto>(entity);
-    }
+        var vehicleCount = await _cacheRepo.GetVehicleCountAsync(intersectionId) ?? 0;
+        var pedestrianCount = await _cacheRepo.GetPedestrianCountAsync(intersectionId) ?? 0;
+        var cyclistCount = await _cacheRepo.GetCyclistCountAsync(intersectionId) ?? 0;
+        var emergency = await _cacheRepo.GetEmergencyDetectedAsync(intersectionId) ?? false;
+        var publicTransport = await _cacheRepo.GetPublicTransportDetectedAsync(intersectionId) ?? false;
+        var incident = await _cacheRepo.GetIncidentDetectedAsync(intersectionId);
 
-    public async Task<IEnumerable<SensorHistoryDto>> GetHistoryAsync(Guid intersectionId)
-    {
-        // Redis snapshot-only; return mock/stub until Mongo history is added
-        return new List<SensorHistoryDto>
+        return new SensorResponse
         {
-            new() { Timestamp = DateTime.UtcNow.AddMinutes(-10), VehicleCount = 15, PedestrianCount = 6, CyclistCount = 2 },
-            new() { Timestamp = DateTime.UtcNow, VehicleCount = 20, PedestrianCount = 7, CyclistCount = 3 }
+            IntersectionId = intersectionId,
+            VehicleCount = vehicleCount,
+            PedestrianCount = pedestrianCount,
+            CyclistCount = cyclistCount,
+            EmergencyDetected = emergency,
+            PublicTransportDetected = publicTransport,
+            LastIncident = incident,
+            Timestamp = DateTime.UtcNow
         };
     }
 
-    public async Task<SensorSnapshotDto> UpdateSnapshotAsync(SensorSnapshotDto dto, float avgSpeed)
+    public async Task ReportSensorDataAsync(SensorReportRequest dto)
     {
-        var entity = _mapper.Map<DetectionCache>(dto);
-        await _cacheRepo.SetSnapshotAsync(dto.IntersectionId, entity);
+        // persist to MongoDB
+        await _vehicleRepo.InsertAsync(_mapper.Map<VehicleCount>(dto));
+        await _pedestrianRepo.InsertAsync(_mapper.Map<PedestrianCount>(dto));
+        await _cyclistRepo.InsertAsync(_mapper.Map<CyclistCount>(dto));
 
-        // Publish events
-        await _countPublisher.PublishVehicleCountAsync(dto.IntersectionId, dto.VehicleCount, avgSpeed);
-        await _countPublisher.PublishPedestrianCountAsync(dto.IntersectionId, dto.PedestrianCount);
-        await _countPublisher.PublishCyclistCountAsync(dto.IntersectionId, dto.CyclistCount);
+        // update Redis
+        await _cacheRepo.SetVehicleCountAsync(dto.IntersectionId, dto.VehicleCount);
+        await _cacheRepo.SetPedestrianCountAsync(dto.IntersectionId, dto.PedestrianCount);
+        await _cacheRepo.SetCyclistCountAsync(dto.IntersectionId, dto.CyclistCount);
 
-        await _logPublisher.PublishAuditAsync("UpdateSnapshot", $"Updated snapshot for {dto.IntersectionId}", dto);
-
-        return dto;
+        // publish events via publisher abstraction
+        await _publisher.PublishVehicleCountAsync(dto.IntersectionId, dto.VehicleCount, avgSpeed: 0); // extend dto if needed
+        await _publisher.PublishPedestrianCountAsync(dto.IntersectionId, dto.PedestrianCount);
+        await _publisher.PublishCyclistCountAsync(dto.IntersectionId, dto.CyclistCount);
     }
 }

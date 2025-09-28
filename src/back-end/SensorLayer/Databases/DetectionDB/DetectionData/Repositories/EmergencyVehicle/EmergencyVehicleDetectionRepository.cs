@@ -14,23 +14,9 @@ public class EmergencyVehicleDetectionRepository : IEmergencyVehicleDetectionRep
         _context = context;
     }
 
-    public async Task<EmergencyVehicleDetection?> GetLatestAsync(Guid intersectionId)
-    {
-        return await _context.EmergencyVehicles.Find(d => d.IntersectionId == intersectionId)
-            .SortByDescending(d => d.Timestamp)
-            .FirstOrDefaultAsync();
-    }
+    public async Task InsertAsync(EmergencyVehicleDetection entity) =>
+        await _context.EmergencyVehicles.InsertOneAsync(entity);
 
-    public async Task AddAsync(EmergencyVehicleDetection detection)
-    {
-        await _context.EmergencyVehicles.InsertOneAsync(detection);
-    }
-
-    public async Task<List<EmergencyVehicleDetection>> GetHistoryAsync(Guid intersectionId, int limit = 50)
-    {
-        return await _context.EmergencyVehicles.Find(d => d.IntersectionId == intersectionId)
-            .SortByDescending(d => d.Timestamp)
-            .Limit(limit)
-            .ToListAsync();
-    }
+    public async Task<List<EmergencyVehicleDetection>> GetByIntersectionAsync(int intersectionId) =>
+        await _context.EmergencyVehicles.Find(x => x.IntersectionId == intersectionId).ToListAsync();
 }

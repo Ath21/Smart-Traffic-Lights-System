@@ -17,10 +17,10 @@ namespace SensorStore.Controllers;
 [Route("api/sensors")]
 public class SensorsController : ControllerBase
 {
-    private readonly ISensorCountService _business;
+    private readonly SensorCountService _business;
     private readonly IMapper _mapper;
 
-    public SensorsController(ISensorCountService business, IMapper mapper)
+    public SensorsController(SensorCountService business, IMapper mapper)
     {
         _business = business;
         _mapper = mapper;
@@ -31,41 +31,30 @@ public class SensorsController : ControllerBase
     // Role: Anonymous
     // Description: Get the latest sensor snapshot for a specific intersection.
     // ============================================================
-    [HttpGet("{intersectionId:guid}")]
+    [HttpGet("{intersectionId:int}")]
     [AllowAnonymous]
-    public async Task<IActionResult> GetSnapshot(Guid intersectionId)
+    public async Task<IActionResult> GetSnapshot(int intersectionId)
     {
-        var dto = await _business.GetSnapshotAsync(intersectionId);
-        if (dto == null) return NotFound();
-
-        return Ok(_mapper.Map<SensorSnapshotResponse>(dto));
+        var response = await _business.GetSensorDataAsync(intersectionId);
+        return Ok(response);
     }
 
     // ============================================================
-    // GET: api/sensors/{intersectionId}/history
+    // POST: api/sensors/report
     // Role: TrafficOperator, Admin
-    // Description: Get historical sensor snapshots for a specific intersection.
+    // Description: Report new sensor data for a specific intersection.
     // ============================================================
-    [HttpGet("{intersectionId:guid}/history")]
+    [HttpPost("report")]
     [Authorize(Roles = "TrafficOperator,Admin")]
-    public async Task<IActionResult> GetHistory(Guid intersectionId)
+    public async Task<IActionResult> Report([FromBody] SensorReportRequest request)
     {
-        var dtos = await _business.GetHistoryAsync(intersectionId);
-        return Ok(_mapper.Map<IEnumerable<SensorHistoryResponse>>(dtos));
-    }
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
 
-    // ============================================================
-    // POST: api/sensors/update
-    // Role: TrafficOperator, Admin
-    // Description: Update the sensor snapshot for a specific intersection.
-    // ============================================================
-    [HttpPost("update")]
-    [Authorize(Roles = "TrafficOperator,Admin")]
-    public async Task<IActionResult> Update([FromBody] UpdateSensorSnapshotRequest request)
-    {
-        var dto = _mapper.Map<Models.Dtos.SensorSnapshotDto>(request);
-        var updated = await _business.UpdateSnapshotAsync(dto, request.AvgSpeed);
+        await _business.ReportSensorDataAsync(request);
 
-        return Ok(_mapper.Map<SensorSnapshotResponse>(updated));
+        // We can return the current snapshot after reporting
+        var snapshot = await _business.GetSensorDataAsync(request.IntersectionId);
+        return Ok(snapshot);
     }
 }

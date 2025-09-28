@@ -5,7 +5,6 @@ namespace DetectionData.Repositories.EmergencyVehicle;
 
 public interface IEmergencyVehicleDetectionRepository
 {
-    Task<EmergencyVehicleDetection?> GetLatestAsync(Guid intersectionId);
-    Task AddAsync(EmergencyVehicleDetection detection);
-    Task<List<EmergencyVehicleDetection>> GetHistoryAsync(Guid intersectionId, int limit = 50);
+    Task InsertAsync(EmergencyVehicleDetection entity);
+    Task<List<EmergencyVehicleDetection>> GetByIntersectionAsync(int intersectionId);
 }

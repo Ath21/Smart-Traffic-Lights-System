@@ -1,5 +1,7 @@
 using MassTransit;
 using RabbitMQ.Client;
+using SensorMessages;
+using LogMessages;
 
 namespace SensorStore;
 
@@ -9,9 +11,7 @@ public static class MassTransitSetup
     {
         services.AddMassTransit(x =>
         {
-            // Sensor service publishes sensor counts & logs
-            // No consumers (unless we later add commands for reset, calibration, etc.)
-
+            // Sensor service only publishes, no consumers for now
             x.UsingRabbitMq((context, cfg) =>
             {
                 var rabbit = configuration.GetSection("RabbitMQ");
@@ -26,32 +26,20 @@ public static class MassTransitSetup
                 var sensorExchange = rabbit["Exchanges:Sensor"];
                 var logExchange    = rabbit["Exchanges:Log"];
 
-                // Routing keys (publish)
-                var vehicleCountKey    = rabbit["RoutingKeys:Sensor:VehicleCount"];
-                var pedestrianCountKey = rabbit["RoutingKeys:Sensor:PedestrianCount"];
-                var cyclistCountKey    = rabbit["RoutingKeys:Sensor:CyclistCount"];
-
                 // =========================
                 // SENSOR COUNTS (Publish)
                 // =========================
-                cfg.Message<SensorMessages.VehicleCountMessage>(e => e.SetEntityName(sensorExchange));
-                cfg.Publish<SensorMessages.VehicleCountMessage>(e => e.ExchangeType = ExchangeType.Topic);
-
-                cfg.Message<SensorMessages.PedestrianCountMessage>(e => e.SetEntityName(sensorExchange));
-                cfg.Publish<SensorMessages.PedestrianCountMessage>(e => e.ExchangeType = ExchangeType.Topic);
-
-                cfg.Message<SensorMessages.CyclistCountMessage>(e => e.SetEntityName(sensorExchange));
-                cfg.Publish<SensorMessages.CyclistCountMessage>(e => e.ExchangeType = ExchangeType.Topic);
+                cfg.Message<SensorCountMessage>(e => e.SetEntityName(sensorExchange));
+                cfg.Publish<SensorCountMessage>(e => e.ExchangeType = ExchangeType.Topic);
 
                 // =========================
                 // LOGS (Publish)
                 // =========================
-                cfg.Message<LogMessages.AuditLogMessage>(e => e.SetEntityName(logExchange));
-                cfg.Publish<LogMessages.AuditLogMessage>(e => e.ExchangeType = ExchangeType.Topic);
+                cfg.Message<LogMessage>(e => e.SetEntityName(logExchange));
+                cfg.Publish<LogMessage>(e => e.ExchangeType = ExchangeType.Topic);
 
-                cfg.Message<LogMessages.ErrorLogMessage>(e => e.SetEntityName(logExchange));
-                cfg.Publish<LogMessages.ErrorLogMessage>(e => e.ExchangeType = ExchangeType.Topic);
-
+                // Since this service does not consume, we don’t need to bind queues.
+                // But leaving ConfigureEndpoints makes it future-proof if consumers are added later.
                 cfg.ConfigureEndpoints(context);
             });
         });

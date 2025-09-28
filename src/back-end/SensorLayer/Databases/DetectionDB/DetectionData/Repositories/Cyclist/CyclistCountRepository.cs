@@ -14,15 +14,9 @@ public class CyclistCountRepository : ICyclistCountRepository
         _context = context;
     }
 
-    public async Task AddAsync(CyclistCount record) =>
-        await _context.CyclistCounts.InsertOneAsync(record);
+    public async Task InsertAsync(CyclistCount entity) =>
+        await _context.CyclistCounts.InsertOneAsync(entity);
 
-    public async Task<List<CyclistCount>> GetHistoryAsync(Guid intersectionId, int limit = 50)
-    {
-        return await _context.CyclistCounts
-            .Find(r => r.IntersectionId == intersectionId)
-            .SortByDescending(r => r.Timestamp)
-            .Limit(limit)
-            .ToListAsync();
-    }
+    public async Task<List<CyclistCount>> GetByIntersectionAsync(int intersectionId) =>
+        await _context.CyclistCounts.Find(x => x.IntersectionId == intersectionId).ToListAsync();
 }

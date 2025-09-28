@@ -1,7 +1,6 @@
 using System.Text;
 using DetectionCacheData;
-using DetectionCacheData.Repositories.Cache;
-using DetectionCacheData.Repositories.Metrics;
+using DetectionCacheData.Repositories;
 using DetectionData;
 using DetectionData.Repositories.Cyclist;
 using DetectionData.Repositories.EmergencyVehicle;
@@ -78,8 +77,7 @@ public class Startup
         services.AddScoped(typeof(IIncidentDetectionRepository), typeof(IncidentDetectionRepository));
 
         /******* [3.2] DetectionCacheDB Repositories ********/
-        services.AddScoped(typeof(ISensorCacheRepository), typeof(SensorCacheRepository));
-        services.AddScoped(typeof(IMetricRepository), typeof(MetricRepository));
+        services.AddScoped(typeof(IDetectionCacheRepository), typeof(DetectionCacheRepository));
 
         /******* [4] Services ********/
         services.AddScoped(typeof(ISensorCountService), typeof(SensorCountService));
@@ -136,7 +134,7 @@ public class Startup
         /******* [11] Swagger ********/
         services.AddSwaggerGen(c =>
         {
-            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Sensor Service", Version = "v2.0" });
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Sensor Service", Version = "v3.0" });
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 In = ParameterLocation.Header,
