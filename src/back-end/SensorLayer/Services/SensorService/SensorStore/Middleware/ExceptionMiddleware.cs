@@ -11,18 +11,18 @@ public class ExceptionMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionMiddleware> _logger;
-    private readonly ISensorLogPublisher _logPublisher;
+    private readonly IServiceScopeFactory _scopeFactory;
 
     private const string ServiceTag = "[" + nameof(ExceptionMiddleware) + "]";
 
     public ExceptionMiddleware(
         RequestDelegate next,
         ILogger<ExceptionMiddleware> logger,
-        ISensorLogPublisher logPublisher)
+        IServiceScopeFactory scopeFactory)
     {
         _next = next;
         _logger = logger;
-        _logPublisher = logPublisher;
+        _scopeFactory = scopeFactory;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -40,17 +40,16 @@ public class ExceptionMiddleware
     private async Task HandleErrorAsync(HttpContext context, Exception ex)
     {
         var (statusCode, userMessage, errorType) = MapException(ex);
-
-        // Local log
         _logger.LogError(ex, "{Tag} {Message}", ServiceTag, userMessage);
 
-        // Extract intersection id if available
         var intersectionId = ExtractIntersectionId(context);
 
-        // Distributed log via RabbitMQ
         try
         {
-            await _logPublisher.PublishErrorAsync(
+            using var scope = _scopeFactory.CreateScope();
+            var publisher = scope.ServiceProvider.GetRequiredService<ISensorLogPublisher>();
+
+            await publisher.PublishErrorAsync(
                 intersectionId,
                 errorType,
                 ex.Message,
@@ -68,18 +67,15 @@ public class ExceptionMiddleware
             _logger.LogError(pubEx, "{Tag} Failed to publish error log", ServiceTag);
         }
 
-        // Return HTTP error response
         context.Response.StatusCode = (int)statusCode;
         context.Response.ContentType = "application/json";
 
-        var result = JsonSerializer.Serialize(new
+        await context.Response.WriteAsync(JsonSerializer.Serialize(new
         {
             error = userMessage,
             details = ex.Message,
             traceId = context.TraceIdentifier
-        });
-
-        await context.Response.WriteAsync(result);
+        }));
     }
 
     private static (HttpStatusCode statusCode, string userMessage, string errorType) MapException(Exception ex) =>
@@ -116,6 +112,6 @@ public class ExceptionMiddleware
             return qid;
         }
 
-        return -1; // unknown intersection
+        return -1;
     }
 }

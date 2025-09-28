@@ -1,9 +1,9 @@
 using System.Net;
 using System.Text.Json;
-using DetectionStore.Publishers.Logs;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using RabbitMQ.Client.Exceptions;
+using DetectionStore.Publishers.Logs;
 
 namespace DetectionStore.Middleware;
 
@@ -11,18 +11,18 @@ public class ExceptionMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionMiddleware> _logger;
-    private readonly IDetectionLogPublisher _logPublisher;
+    private readonly IServiceScopeFactory _scopeFactory;
 
     private const string ServiceTag = "[" + nameof(ExceptionMiddleware) + "]";
 
     public ExceptionMiddleware(
         RequestDelegate next,
         ILogger<ExceptionMiddleware> logger,
-        IDetectionLogPublisher logPublisher)
+        IServiceScopeFactory scopeFactory)
     {
         _next = next;
         _logger = logger;
-        _logPublisher = logPublisher;
+        _scopeFactory = scopeFactory;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -40,14 +40,14 @@ public class ExceptionMiddleware
     private async Task HandleErrorAsync(HttpContext context, Exception ex)
     {
         var (statusCode, userMessage, errorType) = MapException(ex);
-
-        // Local log
         _logger.LogError(ex, "{Tag} {Message}", ServiceTag, userMessage);
 
-        // Distributed log via RabbitMQ
         try
         {
-            await _logPublisher.PublishErrorAsync(
+            using var scope = _scopeFactory.CreateScope();
+            var publisher = scope.ServiceProvider.GetRequiredService<IDetectionLogPublisher>();
+
+            await publisher.PublishErrorAsync(
                 errorType,
                 ex.Message,
                 new Dictionary<string, object?>
@@ -64,18 +64,15 @@ public class ExceptionMiddleware
             _logger.LogError(pubEx, "{Tag} Failed to publish error log", ServiceTag);
         }
 
-        // Return HTTP error response
         context.Response.StatusCode = (int)statusCode;
         context.Response.ContentType = "application/json";
 
-        var result = JsonSerializer.Serialize(new
+        await context.Response.WriteAsync(JsonSerializer.Serialize(new
         {
             error = userMessage,
             details = ex.Message,
             traceId = context.TraceIdentifier
-        });
-
-        await context.Response.WriteAsync(result);
+        }));
     }
 
     private static (HttpStatusCode statusCode, string userMessage, string errorType) MapException(Exception ex) =>

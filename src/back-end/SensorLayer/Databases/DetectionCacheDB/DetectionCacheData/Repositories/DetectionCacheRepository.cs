@@ -3,7 +3,7 @@ using DetectionCacheData.Cache;
 
 namespace DetectionCacheData.Repositories;
 
-public class DetectionCacheRepository
+public class DetectionCacheRepository : IDetectionCacheRepository
 {
     private readonly DetectionCacheDbContext _context;
 

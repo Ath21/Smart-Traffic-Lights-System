@@ -11,7 +11,7 @@ using SensorStore.Publishers.Count;
 
 namespace SensorStore.Business;
 
-public class SensorCountService
+public class SensorCountService : ISensorCountService
 {
     private readonly IVehicleCountRepository _vehicleRepo;
     private readonly IPedestrianCountRepository _pedestrianRepo;
