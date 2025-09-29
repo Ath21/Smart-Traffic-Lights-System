@@ -1,0 +1,96 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: stls-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: stls.local   # map in /etc/hosts → 127.0.0.1 stls.local
+    http:
+      paths:
+      # ================================
+      # Detection APIs
+      # ================================
+      - path: /detection/agiou-spyridonos
+        pathType: Prefix
+        backend:
+          service:
+            name: detectionapi-agiou-spyridonos
+            port:
+              number: 8080
+
+      - path: /detection/anatoliki-pyli
+        pathType: Prefix
+        backend:
+          service:
+            name: detectionapi-anatoliki-pyli
+            port:
+              number: 8080
+
+      - path: /detection/dytiki-pyli
+        pathType: Prefix
+        backend:
+          service:
+            name: detectionapi-dytiki-pyli
+            port:
+              number: 8080
+
+      - path: /detection/ekklisia
+        pathType: Prefix
+        backend:
+          service:
+            name: detectionapi-ekklisia
+            port:
+              number: 8080
+
+      - path: /detection/kentriki-pyli
+        pathType: Prefix
+        backend:
+          service:
+            name: detectionapi-kentriki-pyli
+            port:
+              number: 8080
+
+      # ================================
+      # Sensor APIs
+      # ================================
+      - path: /sensor/agiou-spyridonos
+        pathType: Prefix
+        backend:
+          service:
+            name: sensorapi-agiou-spyridonos
+            port:
+              number: 8080
+
+      - path: /sensor/anatoliki-pyli
+        pathType: Prefix
+        backend:
+          service:
+            name: sensorapi-anatoliki-pyli
+            port:
+              number: 8080
+
+      - path: /sensor/dytiki-pyli
+        pathType: Prefix
+        backend:
+          service:
+            name: sensorapi-dytiki-pyli
+            port:
+              number: 8080
+
+      - path: /sensor/ekklisia
+        pathType: Prefix
+        backend:
+          service:
+            name: sensorapi-ekklisia
+            port:
+              number: 8080
+
+      - path: /sensor/kentriki-pyli
+        pathType: Prefix
+        backend:
+          service:
+            name: sensorapi-kentriki-pyli
+            port:
+              number: 8080
