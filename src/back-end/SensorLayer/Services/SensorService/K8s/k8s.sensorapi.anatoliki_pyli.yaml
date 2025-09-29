@@ -38,19 +38,8 @@ spec:
           value: "Anatoliki Pyli"
 
         # ===============================
-        # Databases
+        # MongoDB
         # ===============================
-        # DetectionDB (MongoDB - Time Series)
-        - name: MONGO_ROOT_USERNAME
-          valueFrom:
-            secretKeyRef:
-              name: sensorapi-secret
-              key: MONGO_ROOT_USERNAME
-        - name: MONGO_ROOT_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: sensorapi-secret
-              key: MONGO_ROOT_PASSWORD
         - name: Mongo__ConnectionString
           value: "mongodb://$(MONGO_ROOT_USERNAME):$(MONGO_ROOT_PASSWORD)@detectiondb:27017"
         - name: Mongo__Database
@@ -61,8 +50,26 @@ spec:
           value: "pedestrian_count"
         - name: Mongo__Collections__CyclistCount
           value: "cyclist_count"
+        - name: Mongo__Collections__Emergency
+          value: "emergency_vehicle"
+        - name: Mongo__Collections__PublicTransport
+          value: "public_transport"
+        - name: Mongo__Collections__Incident
+          value: "incident"
+        - name: MONGO_ROOT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: detectionapi-secret
+              key: MONGO_ROOT_USERNAME
+        - name: MONGO_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: detectionapi-secret
+              key: MONGO_ROOT_PASSWORD
 
-        # DetectionCacheDB (Redis - Real Time)
+        # ===============================
+        # Redis
+        # ===============================
         - name: Redis__Host
           value: "detectioncachedb"
         - name: Redis__Port
@@ -70,7 +77,7 @@ spec:
         - name: Redis__Password
           valueFrom:
             secretKeyRef:
-              name: sensorapi-secret
+              name: detectionapi-secret
               key: REDIS_PASSWORD
         - name: Redis__Database
           value: "0"
@@ -80,6 +87,12 @@ spec:
           value: "sensor.count.{intersection}.pedestrian"
         - name: Redis__KeyPrefix__CyclistCount
           value: "sensor.count.{intersection}.cyclist"
+        - name: Redis__KeyPrefix__EmergencyDetected
+          value: "sensor.detection.{intersection}.emergency"
+        - name: Redis__KeyPrefix__PublicTransportDetected
+          value: "sensor.detection.{intersection}.public_transport"
+        - name: Redis__KeyPrefix__IncidentDetected
+          value: "sensor.detection.{intersection}.incident"
 
         # ===============================
         # CORS
@@ -101,7 +114,7 @@ spec:
         - name: Jwt__Key
           valueFrom:
             secretKeyRef:
-              name: sensorapi-secret
+              name: detectionapi-secret
               key: JWT_KEY
 
         # ===============================
@@ -114,34 +127,27 @@ spec:
         - name: RabbitMQ__Username
           valueFrom:
             secretKeyRef:
-              name: sensorapi-secret
+              name: detectionapi-secret
               key: RABBITMQ_USERNAME
         - name: RabbitMQ__Password
           valueFrom:
             secretKeyRef:
-              name: sensorapi-secret
+              name: detectionapi-secret
               key: RABBITMQ_PASSWORD
-
-        # ===============================
-        # RabbitMQ Exchanges
-        # ===============================
-        ## SENSOR.EXCHANGE
         - name: RabbitMQ__Exchanges__Sensor
           value: "SENSOR.EXCHANGE"
-        - name: RabbitMQ__RoutingKeys__Sensor__VehicleCount
-          value: "sensor.count.{intersection}.vehicle"
-        - name: RabbitMQ__RoutingKeys__Sensor__PedestrianCount
-          value: "sensor.count.{intersection}.pedestrian"
-        - name: RabbitMQ__RoutingKeys__Sensor__CyclistCount
-          value: "sensor.count.{intersection}.cyclist"
-
-        ## LOG.EXCHANGE
+        - name: RabbitMQ__RoutingKeys__Sensor__EmergencyVehicle
+          value: "sensor.detection.{intersection}.emergency"
+        - name: RabbitMQ__RoutingKeys__Sensor__PublicTransport
+          value: "sensor.detection.{intersection}.public_transport"
+        - name: RabbitMQ__RoutingKeys__Sensor__IncidentDetected
+          value: "sensor.detection.{intersection}.incident"
         - name: RabbitMQ__Exchanges__Log
           value: "LOG.EXCHANGE"
         - name: RabbitMQ__RoutingKeys__Log__Audit
-          value: "log.sensor.sensor_service.{intersection}.audit"
+          value: "log.sensor.detection_service.{intersection}.audit"
         - name: RabbitMQ__RoutingKeys__Log__Error
-          value: "log.sensor.sensor_service.{intersection}.error"
+          value: "log.sensor.detection_service.{intersection}.error"
 
         livenessProbe:
           httpGet:

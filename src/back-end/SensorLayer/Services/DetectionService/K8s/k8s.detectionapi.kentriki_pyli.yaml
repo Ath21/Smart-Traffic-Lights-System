@@ -40,23 +40,10 @@ spec:
           value: "Kentriki Pyli"
 
         # ===============================
-        # Databases
+        # MongoDB
         # ===============================
-        # DetectionDB (MongoDB - Time Series)
-        ## SECRET
-        - name: MONGO_ROOT_USERNAME
-          valueFrom:
-            secretKeyRef:
-              name: detectionapi-secret
-              key: MONGO_ROOT_USERNAME
-        - name: MONGO_ROOT_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: detectionapi-secret
-              key: MONGO_ROOT_PASSWORD
         - name: Mongo__ConnectionString
           value: "mongodb://$(MONGO_ROOT_USERNAME):$(MONGO_ROOT_PASSWORD)@detectiondb:27017"
-        
         - name: Mongo__Database
           value: "DetectionDB"
         - name: Mongo__Collections__VehicleCount
@@ -71,19 +58,29 @@ spec:
           value: "public_transport"
         - name: Mongo__Collections__Incident
           value: "incident"
+        - name: MONGO_ROOT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: detectionapi-secret
+              key: MONGO_ROOT_USERNAME
+        - name: MONGO_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: detectionapi-secret
+              key: MONGO_ROOT_PASSWORD
 
-        # DetectionCacheDB (Redis - Real Time)
+        # ===============================
+        # Redis
+        # ===============================
         - name: Redis__Host
           value: "detectioncachedb"
         - name: Redis__Port
           value: "6379"
-        ## SECRET
         - name: Redis__Password
           valueFrom:
             secretKeyRef:
               name: detectionapi-secret
               key: REDIS_PASSWORD
-
         - name: Redis__Database
           value: "0"
         - name: Redis__KeyPrefix__VehicleCount
@@ -116,7 +113,6 @@ spec:
           value: "http://stls_backend:8080"
         - name: Jwt__Audience
           value: "http://stls_backend:8080"
-        ## SECRET
         - name: Jwt__Key
           valueFrom:
             secretKeyRef:
@@ -130,7 +126,6 @@ spec:
           value: "rabbitmq"
         - name: RabbitMQ__Port
           value: "5672"
-        ## SECRET
         - name: RabbitMQ__Username
           valueFrom:
             secretKeyRef:
@@ -141,7 +136,6 @@ spec:
             secretKeyRef:
               name: detectionapi-secret
               key: RABBITMQ_PASSWORD
-
         - name: RabbitMQ__Exchanges__Sensor
           value: "SENSOR.EXCHANGE"
         - name: RabbitMQ__RoutingKeys__Sensor__EmergencyVehicle
