@@ -110,18 +110,26 @@ deploy_layer() {
         up -d
       ;;
     sensor)
-      # Shared Redis first
+      # Shared Redis first (DetectionCacheDB)
       docker compose -p stls_sensor \
-        -f "$ROOT_DIR/SensorLayer/Databases/DetectionCacheDB/Redis/Docker/docker-compose.yaml" \
-        -f "$ROOT_DIR/SensorLayer/Databases/DetectionCacheDB/Redis/Docker/docker-compose.override.yaml" up -d
-      wait_for_redis "detectioncachedb_container" "DetectionCacheDB"
+        -f "$ROOT_DIR/SensorLayer/Databases/DetectionCacheDB/Redis/Docker-Compose/docker-compose.yaml" \
+        -f "$ROOT_DIR/SensorLayer/Databases/DetectionCacheDB/Redis/Docker-Compose/docker-compose.override.yaml" up -d
+      wait_for_redis "detectioncachedb" "DetectionCacheDB"
 
-      # Then Mongo DB + APIs
+      # Shared MongoDB (DetectionDB)
       docker compose -p stls_sensor \
-        -f "$ROOT_DIR/SensorLayer/Databases/DetectionDB/Mongo/Docker/docker-compose.yaml" -f "$ROOT_DIR/SensorLayer/Databases/DetectionDB/Mongo/Docker/docker-compose.override.yaml" \
-        -f "$ROOT_DIR/SensorLayer/Services/DetectionService/Docker/docker-compose.yaml" -f "$ROOT_DIR/SensorLayer/Services/DetectionService/Docker/docker-compose.override.yaml" \
-        -f "$ROOT_DIR/SensorLayer/Services/SensorService/Docker/docker-compose.yaml" -f "$ROOT_DIR/SensorLayer/Services/SensorService/Docker/docker-compose.override.yaml" \
-        up -d
+        -f "$ROOT_DIR/SensorLayer/Databases/DetectionDB/Mongo/Docker-Compose/docker-compose.yaml" \
+        -f "$ROOT_DIR/SensorLayer/Databases/DetectionDB/Mongo/Docker-Compose/docker-compose.override.yaml" up -d
+
+      # Detection APIs (per intersection)
+      for file in "$ROOT_DIR"/SensorLayer/Services/DetectionService/Docker-Compose/docker-compose.detectionapi.*.yaml; do
+        docker compose -p stls_sensor -f "$file" --env-file "$ROOT_DIR/SensorLayer/Services/DetectionService/Docker-Compose/secret.env" up -d
+      done
+
+      # Sensor APIs (per intersection)
+      for file in "$ROOT_DIR"/SensorLayer/Services/SensorService/Docker-Compose/docker-compose.sensorapi.*.yaml; do
+        docker compose -p stls_sensor -f "$file" --env-file "$ROOT_DIR/SensorLayer/Services/SensorService/Docker-Compose/secret.env" up -d
+      done
       ;;
     log)
       docker compose -p stls_log \

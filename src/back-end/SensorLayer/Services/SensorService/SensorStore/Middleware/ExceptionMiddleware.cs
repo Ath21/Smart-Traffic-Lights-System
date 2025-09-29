@@ -40,9 +40,8 @@ public class ExceptionMiddleware
     private async Task HandleErrorAsync(HttpContext context, Exception ex)
     {
         var (statusCode, userMessage, errorType) = MapException(ex);
-        _logger.LogError(ex, "{Tag} {Message}", ServiceTag, userMessage);
 
-        var intersectionId = ExtractIntersectionId(context);
+        _logger.LogError(ex, "{Tag} {Message}", ServiceTag, userMessage);
 
         try
         {
@@ -50,7 +49,6 @@ public class ExceptionMiddleware
             var publisher = scope.ServiceProvider.GetRequiredService<ISensorLogPublisher>();
 
             await publisher.PublishErrorAsync(
-                intersectionId,
                 errorType,
                 ex.Message,
                 new Dictionary<string, object?>
@@ -59,7 +57,7 @@ public class ExceptionMiddleware
                     ["method"] = context.Request.Method,
                     ["traceId"] = context.TraceIdentifier,
                     ["exception"] = ex.GetType().Name,
-                    ["stackTrace"] = ex.StackTrace
+                    ["stackTrace"] = ex.StackTrace ?? string.Empty
                 });
         }
         catch (Exception pubEx)
@@ -97,21 +95,4 @@ public class ExceptionMiddleware
             DbUpdateException => (HttpStatusCode.Conflict, "Database update failed", "DB_UPDATE_ERROR"),
             _ => (HttpStatusCode.InternalServerError, "An unexpected error occurred", "UNEXPECTED")
         };
-
-    private static int ExtractIntersectionId(HttpContext context)
-    {
-        if (context.Request.RouteValues.TryGetValue("intersectionId", out var routeVal) &&
-            int.TryParse(routeVal?.ToString(), out var id))
-        {
-            return id;
-        }
-
-        if (context.Request.Query.TryGetValue("intersectionId", out var queryVal) &&
-            int.TryParse(queryVal, out var qid))
-        {
-            return qid;
-        }
-
-        return -1;
-    }
 }

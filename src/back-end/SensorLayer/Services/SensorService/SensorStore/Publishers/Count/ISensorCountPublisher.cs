@@ -7,7 +7,7 @@ namespace SensorStore.Publishers.Count;
 
 public interface ISensorCountPublisher
 {
-    Task PublishVehicleCountAsync(int intersectionId, int count, float avgSpeed);
-    Task PublishPedestrianCountAsync(int intersectionId, int count);
-    Task PublishCyclistCountAsync(int intersectionId, int count);
+    Task PublishVehicleCountAsync(int count, float avgSpeed = 0);
+    Task PublishPedestrianCountAsync(int count);
+    Task PublishCyclistCountAsync(int count);
 }

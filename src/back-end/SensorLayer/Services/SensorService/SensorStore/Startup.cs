@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using SensorStore.Business;
+using SensorStore.Domain;
 using SensorStore.Middleware;
 using SensorStore.Publishers;
 using SensorStore.Publishers.Count;
@@ -33,6 +34,14 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
+        /******* Intersection Context ********/
+        services.AddSingleton(sp =>
+        {
+            var id = int.Parse(_configuration["INTERSECTION:ID"] ?? throw new InvalidOperationException("Intersection Id missing"));
+            var name = _configuration["INTERSECTION:NAME"] ?? "Unknown";
+            return new IntersectionContext(id, name);
+        });
+
         /******* [1] MongoDB Config ********/
         services.Configure<DetectionDbSettings>(options =>
         {

@@ -3,46 +3,37 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SensorStore.Business;
 using SensorStore.Models.Requests;
-using SensorStore.Models.Responses;
 
 namespace SensorStore.Controllers;
-
-// ============================================================
-// Sensor Layer / Sensor Service - Raw Sensor Data
-//
-// Provides real-time and historical sensor snapshots.
-// ============================================================
 
 [ApiController]
 [Route("api/sensors")]
 public class SensorsController : ControllerBase
 {
-    private readonly SensorCountService _business;
-    private readonly IMapper _mapper;
+    private readonly ISensorCountService _business;
 
-    public SensorsController(SensorCountService business, IMapper mapper)
+    public SensorsController(ISensorCountService business)
     {
         _business = business;
-        _mapper = mapper;
     }
 
     // ============================================================
-    // GET: api/sensors/{intersectionId}
+    // GET: api/sensors/local
     // Role: Anonymous
-    // Description: Get the latest sensor snapshot for a specific intersection.
+    // Description: Get the latest snapshot for THIS intersection
     // ============================================================
-    [HttpGet("{intersectionId:int}")]
+    [HttpGet("local")]
     [AllowAnonymous]
-    public async Task<IActionResult> GetSnapshot(int intersectionId)
+    public async Task<IActionResult> GetLocalSnapshot()
     {
-        var response = await _business.GetSensorDataAsync(intersectionId);
+        var response = await _business.GetSensorDataAsync();
         return Ok(response);
     }
 
     // ============================================================
     // POST: api/sensors/report
     // Role: TrafficOperator, Admin
-    // Description: Report new sensor data for a specific intersection.
+    // Description: Report new sensor data for THIS intersection
     // ============================================================
     [HttpPost("report")]
     //[Authorize(Roles = "TrafficOperator,Admin")]
@@ -53,8 +44,7 @@ public class SensorsController : ControllerBase
 
         await _business.ReportSensorDataAsync(request);
 
-        // We can return the current snapshot after reporting
-        var snapshot = await _business.GetSensorDataAsync(request.IntersectionId);
+        var snapshot = await _business.GetSensorDataAsync();
         return Ok(snapshot);
     }
 }

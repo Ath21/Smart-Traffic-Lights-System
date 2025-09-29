@@ -3,15 +3,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using DetectionStore.Business;
 using DetectionStore.Models.Requests;
-using DetectionStore.Models.Responses;
 
 namespace DetectionStore.Controllers;
 
 // ============================================================
 // Sensor Layer / Detection Service - Detection Events
-//
-// Handles detection of vehicles, incidents, and anomalies.
-// ===========================================================
+// Scoped strictly to THIS intersection.
+// ============================================================
 
 [ApiController]
 [Route("api/detections")]
@@ -27,22 +25,22 @@ public class DetectionController : ControllerBase
     }
 
     // ============================================================
-    // GET: api/detection/{intersectionId}
+    // GET: api/detections/local
     // Role: Anonymous
-    // Description: Get active detection events for an intersection.
+    // Description: Get active detection events for THIS intersection.
     // ============================================================
-    [HttpGet("{intersectionId:int}")]
+    [HttpGet("local")]
     [AllowAnonymous]
-    public async Task<IActionResult> GetActiveEvents(int intersectionId)
+    public async Task<IActionResult> GetLocalEvents()
     {
-        var events = await _business.GetActiveEventsAsync(intersectionId);
+        var events = await _business.GetActiveEventsAsync();
         return Ok(events);
     }
 
     // ============================================================
-    // POST: api/detection/event
+    // POST: api/detections/event
     // Role: TrafficOperator, Admin
-    // Description: Report a new detection event.
+    // Description: Report a new detection event for THIS intersection.
     // ============================================================
     [HttpPost("event")]
     //[Authorize(Roles = "TrafficOperator,Admin")]

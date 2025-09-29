@@ -6,6 +6,6 @@ namespace SensorStore.Business;
 
 public interface ISensorCountService
 {
-    Task<SensorResponse> GetSensorDataAsync(int intersectionId);
+    Task<SensorResponse> GetSensorDataAsync();
     Task ReportSensorDataAsync(SensorReportRequest dto);
 }

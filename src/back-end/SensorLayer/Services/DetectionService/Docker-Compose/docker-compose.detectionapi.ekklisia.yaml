@@ -1,4 +1,5 @@
 version: "3.9"
+
 services:
   detectionapi-ekklisia:
     image: ath21/stls:detection_api
@@ -9,16 +10,19 @@ services:
       - ./secret.env
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      INTERSECTION_ID: ${INTERSECTION_EKKLISIA_ID}
-      INTERSECTION_NAME: "Ekklisia"
+      INTERSECTION__ID: ${INTERSECTION_EKKLISIA_ID}
+      INTERSECTION__NAME: "Ekklisia"
 
       Mongo__ConnectionString: mongodb://${MONGO_ROOT_USERNAME}:${MONGO_ROOT_PASSWORD}@detectiondb:27017
       Mongo__Database: DetectionDB
+      Mongo__Collections__VehicleCount: vehicle_count
+      Mongo__Collections__PedestrianCount: pedestrian_count
+      Mongo__Collections__CyclistCount: cyclist_count
       Mongo__Collections__Emergency: emergency_vehicle
       Mongo__Collections__PublicTransport: public_transport
       Mongo__Collections__Incident: incident
 
-      Redis__Host: detection_cache_db
+      Redis__Host: detectioncachedb
       Redis__Port: 6379
       Redis__Database: 0
 

@@ -7,5 +7,5 @@ namespace DetectionStore.Publishers.Event;
 
 public interface IDetectionEventPublisher
 {
-    Task PublishDetectionAsync(int intersectionId, string eventType, string? details = null);
+    Task PublishDetectionAsync(string eventType, string? details = null);
 }

@@ -1,5 +1,6 @@
 using DetectionStore.Business;
-using DetectionStore.Models.Dtos;
+using DetectionStore.Domain;
+using DetectionStore.Models.Requests;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -9,27 +10,24 @@ public class DetectionWorker : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<DetectionWorker> _logger;
+    private readonly IntersectionContext _intersection;
     private readonly Random _rand = new();
 
-    // Map physical intersections → stable identifiers
-    private readonly Dictionary<int, string> _intersections = new()
-    {
-        { 1, "Agiou Spyridonos" },
-        { 2, "Kentriki Pyli" },
-        { 3, "Anatoliki Pyli" },
-        { 4, "Dytiki Pyli" },
-        { 5, "Ekklisia" }
-    };
-
-    public DetectionWorker(IServiceScopeFactory scopeFactory, ILogger<DetectionWorker> logger)
+    public DetectionWorker(
+        IServiceScopeFactory scopeFactory,
+        ILogger<DetectionWorker> logger,
+        IntersectionContext intersection)
     {
         _scopeFactory = scopeFactory;
         _logger = logger;
+        _intersection = intersection;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("DetectionWorker started");
+        _logger.LogInformation(
+            "DetectionWorker started for {IntersectionName} (Id={IntersectionId})",
+            _intersection.Name, _intersection.Id);
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -38,66 +36,51 @@ public class DetectionWorker : BackgroundService
                 using var scope = _scopeFactory.CreateScope();
                 var business = scope.ServiceProvider.GetRequiredService<IDetectionEventService>();
 
-                foreach (var intersection in _intersections)
+                // Emergency vehicle detection ~10% chance
+                if (_rand.NextDouble() < 0.1)
                 {
-                    var intersectionId = intersection.Key;
-
-                    // Emergency vehicle detection ~10% chance
-                    if (_rand.NextDouble() < 0.1)
+                    var request = new DetectionEventRequest
                     {
-                        var emergency = new EmergencyVehicleDto
-                        {
-                            IntersectionId = intersectionId,
-                            Detected = true,
-                            Type = _rand.NextDouble() < 0.5 ? "ambulance" : "firetruck",
-                            PriorityLevel = 1,
-                            Timestamp = DateTime.UtcNow
-                        };
+                        EventType = "emergency",
+                        Detected = true,
+                        Description = _rand.NextDouble() < 0.5 ? "ambulance" : "firetruck"
+                    };
 
-                        await business.RecordEmergencyAsync(emergency);
-                        _logger.LogInformation("Emergency vehicle detected at {IntersectionName} (Id={IntersectionId})",
-                            intersection.Value, intersectionId);
-                    }
+                    await business.ReportEventAsync(request);
+                }
 
-                    // Public transport detection ~30% chance
-                    if (_rand.NextDouble() < 0.3)
+                // Public transport detection ~30% chance
+                if (_rand.NextDouble() < 0.3)
+                {
+                    var request = new DetectionEventRequest
                     {
-                        var transport = new PublicTransportDto
-                        {
-                            IntersectionId = intersectionId,
-                            Detected = true,
-                            Mode = _rand.NextDouble() < 0.5 ? "bus" : "tram",
-                            RouteId = $"R{_rand.Next(1, 50)}",
-                            Timestamp = DateTime.UtcNow
-                        };
+                        EventType = "public_transport",
+                        Detected = true,
+                        Description = $"Route R{_rand.Next(1, 50)}"
+                    };
 
-                        await business.RecordPublicTransportAsync(transport);
-                        _logger.LogInformation(
-                            "Public transport detected at {IntersectionName} (Id={IntersectionId}), Route {RouteId}",
-                            intersection.Value, intersectionId, transport.RouteId);
-                    }
+                    await business.ReportEventAsync(request);
+                }
 
-                    // Incident detection ~5% chance
-                    if (_rand.NextDouble() < 0.05)
+                // Incident detection ~5% chance
+                if (_rand.NextDouble() < 0.05)
+                {
+                    var request = new DetectionEventRequest
                     {
-                        var incident = new IncidentDto
-                        {
-                            IntersectionId = intersectionId,
-                            Type = "collision",
-                            Severity = _rand.Next(1, 5),
-                            Description = "Random simulated incident",
-                            Timestamp = DateTime.UtcNow
-                        };
+                        EventType = "incident",
+                        Detected = true,
+                        Description = "Random simulated incident"
+                    };
 
-                        await business.RecordIncidentAsync(incident);
-                        _logger.LogWarning("Incident detected at {IntersectionName} (Id={IntersectionId}): {Desc}",
-                            intersection.Value, intersectionId, incident.Description);
-                    }
+                    await business.ReportEventAsync(request);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error in DetectionWorker loop");
+                _logger.LogError(
+                    ex,
+                    "Error in DetectionWorker loop for {IntersectionName} (Id={IntersectionId})",
+                    _intersection.Name, _intersection.Id);
             }
 
             await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);

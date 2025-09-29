@@ -1,64 +1,84 @@
 using LogMessages;
 using MassTransit;
+using Microsoft.Extensions.Logging;
+using SensorStore.Domain;
 
-namespace SensorStore.Publishers.Logs;
-
-public class SensorLogPublisher : ISensorLogPublisher
+namespace SensorStore.Publishers.Logs
 {
-    private readonly IBus _bus;
-    private readonly ILogger<SensorLogPublisher> _logger;
-    private readonly string _auditKey;
-    private readonly string _errorKey;
-    private const string Layer = "sensor";
-    private const string ServiceName = "sensor_service";
-    private const string ServiceTag = "[" + nameof(SensorLogPublisher) + "]";
-
-    public SensorLogPublisher(IConfiguration config, ILogger<SensorLogPublisher> logger, IBus bus)
+    public class SensorLogPublisher : ISensorLogPublisher
     {
-        _bus = bus;
-        _logger = logger;
+        private readonly IBus _bus;
+        private readonly ILogger<SensorLogPublisher> _logger;
+        private readonly IntersectionContext _intersection;
+        private readonly string _auditKey;
+        private readonly string _errorKey;
 
-        _auditKey = config["RabbitMQ:RoutingKeys:Log:Audit"] ?? "log.sensor.sensor_service.{intersection}.audit";
-        _errorKey = config["RabbitMQ:RoutingKeys:Log:Error"] ?? "log.sensor.sensor_service.{intersection}.error";
-    }
+        private const string Layer = "sensor";
+        private const string ServiceName = "sensor_service";
+        private const string ServiceTag = "[" + nameof(SensorLogPublisher) + "]";
 
-    public async Task PublishAuditAsync(int intersectionId, string action, string details, object? metadata = null)
-    {
-        var routingKey = _auditKey.Replace("{intersection}", intersectionId.ToString());
-
-        var log = new LogMessage
+        public SensorLogPublisher(
+            IConfiguration config,
+            ILogger<SensorLogPublisher> logger,
+            IBus bus,
+            IntersectionContext intersection)
         {
-            Layer = Layer,
-            Service = ServiceName,
-            Type = "audit",
-            Message = $"{action}: {details}",
-            Timestamp = DateTime.UtcNow,
-            Metadata = metadata as Dictionary<string, object>
-        };
+            _bus = bus;
+            _logger = logger;
+            _intersection = intersection;
 
-        await _bus.Publish(log, ctx => ctx.SetRoutingKey(routingKey));
+            _auditKey = config["RabbitMQ:RoutingKeys:Log:Audit"] 
+                        ?? "log.sensor.sensor_service.{intersection}.audit";
+            _errorKey = config["RabbitMQ:RoutingKeys:Log:Error"] 
+                        ?? "log.sensor.sensor_service.{intersection}.error";
+        }
 
-        _logger.LogInformation("{Tag} AUDIT {Action} @ {Intersection} -> {Details}", 
-            ServiceTag, action, intersectionId, details);
-    }
-
-    public async Task PublishErrorAsync(int intersectionId, string errorType, string message, object? metadata = null)
-    {
-        var routingKey = _errorKey.Replace("{intersection}", intersectionId.ToString());
-
-        var log = new LogMessage
+        public async Task PublishAuditAsync(string action, string details, object? metadata = null)
         {
-            Layer = Layer,
-            Service = ServiceName,
-            Type = "error",
-            Message = $"{errorType}: {message}",
-            Timestamp = DateTime.UtcNow,
-            Metadata = metadata as Dictionary<string, object>
-        };
+            var routingKey = _auditKey.Replace("{intersection}", _intersection.Id.ToString());
 
-        await _bus.Publish(log, ctx => ctx.SetRoutingKey(routingKey));
+            var log = new LogMessage
+            {
+                Layer = Layer,
+                Service = ServiceName,
+                Type = "audit",
+                Message = $"{action}: {details}",
+                Timestamp = DateTime.UtcNow,
+                Metadata = BuildMetadata(metadata)
+            };
 
-        _logger.LogError("{Tag} ERROR {Type} @ {Intersection} -> {Message}", 
-            ServiceTag, errorType, intersectionId, message);
+            await _bus.Publish(log, ctx => ctx.SetRoutingKey(routingKey));
+
+            _logger.LogInformation("{Tag} AUDIT @ {IntersectionName} (Id={IntersectionId}) -> {Action} | {Details}",
+                ServiceTag, _intersection.Name, _intersection.Id, action, details);
+        }
+
+        public async Task PublishErrorAsync(string errorType, string message, object? metadata = null)
+        {
+            var routingKey = _errorKey.Replace("{intersection}", _intersection.Id.ToString());
+
+            var log = new LogMessage
+            {
+                Layer = Layer,
+                Service = ServiceName,
+                Type = "error",
+                Message = $"{errorType}: {message}",
+                Timestamp = DateTime.UtcNow,
+                Metadata = BuildMetadata(metadata)
+            };
+
+            await _bus.Publish(log, ctx => ctx.SetRoutingKey(routingKey));
+
+            _logger.LogError("{Tag} ERROR @ {IntersectionName} (Id={IntersectionId}) -> {Type}: {Message}",
+                ServiceTag, _intersection.Name, _intersection.Id, errorType, message);
+        }
+
+        private Dictionary<string, object>? BuildMetadata(object? metadata)
+        {
+            var dict = metadata as Dictionary<string, object> ?? new Dictionary<string, object>();
+            dict["IntersectionId"] = _intersection.Id;
+            dict["IntersectionName"] = _intersection.Name;
+            return dict;
+        }
     }
 }

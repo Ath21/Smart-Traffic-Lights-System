@@ -7,10 +7,6 @@ namespace DetectionStore.Business;
 
 public interface IDetectionEventService
 {
-    Task<IEnumerable<DetectionEventResponse>> GetActiveEventsAsync(int intersectionId);
+    Task<IEnumerable<DetectionEventResponse>> GetActiveEventsAsync();
     Task<DetectionEventResponse> ReportEventAsync(DetectionEventRequest request);
-    Task RecordEmergencyAsync(EmergencyVehicleDto dto);
-    Task RecordPublicTransportAsync(PublicTransportDto dto);
-    Task RecordIncidentAsync(IncidentDto dto);
-
 }

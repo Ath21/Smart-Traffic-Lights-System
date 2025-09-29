@@ -1,4 +1,5 @@
 version: "3.9"
+
 services:
   detectionapi-agiou-spyridonos:
     image: ath21/stls:detection_api
@@ -9,11 +10,15 @@ services:
       - ./secret.env
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      INTERSECTION_ID: ${INTERSECTION_AGIOU_SPYRIDONOS_ID}
-      INTERSECTION_NAME: "Agiou Spyridonos"
+
+      INTERSECTION__ID: ${INTERSECTION_AGIOU_SPYRIDONOS_ID}
+      INTERSECTION__NAME: "Agiou Spyridonos"
 
       Mongo__ConnectionString: mongodb://${MONGO_ROOT_USERNAME}:${MONGO_ROOT_PASSWORD}@detectiondb:27017
       Mongo__Database: DetectionDB
+      Mongo__Collections__VehicleCount: vehicle_count
+      Mongo__Collections__PedestrianCount: pedestrian_count
+      Mongo__Collections__CyclistCount: cyclist_count
       Mongo__Collections__Emergency: emergency_vehicle
       Mongo__Collections__PublicTransport: public_transport
       Mongo__Collections__Incident: incident

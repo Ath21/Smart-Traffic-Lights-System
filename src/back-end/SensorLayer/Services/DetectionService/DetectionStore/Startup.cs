@@ -19,6 +19,7 @@ using DetectionData.Repositories.Pedestrian;
 using DetectionData.Repositories.Cyclist;
 using DetectionCacheData.Repositories;
 using DetectionStore.Publishers.Events;
+using DetectionStore.Domain;
 
 namespace DetectionStore;
 
@@ -33,6 +34,14 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
+        /******* Intersection Context ********/
+        services.AddSingleton(sp =>
+        {
+            var id = int.Parse(_configuration["INTERSECTION:ID"] ?? throw new InvalidOperationException("Intersection Id missing"));
+            var name = _configuration["INTERSECTION:NAME"] ?? "Unknown";
+            return new IntersectionContext(id, name);
+        });
+        
         /******* [1] MongoDB Config ********/
         services.Configure<DetectionDbSettings>(options =>
         {
