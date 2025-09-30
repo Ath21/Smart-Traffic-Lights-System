@@ -167,6 +167,14 @@ spec:
           timeoutSeconds: 3
           failureThreshold: 3
 
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          # give enough time (up to ~5 minutes) for RabbitMQ/Mongo to start
+          failureThreshold: 30
+          periodSeconds: 10
+
 
 # Service
 ---

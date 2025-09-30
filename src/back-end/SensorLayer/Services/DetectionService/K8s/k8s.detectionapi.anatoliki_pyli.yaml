@@ -30,13 +30,13 @@ spec:
         # Intersection identity
         # ===============================
         ## SECRET
-        - name: INTERSECTION_ID
+        - name: INTERSECTION__ID
           valueFrom:
             secretKeyRef:
               name: detectionapi-secret
               key: INTERSECTION_Anatoliki_Pyli_ID
 
-        - name: INTERSECTION_NAME
+        - name: INTERSECTION__NAME
           value: "Anatoliki Pyli"
 
         # ===============================
@@ -168,6 +168,15 @@ spec:
           periodSeconds: 20
           timeoutSeconds: 3
           failureThreshold: 3
+
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          # give enough time (up to ~5 minutes) for RabbitMQ/Mongo to start
+          failureThreshold: 30
+          periodSeconds: 10
+
 
 # Service
 ---

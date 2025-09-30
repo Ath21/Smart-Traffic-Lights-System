@@ -3,10 +3,34 @@ set -e
 
 ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-# Layers (short flags)
 LAYERS=("message" "user" "traffic" "sensor" "log")
 
+# ----------------------------------------------------
+# Usage
+# ----------------------------------------------------
+usage() {
+  echo "Usage: $0 {up|down} {/all|/user|/message|/traffic|/sensor|/log}"
+  echo ""
+  echo "Commands:"
+  echo "  up       Start one or more layers"
+  echo "  down     Stop one or more layers"
+  echo ""
+  echo "Layers:"
+  echo "  /all      All layers in the correct order"
+  echo "  /message  Messaging layer (RabbitMQ)"
+  echo "  /user     User layer (User + Notification)"
+  echo "  /traffic  Traffic layer (controllers + analytics)"
+  echo "  /sensor   Sensor layer (sensors + detection)"
+  echo "  /log      Log layer"
+  echo ""
+  echo "Examples:"
+  echo "  ./stls_backend-compose.sh up /all"
+  echo "  ./stls_backend-compose.sh down /traffic"
+}
+
+# ----------------------------------------------------
 # Networks
+# ----------------------------------------------------
 NETWORKS=(
   user_network
   notification_network
@@ -21,60 +45,56 @@ NETWORKS=(
   rabbitmq_network
 )
 
-# ----------------------------------------------------
-# Helpers
-# ----------------------------------------------------
-
 create_networks() {
-  echo "[*] Creating Docker networks..."
+  echo "Creating Docker networks..."
   for net in "${NETWORKS[@]}"; do
     docker network create "$net" >/dev/null 2>&1 || true
   done
 }
 
 remove_networks() {
-  echo "[*] Removing Docker networks..."
+  echo "Removing Docker networks..."
   for net in "${NETWORKS[@]}"; do
     docker network rm "$net" >/dev/null 2>&1 || true
   done
 }
 
+# ----------------------------------------------------
+# Helpers
+# ----------------------------------------------------
 wait_for_rabbitmq() {
-    echo "⏳ Waiting for RabbitMQ to be ready..."
-    local container
-    container=$(docker ps --filter "name=rabbitmq" --format "{{.Names}}" | head -n1)
-
-    if [[ -z "$container" ]]; then
-        echo "❌ RabbitMQ container not found."
-        exit 1
-    fi
-
-    until docker exec "$container" rabbitmqctl status &>/dev/null; do
-        sleep 2
-    done
-
-    echo "✅ RabbitMQ is ready."
+  echo "Waiting for RabbitMQ to be ready..."
+  local container
+  container=$(docker ps --filter "name=rabbitmq" --format "{{.Names}}" | head -n1)
+  if [[ -z "$container" ]]; then
+    echo "RabbitMQ container not found."
+    exit 1
+  fi
+  until docker exec "$container" rabbitmqctl status &>/dev/null; do
+    sleep 2
+  done
+  echo "RabbitMQ is ready."
 }
 
 wait_for_redis() {
-    local redis_name=$1
-    local friendly=$2
-    echo "⏳ Waiting for $friendly to be ready..."
-    local container
-    container=$(docker ps --filter "name=$redis_name" --format "{{.Names}}" | head -n1)
-
-    if [[ -z "$container" ]]; then
-        echo "❌ $friendly container not found."
-        exit 1
-    fi
-
-    until docker exec "$container" redis-cli ping 2>/dev/null | grep -q "PONG"; do
-        sleep 2
-    done
-
-    echo "✅ $friendly is ready."
+  local redis_name=$1
+  local friendly=$2
+  echo "Waiting for $friendly to be ready..."
+  local container
+  container=$(docker ps --filter "name=$redis_name" --format "{{.Names}}" | head -n1)
+  if [[ -z "$container" ]]; then
+    echo "$friendly container not found."
+    exit 1
+  fi
+  until docker exec "$container" redis-cli ping 2>/dev/null | grep -q "PONG"; do
+    sleep 2
+  done
+  echo "$friendly is ready."
 }
 
+# ----------------------------------------------------
+# Deploy and stop layers
+# ----------------------------------------------------
 deploy_layer() {
   local layer=$1
   case $layer in
@@ -93,13 +113,11 @@ deploy_layer() {
         up -d
       ;;
     traffic)
-      # Shared Redis first
       docker compose -p stls_traffic \
         -f "$ROOT_DIR/TrafficLayer/Databases/TrafficLightCacheDB/Redis/Docker/docker-compose.yaml" \
         -f "$ROOT_DIR/TrafficLayer/Databases/TrafficLightCacheDB/Redis/Docker/docker-compose.override.yaml" up -d
       wait_for_redis "trafficlightcachedb_container" "TrafficLightCacheDB"
 
-      # Then Postgres DBs + APIs
       docker compose -p stls_traffic \
         -f "$ROOT_DIR/TrafficLayer/Databases/TrafficAnalyticsDB/PostgreSQL/Docker/docker-compose.yaml" -f "$ROOT_DIR/TrafficLayer/Databases/TrafficAnalyticsDB/PostgreSQL/Docker/docker-compose.override.yaml" \
         -f "$ROOT_DIR/TrafficLayer/Databases/TrafficLightDB/MSSQL/Docker/docker-compose.yaml" -f "$ROOT_DIR/TrafficLayer/Databases/TrafficLightDB/MSSQL/Docker/docker-compose.override.yaml" \
@@ -110,23 +128,19 @@ deploy_layer() {
         up -d
       ;;
     sensor)
-      # Shared Redis first (DetectionCacheDB)
       docker compose -p stls_sensor \
         -f "$ROOT_DIR/SensorLayer/Databases/DetectionCacheDB/Redis/Docker-Compose/docker-compose.yaml" \
         -f "$ROOT_DIR/SensorLayer/Databases/DetectionCacheDB/Redis/Docker-Compose/docker-compose.override.yaml" up -d
       wait_for_redis "detectioncachedb" "DetectionCacheDB"
 
-      # Shared MongoDB (DetectionDB)
       docker compose -p stls_sensor \
         -f "$ROOT_DIR/SensorLayer/Databases/DetectionDB/Mongo/Docker-Compose/docker-compose.yaml" \
         -f "$ROOT_DIR/SensorLayer/Databases/DetectionDB/Mongo/Docker-Compose/docker-compose.override.yaml" up -d
 
-      # Detection APIs (per intersection)
       for file in "$ROOT_DIR"/SensorLayer/Services/DetectionService/Docker-Compose/docker-compose.detectionapi.*.yaml; do
         docker compose -p stls_sensor -f "$file" --env-file "$ROOT_DIR/SensorLayer/Services/DetectionService/Docker-Compose/secret.env" up -d
       done
 
-      # Sensor APIs (per intersection)
       for file in "$ROOT_DIR"/SensorLayer/Services/SensorService/Docker-Compose/docker-compose.sensorapi.*.yaml; do
         docker compose -p stls_sensor -f "$file" --env-file "$ROOT_DIR/SensorLayer/Services/SensorService/Docker-Compose/secret.env" up -d
       done
@@ -136,9 +150,9 @@ deploy_layer() {
         -f "$ROOT_DIR/LogLayer/Databases/LogDB/Mongo/Docker/docker-compose.yaml" -f "$ROOT_DIR/LogLayer/Databases/LogDB/Mongo/Docker/docker-compose.override.yaml" \
         -f "$ROOT_DIR/LogLayer/Services/LogService/Docker/docker-compose.yaml" -f "$ROOT_DIR/LogLayer/Services/LogService/Docker/docker-compose.override.yaml" \
         up -d
-  ;;
+      ;;
     *)
-      echo "❌ Unknown layer: $layer"
+      echo "Unknown layer: $layer"
       exit 1
       ;;
   esac
@@ -147,27 +161,24 @@ deploy_layer() {
 stop_layer() {
   local layer=$1
   docker compose -p "stls_$layer" down
-  echo "🧹 Cleaning up unused volumes and images..."
+  echo "Cleaning up unused volumes and images..."
   docker volume prune -f >/dev/null 2>&1 || true
   docker image prune -f >/dev/null 2>&1 || true
 }
 
-
 # ----------------------------------------------------
 # Main logic
 # ----------------------------------------------------
-
 ACTION=$1
-LAYER=${2#/}   # remove leading "/"
+LAYER=${2#/}
 
 if [[ "$ACTION" == "up" ]]; then
   create_networks
   if [[ "$LAYER" == "all" ]]; then
-    # Always deploy message first
-    echo "▶ Bringing up message (RabbitMQ)..."
+    echo "Bringing up message layer first..."
     deploy_layer "message"
     for layer in "log" "traffic" "user" "sensor"; do
-      echo "▶ Bringing up $layer..."
+      echo "Bringing up $layer layer..."
       deploy_layer "$layer"
     done
   else
@@ -185,6 +196,6 @@ elif [[ "$ACTION" == "down" ]]; then
   fi
 
 else
-  echo "Usage: $0 {up|down} {/all|/user|/message|/traffic|/sensor|/log}"
+  usage
   exit 1
 fi

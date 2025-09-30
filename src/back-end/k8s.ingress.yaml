@@ -10,9 +10,9 @@ spec:
     http:
       paths:
       # ================================
-      # Detection APIs
+      # Detection APIs (with /api/detections)
       # ================================
-      - path: /detection/agiou-spyridonos
+      - path: /detection/agiou-spyridonos/api/detections
         pathType: Prefix
         backend:
           service:
@@ -20,7 +20,7 @@ spec:
             port:
               number: 8080
 
-      - path: /detection/anatoliki-pyli
+      - path: /detection/anatoliki-pyli/api/detections
         pathType: Prefix
         backend:
           service:
@@ -28,7 +28,7 @@ spec:
             port:
               number: 8080
 
-      - path: /detection/dytiki-pyli
+      - path: /detection/dytiki-pyli/api/detections
         pathType: Prefix
         backend:
           service:
@@ -36,7 +36,7 @@ spec:
             port:
               number: 8080
 
-      - path: /detection/ekklisia
+      - path: /detection/ekklisia/api/detections
         pathType: Prefix
         backend:
           service:
@@ -44,7 +44,7 @@ spec:
             port:
               number: 8080
 
-      - path: /detection/kentriki-pyli
+      - path: /detection/kentriki-pyli/api/detections
         pathType: Prefix
         backend:
           service:
@@ -53,9 +53,9 @@ spec:
               number: 8080
 
       # ================================
-      # Sensor APIs
+      # Sensor APIs (with /api/sensors)
       # ================================
-      - path: /sensor/agiou-spyridonos
+      - path: /sensor/agiou-spyridonos/api/sensors
         pathType: Prefix
         backend:
           service:
@@ -63,7 +63,7 @@ spec:
             port:
               number: 8080
 
-      - path: /sensor/anatoliki-pyli
+      - path: /sensor/anatoliki-pyli/api/sensors
         pathType: Prefix
         backend:
           service:
@@ -71,7 +71,7 @@ spec:
             port:
               number: 8080
 
-      - path: /sensor/dytiki-pyli
+      - path: /sensor/dytiki-pyli/api/sensors
         pathType: Prefix
         backend:
           service:
@@ -79,7 +79,7 @@ spec:
             port:
               number: 8080
 
-      - path: /sensor/ekklisia
+      - path: /sensor/ekklisia/api/sensors
         pathType: Prefix
         backend:
           service:
@@ -87,7 +87,7 @@ spec:
             port:
               number: 8080
 
-      - path: /sensor/kentriki-pyli
+      - path: /sensor/kentriki-pyli/api/sensors
         pathType: Prefix
         backend:
           service:
