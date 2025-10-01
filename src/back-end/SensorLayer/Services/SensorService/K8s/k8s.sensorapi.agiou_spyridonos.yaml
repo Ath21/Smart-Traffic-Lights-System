@@ -148,6 +148,7 @@ spec:
           value: "log.sensor.detection_service.{intersection}.audit"
         - name: RabbitMQ__RoutingKeys__Log__Error
           value: "log.sensor.detection_service.{intersection}.error"
+        
         livenessProbe:
           httpGet:
             path: /health
@@ -170,7 +171,6 @@ spec:
           httpGet:
             path: /health
             port: 8080
-          # give enough time (up to ~5 minutes) for RabbitMQ/Mongo to start
           failureThreshold: 30
           periodSeconds: 10
 
