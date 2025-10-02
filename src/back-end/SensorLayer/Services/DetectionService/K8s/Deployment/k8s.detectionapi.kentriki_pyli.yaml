@@ -1,9 +1,11 @@
-# Deployment
----
+# =============================================
+# DetectionAPI - Agiou Spyridonos
+# =============================================
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: detectionapi-kentriki-pyli
+  namespace: uniwa-stls
 spec:
   replicas: 1
   selector:
@@ -27,15 +29,13 @@ spec:
           value: "Development"
 
         # ===============================
-        # Intersection identity
+        # Intersection
         # ===============================
-        ## SECRET
         - name: INTERSECTION__ID
           valueFrom:
-            secretKeyRef:
-              name: detectionapi-secret
-              key: INTERSECTION_Kentriki_Pyli_ID
-
+            configMapKeyRef:
+              name: uniwa-stls-ids
+              key: INTERSECTION_KENTRIKI_PYLI_ID
         - name: INTERSECTION__NAME
           value: "Kentriki Pyli"
 
@@ -138,19 +138,22 @@ spec:
               key: RABBITMQ_PASSWORD
         - name: RabbitMQ__Exchanges__Sensor
           value: "SENSOR.EXCHANGE"
+        - name: RabbitMQ__Exchanges__Log
+          value: "LOG.EXCHANGE"
         - name: RabbitMQ__RoutingKeys__Sensor__EmergencyVehicle
           value: "sensor.detection.{intersection}.emergency"
         - name: RabbitMQ__RoutingKeys__Sensor__PublicTransport
           value: "sensor.detection.{intersection}.public_transport"
         - name: RabbitMQ__RoutingKeys__Sensor__IncidentDetected
           value: "sensor.detection.{intersection}.incident"
-        - name: RabbitMQ__Exchanges__Log
-          value: "LOG.EXCHANGE"
         - name: RabbitMQ__RoutingKeys__Log__Audit
           value: "log.sensor.detection_service.{intersection}.audit"
         - name: RabbitMQ__RoutingKeys__Log__Error
           value: "log.sensor.detection_service.{intersection}.error"
 
+        # ===============================
+        # Probes
+        # ===============================
         livenessProbe:
           httpGet:
             path: /health
@@ -173,20 +176,18 @@ spec:
           httpGet:
             path: /health
             port: 8080
-          # give enough time (up to ~5 minutes) for RabbitMQ/Mongo to start
-          failureThreshold: 30
+          failureThreshold: 30   # up to ~5 min
           periodSeconds: 10
-
-# Service
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: detectionapi-kentriki-pyli
+  namespace: uniwa-stls
 spec:
   type: ClusterIP
-  ports:
-  - port: 8080
-    targetPort: 8080
   selector:
     app: detectionapi-kentriki-pyli
+  ports:
+    - port: 8080
+      targetPort: 8080

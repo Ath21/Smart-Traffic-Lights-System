@@ -2,15 +2,16 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: stls-ingress
+  namespace: uniwa-stls
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
-  - host: stls.local   # map in /etc/hosts → 127.0.0.1 stls.local
+  - host: uniwa-stls.local   # mapped in /etc/hosts → 192.168.49.2 uniwa-stls.local
     http:
       paths:
       # ================================
-      # Detection APIs (with /api/detections)
+      # Detection APIs
       # ================================
       - path: /detection/agiou-spyridonos/api/detections
         pathType: Prefix
@@ -53,7 +54,7 @@ spec:
               number: 8080
 
       # ================================
-      # Sensor APIs (with /api/sensors)
+      # Sensor APIs
       # ================================
       - path: /sensor/agiou-spyridonos/api/sensors
         pathType: Prefix
