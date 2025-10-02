@@ -5,14 +5,19 @@ using TrafficLightData.Entities;
 
 namespace TrafficLightData.Repositories.Intersections;
 
-public class IntersectionRepository : IIntersectionRepository
+
+public class IntersectionRepository : Repository<Intersection>, IIntersectionRepository
 {
-    private readonly TrafficLightDbContext _db;
-    public IntersectionRepository(TrafficLightDbContext db) => _db = db;
+    private readonly TrafficLightDbContext _context;
 
-    public Task<bool> ExistsAsync(Guid id, CancellationToken ct) =>
-        _db.Intersections.AsNoTracking().AnyAsync(i => i.IntersectionId == id, ct);
+    public IntersectionRepository(TrafficLightDbContext context) : base(context)
+    {
+        _context = context;
+    }
 
-    public Task<Intersection?> GetAsync(Guid id, CancellationToken ct) =>
-        _db.Intersections.AsNoTracking().FirstOrDefaultAsync(i => i.IntersectionId == id, ct);
+    public async Task<Intersection?> GetWithDetailsAsync(int id) =>
+        await _context.Intersections
+            .Include(i => i.TrafficLights)
+            .Include(i => i.Configurations)
+            .FirstOrDefaultAsync(i => i.IntersectionId == id);
 }

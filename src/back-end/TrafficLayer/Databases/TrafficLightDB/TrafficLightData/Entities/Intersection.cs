@@ -3,27 +3,15 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TrafficLightData.Entities;
 
-[Table("intersections")]
-public class Intersection
-{
-    [Key, Column("intersection_id")]
-    public Guid IntersectionId { get; set; }
+    public class Intersection
+    {
+        public int IntersectionId { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Location { get; set; } = "{}"; // JSON
+        public string? Description { get; set; }
+        public DateTime InstalledAt { get; set; }
+        public string Status { get; set; } = "Active";
 
-    [Column("name"), MaxLength(255)]
-    public string Name { get; set; } = string.Empty;
-
-    [Column("location", TypeName = "nvarchar(max)")]
-    public string? Location { get; set; }
-
-    [Column("description")]
-    public string? Description { get; set; }
-
-    [Column("installed_at")]
-    public DateTimeOffset? InstalledAt { get; set; }
-
-    [Column("status"), MaxLength(50)]
-    public string Status { get; set; } = "Active";
-
-    public ICollection<TrafficLight> Lights { get; set; } = new List<TrafficLight>();
-    public ICollection<TrafficConfiguration> Configurations { get; set; } = new List<TrafficConfiguration>();
-}
+        public ICollection<TrafficLight> TrafficLights { get; set; } = new List<TrafficLight>();
+        public ICollection<TrafficConfiguration> Configurations { get; set; } = new List<TrafficConfiguration>();
+    }

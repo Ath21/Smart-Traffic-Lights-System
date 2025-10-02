@@ -1,25 +1,16 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using TrafficLightData.Entities;
 
 namespace TrafficAnalyticsData.Entities;
 
-[Table("alerts")]
 public class Alert
 {
-    [Key]
-    [Column("alert_id")]
-    public Guid AlertId { get; set; }
-
-    [Column("type")]
-    [MaxLength(50)]
-    public string Type { get; set; } = string.Empty;
-
-    [Column("intersection_id")]
-    public Guid IntersectionId { get; set; }
-
-    [Column("message")]
+    public int AlertId { get; set; }            // PK
+    public int IntersectionId { get; set; }     // FK
+    public string Type { get; set; } = string.Empty;  // e.g. "EMERGENCY", "FAILOVER", "CONFIG_CHANGE"
     public string Message { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-    [Column("created_at")]
-    public DateTime CreatedAt { get; set; }
+    public Intersection? Intersection { get; set; }
 }

@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "F:\\REPOS\\Smart-Traffic-Lights-System\\src\\back-end\\TrafficLayer\\Databases\\TrafficLightCacheDB\\TrafficLightCacheData\\TrafficLightCacheData.csproj": {}
+    "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Databases/TrafficLightCacheDB/TrafficLightCacheData/TrafficLightCacheData.csproj": {}
   },
   "projects": {
-    "F:\\REPOS\\Smart-Traffic-Lights-System\\src\\back-end\\TrafficLayer\\Databases\\TrafficLightCacheDB\\TrafficLightCacheData\\TrafficLightCacheData.csproj": {
+    "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Databases/TrafficLightCacheDB/TrafficLightCacheData/TrafficLightCacheData.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\REPOS\\Smart-Traffic-Lights-System\\src\\back-end\\TrafficLayer\\Databases\\TrafficLightCacheDB\\TrafficLightCacheData\\TrafficLightCacheData.csproj",
+        "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Databases/TrafficLightCacheDB/TrafficLightCacheData/TrafficLightCacheData.csproj",
         "projectName": "TrafficLightCacheData",
-        "projectPath": "F:\\REPOS\\Smart-Traffic-Lights-System\\src\\back-end\\TrafficLayer\\Databases\\TrafficLightCacheDB\\TrafficLightCacheData\\TrafficLightCacheData.csproj",
-        "packagesPath": "C:\\Users\\billa\\.nuget\\packages\\",
-        "outputPath": "F:\\REPOS\\Smart-Traffic-Lights-System\\src\\back-end\\TrafficLayer\\Databases\\TrafficLightCacheDB\\TrafficLightCacheData\\obj\\",
+        "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Databases/TrafficLightCacheDB/TrafficLightCacheData/TrafficLightCacheData.csproj",
+        "packagesPath": "/home/ath/.nuget/packages/",
+        "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Databases/TrafficLightCacheDB/TrafficLightCacheData/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\billa\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "/home/ath/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
@@ -77,7 +77,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/9.0.305/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

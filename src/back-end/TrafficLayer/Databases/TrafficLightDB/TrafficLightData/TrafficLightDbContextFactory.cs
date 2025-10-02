@@ -10,7 +10,7 @@ public class TrafficLightDbContextFactory : IDesignTimeDbContextFactory<TrafficL
     {
         var options = new DbContextOptionsBuilder<TrafficLightDbContext>()
             .UseSqlServer(
-                "Server=traffic_light_db,1433;Database=TrafficLightDB;User Id=sa;Password=MyPass@word;TrustServerCertificate=True"
+                "Server=localhost,1433;Database=TrafficLightDB;User Id=sa;Password=MyPass@word;TrustServerCertificate=True"
             )
             .Options;
 

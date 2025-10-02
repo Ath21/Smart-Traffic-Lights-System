@@ -19,4 +19,8 @@
   
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="../../TrafficLightDB/TrafficLightData/TrafficLightData.csproj" />
+  </ItemGroup>
+
 </Project>

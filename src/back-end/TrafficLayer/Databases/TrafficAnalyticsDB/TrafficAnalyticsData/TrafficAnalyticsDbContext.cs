@@ -6,44 +6,60 @@ namespace TrafficAnalyticsData;
 
 public class TrafficAnalyticsDbContext : DbContext
 {
-    private readonly IConfiguration _configuration;
+    private readonly IConfiguration? _configuration;
 
-    public TrafficAnalyticsDbContext(DbContextOptions<TrafficAnalyticsDbContext> options, IConfiguration configuration)
-        : base(options)
+    public TrafficAnalyticsDbContext(
+        DbContextOptions<TrafficAnalyticsDbContext> options,
+        IConfiguration? configuration = null) : base(options)
     {
         _configuration = configuration;
     }
 
-    public DbSet<DailySummary> DailySummaries { get; set; }
-    public DbSet<Alert> Alerts { get; set; }
+    public DbSet<DailySummary> DailySummaries => Set<DailySummary>();
+    public DbSet<Alert> Alerts => Set<Alert>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        base.OnModelCreating(modelBuilder);
-
-        // daily_summaries
-        modelBuilder.Entity<DailySummary>(entity =>
+        // DailySummary
+        modelBuilder.Entity<DailySummary>(e =>
         {
-            entity.HasKey(e => e.SummaryId);
-            entity.Property(e => e.CongestionLevel)
-                  .HasMaxLength(50);
+            e.HasKey(s => s.SummaryId);
+
+            e.Property(s => s.SummaryId).ValueGeneratedOnAdd();
+
+            e.HasIndex(s => new { s.IntersectionId, s.Date })
+                .HasDatabaseName("ix_summary_intersection_date");
+
+            e.Property(s => s.Date).HasColumnType("date"); // stored as DATE
         });
 
-        // alerts
-        modelBuilder.Entity<Alert>(entity =>
+        // Alerts
+        modelBuilder.Entity<Alert>(e =>
         {
-            entity.HasKey(e => e.AlertId);
-            entity.Property(e => e.Type)
-                  .HasMaxLength(50);
+            e.HasKey(a => a.AlertId);
+
+            e.Property(a => a.AlertId).ValueGeneratedOnAdd();
+
+            e.HasIndex(a => new { a.IntersectionId, a.CreatedAt })
+                .HasDatabaseName("ix_alerts_intersection_created");
+
+            e.Property(a => a.CreatedAt).HasDefaultValueSql("NOW()");
         });
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        if (!optionsBuilder.IsConfigured)
+        if (!optionsBuilder.IsConfigured && _configuration is not null)
         {
-            var connectionString = _configuration.GetConnectionString("PostgreSQLConnection");
-            optionsBuilder.UseNpgsql(connectionString);
+            var connectionString = _configuration.GetConnectionString("PostgresConnection");
+
+            optionsBuilder.UseNpgsql(connectionString, npgsqlOptions =>
+            {
+                npgsqlOptions.EnableRetryOnFailure(
+                    maxRetryCount: 5,
+                    maxRetryDelay: TimeSpan.FromSeconds(10),
+                    errorCodesToAdd: null);
+            });
         }
     }
 
@@ -58,5 +74,4 @@ public class TrafficAnalyticsDbContext : DbContext
             return false;
         }
     }
-
 }
