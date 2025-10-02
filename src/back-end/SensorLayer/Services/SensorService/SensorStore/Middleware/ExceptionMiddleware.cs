@@ -13,8 +13,6 @@ public class ExceptionMiddleware
     private readonly ILogger<ExceptionMiddleware> _logger;
     private readonly IServiceScopeFactory _scopeFactory;
 
-    private const string ServiceTag = "[" + nameof(ExceptionMiddleware) + "]";
-
     public ExceptionMiddleware(
         RequestDelegate next,
         ILogger<ExceptionMiddleware> logger,
@@ -41,7 +39,7 @@ public class ExceptionMiddleware
     {
         var (statusCode, userMessage, errorType) = MapException(ex);
 
-        _logger.LogError(ex, "{Tag} {Message}", ServiceTag, userMessage);
+        _logger.LogError(ex, "[ExceptionMiddleware] {Message}", userMessage);
 
         try
         {
@@ -62,7 +60,7 @@ public class ExceptionMiddleware
         }
         catch (Exception pubEx)
         {
-            _logger.LogError(pubEx, "{Tag} Failed to publish error log", ServiceTag);
+            _logger.LogError(pubEx, "[ExceptionMiddleware] Failed to publish error log");
         }
 
         context.Response.StatusCode = (int)statusCode;

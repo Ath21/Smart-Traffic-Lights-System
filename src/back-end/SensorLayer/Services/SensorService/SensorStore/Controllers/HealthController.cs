@@ -1,17 +1,28 @@
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SensorStore.Domain;
 
-namespace SensorStore.Controllers
+namespace SensorStore.Controllers;
+
+[ApiController]
+[Route("api/sensors")]
+public class HealthController : ControllerBase
 {
-    [ApiController]
-    [Route("sensor_service")]
-    public class HealthController : ControllerBase
+    private readonly IntersectionContext _intersection;
+
+    public HealthController(IntersectionContext intersection)
     {
-        // Liveness: Service is running (no external deps)
-        [HttpGet("/health")]
-        public IActionResult Health()
+        _intersection = intersection;
+    }
+
+    // Liveness: Service is running (no external deps)
+    [HttpGet("health")]
+    public IActionResult Health()
+    {
+        return Ok(new
         {
-            return Ok(new { status = "Healthy", service = "Sensor Service" });
-        }
+            status = "Healthy",
+            service = "Sensor Service",
+            intersection = new { _intersection.Id, _intersection.Name }
+        });
     }
 }

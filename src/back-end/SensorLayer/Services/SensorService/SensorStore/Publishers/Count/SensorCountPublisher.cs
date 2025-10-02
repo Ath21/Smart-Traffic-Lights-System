@@ -1,7 +1,7 @@
 using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using SensorMessages;
+using SensorMessages.SensorCount;
 using SensorStore.Domain;
 
 namespace SensorStore.Publishers.Count;
@@ -14,8 +14,6 @@ public class SensorCountPublisher : ISensorCountPublisher
     private readonly string _vehicleKey;
     private readonly string _pedestrianKey;
     private readonly string _cyclistKey;
-
-    private const string ServiceTag = "[" + nameof(SensorCountPublisher) + "]";
 
     public SensorCountPublisher(
         IConfiguration config,
@@ -32,57 +30,61 @@ public class SensorCountPublisher : ISensorCountPublisher
         _cyclistKey = config["RabbitMQ:RoutingKeys:Sensor:CyclistCount"] ?? "sensor.count.{intersection}.cyclist";
     }
 
-    public async Task PublishVehicleCountAsync(int count, float avgSpeed = 0)
+    public async Task PublishVehicleCountAsync(int count, double avgSpeed, string direction)
     {
         var routingKey = _vehicleKey.Replace("{intersection}", _intersection.Id.ToString());
 
-        var msg = new SensorCountMessage
+        var msg = new VehicleCountMessage
         {
-            Intersection = _intersection.Id.ToString(),
-            Type = "vehicle",
+            IntersectionId = _intersection.Id,
+            IntersectionName = _intersection.Name,
             Count = count,
+            AvgSpeed = avgSpeed,
+            Direction = direction,
             Timestamp = DateTime.UtcNow
         };
 
         await _bus.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
 
-        _logger.LogInformation("{Tag} Vehicle count published for {IntersectionName} (Id={IntersectionId}): {Count}",
-            ServiceTag, _intersection.Name, _intersection.Id, count);
+        _logger.LogInformation("[{IntersectionName}][ID={IntersectionId}] Vehicle count published: {Count} (AvgSpeed={AvgSpeed}, Dir={Direction})",
+            _intersection.Name, _intersection.Id, count, avgSpeed, direction);
     }
 
-    public async Task PublishPedestrianCountAsync(int count)
+    public async Task PublishPedestrianCountAsync(int count, string direction)
     {
         var routingKey = _pedestrianKey.Replace("{intersection}", _intersection.Id.ToString());
 
-        var msg = new SensorCountMessage
+        var msg = new PedestrianCountMessage
         {
-            Intersection = _intersection.Id.ToString(),
-            Type = "pedestrian",
+            IntersectionId = _intersection.Id,
+            IntersectionName = _intersection.Name,
             Count = count,
+            Direction = direction,
             Timestamp = DateTime.UtcNow
         };
 
         await _bus.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
 
-        _logger.LogInformation("{Tag} Pedestrian count published for {IntersectionName} (Id={IntersectionId}): {Count}",
-            ServiceTag, _intersection.Name, _intersection.Id, count);
+        _logger.LogInformation("[{IntersectionName}][ID={IntersectionId}] Pedestrian count published: {Count} (Dir={Direction})",
+            _intersection.Name, _intersection.Id, count, direction);
     }
 
-    public async Task PublishCyclistCountAsync(int count)
+    public async Task PublishCyclistCountAsync(int count, string direction)
     {
         var routingKey = _cyclistKey.Replace("{intersection}", _intersection.Id.ToString());
 
-        var msg = new SensorCountMessage
+        var msg = new CyclistCountMessage
         {
-            Intersection = _intersection.Id.ToString(),
-            Type = "cyclist",
+            IntersectionId = _intersection.Id,
+            IntersectionName = _intersection.Name,
             Count = count,
+            Direction = direction,
             Timestamp = DateTime.UtcNow
         };
 
         await _bus.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
 
-        _logger.LogInformation("{Tag} Cyclist count published for {IntersectionName} (Id={IntersectionId}): {Count}",
-            ServiceTag, _intersection.Name, _intersection.Id, count);
+        _logger.LogInformation("[{IntersectionName}][ID={IntersectionId}] Cyclist count published: {Count} (Dir={Direction})",
+            _intersection.Name, _intersection.Id, count, direction);
     }
 }

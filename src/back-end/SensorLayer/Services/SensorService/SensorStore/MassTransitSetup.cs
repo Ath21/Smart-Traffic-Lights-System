@@ -2,6 +2,7 @@ using MassTransit;
 using RabbitMQ.Client;
 using SensorMessages;
 using LogMessages;
+using SensorMessages.SensorCount;
 
 namespace SensorStore;
 
@@ -29,8 +30,12 @@ public static class MassTransitSetup
                 // =========================
                 // SENSOR COUNTS (Publish)
                 // =========================
-                cfg.Message<SensorCountMessage>(e => e.SetEntityName(sensorExchange));
-                cfg.Publish<SensorCountMessage>(e => e.ExchangeType = ExchangeType.Topic);
+                cfg.Message<CyclistCountMessage>(e => e.SetEntityName(sensorExchange));
+                cfg.Publish<CyclistCountMessage>(e => e.ExchangeType = ExchangeType.Topic);
+                cfg.Message<PedestrianCountMessage>(e => e.SetEntityName(sensorExchange));
+                cfg.Publish<PedestrianCountMessage>(e => e.ExchangeType = ExchangeType.Topic);
+                cfg.Message<VehicleCountMessage>(e => e.SetEntityName(sensorExchange));
+                cfg.Publish<VehicleCountMessage>(e => e.ExchangeType = ExchangeType.Topic);
 
                 // =========================
                 // LOGS (Publish)

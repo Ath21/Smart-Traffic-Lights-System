@@ -9,9 +9,23 @@ public class IncidentDetection
     [BsonId]
     public ObjectId Id { get; set; }
 
-    public DateTime Timestamp { get; set; }
+    [BsonElement("timestamp")]
+    public DateTime Timestamp { get; set; } 
+
+    [BsonElement("intersection_id")]
     public int IntersectionId { get; set; }
-    public string Type { get; set; } // collision
-    public int Severity { get; set; } // 1-5
-    public string Description { get; set; }
+
+    [BsonElement("intersection_name")]
+    public string IntersectionName { get; set; }
+
+    [BsonElement("type")]
+    public string Type { get; set; } 
+    [BsonElement("severity")]
+    public int Severity { get; set; } 
+
+    [BsonElement("description")]
+    public string Description { get; set; } 
+
+    [BsonElement("direction")]
+    public string Direction { get; set; } = "unknown";
 }

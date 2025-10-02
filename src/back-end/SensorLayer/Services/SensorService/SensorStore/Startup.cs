@@ -46,11 +46,11 @@ public class Startup
         services.Configure<DetectionDbSettings>(options =>
         {
             options.ConnectionString = _configuration["Mongo:ConnectionString"];
-            options.Database = _configuration["Mongo:Database"];
-            options.VehicleCollection = _configuration["Mongo:Collections:VehicleCount"];
-            options.PedestrianCollection = _configuration["Mongo:Collections:PedestrianCount"];
-            options.CyclistCollection = _configuration["Mongo:Collections:CyclistCount"];
-            options.EmergencyCollection = _configuration["Mongo:Collections:Emergency"];
+            options.DatabaseName = _configuration["Mongo:Database"];
+            options.VehicleCountCollection = _configuration["Mongo:Collections:VehicleCount"];
+            options.PedestrianCountCollection = _configuration["Mongo:Collections:PedestrianCount"];
+            options.CyclistCountCollection = _configuration["Mongo:Collections:CyclistCount"];
+            options.EmergencyVehicleCollection = _configuration["Mongo:Collections:Emergency"];
             options.PublicTransportCollection = _configuration["Mongo:Collections:PublicTransport"];
             options.IncidentCollection = _configuration["Mongo:Collections:Incident"];
         });

@@ -7,5 +7,7 @@ namespace DetectionStore.Publishers.Event;
 
 public interface IDetectionEventPublisher
 {
-    Task PublishDetectionAsync(string eventType, string? details = null);
+    Task PublishEmergencyVehicleAsync(string type, int priority, string direction);
+    Task PublishPublicTransportAsync(string mode, string direction);
+    Task PublishIncidentAsync(string type, int severity, string description, string direction);
 }

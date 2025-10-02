@@ -1,6 +1,6 @@
 using System;
 
-namespace DetectionCacheData.Cache;
+namespace DetectionCacheData.Keys;
 
 public static class DetectionCacheKeys
 {

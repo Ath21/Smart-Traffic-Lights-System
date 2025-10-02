@@ -9,9 +9,21 @@ public class PublicTransportDetection
     [BsonId]
     public ObjectId Id { get; set; }
 
+    [BsonElement("timestamp")]
     public DateTime Timestamp { get; set; }
+
+    [BsonElement("intersection_id")]
     public int IntersectionId { get; set; }
+
+    [BsonElement("intersection_name")]
+    public string IntersectionName { get; set; }
+
+    [BsonElement("detected")]
     public bool Detected { get; set; }
-    public string Mode { get; set; } // bus, tram
-    public string RouteId { get; set; }
+
+    [BsonElement("mode")]
+    public string Mode { get; set; }
+    
+    [BsonElement("direction")]
+    public string Direction { get; set; }
 }

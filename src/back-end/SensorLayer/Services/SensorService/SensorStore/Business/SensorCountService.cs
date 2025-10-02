@@ -46,23 +46,22 @@ namespace SensorStore.Business
         public async Task<SensorResponse> GetSensorDataAsync()
         {
             var id = _intersection.Id;
+            var name = _intersection.Name;
 
-            var vehicleCount = await _cacheRepo.GetVehicleCountAsync(id) ?? 0;
-            var pedestrianCount = await _cacheRepo.GetPedestrianCountAsync(id) ?? 0;
-            var cyclistCount = await _cacheRepo.GetCyclistCountAsync(id) ?? 0;
-            var emergency = await _cacheRepo.GetEmergencyDetectedAsync(id) ?? false;
-            var publicTransport = await _cacheRepo.GetPublicTransportDetectedAsync(id) ?? false;
-            var incident = await _cacheRepo.GetIncidentDetectedAsync(id);
+            var vehicleCountStr = await _cacheRepo.GetVehicleCountAsync(id);
+            var vehicleCount = int.TryParse(vehicleCountStr, out var vCount) ? vCount : 0;
+            var pedestrianCountStr = await _cacheRepo.GetPedestrianCountAsync(id);
+            var pedestrianCount = int.TryParse(pedestrianCountStr, out var pCount) ? pCount : 0;
+            var cyclistCountStr = await _cacheRepo.GetCyclistCountAsync(id);
+            var cyclistCount = int.TryParse(cyclistCountStr, out var cCount) ? cCount : 0;
 
             var snapshot = new SensorResponse
             {
                 IntersectionId = id,
+                IntersectionName = name,
                 VehicleCount = vehicleCount,
                 PedestrianCount = pedestrianCount,
                 CyclistCount = cyclistCount,
-                EmergencyDetected = emergency,
-                PublicTransportDetected = publicTransport,
-                LastIncident = incident,
                 Timestamp = DateTime.UtcNow
             };
 
@@ -70,6 +69,7 @@ namespace SensorStore.Business
             await _logPublisher.PublishAuditAsync("GET_SENSOR_DATA", "Snapshot retrieved", new
             {
                 snapshot.IntersectionId,
+                snapshot.IntersectionName,
                 snapshot.VehicleCount,
                 snapshot.PedestrianCount,
                 snapshot.CyclistCount
@@ -88,19 +88,20 @@ namespace SensorStore.Business
             await _cyclistRepo.InsertAsync(_mapper.Map<CyclistCount>(dto));
 
             // update Redis
-            await _cacheRepo.SetVehicleCountAsync(dto.IntersectionId, dto.VehicleCount);
-            await _cacheRepo.SetPedestrianCountAsync(dto.IntersectionId, dto.PedestrianCount);
-            await _cacheRepo.SetCyclistCountAsync(dto.IntersectionId, dto.CyclistCount);
+            await _cacheRepo.SetVehicleCountAsync(dto.IntersectionId, dto.IntersectionName, dto.VehicleCount, 0);
+            await _cacheRepo.SetPedestrianCountAsync(dto.IntersectionId, dto.IntersectionName, dto.PedestrianCount, "sensor");
+            await _cacheRepo.SetCyclistCountAsync(dto.IntersectionId, dto.IntersectionName, dto.CyclistCount, "sensor");
 
             // publish events via publisher abstraction
-            await _publisher.PublishVehicleCountAsync(dto.VehicleCount, avgSpeed: 0);
-            await _publisher.PublishPedestrianCountAsync(dto.PedestrianCount);
-            await _publisher.PublishCyclistCountAsync(dto.CyclistCount);
+            await _publisher.PublishVehicleCountAsync(dto.VehicleCount, avgSpeed: 0, direction: dto.Direction);
+            await _publisher.PublishPedestrianCountAsync(dto.PedestrianCount, dto.Direction);
+            await _publisher.PublishCyclistCountAsync(dto.CyclistCount, dto.Direction);
 
             // 🔹 Log audit: sensor data reported
             await _logPublisher.PublishAuditAsync("REPORT_SENSOR_DATA", "New sensor data recorded", new
             {
                 dto.IntersectionId,
+                dto.IntersectionName,
                 dto.VehicleCount,
                 dto.PedestrianCount,
                 dto.CyclistCount

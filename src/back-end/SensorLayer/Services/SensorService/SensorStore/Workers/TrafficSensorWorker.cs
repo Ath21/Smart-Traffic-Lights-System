@@ -21,7 +21,7 @@ public class TrafficSensorWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("TrafficSensorWorker started for {IntersectionName} (Id={IntersectionId})",
+        _logger.LogInformation("[{IntersectionName}][ID={IntersectionId}] TrafficSensorWorker started",
             _intersection.Name, _intersection.Id);
 
         while (!stoppingToken.IsCancellationRequested)
@@ -48,11 +48,11 @@ public class TrafficSensorWorker : BackgroundService
                     CyclistCount = snapshot.CyclistCount
                 });
 
-                _logger.LogInformation("Published snapshot for {IntersectionName}", _intersection.Name);
+                _logger.LogInformation("[{IntersectionName}] Published snapshot", _intersection.Name);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error in TrafficSensorWorker loop");
+                _logger.LogError(ex, "[{IntersectionName}] Error in TrafficSensorWorker loop", _intersection.Name);
             }
 
             await Task.Delay(TimeSpan.FromSeconds(15), stoppingToken);

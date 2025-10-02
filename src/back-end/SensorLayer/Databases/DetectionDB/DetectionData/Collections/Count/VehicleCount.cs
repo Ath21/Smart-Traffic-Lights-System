@@ -9,15 +9,21 @@ public class VehicleCount
     [BsonId]
     public ObjectId Id { get; set; }
 
-    [BsonElement("timestamp")]
-    public DateTime Timestamp { get; set; }
-
     [BsonElement("intersection_id")]
     public int IntersectionId { get; set; }
 
-    [BsonElement("lane_id")]
-    public string LaneId { get; set; }
+    [BsonElement("intersection_name")]
+    public string IntersectionName { get; set; }
+
+    [BsonElement("timestamp")]
+    public DateTime Timestamp { get; set; }
 
     [BsonElement("count")]
     public int Count { get; set; }
+
+    [BsonElement("direction")]
+    public string Direction { get; set; }
+
+    [BsonElement("avg_speed")]
+    public double AvgSpeed { get; set; }
 }
