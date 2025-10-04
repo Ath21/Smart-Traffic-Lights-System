@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/TrafficMessages/TrafficMessages.csproj": {}
+    "F:\\REPOS\\Smart-Traffic-Lights-System\\src\\back-end\\MessageLayer\\TrafficMessages\\TrafficMessages.csproj": {}
   },
   "projects": {
-    "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/TrafficMessages/TrafficMessages.csproj": {
+    "F:\\REPOS\\Smart-Traffic-Lights-System\\src\\back-end\\MessageLayer\\TrafficMessages\\TrafficMessages.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/TrafficMessages/TrafficMessages.csproj",
+        "projectUniqueName": "F:\\REPOS\\Smart-Traffic-Lights-System\\src\\back-end\\MessageLayer\\TrafficMessages\\TrafficMessages.csproj",
         "projectName": "TrafficMessages",
-        "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/TrafficMessages/TrafficMessages.csproj",
-        "packagesPath": "/home/ath/.nuget/packages/",
-        "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/TrafficMessages/obj/",
+        "projectPath": "F:\\REPOS\\Smart-Traffic-Lights-System\\src\\back-end\\MessageLayer\\TrafficMessages\\TrafficMessages.csproj",
+        "packagesPath": "C:\\Users\\billa\\.nuget\\packages\\",
+        "outputPath": "F:\\REPOS\\Smart-Traffic-Lights-System\\src\\back-end\\MessageLayer\\TrafficMessages\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/home/ath/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\billa\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
@@ -59,7 +59,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/9.0.305/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

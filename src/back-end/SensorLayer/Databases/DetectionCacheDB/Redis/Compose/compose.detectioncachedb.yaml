@@ -1,0 +1,14 @@
+version: '3.9'
+
+services:
+  detectioncachedb:
+    image: redis:7.4
+    container_name: detectioncachedb_container
+    networks:
+      - detectioncache_network
+
+networks:
+  detectioncache_network:
+    name: detectioncache_network
+    driver: bridge
+    external: true
