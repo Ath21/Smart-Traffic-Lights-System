@@ -27,3 +27,19 @@ public class DailySummaryEntity
     public double AverageSpeedKmh { get; set; } = 0.0;
     public double AverageWaitTimeSec { get; set; } = 0.0;
 }
+
+/*
+
+{
+  "summaryId": 184,
+  "intersectionId": 2,
+  "intersection": "Agiou Spyridonos",
+  "date": "2025-10-07T00:00:00Z",
+  "totalVehicles": 1458,
+  "totalPedestrians": 242,
+  "totalCyclists": 32,
+  "averageSpeedKmh": 38.7,
+  "averageWaitTimeSec": 12.4
+}
+
+*/

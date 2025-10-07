@@ -31,3 +31,56 @@ public class IntersectionEntity
     public ICollection<TrafficConfigurationEntity> Configurations { get; set; } = new List<TrafficConfigurationEntity>();
 }
 
+/*
+
+{
+  "IntersectionId": 2,
+  "Name": "Agiou Spyridonos",
+  "Location": "Agiou Spyridonos & Dimitsanas Street, UNIWA Campus",
+  "LightCount": 3,
+  "IsActive": true,
+  "CreatedAt": "2025-10-08T07:00:00Z",
+  "TrafficLights": [
+    {
+      "LightId": 101,
+      "LightName": "agiou-spyridonos101",
+      "CurrentState": "Green",
+      "DurationSec": 40,
+      "Direction": "North",
+      "IsOperational": true,
+      "LastUpdate": "2025-10-08T07:30:00Z"
+    },
+    {
+      "LightId": 102,
+      "LightName": "agiou-spyridonos102",
+      "CurrentState": "Red",
+      "DurationSec": 40,
+      "Direction": "South",
+      "IsOperational": true,
+      "LastUpdate": "2025-10-08T07:30:00Z"
+    },
+    {
+      "LightId": 103,
+      "LightName": "agiou-spyridonos103",
+      "CurrentState": "Red",
+      "DurationSec": 40,
+      "Direction": "West",
+      "IsOperational": true,
+      "LastUpdate": "2025-10-08T07:30:00Z"
+    }
+  ],
+  "Configurations": [
+    {
+      "ConfigurationId": 12,
+      "Mode": "Standard",
+      "TimePlan": "MorningRush",
+      "CycleDurationSec": 60,
+      "GlobalOffsetSec": 10,
+      "PhaseDurationsJson": "{\"Green\":40, \"Yellow\":5, \"Red\":15}",
+      "LightOffsetsJson": "{\"101\":0, \"102\":5, \"103\":10}",
+      "LastUpdated": "2025-10-08T07:00:00Z"
+    }
+  ]
+}
+
+*/

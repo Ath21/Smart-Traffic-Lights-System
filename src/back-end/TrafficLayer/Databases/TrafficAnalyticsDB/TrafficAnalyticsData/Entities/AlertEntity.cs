@@ -23,7 +23,20 @@ public class AlertEntity
     public string Type { get; set; } // Incident, Congestion
 
     [MaxLength(500)]
-    public string Message { get; set; } 
+    public string Message { get; set; }
 
     public DateTime CreatedAt { get; set; }
 }
+
+/*
+
+{
+  "alertId": 21,
+  "intersectionId": 3,
+  "intersection": "Dytiki Pyli",
+  "type": "Incident",
+  "message": "Minor collision detected at southbound lane.",
+  "createdAt": "2025-10-07T14:15:05Z"
+}
+
+*/

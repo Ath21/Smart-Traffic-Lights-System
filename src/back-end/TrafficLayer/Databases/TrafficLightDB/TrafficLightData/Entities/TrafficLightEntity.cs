@@ -34,3 +34,18 @@ public class TrafficLightEntity
 
     public DateTime LastUpdate { get; set; } = DateTime.UtcNow;
 }
+
+/*
+
+{
+  "LightId": 201,
+  "IntersectionId": 4,
+  "LightName": "anatoliki-pyli201",
+  "CurrentState": "Green",
+  "DurationSec": 35,
+  "Direction": "North",
+  "IsOperational": true,
+  "LastUpdate": "2025-10-08T07:31:00Z"
+}
+
+*/

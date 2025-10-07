@@ -12,3 +12,27 @@ public class PriorityEventMessage : BaseMessage
     public int PriorityLevel { get; set; }  // 1 (Low), 2 (Medium), 3 (High)
     public string Direction { get; set; } 
 }
+
+/*
+
+priority.detection.kentriki-pyli.emergency
+
+{
+  "CorrelationId": "9f36ebea-8825-4cb0-a1b7-6cb89e44e00e",
+  "Timestamp": "2025-10-07T14:32:05Z",
+  "SourceServices": ["Intersection Controller Service"],
+  "DestinationServices": ["Traffic Light Coordinator Service"],
+  "IntersectionId": 5,
+  "IntersectionName": "Kentriki Pyli",
+  "EventType": "emergency",
+  "VehicleType": "ambulance",
+  "PriorityLevel": 3,
+  "Direction": "south",
+  "Metadata": {
+    "speed_kmh": "62.4",
+    "eta_sec": "10",
+    "sensor_source": "detection-worker-south"
+  }
+}
+
+*/
