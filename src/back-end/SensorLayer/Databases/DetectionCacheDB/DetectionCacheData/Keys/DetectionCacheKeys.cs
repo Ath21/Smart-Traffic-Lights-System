@@ -21,7 +21,13 @@ public static class DetectionCacheKeys
     // Stores the latest total cyclist count detected at a specific intersection.
     // Value type : int — number of cyclists.
     // Updated by : Sensor Service
-    // Read by    : Sensor Service, Intersection Controller Service
+    // Read by    : Sensor Service, Intersection Con
+
+    // Stores a flag indicating whether a public transport vehicle
+    // (bus, tram) has been detected at the intersection.
+    // Value type : bool — true if public transport detected.
+    // Updated by : Detection Service
+    // Read by    : Detection Service, Intersection Controller Servicetroller Service
     public static string CyclistCount(int intersectionId)
         => $"sensor:{intersectionId}:cyclist_count";
 
@@ -32,12 +38,6 @@ public static class DetectionCacheKeys
     // Read by    : Detection Service, Intersection Controller Service
     public static string EmergencyDetected(int intersectionId)
         => $"detection:{intersectionId}:emergency_vehicle_detected";
-
-    // Stores a flag indicating whether a public transport vehicle
-    // (bus, tram) has been detected at the intersection.
-    // Value type : bool — true if public transport detected.
-    // Updated by : Detection Service
-    // Read by    : Detection Service, Intersection Controller Service
     public static string PublicTransportDetected(int intersectionId)
         => $"detection:{intersectionId}:public_transport_detected";
 

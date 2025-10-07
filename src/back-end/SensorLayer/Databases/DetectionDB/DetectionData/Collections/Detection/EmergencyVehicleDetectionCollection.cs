@@ -10,28 +10,33 @@ namespace DetectionData.Collections.Detection;
 [BsonIgnoreExtraElements]
 public class EmergencyVehicleDetectionCollection
 {
-    // unique detection ID
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
-    public string EmergencyId { get; set; } = string.Empty; 
+    public string EmergencyId { get; set; } = string.Empty;
 
-    // reference to intersection
     [BsonElement("intersection_id")]
-    public int IntersectionId { get; set; }
+    public int IntersectionId { get; set; } = 0;
 
-    // readable intersection name
     [BsonElement("intersection")]
     public string Intersection { get; set; } = string.Empty;
 
-    // detection time (UTC)
     [BsonElement("detectedAt")]
-    public DateTime DetectedAt { get; set; } = DateTime.UtcNow; 
+    public DateTime DetectedAt { get; set; } = DateTime.UtcNow;
 
-    // approach direction (e.g., "Dimitsanas")
     [BsonElement("direction")]
-    public string Direction { get; set; } = string.Empty; 
+    public string Direction { get; set; } = string.Empty;
 
-    // priority level (1 = high, 5 = low)
-    [BsonElement("priorityLevel")]
-    public int PriorityLevel { get; set; } = 1;
+    public string EmergencyVehicleType { get; set; } = string.Empty;
 }
+
+/*
+
+{
+  "intersection_id": 2,
+  "intersection": "Agiou Spyridonos",
+  "detectedAt": "2025-10-07T14:10:22Z",
+  "direction": "north",
+  "emergency_vehicle_type": "ambulance"
+}
+
+*/

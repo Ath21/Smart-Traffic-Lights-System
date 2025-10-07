@@ -10,32 +10,66 @@ namespace LogData.Collections;
 [BsonIgnoreExtraElements]
 public class ErrorLogCollection
 {
-    // Unique identifier for the error log entry
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
     public string ErrorId { get; set; } = string.Empty;
 
-    // Timestamp when the error occurred (UTC)
+    [BsonElement("correlation_id")]
+    public Guid CorrelationId { get; set; } = Guid.NewGuid();
+
     [BsonElement("timestamp")]
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
-    // Layer of origin (Traffic, Sensor, User, etc.)
     [BsonElement("layer")]
     public string Layer { get; set; } = string.Empty;
 
-    // Service that encountered the error (e.g. "IntersectionControllerService")
     [BsonElement("service")]
     public string Service { get; set; } = string.Empty;
 
-    // Type of error (e.g. "DatabaseError", "NetworkError", "TimeoutError")
-    [BsonElement("error_type")]
-    public string ErrorType { get; set; } = string.Empty;
+    [BsonElement("intersection_id")]
+    public int IntersectionId { get; set; } = 0;
 
-    // Descriptive message of the issue
+    [BsonElement("intersection_name")]
+    public string IntersectionName { get; set; } = string.Empty;
+
+    [BsonElement("light_ids")]
+    public List<int> LightId { get; set; } = new();
+
+    [BsonElement("traffic_lights")]
+    public List<string> TrafficLight { get; set; } = new();
+
+    [BsonElement("error_type")]
+    public string ErrorType { get; set; } = string.Empty; // e.g. 500 Internal Server Error
+
+    [BsonElement("action")]
+    public string Action { get; set; } = string.Empty; // RedisFetchState, MongoWrite, etc.
+
     [BsonElement("message")]
     public string Message { get; set; } = string.Empty;
 
-    // Additional debug metadata (stack trace, payload)
     [BsonElement("metadata")]
     public BsonDocument Metadata { get; set; } = new();
 }
+
+/*
+
+{
+  "timestamp": "2025-10-07T11:15:22Z",
+  "correlation_id": "e41e3e67-8749-41f3-8a3b-9a22a091f9bb",
+  "layer": "Traffic",
+  "service": "Traffic Light Controller Service",
+  "intersection_id": 3,
+  "intersection_name": "Dytiki Pyli",
+  "light_ids": [301],
+  "traffic_lights": ["dytiki-pyli301"],
+  "error_type": "500 Internal Server Error",
+  "action": "RedisFetchState",
+  "message": "Failed to retrieve current phase durations from Redis for light 301 at intersection 'Dytiki Pyli'.",
+  "metadata": {
+    "exception_type": "RedisConnectionException",
+    "retry_count": "3",
+    "component": "RedisStateFetcher"
+  }
+}
+
+*/

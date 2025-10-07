@@ -10,36 +10,71 @@ namespace LogData.Collections;
 [BsonIgnoreExtraElements]
 public class FailoverLogCollection
 {
-    // Unique identifier for the failover log entry
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
     public string FailoverId { get; set; } = string.Empty;
 
-    // Timestamp when failover was triggered (UTC)
+    [BsonElement("correlation_id")]
+    public Guid CorrelationId { get; set; } = Guid.NewGuid();
+
     [BsonElement("timestamp")]
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
-    // Layer affected by failover (Traffic, Sensor, User)
     [BsonElement("layer")]
     public string Layer { get; set; } = string.Empty;
 
-    // Service that entered failover (e.g. "TrafficLightControllerService")
     [BsonElement("service")]
     public string Service { get; set; } = string.Empty;
 
-    // Context of failure (Database, Network, Service, etc.)
+    [BsonElement("intersection_id")]
+    public int IntersectionId { get; set; } = 0;
+
+    [BsonElement("intersection_name")]
+    public string IntersectionName { get; set; } = string.Empty;
+
+    [BsonElement("light_ids")]
+    public List<int> LightId { get; set; } = new();
+
+    [BsonElement("traffic_lights")]
+    public List<string> TrafficLight { get; set; } = new();
+
     [BsonElement("context")]
-    public string Context { get; set; } = string.Empty;
+    public string Context { get; set; } = string.Empty; // ApplyFailoverAsync, CachedStateMonitor, etc.
 
-    // Cause of failover (e.g. "RedisUnavailable", "TrafficLightFailure")
     [BsonElement("reason")]
-    public string Reason { get; set; } = string.Empty;
+    public string Reason { get; set; } = string.Empty; // Redis unavailable, network timeout, etc.
 
-    // Mode activated during failover (e.g. "BlinkingYellow", "ManualControl")
     [BsonElement("mode")]
-    public string Mode { get; set; } = "BlinkingYellow";
+    public string Mode { get; set; } = string.Empty; // CachedState, ManualMode, BlinkingYellow
 
-    // Additional details (stack trace, affected intersections)
+    [BsonElement("message")]
+    public string Message { get; set; } = string.Empty;
+
     [BsonElement("metadata")]
     public BsonDocument Metadata { get; set; } = new();
 }
+
+/*
+
+{
+  "timestamp": "2025-10-07T11:15:30Z",
+  "correlation_id": "b5b1d8f3-9812-4e26-87b7-53f92b27a666",
+  "layer": "Traffic",
+  "service": "Intersection Controller Service",
+  "intersection_id": 5,
+  "intersection_name": "Kentriki Pyli",
+  "light_ids": [501, 502],
+  "traffic_lights": ["kentriki-pyli501", "agiou-spyridonos502"],
+  "context": "ApplyFailoverAsync",
+  "reason": "Redis unavailable",
+  "mode": "CachedState",
+  "message": "Failover mode activated for intersection 'Kentriki Pyli'. Traffic lights operating using last known cached state.",
+  "metadata": {
+    "recovery_strategy": "Use previous phase durations from cache",
+    "retry_attempts": "2",
+    "intersection_status": "Degraded",
+    "fallback_duration_sec": "45"
+  }
+}
+
+*/

@@ -10,24 +10,30 @@ namespace DetectionData.Collections.Count;
 [BsonIgnoreExtraElements]
 public class PedestrianCountCollection
 {
-    // unique record ID
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
-    public string PedestrianId { get; set; } = string.Empty; 
+    public string PedestrianId { get; set; }
 
-    // reference to intersection
     [BsonElement("intersection_id")]
     public int IntersectionId { get; set; }
 
-    // readable intersection name
     [BsonElement("intersection")]
-    public string Intersection { get; set; } = string.Empty;
+    public string Intersection { get; set; }
 
-    // capture time (UTC)
     [BsonElement("timestamp")]
-    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+    public DateTime Timestamp { get; set; }
 
-    // total number of pedestrians detected
     [BsonElement("count")]
-    public int Count { get; set; } = 0;
+    public int Count { get; set; }
 }
+
+/*
+
+{
+  "intersection_id": 3,
+  "intersection": "Dytiki Pyli",
+  "timestamp": "2025-10-07T13:55:12Z",
+  "count": 22
+}
+
+*/

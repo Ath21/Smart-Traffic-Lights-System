@@ -10,32 +10,62 @@ namespace LogData.Collections;
 [BsonIgnoreExtraElements]
 public class AuditLogCollection
 {
-    // Unique identifier for the audit log entry
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
     public string AuditId { get; set; } = string.Empty;
 
-    // Timestamp of the logged event (UTC)
+    [BsonElement("correlation_id")]
+    public Guid CorrelationId { get; set; } = Guid.NewGuid();
+
     [BsonElement("timestamp")]
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
-    // Layer of origin (Traffic, Sensor, User, etc.)
     [BsonElement("layer")]
     public string Layer { get; set; } = string.Empty;
 
-    // Service name that produced the log (e.g. "DetectionService")
     [BsonElement("service")]
     public string Service { get; set; } = string.Empty;
 
-    // Action or operation performed (e.g. "UserLogin", "ConfigUpdate")
-    [BsonElement("action")]
-    public string Action { get; set; } = string.Empty;
+    [BsonElement("intersection_id")]
+    public int IntersectionId { get; set; } = 0;
 
-    // Human-readable message describing the event
+    [BsonElement("intersection_name")]
+    public string IntersectionName { get; set; } = string.Empty;
+
+    [BsonElement("light_ids")]
+    public List<int> LightId { get; set; } = new();
+
+    [BsonElement("traffic_lights")]
+    public List<string> TrafficLight { get; set; } = new();
+
+    [BsonElement("action")]
+    public string Action { get; set; } = string.Empty; // ModeSwitch, PhaseChange, etc.
+
     [BsonElement("message")]
     public string Message { get; set; } = string.Empty;
 
-    // Optional metadata for extra context (requestId, IP, payload)
     [BsonElement("metadata")]
     public BsonDocument Metadata { get; set; } = new();
 }
+
+/*
+
+{
+  "timestamp": "2025-10-06T14:21:03Z",
+  "correlation_id": "a4e7c9d1-0bb4-4f73-b8f3-b8a83032a30f",
+  "layer": "Traffic",
+  "service": "Intersection Controller Service",
+  "intersection_id": 2,
+  "intersection_name": "Agiou Spyridonos",
+  "light_ids": [201, 202],
+  "traffic_lights": ["agiou-spyridonos201", "dimitasanas202"],
+  "action": "ModeSwitch",
+  "message": "Intersection 'Agiou Spyridonos' switched from Normal to Congestion mode.",
+  "metadata": {
+    "previous_mode": "Normal",
+    "new_mode": "Congestion",
+    "congestion_index": "0.84"
+  }
+}
+
+*/

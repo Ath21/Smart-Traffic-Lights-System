@@ -9,24 +9,30 @@ namespace DetectionData.Collections.Count;
 [BsonIgnoreExtraElements]
 public class CyclistCountCollection
 {
-    // unique record ID
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
     public string CyclistId { get; set; } = string.Empty;
 
-    // reference to intersection
     [BsonElement("intersection_id")]
-    public int IntersectionId { get; set; }
+    public int IntersectionId { get; set; } = 0;
 
-    // readable intersection name
     [BsonElement("intersection")]
     public string Intersection { get; set; } = string.Empty;
 
-    // capture time (UTC)
     [BsonElement("timestamp")]
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
-    // total number of cyclists detected
     [BsonElement("count")]
     public int Count { get; set; } = 0;
 }
+
+/*
+
+{
+  "intersection_id": 5,
+  "intersection": "Kentriki Pyli",
+  "timestamp": "2025-10-07T13:52:10Z",
+  "count": 6
+}
+
+*/

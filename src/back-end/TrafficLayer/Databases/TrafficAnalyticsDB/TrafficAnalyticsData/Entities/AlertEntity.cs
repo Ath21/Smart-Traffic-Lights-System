@@ -9,27 +9,21 @@ namespace TrafficAnalyticsData.Entities;
 [Table("alerts")]
 public class AlertEntity
 {
-    // unique alert ID
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int AlertId { get; set; }
 
-    // reference to intersection
     [Required]
     public int IntersectionId { get; set; }
 
-    // intersection name (e.g. "Agiou Spyridonos")
     [Required, MaxLength(100)]
-    public string Intersection { get; set; } = string.Empty;
+    public string Intersection { get; set; }
 
-    // alert type (e.g. "congestion", "failover")
     [Required, MaxLength(50)]
-    public string Type { get; set; } = string.Empty;
+    public string Type { get; set; } // Incident, Congestion
 
-    // alert message (e.g. "Traffic congestion detected")
     [MaxLength(500)]
-    public string Message { get; set; } = string.Empty;
+    public string Message { get; set; } 
 
-    // creation timestamp (UTC)
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; }
 }
