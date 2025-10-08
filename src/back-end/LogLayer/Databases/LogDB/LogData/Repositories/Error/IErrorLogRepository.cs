@@ -6,8 +6,7 @@ namespace LogData.Repositories.Error;
 
 public interface IErrorLogRepository
 {
-    Task<List<ErrorLog>> GetByServiceAsync(string serviceName);
-    Task<List<ErrorLog>> GetByErrorTypeAsync(string errorType);
-    Task CreateAsync(ErrorLog newLog);
-    Task<List<ErrorLog>> FindAsync(FilterDefinition<ErrorLog> filter);
+    Task<IEnumerable<ErrorLogCollection>> GetAllAsync();
+    Task<IEnumerable<ErrorLogCollection>> GetByServiceAsync(string service);
+    Task InsertAsync(ErrorLogCollection log);
 }

@@ -7,7 +7,7 @@ namespace LogData.Repositories.Audit;
 
 public interface IAuditLogRepository
 {
-    Task<List<AuditLog>> GetByServiceAsync(string serviceName);
-    Task CreateAsync(AuditLog newLog);
-    Task<List<AuditLog>> FindAsync(FilterDefinition<AuditLog> filter);
+    Task<IEnumerable<AuditLogCollection>> GetAllAsync();
+    Task<IEnumerable<AuditLogCollection>> GetByIntersectionAsync(int intersectionId);
+    Task InsertAsync(AuditLogCollection log);
 }

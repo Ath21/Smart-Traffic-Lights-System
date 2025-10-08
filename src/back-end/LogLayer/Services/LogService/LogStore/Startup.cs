@@ -30,9 +30,14 @@ public class Startup
         {
             options.ConnectionString = _configuration["Mongo:ConnectionString"];
             options.Database = _configuration["Mongo:Database"];
-            options.AuditLogsCollection = _configuration["Mongo:AuditLogsCollection"];
-            options.ErrorLogsCollection = _configuration["Mongo:ErrorLogsCollection"];
+            options.Collections = new CollectionsSettings
+            {
+                AuditLogs = _configuration["Mongo:Collections:AuditLogs"],
+                ErrorLogs = _configuration["Mongo:Collections:ErrorLogs"],
+                FailoverLogs = _configuration["Mongo:Collections:FailoverLogs"]
+            };
         });
+
         services.AddSingleton<LogDbContext>();
 
         /******* [2] Repositories ********/

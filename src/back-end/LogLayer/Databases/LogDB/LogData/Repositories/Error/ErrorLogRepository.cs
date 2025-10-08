@@ -4,37 +4,26 @@ using MongoDB.Driver;
 
 namespace LogData.Repositories.Error;
 
-public class ErrorLogRepository : IErrorLogRepository
+public class ErrorLogRepository : BaseRepository<ErrorLogCollection>, IErrorLogRepository
 {
-    private readonly LogDbContext _context;
-
     public ErrorLogRepository(LogDbContext context)
+        : base(context.ErrorLogs) { }
+
+    public async Task<IEnumerable<ErrorLogCollection>> GetByServiceAsync(string service)
     {
-        _context = context;
+        var filter = Builders<ErrorLogCollection>.Filter.Eq(x => x.Service, service);
+        var result = await _collection.FindAsync(filter);
+        return await result.ToListAsync();
     }
 
-    public async Task CreateAsync(ErrorLog newLog)
+    public new async Task<IEnumerable<ErrorLogCollection>> GetAllAsync()
     {
-        await _context.ErrorLogs.InsertOneAsync(newLog);
+        var result = await _collection.FindAsync(_ => true);
+        return await result.ToListAsync();
     }
 
-    public async Task<List<ErrorLog>> GetAllAsync()
+    public async Task InsertAsync(ErrorLogCollection log)
     {
-        return await _context.ErrorLogs.Find(_ => true).ToListAsync();
+        await _collection.InsertOneAsync(log);
     }
-
-    public async Task<List<ErrorLog>> GetByServiceAsync(string serviceName)
-    {
-        return await _context.ErrorLogs.Find(x => x.ServiceName == serviceName).ToListAsync();
-    }
-
-    public async Task<List<ErrorLog>> GetByErrorTypeAsync(string errorType)
-    {
-        return await _context.ErrorLogs.Find(x => x.ErrorType == errorType).ToListAsync();
-    }
-
-    public async Task<List<ErrorLog>> FindAsync(FilterDefinition<ErrorLog> filter)
-{
-    return await _context.ErrorLogs.Find(filter).ToListAsync();
-}
 }

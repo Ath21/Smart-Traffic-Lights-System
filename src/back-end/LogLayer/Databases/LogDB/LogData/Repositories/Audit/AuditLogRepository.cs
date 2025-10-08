@@ -4,32 +4,26 @@ using MongoDB.Driver;
 
 namespace LogData.Repositories.Audit;
 
-public class AuditLogRepository : IAuditLogRepository
+public class AuditLogRepository : BaseRepository<AuditLogCollection>, IAuditLogRepository
 {
-    private readonly LogDbContext _context;
-
     public AuditLogRepository(LogDbContext context)
+        : base(context.AuditLogs) { }
+
+    public async Task<IEnumerable<AuditLogCollection>> GetByIntersectionAsync(int intersectionId)
     {
-        _context = context;
+        var filter = Builders<AuditLogCollection>.Filter.Eq(x => x.IntersectionId, intersectionId);
+        var result = await _collection.FindAsync(filter);
+        return await result.ToListAsync();
     }
 
-    public async Task CreateAsync(AuditLog newLog)
+    public new async Task<IEnumerable<AuditLogCollection>> GetAllAsync()
     {
-        await _context.AuditLogs.InsertOneAsync(newLog);
+        var result = await _collection.FindAsync(_ => true);
+        return await result.ToListAsync();
     }
 
-    public async Task<List<AuditLog>> GetAllAsync()
+    public async Task InsertAsync(AuditLogCollection log)
     {
-        return await _context.AuditLogs.Find(_ => true).ToListAsync();
+        await _collection.InsertOneAsync(log);
     }
-
-    public async Task<List<AuditLog>> GetByServiceAsync(string serviceName)
-    {
-        return await _context.AuditLogs.Find(x => x.ServiceName == serviceName).ToListAsync();
-    }
-
-    public async Task<List<AuditLog>> FindAsync(FilterDefinition<AuditLog> filter)
-{
-    return await _context.AuditLogs.Find(filter).ToListAsync();
-}
 }

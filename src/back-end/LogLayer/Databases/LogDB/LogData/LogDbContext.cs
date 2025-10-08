@@ -14,14 +14,14 @@ public class LogDbContext
         var mongoClient = new MongoClient(logDbSettings.Value.ConnectionString);
         _database = mongoClient.GetDatabase(logDbSettings.Value.Database);
 
-        AuditLogs = _database.GetCollection<AuditLog>(logDbSettings.Value.AuditLogsCollection);
-        ErrorLogs = _database.GetCollection<ErrorLog>(logDbSettings.Value.ErrorLogsCollection);
-        FailoverLogs = _database.GetCollection<FailoverLog>(logDbSettings.Value.FailoverLogsCollection);
+        AuditLogs = _database.GetCollection<AuditLogCollection>(logDbSettings.Value.Collections.AuditLogs);
+        ErrorLogs = _database.GetCollection<ErrorLogCollection>(logDbSettings.Value.Collections.ErrorLogs);
+        FailoverLogs = _database.GetCollection<FailoverLogCollection>(logDbSettings.Value.Collections.FailoverLogs);
     }
 
-    public IMongoCollection<AuditLog> AuditLogs { get; }
-    public IMongoCollection<ErrorLog> ErrorLogs { get; }
-    public IMongoCollection<FailoverLog> FailoverLogs { get; }
+    public IMongoCollection<AuditLogCollection> AuditLogs { get; }
+    public IMongoCollection<ErrorLogCollection> ErrorLogs { get; }
+    public IMongoCollection<FailoverLogCollection> FailoverLogs { get; }
 
     public async Task<bool> CanConnectAsync()
     {
