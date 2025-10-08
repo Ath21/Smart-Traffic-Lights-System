@@ -4,7 +4,10 @@ using TrafficLightData.Entities;
 
 namespace TrafficLightData.Repositories.TrafficConfig;
 
-public interface ITrafficConfigurationRepository : IRepository<TrafficConfiguration>
+
+public interface ITrafficConfigurationRepository
 {
-    Task<IEnumerable<TrafficConfiguration>> GetByIntersectionAsync(int intersectionId);
+    Task<TrafficConfigurationEntity?> GetLatestByIntersectionAsync(int intersectionId);
+    Task<IEnumerable<TrafficConfigurationEntity>> GetByModeAsync(string mode);
+    Task InsertAsync(TrafficConfigurationEntity entity);
 }

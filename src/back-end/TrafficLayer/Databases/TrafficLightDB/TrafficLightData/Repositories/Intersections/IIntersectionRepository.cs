@@ -2,7 +2,9 @@ using TrafficLightData.Entities;
 
 namespace TrafficLightData.Repositories.Intersections;
 
-public interface IIntersectionRepository : IRepository<Intersection>
+public interface IIntersectionRepository
 {
-    Task<Intersection?> GetWithDetailsAsync(int id);
+    Task<IEnumerable<IntersectionEntity>> GetAllActiveAsync();
+    Task<IntersectionEntity?> GetByNameAsync(string name);
+    Task InsertAsync(IntersectionEntity entity);
 }

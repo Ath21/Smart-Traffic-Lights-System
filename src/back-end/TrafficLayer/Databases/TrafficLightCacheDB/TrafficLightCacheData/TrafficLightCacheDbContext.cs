@@ -1,37 +1,54 @@
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
+using System;
+using System.Threading.Tasks;
+using TrafficLightCacheData.Settings;
 
 namespace TrafficLightCacheData;
 
 public class TrafficLightCacheDbContext : IDisposable
 {
-    private readonly ConnectionMultiplexer _connection;
-    public IDatabase Database { get; }
+    private readonly ConnectionMultiplexer _redis;
+    private readonly IDatabase _database;
 
-    public TrafficLightCacheDbContext(IOptions<TrafficLightCacheDbSettings> settings)
+    public TrafficLightCacheDbContext(IOptions<TrafficLightCacheDbSettings> cacheSettings)
     {
-        var configOptions = new ConfigurationOptions
+        var settings = cacheSettings.Value;
+
+        var config = new ConfigurationOptions
         {
-            EndPoints = { $"{settings.Value.Host}:{settings.Value.Port}" },
-            AbortOnConnectFail = false,
-            DefaultDatabase = settings.Value.Database
+            EndPoints = { $"{settings.Host}:{settings.Port}" },
+            Password = string.IsNullOrWhiteSpace(settings.Password) ? null : settings.Password,
+            DefaultDatabase = settings.Database,
+            AbortOnConnectFail = false
         };
 
-        if (!string.IsNullOrEmpty(settings.Value.Password))
-            configOptions.Password = settings.Value.Password;
-
-        _connection = ConnectionMultiplexer.Connect(configOptions);
-        Database = _connection.GetDatabase();
+        _redis = ConnectionMultiplexer.Connect(config);
+        _database = _redis.GetDatabase();
     }
 
-    public void Dispose() => _connection.Dispose();
+    public IDatabase Database => _database;
 
+    // Basic operations
+    public async Task<bool> SetAsync(string key, string value, TimeSpan? expiry = null)
+        => await _database.StringSetAsync(key, value, expiry);
+
+    public async Task<string?> GetAsync(string key)
+        => await _database.StringGetAsync(key);
+
+    public async Task<bool> DeleteAsync(string key)
+        => await _database.KeyDeleteAsync(key);
+
+    public async Task<bool> ExistsAsync(string key)
+        => await _database.KeyExistsAsync(key);
+
+    // Simple ping for health check
     public async Task<bool> CanConnectAsync()
     {
         try
         {
-            var pong = await Database.PingAsync();
-            return pong != TimeSpan.Zero;
+            var result = await _database.PingAsync();
+            return result.TotalMilliseconds >= 0;
         }
         catch
         {
@@ -39,16 +56,5 @@ public class TrafficLightCacheDbContext : IDisposable
         }
     }
 
-    // Helper methods
-    public async Task SetValueAsync(string key, string value, TimeSpan? expiry = null) =>
-        await Database.StringSetAsync(key, value, expiry);
-
-    public async Task<string?> GetValueAsync(string key) =>
-        await Database.StringGetAsync(key);
-
-    public async Task<long> IncrementAsync(string key, long value = 1) =>
-        await Database.StringIncrementAsync(key, value);
-
-    public async Task<bool> KeyExistsAsync(string key) =>
-        await Database.KeyExistsAsync(key);
+    public void Dispose() => _redis.Dispose();
 }

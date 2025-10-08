@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
+using TrafficLightData.Settings;
 
 namespace TrafficLightData;
 
@@ -8,12 +9,18 @@ public class TrafficLightDbContextFactory : IDesignTimeDbContextFactory<TrafficL
 {
     public TrafficLightDbContext CreateDbContext(string[] args)
     {
-        var options = new DbContextOptionsBuilder<TrafficLightDbContext>()
-            .UseSqlServer(
-                "Server=localhost,1433;Database=TrafficLightDB;User Id=sa;Password=MyPass@word;TrustServerCertificate=True"
-            )
-            .Options;
+        // Local connection for design-time migrations
+        const string connectionString =
+            "Server=localhost,1433;Database=TrafficLightDB;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True;";
 
-        return new TrafficLightDbContext(options, new ConfigurationBuilder().Build());
+        var optionsBuilder = new DbContextOptionsBuilder<TrafficLightDbContext>();
+        optionsBuilder.UseSqlServer(connectionString);
+
+        var settings = Microsoft.Extensions.Options.Options.Create(new TrafficLightDbSettings
+        {
+            ConnectionString = connectionString
+        });
+
+        return new TrafficLightDbContext(optionsBuilder.Options, settings);
     }
 }

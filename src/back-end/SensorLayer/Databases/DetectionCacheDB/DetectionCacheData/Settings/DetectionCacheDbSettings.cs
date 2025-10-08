@@ -1,6 +1,6 @@
 using System;
 
-namespace DetectionCacheData;
+namespace DetectionCacheData.Settings;
 
 public class DetectionCacheDbSettings
 {

@@ -4,9 +4,10 @@ using TrafficLightData.Entities;
 
 namespace TrafficLightData.Repositories.Light;
 
-public interface ITrafficLightRepository : IRepository<TrafficLight>
+public interface ITrafficLightRepository
 {
-    Task<IEnumerable<TrafficLight>> GetByIntersectionAsync(int intersectionId);
-    Task<IEnumerable<TrafficLight>> GetByStateAsync(TrafficLightState state);
+    Task<IEnumerable<TrafficLightEntity>> GetByIntersectionAsync(int intersectionId);
+    Task InsertAsync(TrafficLightEntity entity);
+    Task UpdateStatusAsync(int lightId, bool isOperational);
 }
 

@@ -2030,14 +2030,14 @@
           }
         }
       },
-      "LogMessages/1.0.0": {
+      "Messages/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
         "compile": {
-          "bin/placeholder/LogMessages.dll": {}
+          "bin/placeholder/Messages.dll": {}
         },
         "runtime": {
-          "bin/placeholder/LogMessages.dll": {}
+          "bin/placeholder/Messages.dll": {}
         }
       },
       "TrafficLightCacheData/1.0.0": {
@@ -2046,6 +2046,7 @@
         "dependencies": {
           "Microsoft.Extensions.Configuration.Abstractions": "9.0.0",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.0",
+          "Microsoft.Extensions.Diagnostics.HealthChecks": "9.0.0",
           "Microsoft.Extensions.Options": "9.0.0",
           "StackExchange.Redis": "2.9.11"
         },
@@ -2064,23 +2065,14 @@
           "Microsoft.EntityFrameworkCore.Abstractions": "9.0.4",
           "Microsoft.EntityFrameworkCore.Analyzers": "9.0.4",
           "Microsoft.EntityFrameworkCore.SqlServer": "9.0.4",
-          "Microsoft.Extensions.Configuration": "9.0.5"
+          "Microsoft.Extensions.Configuration": "9.0.5",
+          "Microsoft.Extensions.Diagnostics.HealthChecks": "9.0.0"
         },
         "compile": {
           "bin/placeholder/TrafficLightData.dll": {}
         },
         "runtime": {
           "bin/placeholder/TrafficLightData.dll": {}
-        }
-      },
-      "TrafficMessages/1.0.0": {
-        "type": "project",
-        "framework": ".NETCoreApp,Version=v9.0",
-        "compile": {
-          "bin/placeholder/TrafficMessages.dll": {}
-        },
-        "runtime": {
-          "bin/placeholder/TrafficMessages.dll": {}
         }
       }
     }
@@ -5784,10 +5776,10 @@
         "useSharedDesignerContext.txt"
       ]
     },
-    "LogMessages/1.0.0": {
+    "Messages/1.0.0": {
       "type": "project",
-      "path": "../../../../MessageLayer/LogMessages/LogMessages.csproj",
-      "msbuildProject": "../../../../MessageLayer/LogMessages/LogMessages.csproj"
+      "path": "../../../../MessageLayer/Messages/Messages.csproj",
+      "msbuildProject": "../../../../MessageLayer/Messages/Messages.csproj"
     },
     "TrafficLightCacheData/1.0.0": {
       "type": "project",
@@ -5798,19 +5790,14 @@
       "type": "project",
       "path": "../../../Databases/TrafficLightDB/TrafficLightData/TrafficLightData.csproj",
       "msbuildProject": "../../../Databases/TrafficLightDB/TrafficLightData/TrafficLightData.csproj"
-    },
-    "TrafficMessages/1.0.0": {
-      "type": "project",
-      "path": "../../../../MessageLayer/TrafficMessages/TrafficMessages.csproj",
-      "msbuildProject": "../../../../MessageLayer/TrafficMessages/TrafficMessages.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net9.0": [
       "AutoMapper.Extensions.Microsoft.DependencyInjection >= 12.0.1",
-      "LogMessages >= 1.0.0",
       "MassTransit >= 8.3.3",
       "MassTransit.RabbitMQ >= 8.3.3",
+      "Messages >= 1.0.0",
       "Microsoft.AspNetCore.Authentication.JwtBearer >= 9.0.0",
       "Microsoft.AspNetCore.OpenApi >= 9.0.7",
       "Microsoft.EntityFrameworkCore >= 9.0.8",
@@ -5821,8 +5808,7 @@
       "Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite >= 9.0.4",
       "Swashbuckle.AspNetCore >= 6.6.2",
       "TrafficLightCacheData >= 1.0.0",
-      "TrafficLightData >= 1.0.0",
-      "TrafficMessages >= 1.0.0"
+      "TrafficLightData >= 1.0.0"
     ]
   },
   "packageFolders": {
@@ -5850,11 +5836,8 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
-            "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/LogMessages/LogMessages.csproj": {
-              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/LogMessages/LogMessages.csproj"
-            },
-            "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/TrafficMessages/TrafficMessages.csproj": {
-              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/TrafficMessages/TrafficMessages.csproj"
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/Messages/Messages.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/Messages/Messages.csproj"
             },
             "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Databases/TrafficLightCacheDB/TrafficLightCacheData/TrafficLightCacheData.csproj": {
               "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Databases/TrafficLightCacheDB/TrafficLightCacheData/TrafficLightCacheData.csproj"

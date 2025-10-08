@@ -6,22 +6,23 @@ using TrafficLightData.Entities;
 
 namespace TrafficLightData.Repositories.Light;
 
-public class TrafficLightRepository : Repository<TrafficLight>, ITrafficLightRepository
+public class TrafficLightRepository : BaseRepository<TrafficLightEntity>, ITrafficLightRepository
 {
-    private readonly TrafficLightDbContext _context;
+    public TrafficLightRepository(TrafficLightDbContext context) : base(context) { }
 
-    public TrafficLightRepository(TrafficLightDbContext context) : base(context)
-    {
-        _context = context;
-    }
-
-    public async Task<IEnumerable<TrafficLight>> GetByIntersectionAsync(int intersectionId) =>
-        await _context.TrafficLights
+    public async Task<IEnumerable<TrafficLightEntity>> GetByIntersectionAsync(int intersectionId)
+        => await _context.TrafficLights
             .Where(l => l.IntersectionId == intersectionId)
+            .OrderBy(l => l.LightName)
             .ToListAsync();
 
-    public async Task<IEnumerable<TrafficLight>> GetByStateAsync(TrafficLightState state) =>
-        await _context.TrafficLights
-            .Where(l => l.CurrentState == state)
-            .ToListAsync();
+    public async Task UpdateStatusAsync(int lightId, bool isOperational)
+    {
+        var light = await _context.TrafficLights.FindAsync(lightId);
+        if (light != null)
+        {
+            light.IsOperational = isOperational;
+            await _context.SaveChangesAsync();
+        }
+    }
 }

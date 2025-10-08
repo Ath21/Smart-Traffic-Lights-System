@@ -19,6 +19,9 @@ using TrafficLightCacheData.Repositories;
 using TrafficLightData.Repositories.Intersections;
 using TrafficLightData.Repositories.Light;
 using TrafficLightData.Repositories.TrafficConfig;
+using TrafficLightData.Settings;
+using TrafficLightData.Healthchecks;
+using TrafficLightCacheData.Settings;
 
 namespace TrafficLightCoordinatorStore;
 
@@ -34,35 +37,60 @@ public class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         /******* [1] ORM / PostgreSQL ********/
-        services.AddDbContext<TrafficLightDbContext>();
+        services.Configure<TrafficLightDbSettings>(options =>
+        {
+            options.ConnectionString = _configuration["MSSQL:ConnectionString"];
+        });
+
+        services.AddDbContext<TrafficLightDbContext>(options =>
+            options.UseSqlServer(_configuration["MSSQL:ConnectionString"]));
+
+        /******************************************
+         * [2] Repositories
+         ******************************************/
+        services.AddScoped<IIntersectionRepository, IntersectionRepository>();
+        services.AddScoped<ITrafficLightRepository, TrafficLightRepository>();
+        services.AddScoped<ITrafficConfigurationRepository, TrafficConfigurationRepository>();
+
+        /******************************************
+         * [3] Health Checks
+         ******************************************/
+        services.AddHealthChecks()
+            .AddCheck<TrafficLightDbHealthCheck>("trafficlightdb_ping");
 
         /******* [2] Redis (TrafficLight Cache) ********/
         services.Configure<TrafficLightCacheDbSettings>(options =>
         {
-            options.Host = _configuration["Redis:TrafficLight:Host"];
-            options.Port = int.Parse(_configuration["Redis:TrafficLight:Port"] ?? "6379");
-            options.Password = _configuration["Redis:TrafficLight:Password"];
-            options.Database = int.Parse(_configuration["Redis:TrafficLight:Database"] ?? "0");
+            options.Host = _configuration["Redis:Host"];
+            options.Port = int.Parse(_configuration["Redis:Port"] ?? "6379");
+            options.Password = _configuration["Redis:Password"];
+            options.Database = int.Parse(_configuration["Redis:Database"] ?? "0");
 
-            options.KeyPrefix_State = _configuration["Redis:TrafficLight:KeyPrefix:State"];
-            options.KeyPrefix_Duration = _configuration["Redis:TrafficLight:KeyPrefix:Duration"];
-            options.KeyPrefix_LastUpdate = _configuration["Redis:TrafficLight:KeyPrefix:LastUpdate"];
-            options.KeyPrefix_Priority = _configuration["Redis:TrafficLight:KeyPrefix:Priority"];
-            options.KeyPrefix_QueueLength = _configuration["Redis:TrafficLight:KeyPrefix:QueueLength"];
+            options.KeyPrefix = new KeyPrefixSettings
+            {
+                State = _configuration["Redis:KeyPrefix:State"],
+                Duration = _configuration["Redis:KeyPrefix:Duration"],
+                LastUpdate = _configuration["Redis:KeyPrefix:LastUpdate"],
+                Mode = _configuration["Redis:KeyPrefix:Mode"],
+                Priority = _configuration["Redis:KeyPrefix:Priority"],
+                FailoverActive = _configuration["Redis:KeyPrefix:FailoverActive"],
+                Heartbeat = _configuration["Redis:KeyPrefix:Heartbeat"],
+                LastCoordinatorSync = _configuration["Redis:KeyPrefix:LastCoordinatorSync"]
+            };
         });
-        services.AddSingleton<TrafficLightCacheDbContext>();
+
+
+        services.AddHealthChecks()
+            .AddCheck<TrafficLightCacheDbHealthCheck>("trafficlightcachedb_ping");
 
         /******* [3] Repositories ********/
         /******* [3.1] TrafficLightCacheDB Repositories ********/
-        services.AddScoped(typeof(ITrafficConfigRepository), typeof(TrafficConfigRepository));
-        services.AddScoped(typeof(IIntersectRepository), typeof(IntersectRepository));
-        services.AddScoped(typeof(ITrafficLightRepository), typeof(TrafficLightRepository));
-        services.AddScoped(typeof(IRedisRepository), typeof(RedisRepository));
+        services.AddScoped(typeof(ITrafficLightCacheRepository), typeof(TrafficLightCacheRepository));
 
         /******* [3.2] TrafficLightDB Repositories ********/
-        services.AddScoped(typeof(ILightRepository), typeof(LightRepository));
-        services.AddScoped(typeof(IIntersectionRepository), typeof(IntersectionRepository));
         services.AddScoped(typeof(ITrafficConfigurationRepository), typeof(TrafficConfigurationRepository));
+        services.AddScoped(typeof(IIntersectionRepository), typeof(IntersectionRepository));
+        services.AddScoped(typeof(ITrafficLightRepository), typeof(TrafficLightRepository));
 
         /******* [4] Services ********/
         services.AddScoped(typeof(ICoordinatorService), typeof(CoordinatorService));
@@ -175,7 +203,18 @@ public class Startup
         app.UseAuthentication();
         app.UseAuthorization();
 
-        app.MapControllers();
+        
+        // ===============================
+        // Endpoints
+        // ===============================
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapControllers();
+
+            // Kubernetes & internal health probes
+            endpoints.MapHealthChecks("/traffic_light_coordinator/health");  // <-- leading slash is required
+        });
+
 
         app.Run();
     }

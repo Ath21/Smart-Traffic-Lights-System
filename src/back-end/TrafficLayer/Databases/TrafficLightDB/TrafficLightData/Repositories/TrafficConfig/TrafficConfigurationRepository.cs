@@ -6,18 +6,19 @@ using TrafficLightData.Entities;
 
 namespace TrafficLightData.Repositories.TrafficConfig;
 
-public class TrafficConfigurationRepository : Repository<TrafficConfiguration>, ITrafficConfigurationRepository
+public class TrafficConfigurationRepository : BaseRepository<TrafficConfigurationEntity>, ITrafficConfigurationRepository
 {
-    private readonly TrafficLightDbContext _context;
+    public TrafficConfigurationRepository(TrafficLightDbContext context) : base(context) { }
 
-    public TrafficConfigurationRepository(TrafficLightDbContext context) : base(context)
-    {
-        _context = context;
-    }
-
-    public async Task<IEnumerable<TrafficConfiguration>> GetByIntersectionAsync(int intersectionId) =>
-        await _context.TrafficConfigurations
+    public async Task<TrafficConfigurationEntity?> GetLatestByIntersectionAsync(int intersectionId)
+        => await _context.TrafficConfigurations
             .Where(c => c.IntersectionId == intersectionId)
-            .OrderByDescending(c => c.CreatedAt)
+            .OrderByDescending(c => c.LastUpdated)
+            .FirstOrDefaultAsync();
+
+    public async Task<IEnumerable<TrafficConfigurationEntity>> GetByModeAsync(string mode)
+        => await _context.TrafficConfigurations
+            .Where(c => c.Mode == mode)
+            .OrderByDescending(c => c.LastUpdated)
             .ToListAsync();
 }

@@ -1,101 +1,59 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using TrafficLightData.Entities;
+using TrafficLightData.Settings;
 
 namespace TrafficLightData;
 
 public class TrafficLightDbContext : DbContext
 {
-    private readonly IConfiguration? _configuration;
+    private readonly TrafficLightDbSettings _settings;
 
-    public TrafficLightDbContext(
-        DbContextOptions<TrafficLightDbContext> options,
-        IConfiguration? configuration = null) : base(options)
+    public TrafficLightDbContext(DbContextOptions<TrafficLightDbContext> options, IOptions<TrafficLightDbSettings> settings)
+        : base(options)
     {
-        _configuration = configuration;
+        _settings = settings.Value;
     }
 
-    public DbSet<Intersection> Intersections => Set<Intersection>();
-    public DbSet<TrafficLight> TrafficLights => Set<TrafficLight>();
-    public DbSet<TrafficConfiguration> TrafficConfigurations => Set<TrafficConfiguration>();
+    public DbSet<IntersectionEntity> Intersections { get; set; }
+    public DbSet<TrafficLightEntity> TrafficLights { get; set; }
+    public DbSet<TrafficConfigurationEntity> TrafficConfigurations { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // =============================
-        // INTERSECTIONS
-        // =============================
-        modelBuilder.Entity<Intersection>(e =>
-        {
-            e.HasKey(i => i.IntersectionId);
+        // Relationships
+        modelBuilder.Entity<IntersectionEntity>()
+            .HasMany(i => i.TrafficLights)
+            .WithOne(t => t.Intersection)
+            .HasForeignKey(t => t.IntersectionId)
+            .OnDelete(DeleteBehavior.Cascade);
 
-            e.Property(i => i.IntersectionId)
-                .ValueGeneratedOnAdd();
+        modelBuilder.Entity<IntersectionEntity>()
+            .HasMany(i => i.Configurations)
+            .WithOne(c => c.Intersection)
+            .HasForeignKey(c => c.IntersectionId)
+            .OnDelete(DeleteBehavior.Cascade);
 
-            e.HasMany(i => i.TrafficLights)
-                .WithOne(l => l.Intersection!)
-                .HasForeignKey(l => l.IntersectionId)
-                .OnDelete(DeleteBehavior.Cascade);
+        // Decimal precision for MSSQL
+        modelBuilder.Entity<IntersectionEntity>()
+            .Property(i => i.Latitude).HasColumnType("decimal(10,7)");
+        modelBuilder.Entity<IntersectionEntity>()
+            .Property(i => i.Longitude).HasColumnType("decimal(10,7)");
+        modelBuilder.Entity<TrafficLightEntity>()
+            .Property(l => l.Latitude).HasColumnType("decimal(10,7)");
+        modelBuilder.Entity<TrafficLightEntity>()
+            .Property(l => l.Longitude).HasColumnType("decimal(10,7)");
 
-            e.HasMany(i => i.Configurations)
-                .WithOne(c => c.Intersection!)
-                .HasForeignKey(c => c.IntersectionId)
-                .OnDelete(DeleteBehavior.Cascade);
+        // Default timestamps
+        modelBuilder.Entity<IntersectionEntity>()
+            .Property(i => i.CreatedAt)
+            .HasDefaultValueSql("GETUTCDATE()");
+        modelBuilder.Entity<TrafficConfigurationEntity>()
+            .Property(c => c.LastUpdated)
+            .HasDefaultValueSql("GETUTCDATE()");
 
-            e.HasIndex(i => i.Status);
-        });
-
-        // =============================
-        // TRAFFIC LIGHTS
-        // =============================
-        modelBuilder.Entity<TrafficLight>(e =>
-        {
-            e.HasKey(l => l.LightId);
-
-            e.Property(l => l.LightId)
-                .ValueGeneratedOnAdd();
-
-            e.HasIndex(l => new { l.IntersectionId, l.UpdatedAt });
-
-            e.Property(l => l.UpdatedAt)
-                .HasDefaultValueSql("GETUTCDATE()");
-
-            // Store enum as string in SQL Server
-            e.Property(l => l.CurrentState)
-                .HasConversion<string>()
-                .HasMaxLength(20);
-
-            e.ToTable(t => t.HasCheckConstraint("ck_traffic_lights_state",
-                "current_state IN ('RED','ORANGE','GREEN','FLASHING','OFF')"));
-        });
-
-        // =============================
-        // TRAFFIC CONFIGURATIONS
-        // =============================
-        modelBuilder.Entity<TrafficConfiguration>(e =>
-        {
-            e.HasKey(c => c.ConfigId);
-
-            e.Property(c => c.ConfigId)
-                .ValueGeneratedOnAdd();
-
-            e.Property(c => c.CreatedAt)
-                .HasDefaultValueSql("GETUTCDATE()");
-        });
-    }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        if (!optionsBuilder.IsConfigured && _configuration is not null)
-        {
-            var connectionString = _configuration.GetConnectionString("MSSQLConnection");
-            optionsBuilder.UseSqlServer(connectionString, sqlOptions =>
-            {
-                sqlOptions.EnableRetryOnFailure(
-                    maxRetryCount: 5,
-                    maxRetryDelay: TimeSpan.FromSeconds(10),
-                    errorNumbersToAdd: null);
-            });
-        }
+        base.OnModelCreating(modelBuilder);
     }
 
     public async Task<bool> CanConnectAsync()
