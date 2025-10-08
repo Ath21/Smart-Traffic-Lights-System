@@ -3,8 +3,10 @@ using TrafficAnalyticsData.Entities;
 namespace TrafficAnalyticsData.Repositories.Summary;
 
 
-public interface IDailySummaryRepository : IRepository<DailySummary>
+public interface IDailySummaryRepository
 {
-    Task<IEnumerable<DailySummary>> GetByIntersectionAsync(int intersectionId);
-    Task<DailySummary?> GetByIntersectionAndDateAsync(int intersectionId, DateTime date);
+    Task<IEnumerable<DailySummaryEntity>> GetByDateAsync(DateTime date);
+    Task<IEnumerable<DailySummaryEntity>> GetByIntersectionAsync(int intersectionId);
+    Task InsertAsync(DailySummaryEntity entity);
+    Task<IEnumerable<DailySummaryEntity>> GetDateRangeAsync(DateTime start, DateTime end, int intersectionId);
 }

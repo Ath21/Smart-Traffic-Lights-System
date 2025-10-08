@@ -17,13 +17,13 @@ public class AlertEntity
     public int IntersectionId { get; set; }
 
     [Required, MaxLength(100)]
-    public string Intersection { get; set; }
+    public string? Intersection { get; set; }
 
     [Required, MaxLength(50)]
-    public string Type { get; set; } // Incident, Congestion
+    public string? Type { get; set; } // Incident, Congestion
 
     [MaxLength(500)]
-    public string Message { get; set; }
+    public string? Message { get; set; }
 
     public DateTime CreatedAt { get; set; }
 }

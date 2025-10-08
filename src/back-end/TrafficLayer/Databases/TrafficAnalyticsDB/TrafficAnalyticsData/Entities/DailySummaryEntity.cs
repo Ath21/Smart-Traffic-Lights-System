@@ -10,22 +10,22 @@ public class DailySummaryEntity
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public int SummaryId { get; set; } = 0;
+    public int SummaryId { get; set; }
 
     [Required]
-    public int IntersectionId { get; set; } = 0;
+    public int IntersectionId { get; set; }
 
     [Required]
-    public string Intersection { get; set; } = string.Empty;
+    public string? Intersection { get; set; } 
 
     [Required]
-    public DateTime Date { get; set; } = DateTime.UtcNow;
+    public DateTime Date { get; set; } 
 
-    public int TotalVehicles { get; set; } = 0;
-    public int TotalPedestrians { get; set; } = 0;
-    public int TotalCyclists { get; set; } = 0;
-    public double AverageSpeedKmh { get; set; } = 0.0;
-    public double AverageWaitTimeSec { get; set; } = 0.0;
+    public int TotalVehicles { get; set; }
+    public int TotalPedestrians { get; set; }
+    public int TotalCyclists { get; set; }
+    public double AverageSpeedKmh { get; set; }
+    public double AverageWaitTimeSec { get; set; }
 }
 
 /*

@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="14.0.0" />
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
     <PackageReference Include="MassTransit" Version="8.5.0" />
     <PackageReference Include="MassTransit.RabbitMQ" Version="8.5.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.8" />
@@ -24,9 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../../../MessageLayer/LogMessages/LogMessages.csproj" />
-    <ProjectReference Include="../../../../MessageLayer/SensorMessages/SensorMessages.csproj" />
-    <ProjectReference Include="../../../../MessageLayer/TrafficMessages/TrafficMessages.csproj" />
+    <ProjectReference Include="../../../../MessageLayer/Messages/Messages.csproj" />
     <ProjectReference Include="../../../../SensorLayer/Databases/DetectionCacheDB/DetectionCacheData/DetectionCacheData.csproj" />
     <ProjectReference Include="../../../Databases/TrafficAnalyticsDB/TrafficAnalyticsData/TrafficAnalyticsData.csproj" />
   </ItemGroup>

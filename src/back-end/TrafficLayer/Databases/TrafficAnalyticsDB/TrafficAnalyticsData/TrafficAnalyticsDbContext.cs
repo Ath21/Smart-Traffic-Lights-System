@@ -1,73 +1,42 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
+using Npgsql;
 using TrafficAnalyticsData.Entities;
+using TrafficAnalyticsData.Settings;
 
 namespace TrafficAnalyticsData;
 
 public class TrafficAnalyticsDbContext : DbContext
 {
-    private readonly IConfiguration? _configuration;
+    private readonly TrafficAnalyticsDbSettings _settings;
 
-    public TrafficAnalyticsDbContext(
-        DbContextOptions<TrafficAnalyticsDbContext> options,
-        IConfiguration? configuration = null) : base(options)
+    public TrafficAnalyticsDbContext(DbContextOptions<TrafficAnalyticsDbContext> options, IOptions<TrafficAnalyticsDbSettings> settings)
+        : base(options)
     {
-        _configuration = configuration;
+        _settings = settings.Value;
     }
 
-    public DbSet<DailySummary> DailySummaries => Set<DailySummary>();
-    public DbSet<Alert> Alerts => Set<Alert>();
+    public DbSet<AlertEntity> Alerts { get; set; }
+    public DbSet<DailySummaryEntity> DailySummaries { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // DailySummary
-        modelBuilder.Entity<DailySummary>(e =>
-        {
-            e.HasKey(s => s.SummaryId);
+        modelBuilder.Entity<AlertEntity>().ToTable("alerts");
+        modelBuilder.Entity<DailySummaryEntity>().ToTable("daily_summaries");
 
-            e.Property(s => s.SummaryId).ValueGeneratedOnAdd();
+        modelBuilder.Entity<AlertEntity>().Property(a => a.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+        modelBuilder.Entity<DailySummaryEntity>().Property(a => a.Date).HasColumnType("date");
 
-            e.HasIndex(s => new { s.IntersectionId, s.Date })
-                .HasDatabaseName("ix_summary_intersection_date");
-
-            e.Property(s => s.Date).HasColumnType("date"); // stored as DATE
-        });
-
-        // Alerts
-        modelBuilder.Entity<Alert>(e =>
-        {
-            e.HasKey(a => a.AlertId);
-
-            e.Property(a => a.AlertId).ValueGeneratedOnAdd();
-
-            e.HasIndex(a => new { a.IntersectionId, a.CreatedAt })
-                .HasDatabaseName("ix_alerts_intersection_created");
-
-            e.Property(a => a.CreatedAt).HasDefaultValueSql("NOW()");
-        });
-    }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        if (!optionsBuilder.IsConfigured && _configuration is not null)
-        {
-            var connectionString = _configuration.GetConnectionString("PostgresConnection");
-
-            optionsBuilder.UseNpgsql(connectionString, npgsqlOptions =>
-            {
-                npgsqlOptions.EnableRetryOnFailure(
-                    maxRetryCount: 5,
-                    maxRetryDelay: TimeSpan.FromSeconds(10),
-                    errorCodesToAdd: null);
-            });
-        }
+        base.OnModelCreating(modelBuilder);
     }
 
     public async Task<bool> CanConnectAsync()
     {
         try
         {
-            return await Database.CanConnectAsync();
+            await using var conn = new NpgsqlConnection(_settings.ConnectionString);
+            await conn.OpenAsync();
+            return conn.State == System.Data.ConnectionState.Open;
         }
         catch
         {

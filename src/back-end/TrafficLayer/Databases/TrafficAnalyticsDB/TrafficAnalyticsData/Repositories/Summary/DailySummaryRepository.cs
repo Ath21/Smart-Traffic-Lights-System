@@ -4,22 +4,32 @@ using TrafficAnalyticsData.Entities;
 
 namespace TrafficAnalyticsData.Repositories.Summary;
 
-public class DailySummaryRepository : Repository<DailySummary>, IDailySummaryRepository
+public class DailySummaryRepository : BaseRepository<DailySummaryEntity>, IDailySummaryRepository
 {
-    private readonly TrafficAnalyticsDbContext _context;
+    public DailySummaryRepository(TrafficAnalyticsDbContext context)
+        : base(context) { }
 
-    public DailySummaryRepository(TrafficAnalyticsDbContext context) : base(context)
+    public async Task<IEnumerable<DailySummaryEntity>> GetByDateAsync(DateTime date)
     {
-        _context = context;
+        return await _context.DailySummaries
+            .Where(s => s.Date == date.Date)
+            .OrderBy(s => s.Intersection)
+            .ToListAsync();
     }
 
-    public async Task<IEnumerable<DailySummary>> GetByIntersectionAsync(int intersectionId) =>
-        await _context.DailySummaries
+    public async Task<IEnumerable<DailySummaryEntity>> GetByIntersectionAsync(int intersectionId)
+    {
+        return await _context.DailySummaries
             .Where(s => s.IntersectionId == intersectionId)
             .OrderByDescending(s => s.Date)
             .ToListAsync();
+    }
 
-    public async Task<DailySummary?> GetByIntersectionAndDateAsync(int intersectionId, DateTime date) =>
-        await _context.DailySummaries
-            .FirstOrDefaultAsync(s => s.IntersectionId == intersectionId && s.Date == date.Date);
+    public async Task<IEnumerable<DailySummaryEntity>> GetDateRangeAsync(DateTime start, DateTime end, int intersectionId)
+    {
+        return await _context.DailySummaries
+            .Where(s => s.IntersectionId == intersectionId && s.Date >= start.Date && s.Date <= end.Date)
+            .OrderBy(s => s.Date)
+            .ToListAsync();
+    }
 }

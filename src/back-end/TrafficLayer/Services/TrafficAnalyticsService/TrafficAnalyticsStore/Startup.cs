@@ -13,8 +13,11 @@ using Microsoft.IdentityModel.Tokens;
 using DetectionCacheData;
 using TrafficAnalyticsData.Repositories.Summary;
 using TrafficAnalyticsData.Repositories.Alerts;
-using DetectionCacheData.Repositories.Cache;
-using DetectionCacheData.Repositories.Metrics;
+using TrafficAnalyticsData.Settings;
+using Microsoft.EntityFrameworkCore;
+using TrafficAnalyticsData.Healthchecks;
+using DetectionCacheData.Healthchecks;
+using DetectionCacheData.Repositories;
 
 namespace TrafficAnalyticsStore;
 
@@ -30,24 +33,40 @@ public class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         /******* [1] PostgreSQL Config ********/
-        services.AddDbContext<TrafficAnalyticsDbContext>();
+        services.Configure<TrafficAnalyticsDbSettings>(options =>
+        {
+            options.ConnectionString = _configuration["Postgres:ConnectionString"];
+        });
+
+        services.AddDbContext<TrafficAnalyticsDbContext>(options =>
+            options.UseNpgsql(_configuration["Postgres:ConnectionString"]));
+
+        services.AddHealthChecks()
+            .AddCheck<TrafficAnalyticsDbHealthCheck>("trafficanalyticsdb_ping");
 
         /******* [2] Redis (Detection Cache) ********/
         services.Configure<DetectionCacheDbSettings>(options =>
         {
             options.Host = _configuration["Redis:Host"];
-            options.Port = int.Parse(_configuration["Redis:Port"] ?? "6379");
+            options.Port = int.Parse(_configuration["Redis:Port"]);
             options.Password = _configuration["Redis:Password"];
-            options.Database = int.Parse(_configuration["Redis:Database"] ?? "0");
-
-            options.KeyPrefix_VehicleCount = _configuration["Redis:KeyPrefix:VehicleCount"];
-            options.KeyPrefix_PedestrianCount = _configuration["Redis:KeyPrefix:PedestrianCount"];
-            options.KeyPrefix_CyclistCount = _configuration["Redis:KeyPrefix:CyclistCount"];
-            options.KeyPrefix_EmergencyDetected = _configuration["Redis:KeyPrefix:EmergencyDetected"];
-            options.KeyPrefix_PublicTransportDetected = _configuration["Redis:KeyPrefix:PublicTransportDetected"];
-            options.KeyPrefix_IncidentDetected = _configuration["Redis:KeyPrefix:IncidentDetected"];
+            options.Database = int.Parse(_configuration["Redis:Database"]);
+            options.KeyPrefix = new KeyPrefixSettings
+            {
+                VehicleCount = _configuration["Redis:KeyPrefix:VehicleCount"],
+                PedestrianCount = _configuration["Redis:KeyPrefix:PedestrianCount"],
+                CyclistCount = _configuration["Redis:KeyPrefix:CyclistCount"],
+                PublicTransportDetections = _configuration["Redis:KeyPrefix:PublicTransportDetections"],
+                EmergencyVehicleDetections = _configuration["Redis:KeyPrefix:EmergencyVehicleDetections"],
+                IncidentDetections = _configuration["Redis:KeyPrefix:IncidentDetections"]
+            };
         });
+
         services.AddSingleton<DetectionCacheDbContext>();
+
+        services.AddHealthChecks()
+            .AddCheck<DetectionCacheDbHealthCheck>("detectioncachedb_ping");
+
 
         /******* [3] Repositories ********/
         /******* [3.1] TrafficAnalyticsDB Repositories ********/
@@ -55,8 +74,7 @@ public class Startup
         services.AddScoped(typeof(IAlertRepository), typeof(AlertRepository));
 
         /******* [3.2] DetectionCacheDB Repositories ********/
-        services.AddScoped(typeof(ISensorCacheRepository), typeof(SensorCacheRepository));
-        services.AddScoped(typeof(IMetricRepository), typeof(MetricRepository));
+        services.AddScoped(typeof(IDetectionCacheRepository), typeof(DetectionCacheRepository));
 
         /******* [4] Services ********/
         services.AddScoped(typeof(ITrafficAnalyticsService), typeof(TrafficAnalyticsService));
