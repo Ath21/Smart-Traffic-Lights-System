@@ -34,3 +34,23 @@ public class SessionEntity
     public bool IsActive { get; set; } = true;
 }
 
+/*
+
+{
+  "SessionId": 101,
+  "UserId": 1,
+  "Session": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "LoginTime": "2025-10-08T08:10:00Z",
+  "LogoutTime": null,
+  "IsActive": true
+},
+{
+  "SessionId": 102,
+  "UserId": 2,
+  "Session": "eyJhbGc...trafficop_token",
+  "LoginTime": "2025-10-08T08:30:00Z",
+  "LogoutTime": null,
+  "IsActive": true
+}
+
+*/

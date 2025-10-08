@@ -3,8 +3,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TrafficLightData.Entities;
 
-// Update by : Traffic Light Coordinator Service
-// Read by   : Traffic Light Coordinator Service
+// Updated by : Traffic Light Coordinator Service
+// Read by    : Traffic Light Coordinator, Intersection Controller
 [Table("traffic_lights")]
 public class TrafficLightEntity
 {
@@ -21,31 +21,32 @@ public class TrafficLightEntity
     [Required, MaxLength(50)]
     public string LightName { get; set; } = string.Empty;
 
-    [Required]
-    public TrafficLightState CurrentState { get; set; } = TrafficLightState.Red; 
-
-    [Required]
-    public int DurationSec { get; set; } = 60; 
-
     [MaxLength(20)]
     public string Direction { get; set; } = string.Empty;
 
-    public bool IsOperational { get; set; } = true; 
+    // NEW: Coordinates (each light pole location)
+    [Column(TypeName = "decimal(10,7)")]
+    public decimal Latitude { get; set; }
 
-    public DateTime LastUpdate { get; set; } = DateTime.UtcNow;
+    [Column(TypeName = "decimal(10,7)")]
+    public decimal Longitude { get; set; }
+
+    // Static flag for maintenance registry
+    public bool IsOperational { get; set; } = true;
 }
+
 
 /*
 
 {
-  "LightId": 201,
-  "IntersectionId": 4,
-  "LightName": "anatoliki-pyli201",
-  "CurrentState": "Green",
-  "DurationSec": 35,
+  "LightId": 101,
+  "IntersectionId": 2,
+  "LightName": "agiou-spyridonos101",
   "Direction": "North",
-  "IsOperational": true,
-  "LastUpdate": "2025-10-08T07:31:00Z"
+  "Latitude": 37.9821201,
+  "Longitude": 23.6821348,
+  "IsOperational": true
 }
+
 
 */

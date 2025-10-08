@@ -26,7 +26,7 @@ public class UserEntity
 
     // user role (User, Admin, TrafficOperator, Guest)
     [MaxLength(20)]
-    public string Role { get; set; } = UserRole.TrafficOperator;
+    public string Role { get; set; } = "User";
 
     // active/inactive account flag
     public bool IsActive { get; set; } = true;
@@ -41,3 +41,34 @@ public class UserEntity
     public ICollection<UserAuditEntity> Audits { get; set; } = new List<UserAuditEntity>();
 }
 
+/*
+
+{
+  "UserId": 1,
+  "Username": "vathanas1ou",
+  "Email": "vathanas1ou@uniwa.gr",
+  "PasswordHash": "$2a$10$...hashed_password...",
+  "Role": "Admin",
+  "IsActive": true,
+  "CreatedAt": "2025-10-08T07:15:00Z"
+},
+{
+  "UserId": 2,
+  "Username": "vmamalis",
+  "Email": "vmamalis@uniwa.gr",
+  "PasswordHash": "$2a$10$...hashed_password...",
+  "Role": "TrafficOperator",
+  "IsActive": true,
+  "CreatedAt": "2025-10-08T07:18:00Z"
+},
+{
+  "UserId": 3,
+  "Username": "apostolos",
+  "Email": "apostolos@uniwa.gr",
+  "PasswordHash": "$2a$10$...hashed_password...",
+  "Role": "User",
+  "IsActive": true,
+  "CreatedAt": "2025-10-08T07:22:00Z"
+}
+
+*/

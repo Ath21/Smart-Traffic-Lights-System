@@ -1,11 +1,10 @@
-using System.Text.Json;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TrafficLightData.Entities;
 
-// Update by : Traffic Light Coordinator Service
-// Read by   : Traffic Light Coordinator Service
+// Updated by : Traffic Light Coordinator Service
+// Read by    : Traffic Light Coordinator, Intersection Controller
 [Table("traffic_configurations")]
 public class TrafficConfigurationEntity
 {
@@ -20,7 +19,7 @@ public class TrafficConfigurationEntity
     public IntersectionEntity? Intersection { get; set; }
 
     [Required, MaxLength(50)]
-    public string Mode { get; set; } = "Standard";
+    public string Mode { get; set; } = "Standard"; // Standard, Peak, Night, Manual, Failover
 
     [Required, MaxLength(20)]
     public string TimePlan { get; set; } = "Day";
@@ -36,6 +35,7 @@ public class TrafficConfigurationEntity
 
     public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
 }
+
 
 
 /*

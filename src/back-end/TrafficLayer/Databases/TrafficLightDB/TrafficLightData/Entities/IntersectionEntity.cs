@@ -3,8 +3,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TrafficLightData.Entities;
 
-// Update by : Traffic Light Coordinator Service
-// Read by   : Traffic Light Coordinator Service
+// Updated by : Traffic Light Coordinator Service
+// Read by    : Traffic Light Coordinator, Intersection Controller
 [Table("intersections")]
 public class IntersectionEntity
 {
@@ -18,6 +18,13 @@ public class IntersectionEntity
     [MaxLength(255)]
     public string Location { get; set; } = string.Empty;
 
+    // NEW: Geo-coordinates (for mapping & analytics)
+    [Column(TypeName = "decimal(10,7)")]
+    public decimal Latitude { get; set; }
+
+    [Column(TypeName = "decimal(10,7)")]
+    public decimal Longitude { get; set; }
+
     [Required]
     public int LightCount { get; set; } = 0;
 
@@ -26,10 +33,11 @@ public class IntersectionEntity
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+    // Relationships
     public ICollection<TrafficLightEntity> TrafficLights { get; set; } = new List<TrafficLightEntity>();
-
     public ICollection<TrafficConfigurationEntity> Configurations { get; set; } = new List<TrafficConfigurationEntity>();
 }
+
 
 /*
 
@@ -37,6 +45,8 @@ public class IntersectionEntity
   "IntersectionId": 2,
   "Name": "Agiou Spyridonos",
   "Location": "Agiou Spyridonos & Dimitsanas Street, UNIWA Campus",
+  "Latitude": 37.9821543,
+  "Longitude": 23.6821921,
   "LightCount": 3,
   "IsActive": true,
   "CreatedAt": "2025-10-08T07:00:00Z",
