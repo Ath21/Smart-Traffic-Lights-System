@@ -6,22 +6,13 @@
 // Consumed by  : Intersection Controller Service
 public class TrafficLightUpdateMessage : BaseMessage
 {
-    // Light configuration template (applies to all lights in intersection)
-    public bool IsOperational { get; set; } = true;
-
-    // Operational mode
-    public string CurrentMode { get; set; } = "Standard"; // Standard, Peak, Night, Manual, Failover, Emergency
-    public string TimePlan { get; set; } = "Day";         // Day, Night, RushHour, Holiday
-
-    // Timing and synchronization
-    public Dictionary<string, int> PhaseDurations { get; set; } = new(); // { "Green": 30, "Yellow": 5, "Red": 25 }
-    public int CycleDurationSec { get; set; } = 60;       // Total duration of one full cycle (sum of phases)
-    public int GlobalOffsetSec { get; set; } = 0;         // Intersection-level offset (for city-wide sync)
-
-    // Optional per-light offsets for fine-tuning (assigned by Coordinator or Intersection Controller)
-    public Dictionary<int, int> LightOffsets { get; set; } = new(); // { 101: 0, 102: 5, 103: 10 }
-
-    // Traceability
+    public bool IsOperational { get; set; }
+    public string? CurrentMode { get; set; } // Standard, Peak, Night, Manual, Failover, Emergency
+    public string? TimePlan { get; set; } // Day, Night, RushHour, Holiday
+    public Dictionary<string, int>? PhaseDurations { get; set; } // { "Green": 30, "Yellow": 5, "Red": 25 }
+    public int CycleDurationSec { get; set; } // Total duration of one full cycle (sum of phases)
+    public int GlobalOffsetSec { get; set; } // Intersection-level offset (for city-wide sync)
+    public Dictionary<int, int>? LightOffsets { get; set; } // { 101: 0, 102: 5, 103: 10 }
     public DateTime LastUpdate { get; set; } = DateTime.UtcNow;
 }
 

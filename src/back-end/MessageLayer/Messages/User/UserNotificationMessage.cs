@@ -6,11 +6,11 @@
 // Consumed by  : User Service, Notification Service
 public class UserNotificationMessage : BaseMessage
 {
-    public string NotificationType { get; set; } // Alert, PublicNotice, Private, Request
-    public string Title { get; set; } = string.Empty; // message title
-    public string Body { get; set; } = string.Empty;  // message body content
-    public string RecipientEmail { get; set; } = string.Empty; // target user email
-    public string Status { get; set; } = "Pending"; // Pending, Sent, Failed
+    public string? NotificationType { get; set; } // Alert, PublicNotice, Private, Request
+    public string? Title { get; set; } // message title
+    public string? Body { get; set; } // message body content
+    public string? RecipientEmail { get; set; } // target user email
+    public string? Status { get; set; } // Pending, Sent, Failed
 }
 
 /*

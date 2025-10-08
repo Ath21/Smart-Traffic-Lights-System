@@ -12,17 +12,11 @@
 public class TrafficLightControlMessage : BaseMessage
 {
     public int LightId { get; set; }
-    public string LightName { get; set; } = string.Empty;
-
-    // Operation Mode Context
-    public string Mode { get; set; } = "Auto";
-    public string TimePlan { get; set; } = "Standard"; // Standard, Peak, Night, Manual, Failover, Emergency
-
-    // Phase Durations for this mode
-    public Dictionary<string, int> PhaseDurations { get; set; } = new(); // { "Green": 30, "Yellow": 5, "Red": 25 }
-
-    // State control
-    public string OperationalMode { get; set; } = "Normal"; // Normal, Flashing, Off
+    public string? LightName { get; set; } 
+    public string? Mode { get; set; } 
+    public string? TimePlan { get; set; } // Standard, Peak, Night, Manual, Failover, Emergency
+    public Dictionary<string, int>? PhaseDurations { get; set; } // { "Green": 30, "Yellow": 5, "Red": 25 }
+    public string? OperationalMode { get; set; } // Normal, Flashing, Off
 }
 
 /*

@@ -7,12 +7,12 @@
 // Consumed by  : Intersection Controller Service, Traffic Analytics Service
 public class SensorCountMessage : BaseMessage
 {
-    public string CountType { get; set; } = string.Empty; 
-    public int Count { get; set; } = 0;
-    public double AverageSpeedKmh { get; set; } = 0.0; 
-    public double AverageWaitTimeSec { get; set; } = 0.0; 
-    public double FlowRate { get; set; } = 0.0; 
-    public Dictionary<string, int> Breakdown { get; set; } = new(); 
+  public string? CountType { get; set; }
+  public int Count { get; set; }
+  public double AverageSpeedKmh { get; set; }
+  public double AverageWaitTimeSec { get; set; }
+  public double FlowRate { get; set; }
+  public Dictionary<string, int>? Breakdown { get; set; }
 }
 
 /*

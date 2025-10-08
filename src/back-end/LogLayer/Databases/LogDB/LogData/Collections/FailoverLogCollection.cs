@@ -12,46 +12,46 @@ public class FailoverLogCollection
 {
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
-    public string FailoverId { get; set; } = string.Empty;
+    public string? FailoverId { get; set; }
 
     [BsonElement("correlation_id")]
-    public Guid CorrelationId { get; set; } = Guid.NewGuid();
+    public Guid CorrelationId { get; set; }
 
     [BsonElement("timestamp")]
-    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+    public DateTime Timestamp { get; set; }
 
     [BsonElement("layer")]
-    public string Layer { get; set; } = string.Empty;
+    public string? Layer { get; set; }
 
     [BsonElement("service")]
-    public string Service { get; set; } = string.Empty;
+    public string? Service { get; set; }
 
     [BsonElement("intersection_id")]
-    public int IntersectionId { get; set; } = 0;
+    public int IntersectionId { get; set; }
 
     [BsonElement("intersection_name")]
-    public string IntersectionName { get; set; } = string.Empty;
+    public string? IntersectionName { get; set; }
 
     [BsonElement("light_ids")]
-    public List<int> LightId { get; set; } = new();
+    public List<int>? LightId { get; set; }
 
     [BsonElement("traffic_lights")]
-    public List<string> TrafficLight { get; set; } = new();
+    public List<string>? TrafficLight { get; set; }
 
     [BsonElement("context")]
-    public string Context { get; set; } = string.Empty; // ApplyFailoverAsync, CachedStateMonitor, etc.
+    public string? Context { get; set; } // ApplyFailoverAsync, CachedStateMonitor, etc.
 
     [BsonElement("reason")]
-    public string Reason { get; set; } = string.Empty; // Redis unavailable, network timeout, etc.
+    public string? Reason { get; set; } // Redis unavailable, network timeout, etc.
 
     [BsonElement("mode")]
-    public string Mode { get; set; } = string.Empty; // CachedState, ManualMode, BlinkingYellow
+    public string? Mode { get; set; } // CachedState, ManualMode, BlinkingYellow
 
     [BsonElement("message")]
-    public string Message { get; set; } = string.Empty;
+    public string? Message { get; set; }
 
     [BsonElement("metadata")]
-    public BsonDocument Metadata { get; set; } = new();
+    public BsonDocument? Metadata { get; set; }
 }
 
 /*

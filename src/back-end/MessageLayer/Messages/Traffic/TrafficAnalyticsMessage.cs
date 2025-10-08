@@ -7,7 +7,7 @@
 // Consumed by  : Traffic Light Coordinator Service, User Service, Notification Service
 public class TrafficAnalyticsMetricMessage : BaseMessage
 {
-    public string MetricType { get; set; }  // Incident, Congestion, Summary
+    public string? MetricType { get; set; }  // Incident, Congestion, Summary
 
     public double AverageSpeedKmh { get; set; }
 

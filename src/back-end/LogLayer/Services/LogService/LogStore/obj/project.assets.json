@@ -772,14 +772,14 @@
           "bin/placeholder/LogData.dll": {}
         }
       },
-      "LogMessages/1.0.0": {
+      "Messages/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
         "compile": {
-          "bin/placeholder/LogMessages.dll": {}
+          "bin/placeholder/Messages.dll": {}
         },
         "runtime": {
-          "bin/placeholder/LogMessages.dll": {}
+          "bin/placeholder/Messages.dll": {}
         }
       }
     }
@@ -2233,19 +2233,19 @@
       "path": "../../../Databases/LogDB/LogData/LogData.csproj",
       "msbuildProject": "../../../Databases/LogDB/LogData/LogData.csproj"
     },
-    "LogMessages/1.0.0": {
+    "Messages/1.0.0": {
       "type": "project",
-      "path": "../../../../MessageLayer/LogMessages/LogMessages.csproj",
-      "msbuildProject": "../../../../MessageLayer/LogMessages/LogMessages.csproj"
+      "path": "../../../../MessageLayer/Messages/Messages.csproj",
+      "msbuildProject": "../../../../MessageLayer/Messages/Messages.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net9.0": [
       "AutoMapper.Extensions.Microsoft.DependencyInjection >= 12.0.1",
       "LogData >= 1.0.0",
-      "LogMessages >= 1.0.0",
       "MassTransit >= 8.4.1",
       "MassTransit.RabbitMQ >= 8.4.1",
+      "Messages >= 1.0.0",
       "Microsoft.AspNetCore.Authentication.JwtBearer >= 9.0.0",
       "Microsoft.AspNetCore.OpenApi >= 9.0.5",
       "MongoDB.Driver >= 3.4.0",
@@ -2254,19 +2254,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\billa\\.nuget\\packages\\": {}
+    "/home/ath/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "F:\\REPOS\\Smart-Traffic-Lights-System\\src\\back-end\\LogLayer\\Services\\LogService\\LogStore\\LogStore.csproj",
+      "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/Services/LogService/LogStore/LogStore.csproj",
       "projectName": "LogStore",
-      "projectPath": "F:\\REPOS\\Smart-Traffic-Lights-System\\src\\back-end\\LogLayer\\Services\\LogService\\LogStore\\LogStore.csproj",
-      "packagesPath": "C:\\Users\\billa\\.nuget\\packages\\",
-      "outputPath": "F:\\REPOS\\Smart-Traffic-Lights-System\\src\\back-end\\LogLayer\\Services\\LogService\\LogStore\\obj\\",
+      "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/Services/LogService/LogStore/LogStore.csproj",
+      "packagesPath": "/home/ath/.nuget/packages/",
+      "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/Services/LogService/LogStore/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\billa\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "/home/ath/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net9.0"
@@ -2278,11 +2278,11 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
-            "F:\\REPOS\\Smart-Traffic-Lights-System\\src\\back-end\\LogLayer\\Databases\\LogDB\\LogData\\LogData.csproj": {
-              "projectPath": "F:\\REPOS\\Smart-Traffic-Lights-System\\src\\back-end\\LogLayer\\Databases\\LogDB\\LogData\\LogData.csproj"
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/Databases/LogDB/LogData/LogData.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/Databases/LogDB/LogData/LogData.csproj"
             },
-            "F:\\REPOS\\Smart-Traffic-Lights-System\\src\\back-end\\MessageLayer\\LogMessages\\LogMessages.csproj": {
-              "projectPath": "F:\\REPOS\\Smart-Traffic-Lights-System\\src\\back-end\\MessageLayer\\LogMessages\\LogMessages.csproj"
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/Messages/Messages.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/Messages/Messages.csproj"
             }
           }
         }
@@ -2355,7 +2355,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/9.0.305/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

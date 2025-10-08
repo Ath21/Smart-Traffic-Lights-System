@@ -7,9 +7,9 @@
 // Consumed by  : Intersection Controller Service, Traffic Light Analytics Service
 public class DetectionEventMessage : BaseMessage
 {
-    public string EventType { get; set; } = string.Empty;
-    public string VehicleType { get; set; } = string.Empty;
-    public string Direction { get; set; } = string.Empty;
+    public string? EventType { get; set; }
+    public string? VehicleType { get; set; }
+    public string? Direction { get; set; }
 }
 
 /*

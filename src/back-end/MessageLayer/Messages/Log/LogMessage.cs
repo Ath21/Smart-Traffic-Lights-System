@@ -11,12 +11,12 @@
 // Consumed by  : Log Service
 public class LogMessage : BaseMessage
 {
-    public string Layer { get; set; } = string.Empty;
-    public string LogType { get; set; } = string.Empty; 
-    public List<int> LightId { get; set; } = new();
-    public List<string> TrafficLight { get; set; } 
-    public string Action { get; set; }
-    public string Message { get; set; }
+    public string? Layer { get; set; } 
+    public string? LogType { get; set; } 
+    public List<int>? LightId { get; set; } 
+    public List<string>? TrafficLight { get; set; } 
+    public string? Action { get; set; }
+    public string? Message { get; set; }
 }
 
 /*
