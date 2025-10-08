@@ -1,6 +1,5 @@
 using MassTransit;
 using RabbitMQ.Client;
-using SensorMessages;
 
 namespace DetectionStore;
 
@@ -14,27 +13,50 @@ public static class MassTransitSetup
             {
                 var rabbit = configuration.GetSection("RabbitMQ");
 
-                cfg.Host(rabbit["Host"], "/", h =>
+                // =====================================
+                // Connection (from configuration)
+                // =====================================
+                cfg.Host(rabbit["Host"], rabbit["VirtualHost"] ?? "/", h =>
                 {
                     h.Username(rabbit["Username"]);
                     h.Password(rabbit["Password"]);
                 });
 
+                // =====================================
                 // Exchanges
-                var sensorExchange = rabbit["Exchanges:Sensor"];
-                var logExchange    = rabbit["Exchanges:Log"];
+                // =====================================
+                var sensorExchange = rabbit["Exchanges:Sensor"]; // e.g. "sensor.exchange"
+                var logExchange    = rabbit["Exchanges:Log"];    // e.g. "log.exchange"
 
-                // =========================
-                // SENSOR DETECTIONS (Publish)
-                // =========================
-                cfg.Message<SensorDetectionMessage>(e => e.SetEntityName(sensorExchange));
-                cfg.Publish<SensorDetectionMessage>(e => e.ExchangeType = ExchangeType.Topic);
+                // =====================================
+                // SENSOR DETECTION (Publish)
+                // =====================================
+                //
+                // Topic pattern: sensor.detection.{intersection}.{event}
+                // Example key:   sensor.detection.agiospyridonos.vehicle
+                //
+                cfg.Message<DetectionEventMessage>(m =>
+                {
+                    m.SetEntityName(sensorExchange);
+                });
 
-                // =========================
+                cfg.Publish<DetectionEventMessage>(m =>
+                {
+                    m.ExchangeType = ExchangeType.Topic;
+                });
+
+                // =====================================
                 // LOGS (Publish)
-                // =========================
-                cfg.Message<LogMessages.LogMessage>(e => e.SetEntityName(logExchange));
-                cfg.Publish<LogMessages.LogMessage>(e => e.ExchangeType = ExchangeType.Topic);
+                // =====================================
+                cfg.Message<LogMessage>(m =>
+                {
+                    m.SetEntityName(logExchange);
+                });
+
+                cfg.Publish<LogMessage>(m =>
+                {
+                    m.ExchangeType = ExchangeType.Topic;
+                });
 
                 cfg.ConfigureEndpoints(context);
             });

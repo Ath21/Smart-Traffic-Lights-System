@@ -1,8 +1,5 @@
 using MassTransit;
 using RabbitMQ.Client;
-using SensorMessages;
-using LogMessages;
-using SensorMessages.SensorCount;
 
 namespace SensorStore;
 
@@ -12,39 +9,46 @@ public static class MassTransitSetup
     {
         services.AddMassTransit(x =>
         {
-            // Sensor service only publishes, no consumers for now
+            // Sensor service only publishes messages (no consumers yet)
             x.UsingRabbitMq((context, cfg) =>
             {
                 var rabbit = configuration.GetSection("RabbitMQ");
 
-                cfg.Host(rabbit["Host"], "/", h =>
+                // ===============================
+                // Connection (injected from config)
+                // ===============================
+                cfg.Host(rabbit["Host"], rabbit["VirtualHost"] ?? "/", h =>
                 {
                     h.Username(rabbit["Username"]);
                     h.Password(rabbit["Password"]);
                 });
 
+                // ===============================
                 // Exchanges
-                var sensorExchange = rabbit["Exchanges:Sensor"];
-                var logExchange    = rabbit["Exchanges:Log"];
+                // ===============================
+                var sensorExchange = rabbit["Exchanges:Sensor"]; // e.g. "sensor.exchange"
+                var logExchange    = rabbit["Exchanges:Log"];    // e.g. "log.exchange"
 
-                // =========================
+                // ===============================
                 // SENSOR COUNTS (Publish)
-                // =========================
-                cfg.Message<CyclistCountMessage>(e => e.SetEntityName(sensorExchange));
-                cfg.Publish<CyclistCountMessage>(e => e.ExchangeType = ExchangeType.Topic);
-                cfg.Message<PedestrianCountMessage>(e => e.SetEntityName(sensorExchange));
-                cfg.Publish<PedestrianCountMessage>(e => e.ExchangeType = ExchangeType.Topic);
-                cfg.Message<VehicleCountMessage>(e => e.SetEntityName(sensorExchange));
-                cfg.Publish<VehicleCountMessage>(e => e.ExchangeType = ExchangeType.Topic);
+                // ===============================
+                //
+                // Topic pattern: sensor.count.{intersection}.{type}
+                // Example keys:
+                //   sensor.count.agiospyridonos.vehicle
+                //   sensor.count.kentrikipyli.pedestrian
+                //
+                cfg.Message<SensorCountMessage>(m => m.SetEntityName(sensorExchange));
+                cfg.Publish<SensorCountMessage>(m => m.ExchangeType = ExchangeType.Topic);
 
-                // =========================
+                // ===============================
                 // LOGS (Publish)
-                // =========================
-                cfg.Message<LogMessage>(e => e.SetEntityName(logExchange));
-                cfg.Publish<LogMessage>(e => e.ExchangeType = ExchangeType.Topic);
+                // ===============================
+                cfg.Message<LogMessage>(m => m.SetEntityName(logExchange));
+                cfg.Publish<LogMessage>(m => m.ExchangeType = ExchangeType.Topic);
 
-                // Since this service does not consume, we don’t need to bind queues.
-                // But leaving ConfigureEndpoints makes it future-proof if consumers are added later.
+                // Since this service is publish-only, no queues are declared.
+                // Keeping ConfigureEndpoints allows easy consumer extension later.
                 cfg.ConfigureEndpoints(context);
             });
         });

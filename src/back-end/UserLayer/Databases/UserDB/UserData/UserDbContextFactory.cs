@@ -9,7 +9,7 @@ public class UserDbContextFactory : IDesignTimeDbContextFactory<UserDbContext>
     public UserDbContext CreateDbContext(string[] args)
     {
         const string connectionString =
-            "Server=localhost,1433;Database=UserDB;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True;";
+            "Server=localhost,1433;Database=UserDB;User Id=sa;Password=MyPass@word;TrustServerCertificate=True;";
 
         var optionsBuilder = new DbContextOptionsBuilder<UserDbContext>();
         optionsBuilder.UseSqlServer(connectionString);
