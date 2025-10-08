@@ -8,30 +8,20 @@ namespace UserData.Entities;
 [Table("sessions")]
 public class SessionEntity
 {
-    // unique session ID
-    [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public int SessionId { get; set; }
+  [Key]
+  [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+  public int SessionId { get; set; }
 
-     // foreign key to user
-    [Required]
-    public int UserId { get; set; }
+  [Required]
+  public int UserId { get; set; }
 
-    // navigation property to user
-    [ForeignKey(nameof(UserId))]
-    public UserEntity? User { get; set; }
+  [ForeignKey(nameof(UserId))]
+  public UserEntity? User { get; set; }
 
-    // JWT token
-    public string Session { get; set; } = string.Empty;
-
-    // login timestamp (UTC)
-    public DateTime LoginTime { get; set; } = DateTime.UtcNow;
-
-    // logout timestamp (nullable)
-    public DateTime? LogoutTime { get; set; }
-
-    // session active flag
-    public bool IsActive { get; set; } = true;
+  public string? Session { get; set; }
+  public DateTime LoginTime { get; set; }
+  public DateTime? LogoutTime { get; set; }
+  public bool IsActive { get; set; }
 }
 
 /*
