@@ -843,20 +843,21 @@
           "lib/net7.0/ZstdSharp.dll": {}
         }
       },
-      "LogMessages/1.0.0": {
+      "Messages/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
         "compile": {
-          "bin/placeholder/LogMessages.dll": {}
+          "bin/placeholder/Messages.dll": {}
         },
         "runtime": {
-          "bin/placeholder/LogMessages.dll": {}
+          "bin/placeholder/Messages.dll": {}
         }
       },
       "NotificationData/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
+          "Microsoft.Extensions.Diagnostics.HealthChecks": "9.0.0",
           "Microsoft.Extensions.Options": "9.0.6",
           "MongoDB.Driver": "3.4.0"
         },
@@ -865,26 +866,6 @@
         },
         "runtime": {
           "bin/placeholder/NotificationData.dll": {}
-        }
-      },
-      "TrafficMessages/1.0.0": {
-        "type": "project",
-        "framework": ".NETCoreApp,Version=v9.0",
-        "compile": {
-          "bin/placeholder/TrafficMessages.dll": {}
-        },
-        "runtime": {
-          "bin/placeholder/TrafficMessages.dll": {}
-        }
-      },
-      "UserMessages/1.0.0": {
-        "type": "project",
-        "framework": ".NETCoreApp,Version=v9.0",
-        "compile": {
-          "bin/placeholder/UserMessages.dll": {}
-        },
-        "runtime": {
-          "bin/placeholder/UserMessages.dll": {}
         }
       }
     }
@@ -2316,43 +2297,31 @@
         "zstdsharp.port.nuspec"
       ]
     },
-    "LogMessages/1.0.0": {
+    "Messages/1.0.0": {
       "type": "project",
-      "path": "../../../../MessageLayer/LogMessages/LogMessages.csproj",
-      "msbuildProject": "../../../../MessageLayer/LogMessages/LogMessages.csproj"
+      "path": "../../../../MessageLayer/Messages/Messages.csproj",
+      "msbuildProject": "../../../../MessageLayer/Messages/Messages.csproj"
     },
     "NotificationData/1.0.0": {
       "type": "project",
       "path": "../../../Databases/NotificationDB/NotificationData/NotificationData.csproj",
       "msbuildProject": "../../../Databases/NotificationDB/NotificationData/NotificationData.csproj"
-    },
-    "TrafficMessages/1.0.0": {
-      "type": "project",
-      "path": "../../../../MessageLayer/TrafficMessages/TrafficMessages.csproj",
-      "msbuildProject": "../../../../MessageLayer/TrafficMessages/TrafficMessages.csproj"
-    },
-    "UserMessages/1.0.0": {
-      "type": "project",
-      "path": "../../../../MessageLayer/UserMessages/UserMessages.csproj",
-      "msbuildProject": "../../../../MessageLayer/UserMessages/UserMessages.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net9.0": [
       "AutoMapper.Extensions.Microsoft.DependencyInjection >= 12.0.1",
-      "LogMessages >= 1.0.0",
       "MailKit >= 4.12.1",
       "MassTransit >= 8.5.0",
       "MassTransit.RabbitMQ >= 8.5.0",
+      "Messages >= 1.0.0",
       "Microsoft.AspNetCore.Authentication.JwtBearer >= 9.0.8",
       "Microsoft.AspNetCore.OpenApi >= 9.0.6",
       "MimeKit >= 4.12.0",
       "MongoDB.Driver >= 3.4.0",
       "NotificationData >= 1.0.0",
       "RabbitMQ.Client >= 7.1.2",
-      "Swashbuckle.AspNetCore >= 9.0.1",
-      "TrafficMessages >= 1.0.0",
-      "UserMessages >= 1.0.0"
+      "Swashbuckle.AspNetCore >= 9.0.1"
     ]
   },
   "packageFolders": {
@@ -2380,14 +2349,8 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
-            "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/LogMessages/LogMessages.csproj": {
-              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/LogMessages/LogMessages.csproj"
-            },
-            "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/TrafficMessages/TrafficMessages.csproj": {
-              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/TrafficMessages/TrafficMessages.csproj"
-            },
-            "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/UserMessages/UserMessages.csproj": {
-              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/UserMessages/UserMessages.csproj"
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/Messages/Messages.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/Messages/Messages.csproj"
             },
             "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Databases/NotificationDB/NotificationData/NotificationData.csproj": {
               "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Databases/NotificationDB/NotificationData/NotificationData.csproj"
@@ -2471,7 +2434,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/9.0.304/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/9.0.305/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

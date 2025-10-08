@@ -1,5 +1,12 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using TrafficAnalyticsData;
+using TrafficAnalyticsData.Repositories.Summary;
+using TrafficAnalyticsData.Repositories.Alerts;
+using TrafficAnalyticsData.Settings;
 using TrafficAnalyticsStore.Middleware;
 using TrafficAnalyticsStore.Publishers.Congestion;
 using TrafficAnalyticsStore.Publishers.Incident;
@@ -7,17 +14,9 @@ using TrafficAnalyticsStore.Publishers.Summary;
 using TrafficAnalyticsStore.Publishers.Logs;
 using TrafficAnalyticsStore.Consumers;
 using TrafficAnalyticsStore.Business;
-using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using DetectionCacheData;
-using TrafficAnalyticsData.Repositories.Summary;
-using TrafficAnalyticsData.Repositories.Alerts;
-using TrafficAnalyticsData.Settings;
-using Microsoft.EntityFrameworkCore;
-using TrafficAnalyticsData.Healthchecks;
-using DetectionCacheData.Healthchecks;
 using DetectionCacheData.Repositories;
+using DetectionCacheData.Settings;
 
 namespace TrafficAnalyticsStore;
 
@@ -32,19 +31,25 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
-        /******* [1] PostgreSQL Config ********/
+        // ===============================
+        // Data Layer (PostgreSQL - TrafficAnalyticsDB)
+        // ===============================
+        // Db Context
         services.Configure<TrafficAnalyticsDbSettings>(options =>
         {
             options.ConnectionString = _configuration["Postgres:ConnectionString"];
         });
-
         services.AddDbContext<TrafficAnalyticsDbContext>(options =>
             options.UseNpgsql(_configuration["Postgres:ConnectionString"]));
 
-        services.AddHealthChecks()
-            .AddCheck<TrafficAnalyticsDbHealthCheck>("trafficanalyticsdb_ping");
+        // Repositories
+        services.AddScoped(typeof(IDailySummaryRepository), typeof(DailySummaryRepository));
+        services.AddScoped(typeof(IAlertRepository), typeof(AlertRepository));
 
-        /******* [2] Redis (Detection Cache) ********/
+        // ===============================
+        // Data Layer (Redis - DetectionCacheDB)
+        // ===============================
+        // Db Context 
         services.Configure<DetectionCacheDbSettings>(options =>
         {
             options.Host = _configuration["Redis:Host"];
@@ -61,34 +66,31 @@ public class Startup
                 IncidentDetections = _configuration["Redis:KeyPrefix:IncidentDetections"]
             };
         });
-
         services.AddSingleton<DetectionCacheDbContext>();
 
-        services.AddHealthChecks()
-            .AddCheck<DetectionCacheDbHealthCheck>("detectioncachedb_ping");
-
-
-        /******* [3] Repositories ********/
-        /******* [3.1] TrafficAnalyticsDB Repositories ********/
-        services.AddScoped(typeof(IDailySummaryRepository), typeof(DailySummaryRepository));
-        services.AddScoped(typeof(IAlertRepository), typeof(AlertRepository));
-
-        /******* [3.2] DetectionCacheDB Repositories ********/
+        // Repositories
         services.AddScoped(typeof(IDetectionCacheRepository), typeof(DetectionCacheRepository));
 
-        /******* [4] Services ********/
+        // ===============================
+        // Business Layer (Services)
+        // ===============================
         services.AddScoped(typeof(ITrafficAnalyticsService), typeof(TrafficAnalyticsService));
 
-        /******* [5] AutoMapper ********/
+        // ===============================
+        // AutoMapper (object-object mapping)
+        // ===============================
         services.AddAutoMapper(typeof(TrafficAnalyticsStoreProfile));
 
-        /******* [6] Publishers ********/
+        // ===============================
+        // Message Layer (MassTransit with RabbitMQ)
+        // ===============================
+        // Publishers
         services.AddScoped(typeof(ITrafficCongestionPublisher), typeof(TrafficCongestionPublisher));
         services.AddScoped(typeof(ITrafficIncidentPublisher), typeof(TrafficIncidentPublisher));
         services.AddScoped(typeof(ITrafficSummaryPublisher), typeof(TrafficSummaryPublisher));
         services.AddScoped(typeof(IAnalyticsLogPublisher), typeof(AnalyticsLogPublisher));
 
-        /******* [7] Consumers ********/
+        // Consumers
         services.AddScoped<VehicleCountConsumer>();
         services.AddScoped<EmergencyVehicleDetectionConsumer>();
         services.AddScoped<PublicTransportDetectionConsumer>();
@@ -96,10 +98,12 @@ public class Startup
         services.AddScoped<CyclistCountConsumer>();
         services.AddScoped<IncidentDetectionConsumer>();
 
-        /******* [8] MassTransit ********/
+        // MassTransit Setup
         services.AddTrafficAnalyticsMassTransit(_configuration);
 
-        /******* [9] Jwt Config ********/
+        // ===============================
+        // JWT Authentication
+        // ===============================
         var jwtSettings = _configuration.GetSection("Jwt");
         var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]);
 
@@ -119,10 +123,12 @@ public class Startup
                 };
             });
 
-        /******* [10] CORS Policy ********/
+        // ===============================
+        // CORS Policy
+        // ===============================
         var allowedOrigins = _configuration["Cors:AllowedOrigins"]?.Split(",") ?? Array.Empty<string>();
-        var allowedMethods = _configuration["Cors:AllowedMethods"]?.Split(",") ?? new[] { "GET","POST","PUT","DELETE","PATCH" };
-        var allowedHeaders = _configuration["Cors:AllowedHeaders"]?.Split(",") ?? new[] { "Content-Type","Authorization" };
+        var allowedMethods = _configuration["Cors:AllowedMethods"]?.Split(",") ?? new[] { "GET", "POST", "PUT", "PATCH", "DELETE" };
+        var allowedHeaders = _configuration["Cors:AllowedHeaders"]?.Split(",") ?? new[] { "Content-Type", "Authorization" };
 
         services.AddCors(options =>
         {
@@ -134,18 +140,26 @@ public class Startup
             });
         });
 
-        /******* [11] Controllers ********/
+        // ===============================
+        // Controllers
+        // ===============================
         services.AddControllers()
             .AddJsonOptions(options =>
-            {
-                options.JsonSerializerOptions.PropertyNamingPolicy = null;
-            });
+                options.JsonSerializerOptions.PropertyNamingPolicy = null);
         services.AddEndpointsApiExplorer();
 
-        /******* [12] Swagger ********/
+        // ===============================
+        // Swagger (API Documentation)
+        // ===============================
         services.AddSwaggerGen(c =>
         {
-            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Traffic Analytics Service", Version = "v2.0" });
+            c.SwaggerDoc("v1", new OpenApiInfo
+            {
+                Title = "Traffic Analytics Service",
+                Version = "v3.0",
+                Description = "Aggregates, analyzes, and publishes traffic statistics and congestion data across all intersections."
+            });
+
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 In = ParameterLocation.Header,
@@ -166,7 +180,7 @@ public class Startup
                             Id = "Bearer"
                         }
                     },
-                    new string[] { }
+                    Array.Empty<string>()
                 }
             });
         });
@@ -174,6 +188,9 @@ public class Startup
 
     public void Configure(WebApplication app, IWebHostEnvironment env)
     {
+        // ===============================
+        // Swagger UI
+        // ===============================
         if (env.IsDevelopment() || env.IsProduction())
         {
             app.UseSwagger();
@@ -184,15 +201,18 @@ public class Startup
             });
         }
 
+        // ===============================
+        // Core Middleware
+        // ===============================
         app.UseHttpsRedirection();
-
         app.UseMiddleware<ExceptionMiddleware>();
-
         app.UseCors("AllowFrontend");
-
         app.UseAuthentication();
         app.UseAuthorization();
 
+        // ===============================
+        // Endpoints
+        // ===============================
         app.MapControllers();
 
         app.Run();

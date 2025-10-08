@@ -1,6 +1,4 @@
-
 using IntersectionControllerStore.Middleware;
-
 using IntersectionControllerStore.Business.TrafficConfig;
 using IntersectionControllerStore.Business.TrafficLight;
 using IntersectionControllerStore.Business.Intersection;
@@ -15,11 +13,14 @@ using TrafficLightCacheData;
 using DetectionCacheData;
 using IntersectionControllerStore.Failover;
 using DetectionCacheData.Settings;
-using DetectionCacheData.Healthchecks;
 using TrafficLightCacheData.Settings;
-using TrafficLightCacheData.Healthchecks;
 using TrafficLightCacheData.Repositories;
 using DetectionCacheData.Repositories;
+using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using IntersectionControllerStore.Domain;
 
 namespace IntersectionControllerStore;
 
@@ -34,7 +35,20 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
-        /******* [1] Redis Config ********/
+        // ===============================
+        // Intersection Context
+        // ===============================
+        services.AddSingleton(sp =>
+        {
+            var id = int.Parse(_configuration["INTERSECTION:ID"] ?? throw new InvalidOperationException("Intersection Id missing"));
+            var name = _configuration["INTERSECTION:NAME"] ?? "Unknown";
+            return new IntersectionContext(id, name);
+        });
+
+        // ===============================
+        // Data Layer (Redis - TrafficLightCacheDB)
+        // ===============================
+        // Db Context
         services.Configure<TrafficLightCacheDbSettings>(options =>
         {
             options.Host = _configuration["Redis:Host"];
@@ -54,11 +68,15 @@ public class Startup
                 LastCoordinatorSync = _configuration["Redis:KeyPrefix:LastCoordinatorSync"]
             };
         });
+        services.AddSingleton<TrafficLightCacheDbContext>();
 
+        // Repositories
+        services.AddScoped(typeof(ITrafficLightCacheRepository), typeof(TrafficLightCacheRepository));
 
-        services.AddHealthChecks()
-            .AddCheck<TrafficLightCacheDbHealthCheck>("trafficlightcachedb_ping");
-
+        // ===============================
+        // Data Layer (Redis - DetectionCacheDB)
+        // ===============================
+        // Db Context
         services.Configure<DetectionCacheDbSettings>(options =>
         {
             options.Host = _configuration["Redis:Host"];
@@ -75,46 +93,45 @@ public class Startup
                 IncidentDetections = _configuration["Redis:KeyPrefix:IncidentDetections"]
             };
         });
-
         services.AddSingleton<DetectionCacheDbContext>();
 
-        services.AddHealthChecks()
-            .AddCheck<DetectionCacheDbHealthCheck>("detectioncachedb_ping");
-
-        /******* [2] Repositories ********/
-        /******* [2.1] DetectionCacheDB Repositories ********/
+        // Repositories
         services.AddScoped(typeof(IDetectionCacheRepository), typeof(DetectionCacheRepository));
 
-        /******* [2.2] TrafficLightCacheDB Repositories ********/
-        services.AddScoped(typeof(ITrafficLightCacheRepository), typeof(TrafficLightCacheRepository));
-
-        /******* [3] Services ********/
+        // ===============================
+        // Business Layer (Services)
+        // ===============================
         services.AddScoped(typeof(ITrafficConfigurationService), typeof(TrafficConfigurationService));
         services.AddScoped(typeof(ITrafficLightService), typeof(TrafficLightService));
         services.AddScoped(typeof(IIntersectionService), typeof(IntersectionService));
         services.AddScoped(typeof(IPriorityManager), typeof(PriorityManager));
         services.AddScoped(typeof(ICommandLogService), typeof(CommandLogService));
         services.AddScoped(typeof(ITrafficLightCoordinatorService), typeof(TrafficLightCoordinatorService));
-
-        /******* [4] Failover ********/
         services.AddScoped(typeof(IFailoverService), typeof(FailoverService));
 
-        /******* [5] AutoMapper ********/
+        // ===============================
+        // AutoMapper (object-object mapping)
+        // ===============================
         services.AddAutoMapper(typeof(IntersectionControllerStoreProfile));
 
-        /******* [6] Publishers ********/
+        // ===============================
+        // Message Layer (MassTransit with RabbitMQ)
+        // ===============================
+        // Publishers
         services.AddScoped(typeof(IPriorityPublisher), typeof(PriorityPublisher));
         services.AddScoped(typeof(ITrafficLightControlPublisher), typeof(TrafficLightControlPublisher));
         services.AddScoped(typeof(ITrafficLogPublisher), typeof(TrafficLogPublisher));
 
-        /******* [7] Consumers ********/
+        // Consumers
         services.AddScoped<TrafficLightUpdateConsumer>();
         services.AddScoped<SensorDataConsumer>();
 
-        /******* [8] MassTransit ********/
+        // MassTransit Setup
         services.AddIntersectionControllerMassTransit(_configuration);
 
-        /******* [9] Jwt Config ********/
+        // ===============================
+        // JWT (Authentication & Authorization)
+        // ===============================
         var jwtSettings = _configuration.GetSection("Jwt");
         var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]);
 
@@ -134,10 +151,12 @@ public class Startup
                 };
             });
 
-        /******* [10] CORS Policy ********/
+        // ===============================
+        // CORS Policy
+        // ===============================
         var allowedOrigins = _configuration["Cors:AllowedOrigins"]?.Split(",") ?? Array.Empty<string>();
-        var allowedMethods = _configuration["Cors:AllowedMethods"]?.Split(",") ?? new[] { "GET","POST","PUT","PATCH","DELETE" };
-        var allowedHeaders = _configuration["Cors:AllowedHeaders"]?.Split(",") ?? new[] { "Content-Type","Authorization" };
+        var allowedMethods = _configuration["Cors:AllowedMethods"]?.Split(",") ?? new[] { "GET", "POST", "PUT", "PATCH", "DELETE" };
+        var allowedHeaders = _configuration["Cors:AllowedHeaders"]?.Split(",") ?? new[] { "Content-Type", "Authorization" };
 
         services.AddCors(options =>
         {
@@ -149,14 +168,26 @@ public class Startup
             });
         });
 
-        /******* [11] Controllers ********/
+        // ===============================
+        // Controllers
+        // ===============================
         services.AddControllers()
-            .AddJsonOptions(opts => opts.JsonSerializerOptions.PropertyNamingPolicy = null);
+            .AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
+        services.AddEndpointsApiExplorer();
 
-        /******* [12] Swagger ********/
+        // ===============================
+        // Swagger (API Documentation)
+        // ===============================
+        var intersectionName = _configuration["INTERSECTION:NAME"] ?? "Unknown Intersection";
         services.AddSwaggerGen(c =>
         {
-            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Intersection Controller Service", Version = "v2.0" });
+            c.SwaggerDoc("v1", new OpenApiInfo
+            {
+                Title = $"Intersection Controller Service – {intersectionName}",
+                Version = "v3.0",
+                Description = $"Controls and coordinates traffic lights for intersection '{intersectionName}'."
+            });
+
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 In = ParameterLocation.Header,
@@ -185,25 +216,33 @@ public class Startup
 
     public void Configure(WebApplication app, IWebHostEnvironment env)
     {
+        var intersectionName = _configuration["INTERSECTION:NAME"] ?? "Unknown Intersection";
+
+        // ===============================
+        // Swagger UI
+        // ===============================
         if (env.IsDevelopment() || env.IsProduction())
         {
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Intersection Controller Service");
-                c.DocumentTitle = "Intersection Controller Service";
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", $"Intersection Controller – {intersectionName}");
+                c.DocumentTitle = $"Intersection Controller – {intersectionName}";
             });
         }
 
+        // ===============================
+        // Core Middleware
+        // ===============================
         app.UseHttpsRedirection();
-
         app.UseMiddleware<ExceptionMiddleware>();
-
         app.UseCors("AllowFrontend");
-
         app.UseAuthentication();
         app.UseAuthorization();
 
+        // ===============================
+        // Endpoints
+        // ===============================
         app.MapControllers();
 
         app.Run();

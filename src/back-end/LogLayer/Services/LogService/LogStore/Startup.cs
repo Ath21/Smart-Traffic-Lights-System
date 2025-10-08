@@ -11,8 +11,6 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using LogData.Repositories.Failover;
-using LogData.Healthchecks;
-using LogData.Repositories;
 
 namespace LogStore;
 
@@ -27,7 +25,10 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
-        /******* [1] MongoDb Config ********/
+        // ===============================
+        // Data Layer (MongoDB - LogDB)
+        // ===============================
+        // Db Context
         services.Configure<LogDbSettings>(options =>
         {
             options.ConnectionString = _configuration["Mongo:ConnectionString"];
@@ -39,24 +40,26 @@ public class Startup
                 FailoverLogs = _configuration["Mongo:Collections:FailoverLogs"]
             };
         });
-
         services.AddSingleton<LogDbContext>();
 
-        services.AddHealthChecks()
-            .AddCheck<LogDbHealthCheck>("logdb_ping");
-
-        /******* [2] Repositories ********/
+        // Repositories
         services.AddScoped(typeof(IAuditLogRepository), typeof(AuditLogRepository));
         services.AddScoped(typeof(IErrorLogRepository), typeof(ErrorLogRepository));
         services.AddScoped(typeof(IFailoverLogRepository), typeof(FailoverLogRepository));
 
-        /******* [3] Services ********/
+        // ===============================
+        // Business Layer (Services)
+        // ===============================
         services.AddScoped(typeof(ILogService), typeof(LogService));
 
-        /******* [4] AutoMapper ********/
+        // ===============================
+        // AutoMapper (object-object mapping)
+        // ===============================
         services.AddAutoMapper(typeof(LogStoreProfile));
 
-        /******* [5] Jwt Config ********/
+        // ===============================
+        // JWT (Authentication & Authorization)
+        // ===============================
         var jwtSettings = _configuration.GetSection("Jwt");
         var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]);
 
@@ -76,7 +79,10 @@ public class Startup
                 };
             });
 
-        /******* [6] Consumers ********/
+        // ===============================
+        // Message Layer (MassTransit with RabbitMQ)
+        // ===============================
+        // Consumers
         services.AddScoped<UserErrorLogConsumer>();
         services.AddScoped<UserAuditLogConsumer>();
         services.AddScoped<UserFailoverLogConsumer>();
@@ -87,10 +93,12 @@ public class Startup
         services.AddScoped<SensorAuditLogConsumer>();
         services.AddScoped<SensorFailoverLogConsumer>();
 
-        /******* [7] MassTransit ********/
+        // MassTransit Setup
         services.AddLogServiceMassTransit(_configuration);
 
-        /******* [8] CORS Policy ********/
+        // ===============================
+        // CORS Policy
+        // ===============================
         var allowedOrigins = _configuration["Cors:AllowedOrigins"]?.Split(",") ?? Array.Empty<string>();
         var allowedMethods = _configuration["Cors:AllowedMethods"]?.Split(",") ?? new[] { "GET", "POST", "PUT", "PATCH", "DELETE" };
         var allowedHeaders = _configuration["Cors:AllowedHeaders"]?.Split(",") ?? new[] { "Content-Type", "Authorization" };
@@ -105,15 +113,19 @@ public class Startup
             });
         });
 
-        /******* [9] Controllers ********/
+        // ===============================
+        // Controllers
+        // ===============================
         services.AddControllers()
             .AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
         services.AddEndpointsApiExplorer();
 
-        /******* [10] Swagger ********/
+        // ===============================
+        // Swagger (API Documentation)
+        // ===============================
         services.AddSwaggerGen(c =>
         {
-            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Log Service", Version = "v2.0" });
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Log Service", Version = "v3.0" });
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 In = ParameterLocation.Header,
@@ -143,7 +155,7 @@ public class Startup
     public void Configure(WebApplication app, IWebHostEnvironment env)
     {
         // ===============================
-        // Swagger (enabled in Dev/Prod)
+        // Swagger UI
         // ===============================
         if (env.IsDevelopment() || env.IsProduction())
         {
@@ -172,13 +184,7 @@ public class Startup
         // ===============================
         // Endpoints
         // ===============================
-        app.UseEndpoints(endpoints =>
-        {
-            endpoints.MapControllers();
-
-            // Kubernetes & internal health probes
-            endpoints.MapHealthChecks("/log_service/health");  // <-- leading slash is required
-        });
+        app.MapControllers();
 
         app.Run();
     }

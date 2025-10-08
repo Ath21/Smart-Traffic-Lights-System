@@ -1,27 +1,23 @@
 using System.Text;
 using DetectionCacheData;
-using DetectionCacheData.Healthchecks;
 using DetectionCacheData.Repositories;
+using DetectionCacheData.Settings;
 using DetectionData;
-using DetectionData.Healthchecks;
 using DetectionData.Repositories.Cyclist;
 using DetectionData.Repositories.EmergencyVehicle;
 using DetectionData.Repositories.Incident;
 using DetectionData.Repositories.Pedestrian;
 using DetectionData.Repositories.PublicTransport;
 using DetectionData.Repositories.Vehicle;
-using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using SensorStore.Business;
 using SensorStore.Domain;
 using SensorStore.Middleware;
-using SensorStore.Publishers;
 using SensorStore.Publishers.Count;
 using SensorStore.Publishers.Logs;
 using SensorStore.Workers;
-
 
 namespace SensorStore;
 
@@ -36,7 +32,9 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
-        /******* Intersection Context ********/
+        // ===============================
+        // Intersection Context
+        // ===============================
         services.AddSingleton(sp =>
         {
             var id = int.Parse(_configuration["INTERSECTION:ID"] ?? throw new InvalidOperationException("Intersection Id missing"));
@@ -44,8 +42,10 @@ public class Startup
             return new IntersectionContext(id, name);
         });
 
-        /******* [1] MongoDB Config ********/
-
+        // ===============================
+        // Data Layer (MongoDB - DetectionDB)
+        // ===============================
+        // Db Context
         services.Configure<DetectionDbSettings>(options =>
         {
             options.ConnectionString = _configuration["Mongo:ConnectionString"];
@@ -60,14 +60,20 @@ public class Startup
                 Incident = _configuration["Mongo:Collections:Incident"]
             };
         });
-
         services.AddSingleton<DetectionDbContext>();
 
-        services.AddHealthChecks()
-            .AddCheck<DetectionDbHealthCheck>("detectiondb_ping");
+        // Repositories
+        services.AddScoped(typeof(IVehicleCountRepository), typeof(VehicleCountRepository));
+        services.AddScoped(typeof(IPedestrianCountRepository), typeof(PedestrianCountRepository));
+        services.AddScoped(typeof(ICyclistCountRepository), typeof(CyclistCountRepository));
+        services.AddScoped(typeof(IEmergencyVehicleDetectionRepository), typeof(EmergencyVehicleDetectionRepository));
+        services.AddScoped(typeof(IPublicTransportDetectionRepository), typeof(PublicTransportDetectionRepository));
+        services.AddScoped(typeof(IIncidentDetectionRepository), typeof(IncidentDetectionRepository));
 
-
-        /******* [2] Redis Config ********/
+        // ===============================
+        // Data Layer (Redis - DetectionCacheDB)
+        // ===============================
+        // Db Context
         services.Configure<DetectionCacheDbSettings>(options =>
         {
             options.Host = _configuration["Redis:Host"];
@@ -84,41 +90,39 @@ public class Startup
                 IncidentDetections = _configuration["Redis:KeyPrefix:IncidentDetections"]
             };
         });
-
         services.AddSingleton<DetectionCacheDbContext>();
 
-        services.AddHealthChecks()
-            .AddCheck<DetectionCacheDbHealthCheck>("detectioncachedb_ping");
-
-        /******* [3] AutoMapper ********/
-        services.AddAutoMapper(typeof(SensorStoreProfile));
-
-        /******* [3] Repositories ********/
-        /******* [3.1] DetectionDB Repositories ********/
-        services.AddScoped(typeof(IVehicleCountRepository), typeof(VehicleCountRepository));
-        services.AddScoped(typeof(IPedestrianCountRepository), typeof(PedestrianCountRepository));
-        services.AddScoped(typeof(ICyclistCountRepository), typeof(CyclistCountRepository));
-        services.AddScoped(typeof(IEmergencyVehicleDetectionRepository), typeof(EmergencyVehicleDetectionRepository));
-        services.AddScoped(typeof(IPublicTransportDetectionRepository), typeof(PublicTransportDetectionRepository));
-        services.AddScoped(typeof(IIncidentDetectionRepository), typeof(IncidentDetectionRepository));
-
-        /******* [3.2] DetectionCacheDB Repositories ********/
+        // Repositories
         services.AddScoped(typeof(IDetectionCacheRepository), typeof(DetectionCacheRepository));
 
-        /******* [4] Services ********/
+        // ===============================
+        // Business Layer (Services)
+        // ===============================
         services.AddScoped(typeof(ISensorCountService), typeof(SensorCountService));
 
-        /******* [5] Workers ********/
+        // ===============================
+        // AutoMapper (object-object mapping)
+        // ===============================
+        services.AddAutoMapper(typeof(SensorStoreProfile));
+
+        // ===============================
+        // Workers (Virtual Traffic Sensor)
+        // ===============================
         services.AddHostedService<TrafficSensorWorker>();
 
-        /******* [67] Publishers ********/
+        // ===============================
+        // Message Layer (MassTransit with RabbitMQ)
+        // ===============================
+        // Publishers
         services.AddScoped(typeof(ISensorCountPublisher), typeof(SensorCountPublisher));
         services.AddScoped(typeof(ISensorLogPublisher), typeof(SensorLogPublisher));
 
-        /******* [6] MassTransit ********/
+        // MassTransit Setup
         services.AddSensorServiceMassTransit(_configuration);
 
-        /******* [8] Jwt Config ********/
+        // ===============================
+        // JWT (Authentication & Authorization)
+        // ===============================
         var jwtSettings = _configuration.GetSection("Jwt");
         var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]);
 
@@ -138,10 +142,12 @@ public class Startup
                 };
             });
 
-        /******* [9] CORS Policy ********/
+        // ===============================
+        // CORS Policy
+        // ===============================
         var allowedOrigins = _configuration["Cors:AllowedOrigins"]?.Split(",") ?? Array.Empty<string>();
-        var allowedMethods = _configuration["Cors:AllowedMethods"]?.Split(",") ?? new[] { "GET","POST","PUT","PATCH","DELETE" };
-        var allowedHeaders = _configuration["Cors:AllowedHeaders"]?.Split(",") ?? new[] { "Content-Type","Authorization" };
+        var allowedMethods = _configuration["Cors:AllowedMethods"]?.Split(",") ?? new[] { "GET", "POST", "PUT", "PATCH", "DELETE" };
+        var allowedHeaders = _configuration["Cors:AllowedHeaders"]?.Split(",") ?? new[] { "Content-Type", "Authorization" };
 
         services.AddCors(options =>
         {
@@ -153,14 +159,27 @@ public class Startup
             });
         });
 
-        /******* [10] Controllers ********/
+        // ===============================
+        // Controllers
+        // ===============================
         services.AddControllers()
-            .AddJsonOptions(opts => opts.JsonSerializerOptions.PropertyNamingPolicy = null);
+            .AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
+        services.AddEndpointsApiExplorer();
 
-        /******* [11] Swagger ********/
+        // ===============================
+        // Swagger (API Documentation)
+        // ===============================
+        var intersectionName = _configuration["INTERSECTION:NAME"] ?? "Unknown Intersection";
+
         services.AddSwaggerGen(c =>
         {
-            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Sensor Service", Version = "v3.0" });
+            c.SwaggerDoc("v1", new OpenApiInfo
+            {
+                Title = $"Sensor Service – {intersectionName}",
+                Version = "v3.0",
+                Description = $"Virtual traffic sensors that publish flow data (vehicle, pedestrian, cyclist) for intersection '{intersectionName}'."
+            });
+
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 In = ParameterLocation.Header,
@@ -189,13 +208,18 @@ public class Startup
 
     public void Configure(WebApplication app, IWebHostEnvironment env)
     {
+        var intersectionName = _configuration["INTERSECTION:NAME"] ?? "Unknown Intersection";
+
+        // ===============================
+        // Swagger UI
+        // ===============================
         if (env.IsDevelopment() || env.IsProduction())
         {
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Sensor Service");
-                c.DocumentTitle = "Sensor Service";
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", $"Sensor Service – {intersectionName}");
+                c.DocumentTitle = $"Sensor Service – {intersectionName}";
             });
         }
 
@@ -203,26 +227,16 @@ public class Startup
         // Core Middleware
         // ===============================
         app.UseHttpsRedirection();
-
         app.UseMiddleware<ExceptionMiddleware>();
-
         app.UseRouting();
-
         app.UseCors("AllowFrontend");
-
         app.UseAuthentication();
         app.UseAuthorization();
 
         // ===============================
         // Endpoints
         // ===============================
-        app.UseEndpoints(endpoints =>
-        {
-            endpoints.MapControllers();
-
-            // Kubernetes & internal health probes
-            endpoints.MapHealthChecks("/sensor_service/health");  // <-- leading slash is required
-        });
+        app.MapControllers();
 
         app.Run();
     }

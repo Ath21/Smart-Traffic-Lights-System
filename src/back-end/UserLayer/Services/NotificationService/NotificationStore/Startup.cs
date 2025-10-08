@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NotificationData;
+using NotificationData.Repositories.DeliveryLogs;
+using NotificationData.Repositories.Notifications;
+using NotificationData.Settings;
 using NotificationStore.Business.Email;
 using NotificationStore.Business.Notify;
 using NotificationStore.Consumers;
@@ -10,9 +13,6 @@ using NotificationStore.Middleware;
 using NotificationStore.Models;
 using NotificationStore.Publishers.Logs;
 using NotificationStore.Publishers.Notifications;
-using NotificationData.Repositories.DeliveryLogs;
-using NotificationData.Repositories.Notifications;
-using NotificationData.Settings;
 
 namespace NotificationStore;
 
@@ -27,10 +27,10 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
-        /******* [1] MongoDb Config ********/
-        /******************************************
-         * [1] MongoDB Configuration
-         ******************************************/
+        // ===============================
+        // Data Layer (MongoDB - NotificationDB)
+        // ===============================
+        // Db Context
         services.Configure<NotificationDbSettings>(options =>
         {
             options.ConnectionString = _configuration["Mongo:ConnectionString"];
@@ -41,30 +41,16 @@ public class Startup
                 DeliveryLogs = _configuration["Mongo:Collections:DeliveryLogs"]
             };
         });
-
         services.AddSingleton<NotificationDbContext>();
 
-        /******************************************
-         * [2] Repositories
-         ******************************************/
-        services.AddScoped<INotificationRepository>(provider =>
-        {
-            var context = provider.GetRequiredService<NotificationDbContext>();
-            return new NotificationRepository(context.Notifications);
-        });
+        // Repositories
+        services.AddScoped(typeof(INotificationRepository), typeof(NotificationRepository));
+        services.AddScoped(typeof(IDeliveryLogRepository), typeof(DeliveryLogRepository));
 
-        services.AddScoped<IDeliveryLogRepository>(provider =>
-        {
-            var context = provider.GetRequiredService<NotificationDbContext>();
-            return new DeliveryLogRepository(context.DeliveryLogs);
-        });
-
-        /******************************************
-         * [3] Health Checks
-         ******************************************/
-        services.AddHealthChecks()
-            .AddCheck<NotificationDbHealthCheck>("notificationdb_ping");
-        /******* [3] Services ********/
+        // ===============================
+        // Business Layer (Services)
+        // ===============================
+        // Email Service
         services.Configure<EmailSettings>(options =>
         {
             options.SmtpServer = _configuration["Email:SmtpServer"];
@@ -74,26 +60,35 @@ public class Startup
             options.Username = _configuration["Email:Username"];
             options.Password = _configuration["Email:Password"];
         });
-        services.AddScoped<IEmailService, EmailService>();
-        services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped(typeof(IEmailService), typeof(EmailService));
 
-        /******* [4] AutoMapper ********/
+        // Notification Service
+        services.AddScoped(typeof(INotificationService), typeof(NotificationService));
+
+        // ===============================
+        // AutoMapper
+        // ===============================
         services.AddAutoMapper(typeof(NotificationStoreProfile));
 
-        /******* [5] Publishers ********/
-        services.AddScoped<INotificationPublisher, NotificationPublisher>();
-        services.AddScoped<INotificationLogPublisher, NotificationLogPublisher>();
+        // ===============================
+        // Message Layer (MassTransit with RabbitMQ)
+        // ===============================
+        // Publishers
+        services.AddScoped(typeof(INotificationPublisher), typeof(NotificationPublisher));
+        services.AddScoped(typeof(INotificationLogPublisher), typeof(NotificationLogPublisher));
 
-        /******* [6] Consumers ********/
+        // Consumers
         services.AddScoped<NotificationRequestConsumer>();
         services.AddScoped<TrafficIncidentConsumer>();
         services.AddScoped<TrafficCongestionConsumer>();
         services.AddScoped<TrafficSummaryConsumer>();
 
-        /******* [7] MassTransit ********/
+        // MassTransit Setup
         services.AddNotificationServiceMassTransit(_configuration);
 
-        /******* [8] Jwt Config ********/
+        // ===============================
+        // JWT Authentication
+        // ===============================
         var jwtSettings = _configuration.GetSection("Jwt");
         var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]);
 
@@ -113,10 +108,12 @@ public class Startup
                 };
             });
 
-        /******* [9] CORS Policy ********/
+        // ===============================
+        // CORS Policy
+        // ===============================
         var allowedOrigins = _configuration["Cors:AllowedOrigins"]?.Split(",") ?? Array.Empty<string>();
-        var allowedMethods = _configuration["Cors:AllowedMethods"]?.Split(",") ?? new[] { "GET","POST","PUT","DELETE","PATCH" };
-        var allowedHeaders = _configuration["Cors:AllowedHeaders"]?.Split(",") ?? new[] { "Content-Type","Authorization" };
+        var allowedMethods = _configuration["Cors:AllowedMethods"]?.Split(",") ?? new[] { "GET", "POST", "PUT", "PATCH", "DELETE" };
+        var allowedHeaders = _configuration["Cors:AllowedHeaders"]?.Split(",") ?? new[] { "Content-Type", "Authorization" };
 
         services.AddCors(options =>
         {
@@ -128,18 +125,25 @@ public class Startup
             });
         });
 
-        /******* [10] Controllers ********/
+        // ===============================
+        // Controllers
+        // ===============================
         services.AddControllers()
-            .AddJsonOptions(options =>
-            {
-                options.JsonSerializerOptions.PropertyNamingPolicy = null;
-            });
+            .AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
         services.AddEndpointsApiExplorer();
 
-        /******* [11] Swagger ********/
+        // ===============================
+        // Swagger (API Documentation)
+        // ===============================
         services.AddSwaggerGen(c =>
         {
-            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Notification Service", Version = "v2.0" });
+            c.SwaggerDoc("v1", new OpenApiInfo
+            {
+                Title = "Notification Service",
+                Version = "v3.0",
+                Description = "Centralized cloud service for broadcasting alerts, notifications, and email updates across the UNIWA STLS ecosystem."
+            });
+
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 In = ParameterLocation.Header,
@@ -160,7 +164,7 @@ public class Startup
                             Id = "Bearer"
                         }
                     },
-                    new string[] { }
+                    Array.Empty<string>()
                 }
             });
         });
@@ -168,6 +172,9 @@ public class Startup
 
     public void Configure(WebApplication app, IWebHostEnvironment env)
     {
+        // ===============================
+        // Swagger UI
+        // ===============================
         if (env.IsDevelopment() || env.IsProduction())
         {
             app.UseSwagger();
@@ -178,15 +185,18 @@ public class Startup
             });
         }
 
+        // ===============================
+        // Middleware
+        // ===============================
         app.UseHttpsRedirection();
-
         app.UseMiddleware<ExceptionMiddleware>();
-
         app.UseCors("AllowFrontend");
-
         app.UseAuthentication();
         app.UseAuthorization();
 
+        // ===============================
+        // Endpoints
+        // ===============================
         app.MapControllers();
 
         app.Run();

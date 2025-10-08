@@ -4,6 +4,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using UserData;
+using UserData.Repositories.Usr;
+using UserData.Repositories.Ses;
+using UserData.Repositories.Audit;
+using UserData.Settings;
 using UserStore.Business.Password;
 using UserStore.Business.Token;
 using UserStore.Business.Usr;
@@ -12,10 +16,6 @@ using UserStore.Publishers.Logs;
 using UserStore.Publishers.Notifications;
 using UserStore.Consumers.Traffic;
 using UserStore.Consumers.Usr;
-using UserData.Repositories.Usr;
-using UserData.Repositories.Ses;
-using UserData.Repositories.Audit;
-using UserData.Settings;
 
 namespace UserStore;
 
@@ -30,9 +30,10 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
-        /******************************************
-         * [1] SQL Server Configuration
-         ******************************************/
+        // ===============================
+        // Data Layer (MSSQL - UserDB)
+        // ===============================
+        // Db Context
         services.Configure<UserDbSettings>(options =>
         {
             options.ConnectionString = _configuration["MSSQL:ConnectionString"];
@@ -41,28 +42,26 @@ public class Startup
         services.AddDbContext<UserDbContext>(options =>
             options.UseSqlServer(_configuration["MSSQL:ConnectionString"]));
 
-        /******************************************
-         * [2] Repositories
-         ******************************************/
-        services.AddScoped<IUserRepository, UserRepository>();
-        services.AddScoped<ISessionRepository, SessionRepository>();
-        services.AddScoped<IUserAuditRepository, UserAuditRepository>();
+        // Repositories
+        services.AddScoped(typeof(IUserRepository), typeof(UserRepository));
+        services.AddScoped(typeof(ISessionRepository), typeof(SessionRepository));
+        services.AddScoped(typeof(IUserAuditRepository), typeof(UserAuditRepository));
 
-        /******************************************
-         * [3] Health Checks
-         ******************************************/
-        services.AddHealthChecks()
-            .AddCheck<UserDbHealthCheck>("userdb_ping");
-
-        /******* [3] Services ********/
+        // ===============================
+        // Business Layer (Services)
+        // ===============================
         services.AddScoped(typeof(IPasswordHasher), typeof(PasswordHasher));
         services.AddScoped(typeof(ITokenService), typeof(TokenService));
         services.AddScoped(typeof(IUsrService), typeof(UsrService));
 
-        /******* [4] AutoMapper ********/
+        // ===============================
+        // AutoMapper
+        // ===============================
         services.AddAutoMapper(typeof(UserStoreProfile));
 
-        /******* [5] Jwt Config ********/
+        // ===============================
+        // JWT Authentication
+        // ===============================
         var jwtSettings = _configuration.GetSection("Jwt");
         var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]);
 
@@ -82,24 +81,29 @@ public class Startup
                 };
             });
 
-        /******* [6] Publishers ********/
+        // ===============================
+        // Message Layer (MassTransit with RabbitMQ)
+        // ===============================
+        // Publishers
         services.AddScoped(typeof(IUserLogPublisher), typeof(UserLogPublisher));
         services.AddScoped(typeof(IUserNotificationPublisher), typeof(UserNotificationPublisher));
 
-        /******* [7] Consumers ********/
+        // Consumers
         services.AddScoped<UserNotificationAlertConsumer>();
         services.AddScoped<PublicNoticeConsumer>();
         services.AddScoped<TrafficCongestionConsumer>();
         services.AddScoped<TrafficSummaryConsumer>();
         services.AddScoped<TrafficIncidentConsumer>();
 
-        /******* [8] MassTransit ********/
+        // MassTransit Setup
         services.AddUserServiceMassTransit(_configuration);
 
-        /******* [9] CORS Policy ********/
+        // ===============================
+        // CORS Policy
+        // ===============================
         var allowedOrigins = _configuration["Cors:AllowedOrigins"]?.Split(",") ?? Array.Empty<string>();
-        var allowedMethods = _configuration["Cors:AllowedMethods"]?.Split(",") ?? new[] { "GET","POST","PUT","DELETE","PATCH" };
-        var allowedHeaders = _configuration["Cors:AllowedHeaders"]?.Split(",") ?? new[] { "Content-Type","Authorization" };
+        var allowedMethods = _configuration["Cors:AllowedMethods"]?.Split(",") ?? new[] { "GET", "POST", "PUT", "PATCH", "DELETE" };
+        var allowedHeaders = _configuration["Cors:AllowedHeaders"]?.Split(",") ?? new[] { "Content-Type", "Authorization" };
 
         services.AddCors(options =>
         {
@@ -111,18 +115,25 @@ public class Startup
             });
         });
 
-        /******* [10] Controllers ********/
+        // ===============================
+        // Controllers
+        // ===============================
         services.AddControllers()
-            .AddJsonOptions(options =>
-            {
-                options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
-            });
+            .AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
         services.AddEndpointsApiExplorer();
 
-        /******* [11] Swagger ********/
+        // ===============================
+        // Swagger (API Documentation)
+        // ===============================
         services.AddSwaggerGen(c =>
         {
-            c.SwaggerDoc("v1", new OpenApiInfo { Title = "User Service", Version = "v2.0" });
+            c.SwaggerDoc("v1", new OpenApiInfo
+            {
+                Title = "User Service",
+                Version = "v3.0",
+                Description = "Cloud-level user management service responsible for authentication, session tracking, and role-based access across the UNIWA STLS ecosystem."
+            });
+
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 In = ParameterLocation.Header,
@@ -143,7 +154,7 @@ public class Startup
                             Id = "Bearer"
                         }
                     },
-                    new string[] { }
+                    Array.Empty<string>()
                 }
             });
         });
@@ -151,6 +162,9 @@ public class Startup
 
     public void Configure(WebApplication app, IWebHostEnvironment env)
     {
+        // ===============================
+        // Swagger UI
+        // ===============================
         if (env.IsDevelopment() || env.IsProduction())
         {
             app.UseSwagger();
@@ -161,12 +175,20 @@ public class Startup
             });
         }
 
+        // ===============================
+        // Core Middleware
+        // ===============================
         app.UseHttpsRedirection();
         app.UseMiddleware<ExceptionMiddleware>();
         app.UseCors("AllowFrontend");
         app.UseAuthentication();
         app.UseAuthorization();
+
+        // ===============================
+        // Endpoints
+        // ===============================
         app.MapControllers();
+
         app.Run();
     }
 }

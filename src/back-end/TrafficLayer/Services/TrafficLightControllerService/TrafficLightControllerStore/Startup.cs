@@ -1,8 +1,13 @@
 using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using TrafficLightCacheData;
 using TrafficLightCacheData.Repositories;
 using TrafficLightCacheData.Settings;
 using TrafficLightControllerStore.Business;
 using TrafficLightControllerStore.Consumers;
+using TrafficLightControllerStore.Domain;
 using TrafficLightControllerStore.Failover;
 using TrafficLightControllerStore.Middleware;
 using TrafficLightControllerStore.Publishers.Logs;
@@ -20,7 +25,30 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
-        /******* [1] Redis Config (TrafficLight Cache) ********/
+        // ===============================
+        // Intersection Context
+        // ===============================
+        services.AddSingleton(sp =>
+        {
+            var id = int.Parse(_configuration["INTERSECTION:ID"] ?? throw new InvalidOperationException("Intersection Id missing"));
+            var name = _configuration["INTERSECTION:NAME"] ?? "Unknown";
+            return new IntersectionContext(id, name);
+        });
+
+        // ===============================
+        // Traffic Light Context
+        // ===============================
+        services.AddSingleton(sp =>
+        {
+            var id = int.Parse(_configuration["TRAFFIC_LIGHT:ID"] ?? throw new InvalidOperationException("Traffic Light Id missing"));
+            var name = _configuration["TRAFFIC_LIGHT:NAME"] ?? "Unknown";
+            return new TrafficLightContext(id, name);
+        });
+
+        // ===============================
+        // Data Layer (Redis - TrafficLightCacheDB)
+        // ===============================
+        // Db Context
         services.Configure<TrafficLightCacheDbSettings>(options =>
         {
             options.Host = _configuration["Redis:Host"];
@@ -40,30 +68,37 @@ public class Startup
                 LastCoordinatorSync = _configuration["Redis:KeyPrefix:LastCoordinatorSync"]
             };
         });
+        services.AddSingleton<TrafficLightCacheDbContext>();
 
-        /******* [2] Repositories ********/
-        /******* [2.1] TrafficLightCacheDB Repositories ********/
+        // Repositories
         services.AddScoped(typeof(ITrafficLightCacheRepository), typeof(TrafficLightCacheRepository));
 
-        /******* [3] Services ********/
+        // ===============================
+        // Business Layer (Services)
+        // ===============================
         services.AddScoped(typeof(ITrafficLightControlService), typeof(TrafficLightControlService));
-
-        /******* [4] Failover Service ********/
         services.AddScoped(typeof(IFailoverService), typeof(FailoverService));
 
-        /******* [6] Automapper ********/
+        // ===============================
+        // AutoMapper (object-object mapping)
+        // ===============================
         services.AddAutoMapper(typeof(TrafficLightControlStoreProfile));
 
-        /******* [6] Publishers ********/
+        // ===============================
+        // Message Layer (MassTransit with RabbitMQ)
+        // ===============================
+        // Publishers
         services.AddScoped(typeof(ITrafficLogPublisher), typeof(TrafficLogPublisher));
 
-        /******* [7] Consumers ********/
-        services.AddScoped(typeof(TrafficLightControlConsumer));
+        // Consumers
+        services.AddScoped<TrafficLightControlConsumer>();
 
-        /******* [8] MassTransit ********/
+        // MassTransit Setup
         services.AddTrafficLightControlMassTransit(_configuration);
 
-        /******* [9] Jwt Config ********/
+        // ===============================
+        // JWT Authentication
+        // ===============================
         var jwtSettings = _configuration.GetSection("Jwt");
         var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]);
 
@@ -83,10 +118,12 @@ public class Startup
                 };
             });
 
-        /******* [10] CORS Policy ********/
+        // ===============================
+        // CORS Policy
+        // ===============================
         var allowedOrigins = _configuration["Cors:AllowedOrigins"]?.Split(",") ?? Array.Empty<string>();
-        var allowedMethods = _configuration["Cors:AllowedMethods"]?.Split(",") ?? new[] { "GET","POST","PUT","DELETE","PATCH" };
-        var allowedHeaders = _configuration["Cors:AllowedHeaders"]?.Split(",") ?? new[] { "Content-Type","Authorization" };
+        var allowedMethods = _configuration["Cors:AllowedMethods"]?.Split(",") ?? new[] { "GET", "POST", "PUT", "DELETE", "PATCH" };
+        var allowedHeaders = _configuration["Cors:AllowedHeaders"]?.Split(",") ?? new[] { "Content-Type", "Authorization" };
 
         services.AddCors(options =>
         {
@@ -98,14 +135,28 @@ public class Startup
             });
         });
 
-        /******* [11] Controllers ********/
+        // ===============================
+        // Controllers
+        // ===============================
         services.AddControllers()
-            .AddJsonOptions(opts => opts.JsonSerializerOptions.PropertyNamingPolicy = null);
+            .AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
+        services.AddEndpointsApiExplorer();
 
-        /******* [12] Swagger ********/
+        // ===============================
+        // Swagger (API Documentation)
+        // ===============================
+        var intersectionName = _configuration["INTERSECTION:NAME"] ?? "Unknown Intersection";
+        var trafficLightName = _configuration["TRAFFIC_LIGHT:NAME"] ?? "Unknown Traffic Light";
+
         services.AddSwaggerGen(c =>
         {
-            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Traffic Light Controller Service", Version = "v2.0" });
+            c.SwaggerDoc("v1", new OpenApiInfo
+            {
+                Title = $"Traffic Light Controller – {trafficLightName} ({intersectionName})",
+                Version = "v3.0",
+                Description = $"Manages and monitors the state of traffic light '{trafficLightName}' at intersection '{intersectionName}'."
+            });
+
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 In = ParameterLocation.Header,
@@ -134,25 +185,34 @@ public class Startup
 
     public void Configure(WebApplication app, IWebHostEnvironment env)
     {
+        var intersectionName = _configuration["INTERSECTION:NAME"] ?? "Unknown Intersection";
+        var trafficLightName = _configuration["TRAFFIC_LIGHT:NAME"] ?? "Unknown Traffic Light";
+
+        // ===============================
+        // Swagger UI
+        // ===============================
         if (env.IsDevelopment() || env.IsProduction())
         {
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Traffic Light Controller Service");
-                c.DocumentTitle = "Traffic Light Controller Service";
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", $"Traffic Light Controller – {trafficLightName} ({intersectionName})");
+                c.DocumentTitle = $"Traffic Light Controller – {trafficLightName} ({intersectionName})";
             });
         }
 
+        // ===============================
+        // Core Middleware
+        // ===============================
         app.UseHttpsRedirection();
-
         app.UseMiddleware<ExceptionMiddleware>();
-
         app.UseCors("AllowFrontend");
-
         app.UseAuthentication();
         app.UseAuthorization();
 
+        // ===============================
+        // Endpoints
+        // ===============================
         app.MapControllers();
 
         app.Run();

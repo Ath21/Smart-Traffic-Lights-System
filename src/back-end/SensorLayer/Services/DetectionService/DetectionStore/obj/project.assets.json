@@ -906,6 +906,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
+          "Microsoft.Extensions.Diagnostics.HealthChecks": "9.0.0",
           "Microsoft.Extensions.Options": "9.0.6",
           "Newtonsoft.Json": "13.0.3",
           "StackExchange.Redis": "2.9.11"
@@ -921,6 +922,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
+          "Microsoft.Extensions.Diagnostics.HealthChecks": "9.0.0",
           "Microsoft.Extensions.Options": "9.0.6",
           "MongoDB.Driver": "3.4.0"
         },
@@ -931,24 +933,14 @@
           "bin/placeholder/DetectionData.dll": {}
         }
       },
-      "LogMessages/1.0.0": {
+      "Messages/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
         "compile": {
-          "bin/placeholder/LogMessages.dll": {}
+          "bin/placeholder/Messages.dll": {}
         },
         "runtime": {
-          "bin/placeholder/LogMessages.dll": {}
-        }
-      },
-      "SensorMessages/1.0.0": {
-        "type": "project",
-        "framework": ".NETCoreApp,Version=v9.0",
-        "compile": {
-          "bin/placeholder/SensorMessages.dll": {}
-        },
-        "runtime": {
-          "bin/placeholder/SensorMessages.dll": {}
+          "bin/placeholder/Messages.dll": {}
         }
       }
     }
@@ -2384,15 +2376,10 @@
       "path": "../../../Databases/DetectionDB/DetectionData/DetectionData.csproj",
       "msbuildProject": "../../../Databases/DetectionDB/DetectionData/DetectionData.csproj"
     },
-    "LogMessages/1.0.0": {
+    "Messages/1.0.0": {
       "type": "project",
-      "path": "../../../../MessageLayer/LogMessages/LogMessages.csproj",
-      "msbuildProject": "../../../../MessageLayer/LogMessages/LogMessages.csproj"
-    },
-    "SensorMessages/1.0.0": {
-      "type": "project",
-      "path": "../../../../MessageLayer/SensorMessages/SensorMessages.csproj",
-      "msbuildProject": "../../../../MessageLayer/SensorMessages/SensorMessages.csproj"
+      "path": "../../../../MessageLayer/Messages/Messages.csproj",
+      "msbuildProject": "../../../../MessageLayer/Messages/Messages.csproj"
     }
   },
   "projectFileDependencyGroups": {
@@ -2400,15 +2387,14 @@
       "AutoMapper >= 14.0.0",
       "DetectionCacheData >= 1.0.0",
       "DetectionData >= 1.0.0",
-      "LogMessages >= 1.0.0",
       "MassTransit >= 8.5.0",
       "MassTransit.RabbitMQ >= 8.5.0",
+      "Messages >= 1.0.0",
       "Microsoft.AspNetCore.Authentication.JwtBearer >= 9.0.0",
       "Microsoft.AspNetCore.OpenApi >= 9.0.8",
       "Microsoft.EntityFrameworkCore >= 9.0.6",
       "MongoDB.Driver >= 3.4.0",
       "RabbitMQ.Client >= 7.1.2",
-      "SensorMessages >= 1.0.0",
       "StackExchange.Redis >= 2.9.11",
       "Swashbuckle.AspNetCore >= 9.0.1"
     ]
@@ -2438,11 +2424,8 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
-            "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/LogMessages/LogMessages.csproj": {
-              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/LogMessages/LogMessages.csproj"
-            },
-            "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/SensorMessages/SensorMessages.csproj": {
-              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/SensorMessages/SensorMessages.csproj"
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/Messages/Messages.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/Messages/Messages.csproj"
             },
             "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Databases/DetectionCacheDB/DetectionCacheData/DetectionCacheData.csproj": {
               "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Databases/DetectionCacheDB/DetectionCacheData/DetectionCacheData.csproj"
