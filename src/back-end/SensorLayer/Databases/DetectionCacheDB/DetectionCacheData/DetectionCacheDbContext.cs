@@ -5,33 +5,49 @@ namespace DetectionCacheData;
 
 public class DetectionCacheDbContext : IDisposable
 {
-    private readonly ConnectionMultiplexer _connection;
-    public IDatabase Database { get; }
+    private readonly ConnectionMultiplexer _redis;
+    private readonly IDatabase _database;
 
-    public DetectionCacheDbContext(IOptions<DetectionCacheDbSettings> settings)
+    public DetectionCacheDbContext(IOptions<DetectionCacheDbSettings> cacheSettings)
     {
-        var configOptions = new ConfigurationOptions
+        var config = new ConfigurationOptions
         {
-            EndPoints = { $"{settings.Value.Host}:{settings.Value.Port}" },
-            AbortOnConnectFail = false,
-            DefaultDatabase = settings.Value.Database
+            EndPoints = { $"{cacheSettings.Value.Host}:{cacheSettings.Value.Port}" },
+            Password = string.IsNullOrWhiteSpace(cacheSettings.Value.Password) ? null : cacheSettings.Value.Password,
+            DefaultDatabase = cacheSettings.Value.Database,
+            AbortOnConnectFail = false
         };
 
-        if (!string.IsNullOrEmpty(settings.Value.Password))
-            configOptions.Password = settings.Value.Password;
-
-        _connection = ConnectionMultiplexer.Connect(configOptions);
-        Database = _connection.GetDatabase();
+        _redis = ConnectionMultiplexer.Connect(config);
+        _database = _redis.GetDatabase();
     }
 
-    public void Dispose() => _connection.Dispose();
+    public IDatabase Database => _database;
 
+    // ===============================
+    // Basic Operations
+    // ===============================
+    public async Task<bool> SetValueAsync(string key, string value, TimeSpan? expiry = null)
+        => await _database.StringSetAsync(key, value, expiry);
+
+    public async Task<string?> GetValueAsync(string key)
+        => await _database.StringGetAsync(key);
+
+    public async Task<bool> DeleteKeyAsync(string key)
+        => await _database.KeyDeleteAsync(key);
+
+    public async Task<bool> KeyExistsAsync(string key)
+        => await _database.KeyExistsAsync(key);
+
+    // ===============================
+    // Health Check (Ping)
+    // ===============================
     public async Task<bool> CanConnectAsync()
     {
         try
         {
-            var pong = await Database.PingAsync();
-            return pong != TimeSpan.Zero;
+            var result = await _database.PingAsync();
+            return result.TotalMilliseconds >= 0;
         }
         catch
         {
@@ -39,16 +55,8 @@ public class DetectionCacheDbContext : IDisposable
         }
     }
 
-    // 🔹 Helper methods for repositories
-    public async Task SetValueAsync(string key, string value, TimeSpan? expiry = null) =>
-        await Database.StringSetAsync(key, value, expiry);
-
-    public async Task<string?> GetValueAsync(string key) =>
-        await Database.StringGetAsync(key);
-
-    public async Task<long> IncrementAsync(string key, long value = 1) =>
-        await Database.StringIncrementAsync(key, value);
-
-    public async Task<bool> KeyExistsAsync(string key) =>
-        await Database.KeyExistsAsync(key);
+    public void Dispose()
+    {
+        _redis.Dispose();
+    }
 }

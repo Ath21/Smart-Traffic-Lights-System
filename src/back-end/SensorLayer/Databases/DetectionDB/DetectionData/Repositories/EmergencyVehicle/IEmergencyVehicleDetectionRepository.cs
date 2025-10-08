@@ -3,4 +3,8 @@ using DetectionData.Collections.Detection;
 
 namespace DetectionData.Repositories.EmergencyVehicle;
 
-public interface IEmergencyVehicleDetectionRepository : IRepository<EmergencyVehicleDetection> { }
+public interface IEmergencyVehicleDetectionRepository
+{
+    Task<IEnumerable<EmergencyVehicleDetectionCollection>> GetRecentEmergenciesAsync(int intersectionId, int limit = 50);
+    Task InsertAsync(EmergencyVehicleDetectionCollection entity);
+}

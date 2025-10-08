@@ -12,21 +12,21 @@ public class EmergencyVehicleDetectionCollection
 {
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
-    public string EmergencyId { get; set; } = string.Empty;
+    public string? EmergencyId { get; set; } 
 
     [BsonElement("intersection_id")]
-    public int IntersectionId { get; set; } = 0;
+    public int IntersectionId { get; set; } 
 
     [BsonElement("intersection")]
-    public string Intersection { get; set; } = string.Empty;
+    public string? Intersection { get; set; }
 
     [BsonElement("detectedAt")]
-    public DateTime DetectedAt { get; set; } = DateTime.UtcNow;
+    public DateTime DetectedAt { get; set; }
 
     [BsonElement("direction")]
-    public string Direction { get; set; } = string.Empty;
+    public string? Direction { get; set; }
 
-    public string EmergencyVehicleType { get; set; } = string.Empty;
+    public string? EmergencyVehicleType { get; set; }
 }
 
 /*

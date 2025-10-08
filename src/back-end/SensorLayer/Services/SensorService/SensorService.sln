@@ -9,9 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DetectionCacheData", "..\..
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DetectionData", "..\..\Databases\DetectionDB\DetectionData\DetectionData.csproj", "{F0B03B25-E985-42C4-9584-FB6CED2407E4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SensorMessages", "..\..\..\MessageLayer\SensorMessages\SensorMessages.csproj", "{202456D4-1521-404B-B7F9-40D6DE546888}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogMessages", "..\..\..\MessageLayer\LogMessages\LogMessages.csproj", "{CD4A1C35-C136-42D7-875A-0899702A5DE9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Messages", "..\..\..\MessageLayer\Messages\Messages.csproj", "{87EC6307-0E5E-41AC-B643-D69FE18CBE00}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -59,30 +57,18 @@ Global
 		{F0B03B25-E985-42C4-9584-FB6CED2407E4}.Release|x64.Build.0 = Release|Any CPU
 		{F0B03B25-E985-42C4-9584-FB6CED2407E4}.Release|x86.ActiveCfg = Release|Any CPU
 		{F0B03B25-E985-42C4-9584-FB6CED2407E4}.Release|x86.Build.0 = Release|Any CPU
-		{202456D4-1521-404B-B7F9-40D6DE546888}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{202456D4-1521-404B-B7F9-40D6DE546888}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{202456D4-1521-404B-B7F9-40D6DE546888}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{202456D4-1521-404B-B7F9-40D6DE546888}.Debug|x64.Build.0 = Debug|Any CPU
-		{202456D4-1521-404B-B7F9-40D6DE546888}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{202456D4-1521-404B-B7F9-40D6DE546888}.Debug|x86.Build.0 = Debug|Any CPU
-		{202456D4-1521-404B-B7F9-40D6DE546888}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{202456D4-1521-404B-B7F9-40D6DE546888}.Release|Any CPU.Build.0 = Release|Any CPU
-		{202456D4-1521-404B-B7F9-40D6DE546888}.Release|x64.ActiveCfg = Release|Any CPU
-		{202456D4-1521-404B-B7F9-40D6DE546888}.Release|x64.Build.0 = Release|Any CPU
-		{202456D4-1521-404B-B7F9-40D6DE546888}.Release|x86.ActiveCfg = Release|Any CPU
-		{202456D4-1521-404B-B7F9-40D6DE546888}.Release|x86.Build.0 = Release|Any CPU
-		{CD4A1C35-C136-42D7-875A-0899702A5DE9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CD4A1C35-C136-42D7-875A-0899702A5DE9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CD4A1C35-C136-42D7-875A-0899702A5DE9}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{CD4A1C35-C136-42D7-875A-0899702A5DE9}.Debug|x64.Build.0 = Debug|Any CPU
-		{CD4A1C35-C136-42D7-875A-0899702A5DE9}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{CD4A1C35-C136-42D7-875A-0899702A5DE9}.Debug|x86.Build.0 = Debug|Any CPU
-		{CD4A1C35-C136-42D7-875A-0899702A5DE9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CD4A1C35-C136-42D7-875A-0899702A5DE9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CD4A1C35-C136-42D7-875A-0899702A5DE9}.Release|x64.ActiveCfg = Release|Any CPU
-		{CD4A1C35-C136-42D7-875A-0899702A5DE9}.Release|x64.Build.0 = Release|Any CPU
-		{CD4A1C35-C136-42D7-875A-0899702A5DE9}.Release|x86.ActiveCfg = Release|Any CPU
-		{CD4A1C35-C136-42D7-875A-0899702A5DE9}.Release|x86.Build.0 = Release|Any CPU
+		{87EC6307-0E5E-41AC-B643-D69FE18CBE00}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{87EC6307-0E5E-41AC-B643-D69FE18CBE00}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{87EC6307-0E5E-41AC-B643-D69FE18CBE00}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{87EC6307-0E5E-41AC-B643-D69FE18CBE00}.Debug|x64.Build.0 = Debug|Any CPU
+		{87EC6307-0E5E-41AC-B643-D69FE18CBE00}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{87EC6307-0E5E-41AC-B643-D69FE18CBE00}.Debug|x86.Build.0 = Debug|Any CPU
+		{87EC6307-0E5E-41AC-B643-D69FE18CBE00}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{87EC6307-0E5E-41AC-B643-D69FE18CBE00}.Release|Any CPU.Build.0 = Release|Any CPU
+		{87EC6307-0E5E-41AC-B643-D69FE18CBE00}.Release|x64.ActiveCfg = Release|Any CPU
+		{87EC6307-0E5E-41AC-B643-D69FE18CBE00}.Release|x64.Build.0 = Release|Any CPU
+		{87EC6307-0E5E-41AC-B643-D69FE18CBE00}.Release|x86.ActiveCfg = Release|Any CPU
+		{87EC6307-0E5E-41AC-B643-D69FE18CBE00}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

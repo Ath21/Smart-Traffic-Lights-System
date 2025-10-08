@@ -762,6 +762,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
+          "Microsoft.Extensions.Diagnostics.HealthChecks": "9.0.0",
           "Microsoft.Extensions.Options": "9.0.5",
           "MongoDB.Driver": "3.4.0"
         },

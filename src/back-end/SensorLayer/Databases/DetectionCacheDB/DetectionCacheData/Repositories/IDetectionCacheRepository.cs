@@ -1,42 +1,28 @@
-using System;
+using System.Threading.Tasks;
 
 namespace DetectionCacheData.Repositories;
 
 public interface IDetectionCacheRepository
 {
-    // ==============================
-    // VEHICLE
-    // ==============================
-    Task SetVehicleCountAsync(int intersectionId, string intersectionName, int count, double avgSpeed);
-    Task<string?> GetVehicleCountAsync(int intersectionId);
+    // Vehicle Count
+    Task SetVehicleCountAsync(int intersectionId, int count);
+    Task<int> GetVehicleCountAsync(int intersectionId);
 
-    // ==============================
-    // PEDESTRIAN
-    // ==============================
-    Task SetPedestrianCountAsync(int intersectionId, string intersectionName, int count, string direction);
-    Task<string?> GetPedestrianCountAsync(int intersectionId);
+    // Pedestrian Count
+    Task SetPedestrianCountAsync(int intersectionId, int count);
+    Task<int> GetPedestrianCountAsync(int intersectionId);
 
-    // ==============================
-    // CYCLIST
-    // ==============================
-    Task SetCyclistCountAsync(int intersectionId, string intersectionName, int count, string direction);
-    Task<string?> GetCyclistCountAsync(int intersectionId);
+    // Cyclist Count
+    Task SetCyclistCountAsync(int intersectionId, int count);
+    Task<int> GetCyclistCountAsync(int intersectionId);
 
-    // ==============================
-    // EMERGENCY
-    // ==============================
-    Task SetEmergencyDetectedAsync(int intersectionId, string intersectionName, bool detected, string type, int priorityLevel, string direction);
-    Task<string?> GetEmergencyDetectedAsync(int intersectionId);
+    // Emergency / Incident Flags
+    Task SetEmergencyDetectedAsync(int intersectionId, bool detected);
+    Task<bool> GetEmergencyDetectedAsync(int intersectionId);
 
-    // ==============================
-    // PUBLIC TRANSPORT
-    // ==============================
-    Task SetPublicTransportDetectedAsync(int intersectionId, string intersectionName, bool detected, string mode, string direction);
-    Task<string?> GetPublicTransportDetectedAsync(int intersectionId);
+    Task SetIncidentDetectedAsync(int intersectionId, bool detected);
+    Task<bool> GetIncidentDetectedAsync(int intersectionId);
 
-    // ==============================
-    // INCIDENT
-    // ==============================
-    Task SetIncidentDetectedAsync(int intersectionId, string intersectionName, string type, int severity, string description, string direction);
-    Task<string?> GetIncidentDetectedAsync(int intersectionId);
+    Task SetPublicTransportDetectedAsync(int intersectionId, bool detected);
+    Task<bool> GetPublicTransportDetectedAsync(int intersectionId);
 }

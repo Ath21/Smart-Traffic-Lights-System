@@ -5,8 +5,14 @@ using MongoDB.Driver;
 
 namespace DetectionData.Repositories.PublicTransport;
 
-public class PublicTransportDetectionRepository : Repository<PublicTransportDetection>, IPublicTransportDetectionRepository
+public class PublicTransportDetectionRepository : BaseRepository<PublicTransportDetectionCollection>, IPublicTransportDetectionRepository
 {
     public PublicTransportDetectionRepository(DetectionDbContext context)
-        : base(context.PublicTransport) { }
+        : base(context.PublicTransportDetections) { }
+
+    public async Task<IEnumerable<PublicTransportDetectionCollection>> GetByLineAsync(string lineName)
+    {
+        var filter = Builders<PublicTransportDetectionCollection>.Filter.Eq(x => x.LineName, lineName);
+        return await _collection.Find(filter).SortByDescending(x => x.DetectedAt).ToListAsync();
+    }
 }

@@ -1,7 +1,9 @@
 using System.Text;
 using DetectionCacheData;
+using DetectionCacheData.Healthchecks;
 using DetectionCacheData.Repositories;
 using DetectionData;
+using DetectionData.Healthchecks;
 using DetectionData.Repositories.Cyclist;
 using DetectionData.Repositories.EmergencyVehicle;
 using DetectionData.Repositories.Incident;
@@ -43,35 +45,50 @@ public class Startup
         });
 
         /******* [1] MongoDB Config ********/
+
         services.Configure<DetectionDbSettings>(options =>
         {
             options.ConnectionString = _configuration["Mongo:ConnectionString"];
-            options.DatabaseName = _configuration["Mongo:Database"];
-            options.VehicleCountCollection = _configuration["Mongo:Collections:VehicleCount"];
-            options.PedestrianCountCollection = _configuration["Mongo:Collections:PedestrianCount"];
-            options.CyclistCountCollection = _configuration["Mongo:Collections:CyclistCount"];
-            options.EmergencyVehicleCollection = _configuration["Mongo:Collections:Emergency"];
-            options.PublicTransportCollection = _configuration["Mongo:Collections:PublicTransport"];
-            options.IncidentCollection = _configuration["Mongo:Collections:Incident"];
+            options.Database = _configuration["Mongo:Database"];
+            options.Collections = new CollectionsSettings
+            {
+                VehicleCount = _configuration["Mongo:Collections:VehicleCount"],
+                PedestrianCount = _configuration["Mongo:Collections:PedestrianCount"],
+                CyclistCount = _configuration["Mongo:Collections:CyclistCount"],
+                PublicTransport = _configuration["Mongo:Collections:PublicTransport"],
+                EmergencyVehicle = _configuration["Mongo:Collections:EmergencyVehicle"],
+                Incident = _configuration["Mongo:Collections:Incident"]
+            };
         });
+
         services.AddSingleton<DetectionDbContext>();
+
+        services.AddHealthChecks()
+            .AddCheck<DetectionDbHealthCheck>("detectiondb_ping");
+
 
         /******* [2] Redis Config ********/
         services.Configure<DetectionCacheDbSettings>(options =>
         {
             options.Host = _configuration["Redis:Host"];
-            options.Port = int.Parse(_configuration["Redis:Port"] ?? "6379");
+            options.Port = int.Parse(_configuration["Redis:Port"]);
             options.Password = _configuration["Redis:Password"];
-            options.Database = int.Parse(_configuration["Redis:Database"] ?? "0");
-
-            options.KeyPrefix_VehicleCount = _configuration["Redis:KeyPrefix:VehicleCount"];
-            options.KeyPrefix_PedestrianCount = _configuration["Redis:KeyPrefix:PedestrianCount"];
-            options.KeyPrefix_CyclistCount = _configuration["Redis:KeyPrefix:CyclistCount"];
-            options.KeyPrefix_EmergencyDetected = _configuration["Redis:KeyPrefix:EmergencyDetected"];
-            options.KeyPrefix_PublicTransportDetected = _configuration["Redis:KeyPrefix:PublicTransportDetected"];
-            options.KeyPrefix_IncidentDetected = _configuration["Redis:KeyPrefix:IncidentDetected"];
+            options.Database = int.Parse(_configuration["Redis:Database"]);
+            options.KeyPrefix = new KeyPrefixSettings
+            {
+                VehicleCount = _configuration["Redis:KeyPrefix:VehicleCount"],
+                PedestrianCount = _configuration["Redis:KeyPrefix:PedestrianCount"],
+                CyclistCount = _configuration["Redis:KeyPrefix:CyclistCount"],
+                PublicTransportDetections = _configuration["Redis:KeyPrefix:PublicTransportDetections"],
+                EmergencyVehicleDetections = _configuration["Redis:KeyPrefix:EmergencyVehicleDetections"],
+                IncidentDetections = _configuration["Redis:KeyPrefix:IncidentDetections"]
+            };
         });
-        services.AddSingleton<DetectionCacheDbContext>();   
+
+        services.AddSingleton<DetectionCacheDbContext>();
+
+        services.AddHealthChecks()
+            .AddCheck<DetectionCacheDbHealthCheck>("detectioncachedb_ping");
 
         /******* [3] AutoMapper ********/
         services.AddAutoMapper(typeof(SensorStoreProfile));
@@ -182,16 +199,30 @@ public class Startup
             });
         }
 
+        // ===============================
+        // Core Middleware
+        // ===============================
         app.UseHttpsRedirection();
 
         app.UseMiddleware<ExceptionMiddleware>();
+
+        app.UseRouting();
 
         app.UseCors("AllowFrontend");
 
         app.UseAuthentication();
         app.UseAuthorization();
 
-        app.MapControllers();
+        // ===============================
+        // Endpoints
+        // ===============================
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapControllers();
+
+            // Kubernetes & internal health probes
+            endpoints.MapHealthChecks("/sensor_service/health");  // <-- leading slash is required
+        });
 
         app.Run();
     }

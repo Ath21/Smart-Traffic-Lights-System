@@ -3,4 +3,8 @@ using DetectionData.Collections.Count;
 
 namespace DetectionData.Repositories.Pedestrian;
 
-public interface IPedestrianCountRepository : IRepository<PedestrianCount> { }
+public interface IPedestrianCountRepository
+{
+    Task<IEnumerable<PedestrianCountCollection>> GetRecentByIntersectionAsync(int intersectionId, int limit = 100);
+    Task InsertAsync(PedestrianCountCollection entity);
+}

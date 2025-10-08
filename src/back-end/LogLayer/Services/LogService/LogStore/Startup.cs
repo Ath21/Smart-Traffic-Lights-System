@@ -11,6 +11,8 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using LogData.Repositories.Failover;
+using LogData.Healthchecks;
+using LogData.Repositories;
 
 namespace LogStore;
 
@@ -40,11 +42,13 @@ public class Startup
 
         services.AddSingleton<LogDbContext>();
 
+        services.AddHealthChecks()
+            .AddCheck<LogDbHealthCheck>("logdb_ping");
+
         /******* [2] Repositories ********/
-        /******* [2.1] LogDB Repositories ********/
         services.AddScoped(typeof(IAuditLogRepository), typeof(AuditLogRepository));
         services.AddScoped(typeof(IErrorLogRepository), typeof(ErrorLogRepository));
-        services.AddScoped(typeof(IFailoverRepository), typeof(FailoverRepository));
+        services.AddScoped(typeof(IFailoverLogRepository), typeof(FailoverLogRepository));
 
         /******* [3] Services ********/
         services.AddScoped(typeof(ILogService), typeof(LogService));
@@ -88,8 +92,8 @@ public class Startup
 
         /******* [8] CORS Policy ********/
         var allowedOrigins = _configuration["Cors:AllowedOrigins"]?.Split(",") ?? Array.Empty<string>();
-        var allowedMethods = _configuration["Cors:AllowedMethods"]?.Split(",") ?? new[] { "GET","POST","PUT","PATCH","DELETE" };
-        var allowedHeaders = _configuration["Cors:AllowedHeaders"]?.Split(",") ?? new[] { "Content-Type","Authorization" };
+        var allowedMethods = _configuration["Cors:AllowedMethods"]?.Split(",") ?? new[] { "GET", "POST", "PUT", "PATCH", "DELETE" };
+        var allowedHeaders = _configuration["Cors:AllowedHeaders"]?.Split(",") ?? new[] { "Content-Type", "Authorization" };
 
         services.AddCors(options =>
         {
@@ -138,6 +142,9 @@ public class Startup
 
     public void Configure(WebApplication app, IWebHostEnvironment env)
     {
+        // ===============================
+        // Swagger (enabled in Dev/Prod)
+        // ===============================
         if (env.IsDevelopment() || env.IsProduction())
         {
             app.UseSwagger();
@@ -148,16 +155,30 @@ public class Startup
             });
         }
 
+        // ===============================
+        // Core Middleware
+        // ===============================
         app.UseHttpsRedirection();
 
         app.UseMiddleware<ExceptionMiddleware>();
+
+        app.UseRouting();
 
         app.UseCors("AllowFrontend");
 
         app.UseAuthentication();
         app.UseAuthorization();
 
-        app.MapControllers();
+        // ===============================
+        // Endpoints
+        // ===============================
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapControllers();
+
+            // Kubernetes & internal health probes
+            endpoints.MapHealthChecks("/log_service/health");  // <-- leading slash is required
+        });
 
         app.Run();
     }

@@ -18,8 +18,9 @@ using DetectionData.Repositories.Vehicle;
 using DetectionData.Repositories.Pedestrian;
 using DetectionData.Repositories.Cyclist;
 using DetectionCacheData.Repositories;
-using DetectionStore.Publishers.Events;
 using DetectionStore.Domain;
+using DetectionData.Healthchecks;
+using DetectionCacheData.Healthchecks;
 
 namespace DetectionStore;
 
@@ -43,35 +44,51 @@ public class Startup
         });
         
         /******* [1] MongoDB Config ********/
+
         services.Configure<DetectionDbSettings>(options =>
         {
             options.ConnectionString = _configuration["Mongo:ConnectionString"];
             options.Database = _configuration["Mongo:Database"];
-            options.VehicleCollection = _configuration["Mongo:Collections:VehicleCount"];
-            options.PedestrianCollection = _configuration["Mongo:Collections:PedestrianCount"];
-            options.CyclistCollection = _configuration["Mongo:Collections:CyclistCount"];
-            options.EmergencyCollection = _configuration["Mongo:Collections:Emergency"];
-            options.PublicTransportCollection = _configuration["Mongo:Collections:PublicTransport"];
-            options.IncidentCollection = _configuration["Mongo:Collections:Incident"];
+            options.Collections = new CollectionsSettings
+            {
+                VehicleCount = _configuration["Mongo:Collections:VehicleCount"],
+                PedestrianCount = _configuration["Mongo:Collections:PedestrianCount"],
+                CyclistCount = _configuration["Mongo:Collections:CyclistCount"],
+                PublicTransport = _configuration["Mongo:Collections:PublicTransport"],
+                EmergencyVehicle = _configuration["Mongo:Collections:EmergencyVehicle"],
+                Incident = _configuration["Mongo:Collections:Incident"]
+            };
         });
+
         services.AddSingleton<DetectionDbContext>();
+
+        services.AddHealthChecks()
+            .AddCheck<DetectionDbHealthCheck>("detectiondb_ping");
+
 
         /******* [2] Redis Config ********/
         services.Configure<DetectionCacheDbSettings>(options =>
         {
             options.Host = _configuration["Redis:Host"];
-            options.Port = int.Parse(_configuration["Redis:Port"] ?? "6379");
+            options.Port = int.Parse(_configuration["Redis:Port"]);
             options.Password = _configuration["Redis:Password"];
-            options.Database = int.Parse(_configuration["Redis:Database"] ?? "0");
-
-            options.KeyPrefix_VehicleCount = _configuration["Redis:KeyPrefix:VehicleCount"];
-            options.KeyPrefix_PedestrianCount = _configuration["Redis:KeyPrefix:PedestrianCount"];
-            options.KeyPrefix_CyclistCount = _configuration["Redis:KeyPrefix:CyclistCount"];
-            options.KeyPrefix_EmergencyDetected = _configuration["Redis:KeyPrefix:EmergencyDetected"];
-            options.KeyPrefix_PublicTransportDetected = _configuration["Redis:KeyPrefix:PublicTransportDetected"];
-            options.KeyPrefix_IncidentDetected = _configuration["Redis:KeyPrefix:IncidentDetected"];
+            options.Database = int.Parse(_configuration["Redis:Database"]);
+            options.KeyPrefix = new KeyPrefixSettings
+            {
+                VehicleCount = _configuration["Redis:KeyPrefix:VehicleCount"],
+                PedestrianCount = _configuration["Redis:KeyPrefix:PedestrianCount"],
+                CyclistCount = _configuration["Redis:KeyPrefix:CyclistCount"],
+                PublicTransportDetections = _configuration["Redis:KeyPrefix:PublicTransportDetections"],
+                EmergencyVehicleDetections = _configuration["Redis:KeyPrefix:EmergencyVehicleDetections"],
+                IncidentDetections = _configuration["Redis:KeyPrefix:IncidentDetections"]
+            };
         });
+
         services.AddSingleton<DetectionCacheDbContext>();
+
+        services.AddHealthChecks()
+            .AddCheck<DetectionCacheDbHealthCheck>("detectioncachedb_ping");
+
 
         /******* [3] Repositories ********/
         /******* [3.1] DetectionDB Repositories ********/

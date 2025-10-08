@@ -12,13 +12,13 @@ public class PedestrianCountCollection
 {
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
-    public string PedestrianId { get; set; }
+    public string? PedestrianId { get; set; }
 
     [BsonElement("intersection_id")]
     public int IntersectionId { get; set; }
 
     [BsonElement("intersection")]
-    public string Intersection { get; set; }
+    public string? Intersection { get; set; }
 
     [BsonElement("timestamp")]
     public DateTime Timestamp { get; set; }

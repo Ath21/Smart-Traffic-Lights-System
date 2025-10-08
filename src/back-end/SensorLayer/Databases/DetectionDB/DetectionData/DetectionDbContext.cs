@@ -1,8 +1,9 @@
-﻿using Microsoft.Extensions.Options;
-using MongoDB.Bson;
-using MongoDB.Driver;
+﻿using DetectionData.Collections;
 using DetectionData.Collections.Count;
 using DetectionData.Collections.Detection;
+using Microsoft.Extensions.Options;
+using MongoDB.Bson;
+using MongoDB.Driver;
 
 namespace DetectionData;
 
@@ -10,33 +11,38 @@ public class DetectionDbContext
 {
     private readonly IMongoDatabase _database;
 
-    public DetectionDbContext(IOptions<DetectionDbSettings> settings)
+    public DetectionDbContext(IOptions<DetectionDbSettings> detectionDbSettings)
     {
-        var client = new MongoClient(settings.Value.ConnectionString);
-        _database = client.GetDatabase(settings.Value.DatabaseName);
+        var mongoClient = new MongoClient(detectionDbSettings.Value.ConnectionString);
+        _database = mongoClient.GetDatabase(detectionDbSettings.Value.Database);
 
-        VehicleCounts = _database.GetCollection<VehicleCount>(settings.Value.VehicleCountCollection);
-        PedestrianCounts = _database.GetCollection<PedestrianCount>(settings.Value.PedestrianCountCollection);
-        CyclistCounts = _database.GetCollection<CyclistCount>(settings.Value.CyclistCountCollection);
-
-        EmergencyVehicles = _database.GetCollection<EmergencyVehicleDetection>(settings.Value.EmergencyVehicleCollection);
-        Incidents = _database.GetCollection<IncidentDetection>(settings.Value.IncidentCollection);
-        PublicTransport = _database.GetCollection<PublicTransportDetection>(settings.Value.PublicTransportCollection);
+        VehicleCount = _database.GetCollection<VehicleCountCollection>(detectionDbSettings.Value.Collections.VehicleCount);
+        PedestrianCount = _database.GetCollection<PedestrianCountCollection>(detectionDbSettings.Value.Collections.PedestrianCount);
+        CyclistCount = _database.GetCollection<CyclistCountCollection>(detectionDbSettings.Value.Collections.CyclistCount);
+        PublicTransportDetections = _database.GetCollection<PublicTransportDetectionCollection>(detectionDbSettings.Value.Collections.PublicTransport);
+        EmergencyVehicleDetections = _database.GetCollection<EmergencyVehicleDetectionCollection>(detectionDbSettings.Value.Collections.EmergencyVehicle);
+        IncidentDetections = _database.GetCollection<IncidentDetectionCollection>(detectionDbSettings.Value.Collections.Incident);
     }
 
-    public IMongoCollection<VehicleCount> VehicleCounts { get; }
-    public IMongoCollection<PedestrianCount> PedestrianCounts { get; }
-    public IMongoCollection<CyclistCount> CyclistCounts { get; }
+    // ===============================
+    // Mongo Collections
+    // ===============================
+    public IMongoCollection<VehicleCountCollection> VehicleCount { get; }
+    public IMongoCollection<PedestrianCountCollection> PedestrianCount { get; }
+    public IMongoCollection<CyclistCountCollection> CyclistCount { get; }
+    public IMongoCollection<PublicTransportDetectionCollection> PublicTransportDetections { get; }
+    public IMongoCollection<EmergencyVehicleDetectionCollection> EmergencyVehicleDetections { get; }
+    public IMongoCollection<IncidentDetectionCollection> IncidentDetections { get; }
 
-    public IMongoCollection<EmergencyVehicleDetection> EmergencyVehicles { get; }
-    public IMongoCollection<IncidentDetection> Incidents { get; }
-    public IMongoCollection<PublicTransportDetection> PublicTransport { get; }
-
+    // ===============================
+    // Ping Check
+    // ===============================
     public async Task<bool> CanConnectAsync()
     {
         try
         {
-            await _database.RunCommandAsync((Command<BsonDocument>)"{ping:1}");
+            var command = new BsonDocument("ping", 1);
+            await _database.RunCommandAsync<BsonDocument>(command);
             return true;
         }
         catch

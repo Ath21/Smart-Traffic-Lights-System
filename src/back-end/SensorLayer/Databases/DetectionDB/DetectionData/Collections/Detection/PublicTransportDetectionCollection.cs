@@ -12,22 +12,22 @@ public class PublicTransportDetectionCollection
 {
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
-    public string PublicId { get; set; } = string.Empty;
+    public string? PublicId { get; set; } 
 
     [BsonElement("intersection_id")]
-    public int IntersectionId { get; set; } = 0;
+    public int IntersectionId { get; set; }
 
     [BsonElement("intersection_name")]
-    public string IntersectionName { get; set; } = string.Empty;
+    public string? IntersectionName { get; set; }
 
     [BsonElement("line_name")]
-    public string LineName { get; set; } = string.Empty;
+    public string? LineName { get; set; } 
 
     [BsonElement("detectedAt")]
-    public DateTime DetectedAt { get; set; } = DateTime.UtcNow;
+    public DateTime DetectedAt { get; set; } 
 
     [BsonElement("line")]
-    public string Line { get; set; } = string.Empty; // Bus829, Bus703, Bus831, Bus891
+    public string? Line { get; set; }  // Bus829, Bus703, Bus831, Bus891
 }
 
 /*
