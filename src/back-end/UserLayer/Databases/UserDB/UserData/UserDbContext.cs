@@ -1,66 +1,53 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using UserData.Entities;
+using UserData.Settings;
 
 namespace UserData;
 
 public class UserDbContext : DbContext
 {
-    public IConfiguration _configuration { get; }
+    private readonly UserDbSettings _settings;
 
-    public UserDbContext(DbContextOptions<UserDbContext> options, IConfiguration configuration)
+    public UserDbContext(DbContextOptions<UserDbContext> options, IOptions<UserDbSettings> settings)
         : base(options)
     {
-        _configuration = configuration;
+        _settings = settings.Value;
     }
 
-    public DbSet<User> Users { get; set; }
-    public DbSet<Session> Sessions { get; set; }
-    public DbSet<AuditLog> AuditLogs { get; set; }
+    public DbSet<UserEntity> Users { get; set; }
+    public DbSet<SessionEntity> Sessions { get; set; }
+    public DbSet<UserAuditEntity> UserAudits { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        base.OnModelCreating(modelBuilder);
+        // User → Sessions (1:N)
+        modelBuilder.Entity<UserEntity>()
+            .HasMany(u => u.Sessions)
+            .WithOne(s => s.User)
+            .HasForeignKey(s => s.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
 
-        // User entity configuration
-        modelBuilder.Entity<User>()
-            .Property(u => u.Role)
-            .HasConversion<string>()
-            .HasMaxLength(20);
-
-        modelBuilder.Entity<User>()
-            .Property(u => u.Status)
-            .HasMaxLength(20);
-
-        modelBuilder.Entity<User>()
-            .HasIndex(u => u.Email)
-            .IsUnique();
-
-        modelBuilder.Entity<User>()
-            .HasIndex(u => u.Username)
-            .IsUnique();
-
-        // AuditLog entity configuration
-        modelBuilder.Entity<AuditLog>()
-            .HasOne(a => a.User)
-            .WithMany(u => u.AuditLogs)
+        // User → Audits (1:N)
+        modelBuilder.Entity<UserEntity>()
+            .HasMany(u => u.Audits)
+            .WithOne(a => a.User)
             .HasForeignKey(a => a.UserId)
-            .OnDelete(DeleteBehavior.SetNull);
-    }
+            .OnDelete(DeleteBehavior.Cascade);
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        if (!optionsBuilder.IsConfigured)
-        {
-            var connectionString = _configuration.GetConnectionString("MSSQLConnection");
-            optionsBuilder.UseSqlServer(connectionString, sqlOptions =>
-            {
-                sqlOptions.EnableRetryOnFailure(
-                    maxRetryCount: 5,
-                    maxRetryDelay: TimeSpan.FromSeconds(10),
-                    errorNumbersToAdd: null);
-            });
-        }
+        modelBuilder.Entity<UserEntity>()
+            .Property(u => u.CreatedAt)
+            .HasDefaultValueSql("GETUTCDATE()");
+
+        modelBuilder.Entity<SessionEntity>()
+            .Property(s => s.LoginTime)
+            .HasDefaultValueSql("GETUTCDATE()");
+
+        modelBuilder.Entity<UserAuditEntity>()
+            .Property(a => a.Timestamp)
+            .HasDefaultValueSql("GETUTCDATE()");
+
+        base.OnModelCreating(modelBuilder);
     }
 
     public async Task<bool> CanConnectAsync()

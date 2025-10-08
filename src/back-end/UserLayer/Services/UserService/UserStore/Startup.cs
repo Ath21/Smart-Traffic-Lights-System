@@ -15,6 +15,7 @@ using UserStore.Consumers.Usr;
 using UserData.Repositories.Usr;
 using UserData.Repositories.Ses;
 using UserData.Repositories.Audit;
+using UserData.Settings;
 
 namespace UserStore;
 
@@ -29,14 +30,29 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
-        /******* [1] Database (MSSQL) ********/
-        services.AddDbContext<UserDbContext>();
+        /******************************************
+         * [1] SQL Server Configuration
+         ******************************************/
+        services.Configure<UserDbSettings>(options =>
+        {
+            options.ConnectionString = _configuration["MSSQL:ConnectionString"];
+        });
 
-        /******* [2] Repositories ********/
-        /******* [2.1] UserDB Repositories ********/
-        services.AddScoped(typeof(IAuditLogRepository), typeof(AuditLogRepository));
-        services.AddScoped(typeof(IUserRepository), typeof(UserRepository));
-        services.AddScoped(typeof(ISessionRepository), typeof(SessionRepository));
+        services.AddDbContext<UserDbContext>(options =>
+            options.UseSqlServer(_configuration["MSSQL:ConnectionString"]));
+
+        /******************************************
+         * [2] Repositories
+         ******************************************/
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<ISessionRepository, SessionRepository>();
+        services.AddScoped<IUserAuditRepository, UserAuditRepository>();
+
+        /******************************************
+         * [3] Health Checks
+         ******************************************/
+        services.AddHealthChecks()
+            .AddCheck<UserDbHealthCheck>("userdb_ping");
 
         /******* [3] Services ********/
         services.AddScoped(typeof(IPasswordHasher), typeof(PasswordHasher));

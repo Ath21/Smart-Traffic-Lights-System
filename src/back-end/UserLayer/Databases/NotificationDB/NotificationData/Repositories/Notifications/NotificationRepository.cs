@@ -4,32 +4,27 @@ using NotificationData.Collections;
 
 namespace NotificationData.Repositories.Notifications;
 
-public class NotificationRepository : INotificationRepository
+
+public class NotificationRepository : BaseRepository<NotificationCollection>, INotificationRepository
 {
-    private readonly NotificationDbContext _context;
+    public NotificationRepository(IMongoCollection<NotificationCollection> collection) : base(collection) { }
 
-    public NotificationRepository(NotificationDbContext context)
+    public async Task<IEnumerable<NotificationCollection>> GetPendingAsync()
+        => await _collection.Find(n => n.Status == "Pending").SortByDescending(n => n.CreatedAt).ToListAsync();
+
+    public async Task<IEnumerable<NotificationCollection>> GetBroadcastedAsync()
+        => await _collection.Find(n => n.Status == "Broadcasted" || n.Type == "public-notice").SortByDescending(n => n.CreatedAt).ToListAsync();
+
+    public async Task<NotificationCollection?> GetByIdAsync(string id)
+        => await _collection.Find(n => n.NotificationId == id).FirstOrDefaultAsync();
+
+    public async Task InsertAsync(NotificationCollection notification)
+        => await _collection.InsertOneAsync(notification);
+
+    public async Task UpdateStatusAsync(string notificationId, string newStatus)
     {
-        _context = context;
+        var filter = Builders<NotificationCollection>.Filter.Eq(n => n.NotificationId, notificationId);
+        var update = Builders<NotificationCollection>.Update.Set(n => n.Status, newStatus);
+        await _collection.UpdateOneAsync(filter, update);
     }
-
-    public async Task InsertAsync(Notification newNotification) =>
-        await _context.Notifications.InsertOneAsync(newNotification);
-
-    public async Task<List<Notification>> GetAllAsync() =>
-        await _context.Notifications.Find(_ => true).ToListAsync();
-
-    public async Task<Notification?> GetByIdAsync(Guid notificationId) =>
-        await _context.Notifications.Find(n => n.NotificationId == notificationId).FirstOrDefaultAsync();
-
-    public async Task UpdateStatusAsync(Guid notificationId, string status)
-    {
-        var update = Builders<Notification>.Update.Set(n => n.Status, status);
-        await _context.Notifications.UpdateOneAsync(n => n.NotificationId == notificationId, update);
-    }
-
-    public async Task<IEnumerable<Notification>> GetByRecipientEmailAsync(string recipientEmail) =>
-        await _context.Notifications
-            .Find(n => n.TargetAudience == recipientEmail || n.Title.Contains(recipientEmail))
-            .ToListAsync();
 }

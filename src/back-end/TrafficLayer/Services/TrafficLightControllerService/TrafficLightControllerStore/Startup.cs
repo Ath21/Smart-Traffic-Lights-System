@@ -1,14 +1,6 @@
 using System.Text;
-using MassTransit;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
-using StackExchange.Redis;
-using TrafficLightCacheData;
 using TrafficLightCacheData.Repositories;
-using TrafficLightCacheData.Repositories.Config;
-using TrafficLightCacheData.Repositories.Intersect;
-using TrafficLightCacheData.Repositories.Light;
+using TrafficLightCacheData.Settings;
 using TrafficLightControllerStore.Business;
 using TrafficLightControllerStore.Consumers;
 using TrafficLightControllerStore.Failover;
@@ -31,25 +23,27 @@ public class Startup
         /******* [1] Redis Config (TrafficLight Cache) ********/
         services.Configure<TrafficLightCacheDbSettings>(options =>
         {
-            options.Host = _configuration["Redis:TrafficLight:Host"];
-            options.Port = int.Parse(_configuration["Redis:TrafficLight:Port"] ?? "6379");
-            options.Password = _configuration["Redis:TrafficLight:Password"];
-            options.Database = int.Parse(_configuration["Redis:TrafficLight:Database"] ?? "0");
+            options.Host = _configuration["Redis:Host"];
+            options.Port = int.Parse(_configuration["Redis:Port"] ?? "6379");
+            options.Password = _configuration["Redis:Password"];
+            options.Database = int.Parse(_configuration["Redis:Database"] ?? "0");
 
-            options.KeyPrefix_State = _configuration["Redis:TrafficLight:KeyPrefix:State"];
-            options.KeyPrefix_Duration = _configuration["Redis:TrafficLight:KeyPrefix:Duration"];
-            options.KeyPrefix_LastUpdate = _configuration["Redis:TrafficLight:KeyPrefix:LastUpdate"];
-            options.KeyPrefix_Priority = _configuration["Redis:TrafficLight:KeyPrefix:Priority"];
-            options.KeyPrefix_QueueLength = _configuration["Redis:TrafficLight:KeyPrefix:QueueLength"];
+            options.KeyPrefix = new TrafficLightCacheData.Settings.KeyPrefixSettings
+            {
+                State = _configuration["Redis:KeyPrefix:State"],
+                Duration = _configuration["Redis:KeyPrefix:Duration"],
+                LastUpdate = _configuration["Redis:KeyPrefix:LastUpdate"],
+                Mode = _configuration["Redis:KeyPrefix:Mode"],
+                Priority = _configuration["Redis:KeyPrefix:Priority"],
+                FailoverActive = _configuration["Redis:KeyPrefix:FailoverActive"],
+                Heartbeat = _configuration["Redis:KeyPrefix:Heartbeat"],
+                LastCoordinatorSync = _configuration["Redis:KeyPrefix:LastCoordinatorSync"]
+            };
         });
-        services.AddSingleton<TrafficLightCacheDbContext>();
 
         /******* [2] Repositories ********/
         /******* [2.1] TrafficLightCacheDB Repositories ********/
-        services.AddScoped(typeof(ITrafficLightRepository), typeof(TrafficLightRepository));
-        services.AddScoped(typeof(IIntersectRepository), typeof(IntersectRepository));
-        services.AddScoped(typeof(IRedisRepository), typeof(RedisRepository));
-        services.AddScoped(typeof(ITrafficConfigRepository), typeof(TrafficConfigRepository));
+        services.AddScoped(typeof(ITrafficLightCacheRepository), typeof(TrafficLightCacheRepository));
 
         /******* [3] Services ********/
         services.AddScoped(typeof(ITrafficLightControlService), typeof(TrafficLightControlService));

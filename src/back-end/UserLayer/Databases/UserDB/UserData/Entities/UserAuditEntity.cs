@@ -19,12 +19,12 @@ public class UserAuditEntity
     public UserEntity? User { get; set; }
 
     [Required, MaxLength(200)]
-    public string Action { get; set; } = string.Empty; 
+    public string? Action { get; set; }
 
     [MaxLength(500)]
-    public string Details { get; set; } = string.Empty;
+    public string? Details { get; set; }
 
-    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+    public DateTime Timestamp { get; set; }
 }
 
 /*

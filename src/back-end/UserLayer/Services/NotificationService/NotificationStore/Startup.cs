@@ -12,6 +12,7 @@ using NotificationStore.Publishers.Logs;
 using NotificationStore.Publishers.Notifications;
 using NotificationData.Repositories.DeliveryLogs;
 using NotificationData.Repositories.Notifications;
+using NotificationData.Settings;
 
 namespace NotificationStore;
 
@@ -27,20 +28,42 @@ public class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         /******* [1] MongoDb Config ********/
+        /******************************************
+         * [1] MongoDB Configuration
+         ******************************************/
         services.Configure<NotificationDbSettings>(options =>
         {
             options.ConnectionString = _configuration["Mongo:ConnectionString"];
             options.Database = _configuration["Mongo:Database"];
-            options.NotificationsCollection = _configuration["Mongo:NotificationsCollection"];
-            options.DeliveryLogsCollection = _configuration["Mongo:DeliveryLogsCollection"];
+            options.Collections = new CollectionsSettings
+            {
+                Notifications = _configuration["Mongo:Collections:Notifications"],
+                DeliveryLogs = _configuration["Mongo:Collections:DeliveryLogs"]
+            };
         });
+
         services.AddSingleton<NotificationDbContext>();
 
-        /******* [2] Repositories ********/
-        /******* [2.1] NotificationDB Repositories ********/
-        services.AddScoped<INotificationRepository, NotificationRepository>();
-        services.AddScoped<IDeliveryLogRepository, DeliveryLogRepository>();
+        /******************************************
+         * [2] Repositories
+         ******************************************/
+        services.AddScoped<INotificationRepository>(provider =>
+        {
+            var context = provider.GetRequiredService<NotificationDbContext>();
+            return new NotificationRepository(context.Notifications);
+        });
 
+        services.AddScoped<IDeliveryLogRepository>(provider =>
+        {
+            var context = provider.GetRequiredService<NotificationDbContext>();
+            return new DeliveryLogRepository(context.DeliveryLogs);
+        });
+
+        /******************************************
+         * [3] Health Checks
+         ******************************************/
+        services.AddHealthChecks()
+            .AddCheck<NotificationDbHealthCheck>("notificationdb_ping");
         /******* [3] Services ********/
         services.Configure<EmailSettings>(options =>
         {

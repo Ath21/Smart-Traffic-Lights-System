@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
-using Microsoft.Extensions.Configuration;
+using UserData.Settings;
 
 namespace UserData;
 
@@ -8,11 +8,17 @@ public class UserDbContextFactory : IDesignTimeDbContextFactory<UserDbContext>
 {
     public UserDbContext CreateDbContext(string[] args)
     {
-        var optionsBuilder = new DbContextOptionsBuilder<UserDbContext>();
-        optionsBuilder.UseSqlServer(
-            "Server=user_db,1433;Database=UserDB;User Id=sa;Password=MyPass@word;TrustServerCertificate=True");
+        const string connectionString =
+            "Server=localhost,1433;Database=UserDB;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True;";
 
-        return new UserDbContext(optionsBuilder.Options, new ConfigurationBuilder().Build());
+        var optionsBuilder = new DbContextOptionsBuilder<UserDbContext>();
+        optionsBuilder.UseSqlServer(connectionString);
+
+        var settings = Microsoft.Extensions.Options.Options.Create(new UserDbSettings
+        {
+            ConnectionString = connectionString
+        });
+
+        return new UserDbContext(optionsBuilder.Options, settings);
     }
 }
-

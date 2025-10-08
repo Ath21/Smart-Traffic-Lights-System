@@ -4,43 +4,28 @@ using UserData.Entities;
 
 namespace UserData.Repositories.Ses;
 
-public class SessionRepository : ISessionRepository
+public class SessionRepository : BaseRepository<SessionEntity>, ISessionRepository
 {
-    private readonly UserDbContext _dbContext;
+    public SessionRepository(UserDbContext context) : base(context) { }
 
-    public SessionRepository(UserDbContext dbContext)
-    {
-        _dbContext = dbContext;
-    }
+    public async Task<IEnumerable<SessionEntity>> GetUserSessionsAsync(int userId)
+        => await _context.Sessions
+            .Where(s => s.UserId == userId)
+            .OrderByDescending(s => s.LoginTime)
+            .ToListAsync();
 
-    public async Task AddAsync(Session session)
-    {
-        await _dbContext.Sessions.AddAsync(session);
-        await _dbContext.SaveChangesAsync();
-    }
+    public async Task<SessionEntity?> GetActiveSessionAsync(int userId)
+        => await _context.Sessions
+            .FirstOrDefaultAsync(s => s.UserId == userId && s.IsActive);
 
-    public async Task DeleteByTokenAsync(string token)
+    public async Task EndSessionAsync(int sessionId)
     {
-        var session = await _dbContext.Sessions.FirstOrDefaultAsync(s => s.Token == token);
+        var session = await _context.Sessions.FindAsync(sessionId);
         if (session != null)
         {
-            _dbContext.Sessions.Remove(session);
-            await _dbContext.SaveChangesAsync();
+            session.IsActive = false;
+            session.LogoutTime = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
         }
-    }
-
-    public async Task DeleteByUserIdAsync(Guid userId)
-    {
-        var sessions = await _dbContext.Sessions.Where(s => s.UserId == userId).ToListAsync();
-        if (sessions.Any())
-        {
-            _dbContext.Sessions.RemoveRange(sessions);
-            await _dbContext.SaveChangesAsync();
-        }
-    }
-
-    public async Task<Session?> GetByTokenAsync(string token)
-    {
-        return await _dbContext.Sessions.FirstOrDefaultAsync(s => s.Token == token);
     }
 }

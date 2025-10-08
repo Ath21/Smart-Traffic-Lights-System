@@ -1987,24 +1987,14 @@
           }
         }
       },
-      "LogMessages/1.0.0": {
+      "Messages/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
         "compile": {
-          "bin/placeholder/LogMessages.dll": {}
+          "bin/placeholder/Messages.dll": {}
         },
         "runtime": {
-          "bin/placeholder/LogMessages.dll": {}
-        }
-      },
-      "TrafficMessages/1.0.0": {
-        "type": "project",
-        "framework": ".NETCoreApp,Version=v9.0",
-        "compile": {
-          "bin/placeholder/TrafficMessages.dll": {}
-        },
-        "runtime": {
-          "bin/placeholder/TrafficMessages.dll": {}
+          "bin/placeholder/Messages.dll": {}
         }
       },
       "UserData/1.0.0": {
@@ -2015,23 +2005,14 @@
           "Microsoft.EntityFrameworkCore.Abstractions": "9.0.4",
           "Microsoft.EntityFrameworkCore.Analyzers": "9.0.4",
           "Microsoft.EntityFrameworkCore.SqlServer": "9.0.4",
-          "Microsoft.Extensions.Configuration": "9.0.5"
+          "Microsoft.Extensions.Configuration": "9.0.5",
+          "Microsoft.Extensions.Diagnostics.HealthChecks": "9.0.0"
         },
         "compile": {
           "bin/placeholder/UserData.dll": {}
         },
         "runtime": {
           "bin/placeholder/UserData.dll": {}
-        }
-      },
-      "UserMessages/1.0.0": {
-        "type": "project",
-        "framework": ".NETCoreApp,Version=v9.0",
-        "compile": {
-          "bin/placeholder/UserMessages.dll": {}
-        },
-        "runtime": {
-          "bin/placeholder/UserMessages.dll": {}
         }
       }
     }
@@ -5685,42 +5666,30 @@
         "useSharedDesignerContext.txt"
       ]
     },
-    "LogMessages/1.0.0": {
+    "Messages/1.0.0": {
       "type": "project",
-      "path": "../../../../MessageLayer/LogMessages/LogMessages.csproj",
-      "msbuildProject": "../../../../MessageLayer/LogMessages/LogMessages.csproj"
-    },
-    "TrafficMessages/1.0.0": {
-      "type": "project",
-      "path": "../../../../MessageLayer/TrafficMessages/TrafficMessages.csproj",
-      "msbuildProject": "../../../../MessageLayer/TrafficMessages/TrafficMessages.csproj"
+      "path": "../../../../MessageLayer/Messages/Messages.csproj",
+      "msbuildProject": "../../../../MessageLayer/Messages/Messages.csproj"
     },
     "UserData/1.0.0": {
       "type": "project",
       "path": "../../../Databases/UserDB/UserData/UserData.csproj",
       "msbuildProject": "../../../Databases/UserDB/UserData/UserData.csproj"
-    },
-    "UserMessages/1.0.0": {
-      "type": "project",
-      "path": "../../../../MessageLayer/UserMessages/UserMessages.csproj",
-      "msbuildProject": "../../../../MessageLayer/UserMessages/UserMessages.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net9.0": [
       "AutoMapper.Extensions.Microsoft.DependencyInjection >= 12.0.1",
-      "LogMessages >= 1.0.0",
       "MassTransit >= 8.4.1",
       "MassTransit.RabbitMQ >= 8.4.1",
+      "Messages >= 1.0.0",
       "Microsoft.AspNetCore.Authentication.JwtBearer >= 9.0.3",
       "Microsoft.AspNetCore.Identity.EntityFrameworkCore >= 9.0.4",
       "Microsoft.AspNetCore.OpenApi >= 9.0.4",
       "Microsoft.EntityFrameworkCore.SqlServer >= 9.0.4",
       "Microsoft.EntityFrameworkCore.Tools >= 9.0.4",
       "Swashbuckle.AspNetCore >= 8.0.0",
-      "TrafficMessages >= 1.0.0",
-      "UserData >= 1.0.0",
-      "UserMessages >= 1.0.0"
+      "UserData >= 1.0.0"
     ]
   },
   "packageFolders": {
@@ -5748,14 +5717,8 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
-            "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/LogMessages/LogMessages.csproj": {
-              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/LogMessages/LogMessages.csproj"
-            },
-            "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/TrafficMessages/TrafficMessages.csproj": {
-              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/TrafficMessages/TrafficMessages.csproj"
-            },
-            "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/UserMessages/UserMessages.csproj": {
-              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/UserMessages/UserMessages.csproj"
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/Messages/Messages.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/Messages/Messages.csproj"
             },
             "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Databases/UserDB/UserData/UserData.csproj": {
               "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Databases/UserDB/UserData/UserData.csproj"
@@ -5837,7 +5800,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/9.0.304/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/9.0.305/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

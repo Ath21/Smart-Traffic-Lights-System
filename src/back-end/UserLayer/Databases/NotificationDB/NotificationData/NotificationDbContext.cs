@@ -2,6 +2,7 @@ using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using NotificationData.Collections;
+using NotificationData.Settings;
 
 namespace NotificationData;
 
@@ -9,20 +10,20 @@ public class NotificationDbContext
 {
     private readonly IMongoDatabase _database;
 
-    public NotificationDbContext(IOptions<NotificationDbSettings> notificationDbSettings)
+    public NotificationDbContext(IOptions<NotificationDbSettings> dbSettings)
     {
-        var mongoClient = new MongoClient(notificationDbSettings.Value.ConnectionString);
-        _database = mongoClient.GetDatabase(notificationDbSettings.Value.Database);
+        var settings = dbSettings.Value;
+        var client = new MongoClient(settings.ConnectionString);
+        _database = client.GetDatabase(settings.Database);
 
-        Notifications = _database.GetCollection<Notification>(notificationDbSettings.Value.NotificationsCollection);
-        DeliveryLogs = _database.GetCollection<DeliveryLog>(notificationDbSettings.Value.DeliveryLogsCollection);
+        Notifications = _database.GetCollection<NotificationCollection>(settings.Collections.Notifications);
+        DeliveryLogs = _database.GetCollection<DeliveryLogCollection>(settings.Collections.DeliveryLogs);
     }
 
-    // Exposed collections
-    public IMongoCollection<Notification> Notifications { get; }
-    public IMongoCollection<DeliveryLog> DeliveryLogs { get; }
+    public IMongoCollection<NotificationCollection> Notifications { get; }
+    public IMongoCollection<DeliveryLogCollection> DeliveryLogs { get; }
 
-
+    // Simple connectivity check (MongoDB ping)
     public async Task<bool> CanConnectAsync()
     {
         try

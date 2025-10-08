@@ -4,8 +4,8 @@ namespace UserData.Repositories.Ses;
 
 public interface ISessionRepository
 {
-    Task AddAsync(Session session);
-    Task<Session?> GetByTokenAsync(string token);
-    Task DeleteByTokenAsync(string token);
-    Task DeleteByUserIdAsync(Guid userId);
+    Task<IEnumerable<SessionEntity>> GetUserSessionsAsync(int userId);
+    Task<SessionEntity?> GetActiveSessionAsync(int userId);
+    Task InsertAsync(SessionEntity session);
+    Task EndSessionAsync(int sessionId);
 }

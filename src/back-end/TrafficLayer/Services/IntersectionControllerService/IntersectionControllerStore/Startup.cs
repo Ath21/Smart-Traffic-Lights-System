@@ -1,8 +1,3 @@
-using System.Text;
-using MassTransit;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 
 using IntersectionControllerStore.Middleware;
 
@@ -18,13 +13,13 @@ using IntersectionControllerStore.Publishers.PriorityPub;
 using IntersectionControllerStore.Consumers;
 using TrafficLightCacheData;
 using DetectionCacheData;
-using TrafficLightCacheData.Repositories;
-using TrafficLightCacheData.Repositories.Config;
-using TrafficLightCacheData.Repositories.Light;
-using TrafficLightCacheData.Repositories.Intersect;
-using DetectionCacheData.Repositories.Cache;
-using DetectionCacheData.Repositories.Metrics;
 using IntersectionControllerStore.Failover;
+using DetectionCacheData.Settings;
+using DetectionCacheData.Healthchecks;
+using TrafficLightCacheData.Settings;
+using TrafficLightCacheData.Healthchecks;
+using TrafficLightCacheData.Repositories;
+using DetectionCacheData.Repositories;
 
 namespace IntersectionControllerStore;
 
@@ -42,46 +37,56 @@ public class Startup
         /******* [1] Redis Config ********/
         services.Configure<TrafficLightCacheDbSettings>(options =>
         {
-            options.Host = _configuration["Redis:TrafficLight:Host"];
-            options.Port = int.Parse(_configuration["Redis:TrafficLight:Port"] ?? "6379");
-            options.Password = _configuration["Redis:TrafficLight:Password"];
-            options.Database = int.Parse(_configuration["Redis:TrafficLight:Database"] ?? "0");
+            options.Host = _configuration["Redis:Host"];
+            options.Port = int.Parse(_configuration["Redis:Port"] ?? "6379");
+            options.Password = _configuration["Redis:Password"];
+            options.Database = int.Parse(_configuration["Redis:Database"] ?? "0");
 
-            options.KeyPrefix_State = _configuration["Redis:TrafficLight:KeyPrefix:State"];
-            options.KeyPrefix_Duration = _configuration["Redis:TrafficLight:KeyPrefix:Duration"];
-            options.KeyPrefix_LastUpdate = _configuration["Redis:TrafficLight:KeyPrefix:LastUpdate"];
-            options.KeyPrefix_Priority = _configuration["Redis:TrafficLight:KeyPrefix:Priority"];
-            options.KeyPrefix_QueueLength = _configuration["Redis:TrafficLight:KeyPrefix:QueueLength"];
+            options.KeyPrefix = new TrafficLightCacheData.Settings.KeyPrefixSettings
+            {
+                State = _configuration["Redis:KeyPrefix:State"],
+                Duration = _configuration["Redis:KeyPrefix:Duration"],
+                LastUpdate = _configuration["Redis:KeyPrefix:LastUpdate"],
+                Mode = _configuration["Redis:KeyPrefix:Mode"],
+                Priority = _configuration["Redis:KeyPrefix:Priority"],
+                FailoverActive = _configuration["Redis:KeyPrefix:FailoverActive"],
+                Heartbeat = _configuration["Redis:KeyPrefix:Heartbeat"],
+                LastCoordinatorSync = _configuration["Redis:KeyPrefix:LastCoordinatorSync"]
+            };
         });
-        services.AddSingleton<TrafficLightCacheDbContext>();
+
+
+        services.AddHealthChecks()
+            .AddCheck<TrafficLightCacheDbHealthCheck>("trafficlightcachedb_ping");
 
         services.Configure<DetectionCacheDbSettings>(options =>
         {
-            options.Host = _configuration["Redis:Detection:Host"];
-            options.Port = int.Parse(_configuration["Redis:Detection:Port"] ?? "6379");
-            options.Password = _configuration["Redis:Detection:Password"];
-            options.Database = int.Parse(_configuration["Redis:Detection:Database"] ?? "0");
-
-            options.KeyPrefix_VehicleCount = _configuration["Redis:Detection:KeyPrefix:VehicleCount"];
-            options.KeyPrefix_PedestrianCount = _configuration["Redis:Detection:KeyPrefix:PedestrianCount"];
-            options.KeyPrefix_CyclistCount = _configuration["Redis:Detection:KeyPrefix:CyclistCount"];
-            options.KeyPrefix_EmergencyDetected = _configuration["Redis:Detection:KeyPrefix:EmergencyDetected"];
-            options.KeyPrefix_PublicTransportDetected = _configuration["Redis:Detection:KeyPrefix:PublicTransportDetected"];
-            options.KeyPrefix_IncidentDetected = _configuration["Redis:Detection:KeyPrefix:IncidentDetected"];
+            options.Host = _configuration["Redis:Host"];
+            options.Port = int.Parse(_configuration["Redis:Port"]);
+            options.Password = _configuration["Redis:Password"];
+            options.Database = int.Parse(_configuration["Redis:Database"]);
+            options.KeyPrefix = new DetectionCacheData.Settings.KeyPrefixSettings
+            {
+                VehicleCount = _configuration["Redis:KeyPrefix:VehicleCount"],
+                PedestrianCount = _configuration["Redis:KeyPrefix:PedestrianCount"],
+                CyclistCount = _configuration["Redis:KeyPrefix:CyclistCount"],
+                PublicTransportDetections = _configuration["Redis:KeyPrefix:PublicTransportDetections"],
+                EmergencyVehicleDetections = _configuration["Redis:KeyPrefix:EmergencyVehicleDetections"],
+                IncidentDetections = _configuration["Redis:KeyPrefix:IncidentDetections"]
+            };
         });
+
         services.AddSingleton<DetectionCacheDbContext>();
 
+        services.AddHealthChecks()
+            .AddCheck<DetectionCacheDbHealthCheck>("detectioncachedb_ping");
 
         /******* [2] Repositories ********/
         /******* [2.1] DetectionCacheDB Repositories ********/
-        services.AddScoped(typeof(ISensorCacheRepository), typeof(SensorCacheRepository));
-        services.AddScoped(typeof(IMetricRepository), typeof(MetricRepository));
+        services.AddScoped(typeof(IDetectionCacheRepository), typeof(DetectionCacheRepository));
 
         /******* [2.2] TrafficLightCacheDB Repositories ********/
-        services.AddScoped(typeof(ITrafficLightRepository), typeof(TrafficLightRepository));
-        services.AddScoped(typeof(ITrafficConfigRepository), typeof(TrafficConfigRepository));
-        services.AddScoped(typeof(IIntersectRepository), typeof(IntersectRepository));
-        services.AddScoped(typeof(IRedisRepository), typeof(RedisRepository));
+        services.AddScoped(typeof(ITrafficLightCacheRepository), typeof(TrafficLightCacheRepository));
 
         /******* [3] Services ********/
         services.AddScoped(typeof(ITrafficConfigurationService), typeof(TrafficConfigurationService));
