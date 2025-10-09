@@ -4,13 +4,15 @@
 //
 // Published by : Notification Service, User Service
 // Consumed by  : User Service, Notification Service
+namespace Messages.User;
+
 public class UserNotificationMessage : BaseMessage
 {
-    public string? NotificationType { get; set; } // Alert, PublicNotice, Private, Request
-    public string? Title { get; set; } // message title
-    public string? Body { get; set; } // message body content
-    public string? RecipientEmail { get; set; } // target user email
-    public string? Status { get; set; } // Pending, Sent, Failed
+  public string? NotificationType { get; set; } // Alert, PublicNotice, Private, Request
+  public string? Title { get; set; } // message title
+  public string? Body { get; set; } // message body content
+  public string? RecipientEmail { get; set; } // target user email
+  public string? Status { get; set; } // Pending, Sent, Failed
 }
 
 /*

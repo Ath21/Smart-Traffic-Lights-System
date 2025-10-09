@@ -5,11 +5,13 @@
 //
 // Published by : Detection Service
 // Consumed by  : Intersection Controller Service, Traffic Light Analytics Service
+namespace Messages.Sensor;
+
 public class DetectionEventMessage : BaseMessage
 {
-    public string? EventType { get; set; }
-    public string? VehicleType { get; set; }
-    public string? Direction { get; set; }
+  public string? EventType { get; set; }
+  public string? VehicleType { get; set; }
+  public string? Direction { get; set; }
 }
 
 /*

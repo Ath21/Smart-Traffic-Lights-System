@@ -5,6 +5,8 @@
 //
 // Published by : Intersection Controller Service
 // Consumed by  : Traffic Light Coordinator Service
+namespace Messages.Traffic;
+
 public class PriorityEventMessage : BaseMessage
 {
   public string? EventType { get; set; }

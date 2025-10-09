@@ -5,6 +5,8 @@
 //
 // Published by : Sensor Service
 // Consumed by  : Intersection Controller Service, Traffic Analytics Service
+namespace Messages.Sensor;
+
 public class SensorCountMessage : BaseMessage
 {
   public string? CountType { get; set; }

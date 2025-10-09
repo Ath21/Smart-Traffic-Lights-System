@@ -1,4 +1,6 @@
 using MassTransit;
+using Messages.Log;
+using Messages.Sensor;
 using RabbitMQ.Client;
 
 namespace DetectionStore;
@@ -14,7 +16,7 @@ public static class MassTransitSetup
                 var rabbit = configuration.GetSection("RabbitMQ");
 
                 // =====================================
-                // Connection (from configuration)
+                // Connection with RabbitMQ
                 // =====================================
                 cfg.Host(rabbit["Host"], rabbit["VirtualHost"] ?? "/", h =>
                 {
@@ -25,15 +27,15 @@ public static class MassTransitSetup
                 // =====================================
                 // Exchanges
                 // =====================================
-                var sensorExchange = rabbit["Exchanges:Sensor"]; // e.g. "sensor.exchange"
-                var logExchange    = rabbit["Exchanges:Log"];    // e.g. "log.exchange"
+                var sensorExchange = rabbit["Exchanges:Sensor"]; 
+                var logExchange    = rabbit["Exchanges:Log"];    
 
                 // =====================================
-                // SENSOR DETECTION (Publish)
+                // [PUBLISH] SENSOR DETECTION (Emergency Vehicle, Public Transport, Incident)
                 // =====================================
                 //
-                // Topic pattern: sensor.detection.{intersection}.{event}
-                // Example key:   sensor.detection.agiospyridonos.vehicle
+                // Topic pattern : sensor.detection.{intersection}.{event}
+                // Example key   : sensor.detection.agiou-spyridonos.emergency-vehicle
                 //
                 cfg.Message<DetectionEventMessage>(m =>
                 {
@@ -46,8 +48,12 @@ public static class MassTransitSetup
                 });
 
                 // =====================================
-                // LOGS (Publish)
+                // [PUBLISH] LOGS (Audit, Error, Failover)
                 // =====================================
+                //
+                // Topic pattern : log.{layer}.{service}.{type}
+                // Example key   : log.sensor.detection.audit
+                //
                 cfg.Message<LogMessage>(m =>
                 {
                     m.SetEntityName(logExchange);
@@ -65,3 +71,20 @@ public static class MassTransitSetup
         return services;
     }
 }
+
+/*
+
+{
+  "RabbitMQ": {
+    "Host": "rabbitmq",
+    "VirtualHost": "/",
+    "Username": "stls_user",
+    "Password": "stls_pass",
+    "Exchanges": {
+      "Sensor": "sensor.exchange",
+      "Log": "log.exchange"
+    }
+  }
+}
+
+*/

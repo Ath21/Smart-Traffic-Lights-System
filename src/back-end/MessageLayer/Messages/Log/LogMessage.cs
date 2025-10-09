@@ -9,14 +9,16 @@
 //                Intersection Controller Service, Traffic Light Controller Service, Traffic Analytics Service, Traffic Light Coordinator Service,
 //                User Service, Notification Service
 // Consumed by  : Log Service
+namespace Messages.Log;
+
 public class LogMessage : BaseMessage
 {
-    public string? Layer { get; set; } 
-    public string? LogType { get; set; } 
-    public List<int>? LightId { get; set; } 
-    public List<string>? TrafficLight { get; set; } 
-    public string? Action { get; set; }
-    public string? Message { get; set; }
+  public string? Layer { get; set; }
+  public string? LogType { get; set; }
+  public List<int>? LightId { get; set; }
+  public List<string>? TrafficLight { get; set; }
+  public string? Action { get; set; }
+  public string? Message { get; set; }
 }
 
 /*

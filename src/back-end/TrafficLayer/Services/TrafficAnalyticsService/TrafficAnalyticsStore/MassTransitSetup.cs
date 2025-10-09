@@ -1,5 +1,7 @@
 using MassTransit;
 using RabbitMQ.Client;
+using Messages.Log;
+using Messages.Traffic;
 using TrafficAnalyticsStore.Consumers;
 
 namespace TrafficAnalyticsStore;
@@ -10,117 +12,122 @@ public static class MassTransitSetup
     {
         services.AddMassTransit(x =>
         {
-            // Consumers
-            x.AddConsumer<VehicleCountConsumer>();
-            x.AddConsumer<EmergencyVehicleDetectionConsumer>();
-            x.AddConsumer<PublicTransportDetectionConsumer>();
-            x.AddConsumer<PedestrianCountConsumer>();
-            x.AddConsumer<CyclistCountConsumer>();
-            x.AddConsumer<IncidentDetectionConsumer>();
+            // =====================================================
+            // Register Consumers
+            // =====================================================
+            x.AddConsumer<SensorCountConsumer>();
+            x.AddConsumer<DetectionEventConsumer>();
 
             x.UsingRabbitMq((context, cfg) =>
             {
                 var rabbit = configuration.GetSection("RabbitMQ");
 
-                cfg.Host(rabbit["Host"], "/", h =>
+                // ===============================
+                // Connection with RabbitMQ
+                // ===============================
+                cfg.Host(rabbit["Host"], rabbit["VirtualHost"] ?? "/", h =>
                 {
                     h.Username(rabbit["Username"]);
                     h.Password(rabbit["Password"]);
                 });
 
+                // =====================================================
+                // Exchanges, Queues, and Routing Keys
+                // =====================================================
                 // Exchanges
-                var logExchange     = rabbit["Exchanges:Log"];
                 var sensorExchange  = rabbit["Exchanges:Sensor"];
                 var trafficExchange = rabbit["Exchanges:Traffic"];
+                var logExchange     = rabbit["Exchanges:Log"];
 
-                // Queues
-                var sensorQueue = rabbit["Queues:Sensor:Analytics"];
+                // Queues 
+                var sensorCountQueue = rabbit["Queues:Sensor:Count:TrafficAnalytics"];
+                var detectionQueue   = rabbit["Queues:Sensor:Detection:TrafficAnalytics"];
 
-                // Routing Keys (from SENSOR.EXCHANGE)
-                var vehicleCountKey     = rabbit["RoutingKeys:Sensor:VehicleCount"];
-                var emergencyKey        = rabbit["RoutingKeys:Sensor:EmergencyVehicle"];
-                var publicTransportKey  = rabbit["RoutingKeys:Sensor:PublicTransport"];
-                var pedestrianKey       = rabbit["RoutingKeys:Sensor:PedestrianCount"];
-                var cyclistKey          = rabbit["RoutingKeys:Sensor:CyclistCount"];
-                var incidentDetectedKey = rabbit["RoutingKeys:Sensor:IncidentDetected"];
+                // Routing Keys
+                var sensorCountKeys     = rabbit.GetSection("RoutingKeys:SensorCount").Get<string[]>() ?? Array.Empty<string>();
+                var sensorDetectionKeys = rabbit.GetSection("RoutingKeys:SensorDetection").Get<string[]>() ?? Array.Empty<string>();
 
-                // Routing Keys (to TRAFFIC.EXCHANGE)
-                var trafficCongKey   = rabbit["RoutingKeys:Traffic:Congestion"];
-                var trafficSummaryKey= rabbit["RoutingKeys:Traffic:Summary"];
-                var trafficIncKey    = rabbit["RoutingKeys:Traffic:Incident"];
+                // =====================================================
+                // [PUBLISH] TRAFFIC ANALYTICS METRICS (Congestion, Summary, Incident)
+                // =====================================================
+                //
+                // Topic pattern : traffic.analytics.{intersection}.{metric}
+                // Example key   : traffic.analytics.agiou-spyridonos.congestion
+                //
+                cfg.Message<TrafficAnalyticsMessage>(m =>
+                {
+                    m.SetEntityName(trafficExchange);
+                });
+                cfg.Publish<TrafficAnalyticsMessage>(m =>
+                {
+                    m.ExchangeType = ExchangeType.Topic;
+                });
 
-                // =========================
-                // LOGS (Publish)
-                // =========================
-                cfg.Message<LogMessages.AuditLogMessage>(e => e.SetEntityName(logExchange));
-                cfg.Publish<LogMessages.AuditLogMessage>(e => e.ExchangeType = ExchangeType.Topic);
+                // =====================================================
+                // [PUBLISH] LOGS (Audit, Error, Failover)
+                // =====================================================
+                //
+                // Topic pattern : log.traffic.analytics.{type}
+                // Example key   : log.traffic.analytics.error
+                //
+                cfg.Message<LogMessage>(m =>
+                {
+                    m.SetEntityName(logExchange);
+                });
+                cfg.Publish<LogMessage>(m =>
+                {
+                    m.ExchangeType = ExchangeType.Topic;
+                });
 
-                cfg.Message<LogMessages.ErrorLogMessage>(e => e.SetEntityName(logExchange));
-                cfg.Publish<LogMessages.ErrorLogMessage>(e => e.ExchangeType = ExchangeType.Topic);
-
-                // =========================
-                // SENSOR EVENTS (Consume)
-                // =========================
-                cfg.ReceiveEndpoint(sensorQueue, e =>
+                // =====================================================
+                // [CONSUME] SENSOR COUNT (Vehicles, Pedestrians, Cyclists)
+                // =====================================================
+                //
+                // Topic pattern : sensor.count.{intersection}.{type}
+                // Example key   : sensor.count.kentriki-pyli.vehicle
+                //
+                cfg.ReceiveEndpoint(sensorCountQueue, e =>
                 {
                     e.ConfigureConsumeTopology = false;
 
-                    e.Bind(sensorExchange, s =>
+                    foreach (var key in sensorCountKeys)
                     {
-                        s.RoutingKey = vehicleCountKey.Replace("{intersection_id}", "*");
-                        s.ExchangeType = ExchangeType.Topic;
-                    });
+                        e.Bind(sensorExchange, s =>
+                        {
+                            s.RoutingKey = key;
+                            s.ExchangeType = ExchangeType.Topic;
+                        });
+                    }
+                    e.ConfigureConsumer<SensorCountConsumer>(context);
 
-                    e.Bind(sensorExchange, s =>
-                    {
-                        s.RoutingKey = emergencyKey.Replace("{intersection_id}", "*");
-                        s.ExchangeType = ExchangeType.Topic;
-                    });
-
-                    e.Bind(sensorExchange, s =>
-                    {
-                        s.RoutingKey = publicTransportKey.Replace("{intersection_id}", "*");
-                        s.ExchangeType = ExchangeType.Topic;
-                    });
-
-                    e.Bind(sensorExchange, s =>
-                    {
-                        s.RoutingKey = pedestrianKey.Replace("{intersection_id}", "*");
-                        s.ExchangeType = ExchangeType.Topic;
-                    });
-
-                    e.Bind(sensorExchange, s =>
-                    {
-                        s.RoutingKey = cyclistKey.Replace("{intersection_id}", "*");
-                        s.ExchangeType = ExchangeType.Topic;
-                    });
-
-                    e.Bind(sensorExchange, s =>
-                    {
-                        s.RoutingKey = incidentDetectedKey.Replace("{intersection_id}", "*");
-                        s.ExchangeType = ExchangeType.Topic;
-                    });
-
-                    // Consumers
-                    e.ConfigureConsumer<VehicleCountConsumer>(context);
-                    e.ConfigureConsumer<EmergencyVehicleDetectionConsumer>(context);
-                    e.ConfigureConsumer<PublicTransportDetectionConsumer>(context);
-                    e.ConfigureConsumer<PedestrianCountConsumer>(context);
-                    e.ConfigureConsumer<CyclistCountConsumer>(context);
-                    e.ConfigureConsumer<IncidentDetectionConsumer>(context);
+                    e.PrefetchCount = 10;
+                    e.ConcurrentMessageLimit = 5;
                 });
 
-                // =========================
-                // TRAFFIC EVENTS (Publish)
-                // =========================
-                cfg.Message<TrafficMessages.TrafficCongestionMessage>(e => e.SetEntityName(trafficExchange));
-                cfg.Publish<TrafficMessages.TrafficCongestionMessage>(e => e.ExchangeType = ExchangeType.Topic);
+                // =====================================================
+                // [CONSUME] DETECTION EVENTS (Emergency Vehicle, Public Transport, Incident)
+                // =====================================================
+                //
+                // Topic pattern : sensor.detection.{intersection}.{event}
+                // Example key   : sensor.detection.agiou-pyridonos.emergency-vehicle
+                //
+                cfg.ReceiveEndpoint(detectionQueue, e =>
+                {
+                    e.ConfigureConsumeTopology = false;
 
-                cfg.Message<TrafficMessages.TrafficSummaryMessage>(e => e.SetEntityName(trafficExchange));
-                cfg.Publish<TrafficMessages.TrafficSummaryMessage>(e => e.ExchangeType = ExchangeType.Topic);
+                    foreach (var key in sensorDetectionKeys)
+                    {
+                        e.Bind(sensorExchange, s =>
+                        {
+                            s.RoutingKey = key;
+                            s.ExchangeType = ExchangeType.Topic;
+                        });
+                    }
+                    e.ConfigureConsumer<DetectionEventConsumer>(context);
 
-                cfg.Message<TrafficMessages.TrafficIncidentMessage>(e => e.SetEntityName(trafficExchange));
-                cfg.Publish<TrafficMessages.TrafficIncidentMessage>(e => e.ExchangeType = ExchangeType.Topic);
+                    e.PrefetchCount = 10;
+                    e.ConcurrentMessageLimit = 5;
+                });
 
                 cfg.ConfigureEndpoints(context);
             });
@@ -129,3 +136,50 @@ public static class MassTransitSetup
         return services;
     }
 }
+
+/*
+
+{
+  "RabbitMQ": {
+
+    "Host": "rabbitmq",
+    "VirtualHost": "/",
+    "Username": "stls_user",
+    "Password": "stls_pass",
+
+    "Exchanges": {
+      "Sensor": "sensor.exchange",
+      "Traffic": "traffic.exchange",
+      "Log": "log.exchange"
+    },
+
+    "Queues": {
+      "Sensor": {
+        "Count": {
+          "TrafficAnalytics": "traffic-analytics-sensor-count-queue"
+        },
+        "Detection": {
+          "TrafficAnalytics": "traffic-analytics-detection-queue"
+        }
+      }
+    },
+
+    "RoutingKeys": {
+
+      "SensorCount": [
+        "sensor.count.*.vehicle",
+        "sensor.count.*.pedestrian",
+        "sensor.count.*.cyclist"
+      ],
+
+      "SensorDetection": [
+        "sensor.detection.*.emergency-vehicle",
+        "sensor.detection.*.public-transport",
+        "sensor.detection.*.incident"
+      ]
+    }
+  }
+}
+
+
+*/

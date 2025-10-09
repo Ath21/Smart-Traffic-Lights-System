@@ -6,64 +6,70 @@ namespace LogStore;
 
 public static class MassTransitSetup
 {
-    public static IServiceCollection AddLogServiceMassTransit(this IServiceCollection services, IConfiguration configuration)
+  public static IServiceCollection AddLogServiceMassTransit(this IServiceCollection services, IConfiguration configuration)
+  {
+    services.AddMassTransit(x =>
     {
-        services.AddMassTransit(x =>
+      // =====================================================
+      // Register Consumers
+      // =====================================================
+      x.AddConsumer<LogConsumer>();
+
+      x.UsingRabbitMq((context, cfg) =>
+      {
+        var rabbit = configuration.GetSection("RabbitMQ");
+
+        // ===============================
+        // Connection with RabbitMQ
+        // ===============================
+        cfg.Host(rabbit["Host"], rabbit["VirtualHost"] ?? "/", h =>
         {
-            // Single unified consumer
-            x.AddConsumer<LogConsumer>();
-
-            x.UsingRabbitMq((context, cfg) =>
-            {
-                var rabbit = configuration.GetSection("RabbitMQ");
-
-                // ===============================
-                // Connection (from configuration)
-                // ===============================
-                cfg.Host(rabbit["Host"], rabbit["VirtualHost"] ?? "/", h =>
-                {
-                    h.Username(rabbit["Username"]);
-                    h.Password(rabbit["Password"]);
-                });
-
-                // Exchange name and queue name
-                var logsExchange = rabbit["Exchanges:Log"];
-                var logQueue = rabbit["Queues:UnifiedLogQueue"];
-
-                // All routing keys (defined in appsettings or ConfigMap)
-                var routingKeys = rabbit.GetSection("RoutingKeys:Log").Get<string[]>() ?? Array.Empty<string>();
-
-                // ===============================
-                // Unified Log Consumer Queue
-                // ===============================
-                cfg.ReceiveEndpoint(logQueue, e =>
-                {
-                    e.ConfigureConsumeTopology = false;
-
-                    foreach (var key in routingKeys)
-                    {
-                        // Bind each routing key to same queue
-                        e.Bind(logsExchange, s =>
-                        {
-                            s.RoutingKey = key;
-                            s.ExchangeType = ExchangeType.Topic;
-                        });
-                    }
-
-                    // Register single consumer
-                    e.ConfigureConsumer<LogConsumer>(context);
-
-                    // (Optional tuning)
-                    e.PrefetchCount = 10;
-                    e.ConcurrentMessageLimit = 5;
-                });
-
-                cfg.ConfigureEndpoints(context);
-            });
+          h.Username(rabbit["Username"]);
+          h.Password(rabbit["Password"]);
         });
 
-        return services;
-    }
+        // ===============================
+        // Exchanges, Queues and Routing Keys
+        // ===============================
+        // Exchanges
+        var logExchange = rabbit["Exchanges:Log"];
+
+        // Queues
+        var logQueue = rabbit["Queues:Log"];
+
+        // Routing keys 
+        var routingKeys = rabbit.GetSection("RoutingKeys:Log").Get<string[]>() ?? Array.Empty<string>();
+
+        // ===============================
+        // [CONSUME] LOGS (Audit, Error, Failover)
+        // ===============================
+        //  
+        // Topic pattern : log.{layer}.{service}.{type}
+        // Example key   : log.sensor.intersection-controller.failover
+        //
+        cfg.ReceiveEndpoint(logQueue, e =>
+        {
+          e.ConfigureConsumeTopology = false;
+
+          foreach (var key in routingKeys)
+          {
+            e.Bind(logExchange, s =>
+            {
+              s.RoutingKey = key;
+              s.ExchangeType = ExchangeType.Topic;
+            });
+          }
+          e.ConfigureConsumer<LogConsumer>(context);
+          e.PrefetchCount = 10;
+          e.ConcurrentMessageLimit = 5;
+        });
+
+        cfg.ConfigureEndpoints(context);
+      });
+    });
+
+    return services;
+  }
 }
 
 /*
@@ -74,12 +80,15 @@ public static class MassTransitSetup
     "VirtualHost": "/",
     "Username": "stls_user",
     "Password": "stls_pass",
+
     "Exchanges": {
       "Log": "log.exchange"
     },
+
     "Queues": {
-      "UnifiedLogQueue": "log-service"
+      "Log": "log-service"
     },
+
     "RoutingKeys": {
       "Log": [
         "log.sensor.*.*",
@@ -89,4 +98,5 @@ public static class MassTransitSetup
     }
   }
 }
+
 */

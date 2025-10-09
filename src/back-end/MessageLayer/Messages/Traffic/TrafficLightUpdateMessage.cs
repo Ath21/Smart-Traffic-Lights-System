@@ -4,16 +4,18 @@
 //
 // Published by : Traffic Light Coordinator Service
 // Consumed by  : Intersection Controller Service
+namespace Messages.Traffic;
+
 public class TrafficLightUpdateMessage : BaseMessage
 {
-    public bool IsOperational { get; set; }
-    public string? CurrentMode { get; set; } // Standard, Peak, Night, Manual, Failover, Emergency
-    public string? TimePlan { get; set; } // Day, Night, RushHour, Holiday
-    public Dictionary<string, int>? PhaseDurations { get; set; } // { "Green": 30, "Yellow": 5, "Red": 25 }
-    public int CycleDurationSec { get; set; } // Total duration of one full cycle (sum of phases)
-    public int GlobalOffsetSec { get; set; } // Intersection-level offset (for city-wide sync)
-    public Dictionary<int, int>? LightOffsets { get; set; } // { 101: 0, 102: 5, 103: 10 }
-    public DateTime LastUpdate { get; set; } = DateTime.UtcNow;
+  public bool IsOperational { get; set; }
+  public string? CurrentMode { get; set; } // Standard, Peak, Night, Manual, Failover, Emergency
+  public string? TimePlan { get; set; } // Day, Night, RushHour, Holiday
+  public Dictionary<string, int>? PhaseDurations { get; set; } // { "Green": 30, "Yellow": 5, "Red": 25 }
+  public int CycleDurationSec { get; set; } // Total duration of one full cycle (sum of phases)
+  public int GlobalOffsetSec { get; set; } // Intersection-level offset (for city-wide sync)
+  public Dictionary<int, int>? LightOffsets { get; set; } // { 101: 0, 102: 5, 103: 10 }
+  public DateTime LastUpdate { get; set; } = DateTime.UtcNow;
 }
 
 /*

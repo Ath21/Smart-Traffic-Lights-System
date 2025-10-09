@@ -9,14 +9,16 @@
 //
 // Published by : Intersection Controller Service, User Service
 // Consumed by  : Traffic Light Controller Service
+namespace Messages.Traffic;
+
 public class TrafficLightControlMessage : BaseMessage
 {
-    public int LightId { get; set; }
-    public string? LightName { get; set; } 
-    public string? Mode { get; set; } 
-    public string? TimePlan { get; set; } // Standard, Peak, Night, Manual, Failover, Emergency
-    public Dictionary<string, int>? PhaseDurations { get; set; } // { "Green": 30, "Yellow": 5, "Red": 25 }
-    public string? OperationalMode { get; set; } // Normal, Flashing, Off
+  public int LightId { get; set; }
+  public string? LightName { get; set; }
+  public string? Mode { get; set; }
+  public string? TimePlan { get; set; } // Standard, Peak, Night, Manual, Failover, Emergency
+  public Dictionary<string, int>? PhaseDurations { get; set; } // { "Green": 30, "Yellow": 5, "Red": 25 }
+  public string? OperationalMode { get; set; } // Normal, Flashing, Off
 }
 
 /*

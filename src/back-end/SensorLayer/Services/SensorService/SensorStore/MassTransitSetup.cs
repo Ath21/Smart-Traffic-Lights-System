@@ -1,4 +1,6 @@
 using MassTransit;
+using Messages.Log;
+using Messages.Sensor;
 using RabbitMQ.Client;
 
 namespace SensorStore;
@@ -9,46 +11,58 @@ public static class MassTransitSetup
     {
         services.AddMassTransit(x =>
         {
-            // Sensor service only publishes messages (no consumers yet)
             x.UsingRabbitMq((context, cfg) =>
             {
                 var rabbit = configuration.GetSection("RabbitMQ");
 
-                // ===============================
-                // Connection (injected from config)
-                // ===============================
+                // =====================================
+                // Connection with RabbitMQ
+                // =====================================
                 cfg.Host(rabbit["Host"], rabbit["VirtualHost"] ?? "/", h =>
                 {
                     h.Username(rabbit["Username"]);
                     h.Password(rabbit["Password"]);
                 });
 
-                // ===============================
+                // =====================================
                 // Exchanges
-                // ===============================
-                var sensorExchange = rabbit["Exchanges:Sensor"]; // e.g. "sensor.exchange"
-                var logExchange    = rabbit["Exchanges:Log"];    // e.g. "log.exchange"
+                // =====================================
+                var sensorExchange = rabbit["Exchanges:Sensor"]; 
+                var logExchange    = rabbit["Exchanges:Log"];    
 
-                // ===============================
-                // SENSOR COUNTS (Publish)
-                // ===============================
+                // =====================================
+                // [PUBLISH] SENSOR COUNT (Vehicles, Pedestrians, Cyclists)
+                // =====================================
                 //
-                // Topic pattern: sensor.count.{intersection}.{type}
-                // Example keys:
-                //   sensor.count.agiospyridonos.vehicle
-                //   sensor.count.kentrikipyli.pedestrian
+                // Topic pattern : sensor.count.{intersection}.{type}
+                // Example key   : sensor.count.kentriki-pyli.pedestrian
                 //
-                cfg.Message<SensorCountMessage>(m => m.SetEntityName(sensorExchange));
-                cfg.Publish<SensorCountMessage>(m => m.ExchangeType = ExchangeType.Topic);
+                cfg.Message<SensorCountMessage>(m =>
+                {
+                    m.SetEntityName(sensorExchange);
+                });
 
-                // ===============================
-                // LOGS (Publish)
-                // ===============================
-                cfg.Message<LogMessage>(m => m.SetEntityName(logExchange));
-                cfg.Publish<LogMessage>(m => m.ExchangeType = ExchangeType.Topic);
+                cfg.Publish<SensorCountMessage>(m =>
+                {
+                    m.ExchangeType = ExchangeType.Topic;
+                });
 
-                // Since this service is publish-only, no queues are declared.
-                // Keeping ConfigureEndpoints allows easy consumer extension later.
+                // =====================================
+                // [PUBLISH] LOGS (Audit, Error, Failover)
+                // =====================================
+                //
+                // Topic pattern : log.{layer}.{service}.{type}
+                // Example key   : log.sensor.sensor.error
+                cfg.Message<LogMessage>(m =>
+                {
+                    m.SetEntityName(logExchange);
+                });
+
+                cfg.Publish<LogMessage>(m =>
+                {
+                    m.ExchangeType = ExchangeType.Topic;
+                });
+
                 cfg.ConfigureEndpoints(context);
             });
         });
@@ -56,3 +70,20 @@ public static class MassTransitSetup
         return services;
     }
 }
+
+/*
+
+{
+  "RabbitMQ": {
+    "Host": "rabbitmq",
+    "VirtualHost": "/",
+    "Username": "stls_user",
+    "Password": "stls_pass",
+    "Exchanges": {
+      "Sensor": "sensor.exchange",
+      "Log": "log.exchange"
+    }
+  }
+}
+
+*/
