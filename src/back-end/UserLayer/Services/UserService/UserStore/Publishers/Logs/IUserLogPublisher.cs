@@ -2,8 +2,7 @@ namespace UserStore.Publishers.Logs;
 
 public interface IUserLogPublisher
 {
-    // log.user.user_service.audit
-    Task PublishAuditAsync(string action, string details, object? metadata = null);
-    // log.user.user_service.error
-    Task PublishErrorAsync(string errorType, string message, object? metadata = null);
+    Task PublishAuditAsync(string action, string message, Dictionary<string, string>? metadata = null, Guid? correlationId = null);
+    Task PublishErrorAsync(string action, string errorMessage, Exception? ex = null, Dictionary<string, string>? metadata = null, Guid? correlationId = null);
+    Task PublishFailoverAsync(string action, string message, Dictionary<string, string>? metadata = null, Guid? correlationId = null);
 }

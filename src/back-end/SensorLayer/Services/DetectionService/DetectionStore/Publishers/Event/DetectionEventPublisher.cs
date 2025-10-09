@@ -47,7 +47,7 @@ public class DetectionEventPublisher : IDetectionEventPublisher
             }
         });
 
-        _logger.LogInformation("[{Intersection}] Emergency vehicle published ({VehicleType}, Dir={Direction}, Speed={SpeedKmh})",
+        _logger.LogInformation("[{Intersection}] EMERGENCY VEHICLE published ({VehicleType}, Dir={Direction}, Speed={SpeedKmh})",
             _intersection.Name, vehicleType, direction, speed_kmh);
     }
 
@@ -73,7 +73,7 @@ public class DetectionEventPublisher : IDetectionEventPublisher
             }
         });
 
-        _logger.LogInformation("[{Intersection}] Public transport published ({Mode}, Line={Line}, ArrivalInSec={ArrivalInSec}, Dir={Direction})",
+        _logger.LogInformation("[{Intersection}] PUBLIC TRANSPORT published ({Mode}, Line={Line}, ArrivalInSec={ArrivalInSec}, Dir={Direction})",
             _intersection.Name, mode, line, arrival_estimated_sec, direction);
     }
 
@@ -98,7 +98,7 @@ public class DetectionEventPublisher : IDetectionEventPublisher
             }
         });
 
-        _logger.LogWarning("[{Intersection}] Incident published: {Type} (Severity={Severity}, Dir={Direction}) - {Description}",
+        _logger.LogWarning("[{Intersection}] INCIDENT published: {Type} (Severity={Severity}, Dir={Direction}) - {Description}",
             _intersection.Name, type, severity, direction, description);
     }
 
@@ -112,7 +112,7 @@ public class DetectionEventPublisher : IDetectionEventPublisher
             .Replace("{event}", eventKey);
 
         msg.SourceServices = new() { "Detection Service" };
-        msg.DestinationServices = new() { "Intersection Controller Service" };
+        msg.DestinationServices = new() { "Intersection Controller Service", "Traffic Analytics Service" };
 
         await _bus.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
     }

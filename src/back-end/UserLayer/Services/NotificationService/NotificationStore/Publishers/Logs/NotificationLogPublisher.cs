@@ -1,5 +1,5 @@
-using LogMessages;
 using MassTransit;
+using Messages.Log;
 
 namespace NotificationStore.Publishers.Logs;
 
@@ -7,51 +7,69 @@ public class NotificationLogPublisher : INotificationLogPublisher
 {
     private readonly IBus _bus;
     private readonly ILogger<NotificationLogPublisher> _logger;
-    private readonly string _serviceName = "notification_service";
-    private readonly string _auditKey;
-    private readonly string _errorKey;
+    private readonly string _routingPattern;
 
-    private const string ServiceTag = "[" + nameof(NotificationLogPublisher) + "]";
-
-    public NotificationLogPublisher(IConfiguration configuration, ILogger<NotificationLogPublisher> logger, IBus bus)
+    public NotificationLogPublisher(
+        IConfiguration config,
+        ILogger<NotificationLogPublisher> logger,
+        IBus bus)
     {
-        _logger = logger;
         _bus = bus;
+        _logger = logger;
 
-        _auditKey = configuration["RabbitMQ:RoutingKeys:Log:Audit"] 
-                    ?? "log.user.notification_service.audit";
-
-        _errorKey = configuration["RabbitMQ:RoutingKeys:Log:Error"] 
-                    ?? "log.user.notification_service.error";
+        _routingPattern = config["RabbitMQ:RoutingKeys:Log:Notification"]
+                          ?? "log.user.notification.{type}";
     }
 
-    public async Task PublishAuditLogAsync(string action, string details, object? metadata = null)
+    public async Task PublishAuditAsync(string action, string message, Dictionary<string, string>? metadata = null, Guid? correlationId = null)
     {
-        var log = new AuditLogMessage(
-            Guid.NewGuid(),
-            _serviceName,
-            action,
-            details,
-            DateTime.UtcNow,
-            metadata
-        );
-
-        await _bus.Publish(log, ctx => ctx.SetRoutingKey(_auditKey));
-        _logger.LogInformation("{Tag} Audit log published: {Action}", ServiceTag, action);
+        var msg = CreateBaseLog("Audit", action, message, metadata, correlationId);
+        await PublishAsync("audit", msg);
+        _logger.LogInformation("AUDIT log published (Action={Action})", action);
     }
 
-    public async Task PublishErrorLogAsync(string errorType, string message, object? metadata = null, Exception? ex = null)
+    public async Task PublishErrorAsync(string action, string errorMessage, Exception? ex = null, Dictionary<string, string>? metadata = null, Guid? correlationId = null)
     {
-        var log = new ErrorLogMessage(
-            Guid.NewGuid(),
-            _serviceName,
-            errorType,
-            message,
-            DateTime.UtcNow,
-            metadata
-        );
+        metadata ??= new();
+        if (ex != null)
+        {
+            metadata["exception_type"] = ex.GetType().Name;
+            metadata["exception_message"] = ex.Message;
+        }
 
-        await _bus.Publish(log, ctx => ctx.SetRoutingKey(_errorKey));
-        _logger.LogError(ex, "{Tag} Error log published: {ErrorType} - {Message}", ServiceTag, errorType, message);
+        var msg = CreateBaseLog("Error", action, errorMessage, metadata, correlationId);
+        await PublishAsync("error", msg);
+        _logger.LogError(ex, "ERROR log published (Action={Action}) - {Error}", action, errorMessage);
+    }
+
+    public async Task PublishFailoverAsync(string action, string message, Dictionary<string, string>? metadata = null, Guid? correlationId = null)
+    {
+        var msg = CreateBaseLog("Failover", action, message, metadata, correlationId);
+        await PublishAsync("failover", msg);
+        _logger.LogWarning("FAILOVER log published (Action={Action})", action);
+    }
+
+    private LogMessage CreateBaseLog(string logType, string action, string message, Dictionary<string, string>? metadata, Guid? correlationId)
+    {
+        return new LogMessage
+        {
+            CorrelationId = correlationId ?? Guid.Empty,
+            Layer = "User",
+            LogType = logType,
+            SourceServices = new() { "Notification Service" },
+            DestinationServices = new() { "Log Service" },
+            Action = action,
+            Message = message,
+            Metadata = metadata
+        };
+    }
+
+    private async Task PublishAsync(string type, LogMessage msg)
+    {
+        msg.CorrelationId = msg.CorrelationId == Guid.Empty ? Guid.NewGuid() : msg.CorrelationId;
+        msg.Timestamp = DateTime.UtcNow;
+
+        var routingKey = _routingPattern.Replace("{type}", type);
+        await _bus.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
     }
 }

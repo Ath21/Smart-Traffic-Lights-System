@@ -2,8 +2,7 @@ namespace NotificationStore.Publishers.Logs;
 
 public interface INotificationLogPublisher
 {
-    // log.user.notification_service.audit
-    Task PublishAuditLogAsync(string action, string details, object? metadata = null);
-    // log.user.notification_service.error
-    Task PublishErrorLogAsync(string errorType, string message, object? metadata = null, Exception? ex = null);
+    Task PublishAuditAsync(string action, string message, Dictionary<string, string>? metadata = null, Guid? correlationId = null);
+    Task PublishErrorAsync(string action, string errorMessage, Exception? ex = null, Dictionary<string, string>? metadata = null, Guid? correlationId = null);
+    Task PublishFailoverAsync(string action, string message, Dictionary<string, string>? metadata = null, Guid? correlationId = null);
 }

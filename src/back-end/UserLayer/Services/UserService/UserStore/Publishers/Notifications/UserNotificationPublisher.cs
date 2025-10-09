@@ -1,5 +1,6 @@
 using MassTransit;
-using UserMessages;
+
+using Messages.User;
 
 namespace UserStore.Publishers.Notifications;
 
@@ -7,30 +8,53 @@ public class UserNotificationPublisher : IUserNotificationPublisher
 {
     private readonly IBus _bus;
     private readonly ILogger<UserNotificationPublisher> _logger;
-    private readonly string _notificationRequestKey;
+    private readonly string _routingPattern;
 
-    private const string ServiceTag = "[" + nameof(UserNotificationPublisher) + "]";
-
-    public UserNotificationPublisher(IConfiguration configuration, ILogger<UserNotificationPublisher> logger, IBus bus)
+    public UserNotificationPublisher(
+        IConfiguration config,
+        ILogger<UserNotificationPublisher> logger,
+        IBus bus)
     {
-        _logger = logger;
         _bus = bus;
+        _logger = logger;
 
-        _notificationRequestKey = configuration["RabbitMQ:RoutingKeys:User:NotificationRequest"] 
-                                  ?? "user.notification.request";
+        _routingPattern = config["RabbitMQ:RoutingKeys:User:Notification"]
+                          ?? "user.notification.{type}";
     }
 
-    public async Task PublishNotificationAsync(Guid userId, string recipientEmail, string type, string message, string targetAudience)
+    // ============================================================
+    // Publish REQUEST (User action request)
+    // ============================================================
+    public async Task PublishRequestAsync(
+        string title,
+        string body,
+        string recipientEmail,
+        string status = "Pending",
+        Guid? correlationId = null)
     {
-        var notification = new UserNotificationRequest(
-            userId, recipientEmail, type, message, targetAudience, DateTime.UtcNow
-        );
+        await PublishAsync("request", new UserNotificationMessage
+        {
+            NotificationType = "Request",
+            Title = title,
+            Body = body,
+            RecipientEmail = recipientEmail,
+            Status = status,
+            SourceServices = new() { "User Service" },
+            DestinationServices = new() { "Notification Service" }
+        }, correlationId);
 
-        await _bus.Publish(notification, ctx => ctx.SetRoutingKey(_notificationRequestKey));
+        _logger.LogInformation("REQUEST notification sent to {Recipient}", recipientEmail);
+    }
 
-        _logger.LogInformation(
-            "{Tag} Published notification for {UserId}, type {Type}, email {Email}, audience {Audience}",
-            ServiceTag, userId, type, recipientEmail, targetAudience
-        );
+    // ============================================================
+    // Internal Publish Logic
+    // ============================================================
+    private async Task PublishAsync(string type, UserNotificationMessage msg, Guid? correlationId)
+    {
+        msg.CorrelationId = correlationId ?? Guid.NewGuid();
+        msg.Timestamp = DateTime.UtcNow;
+
+        var routingKey = _routingPattern.Replace("{type}", type);
+        await _bus.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
     }
 }

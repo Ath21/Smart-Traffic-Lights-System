@@ -1,35 +1,82 @@
 using MassTransit;
-using TrafficMessages;
+using Messages.Traffic;
 
-namespace TrafficLightCoordinatorStore.Publishers.Update;
+namespace TrafficLightCoordinator.Publishers.Update;
 
-public class LightUpdatePublisher : ILightUpdatePublisher
+public class TrafficLightUpdatePublisher : ITrafficLightUpdatePublisher
 {
     private readonly IBus _bus;
-    private readonly ILogger<LightUpdatePublisher> _logger;
-    private readonly string _updateKey;
+    private readonly ILogger<TrafficLightUpdatePublisher> _logger;
+    private readonly IntersectionContext _context;
+    private readonly string _routingPattern;
 
-    private const string ServiceTag = "[" + nameof(LightUpdatePublisher) + "]";
-
-    public LightUpdatePublisher(IConfiguration config, ILogger<LightUpdatePublisher> logger, IBus bus)
+    public TrafficLightUpdatePublisher(
+        IConfiguration config,
+        ILogger<TrafficLightUpdatePublisher> logger,
+        IBus bus,
+        IntersectionContext context)
     {
         _bus = bus;
         _logger = logger;
+        _context = context;
 
-        _updateKey = config["RabbitMQ:RoutingKeys:Traffic:LightUpdate"] 
-                     ?? "traffic.light.update.{intersection_id}";
+        _routingPattern = config["RabbitMQ:RoutingKeys:Traffic:LightUpdate"]
+                          ?? "traffic.light.update.{intersection}";
     }
 
-    // traffic.light.update.{intersection_id}
-    public async Task PublishAsync(TrafficLightUpdateMessage message, CancellationToken ct)
+    // ============================================================
+    // Publish full update for one intersection
+    // ============================================================
+    public async Task PublishUpdateAsync(
+        string intersectionName,
+        bool isOperational,
+        string currentMode,
+        string timePlan,
+        Dictionary<string, int> phaseDurations,
+        int cycleDurationSec,
+        int globalOffsetSec,
+        Dictionary<int, int> lightOffsets,
+        Dictionary<string, string>? metadata = null,
+        Guid? correlationId = null)
     {
-        var routingKey = _updateKey.Replace("{intersection_id}", message.IntersectionId.ToString());
+        var intersection = _context.GetByName(intersectionName)
+            ?? throw new InvalidOperationException($"Intersection '{intersectionName}' not found in context.");
 
-        await _bus.Publish(message, ctx => ctx.SetRoutingKey(routingKey), ct);
+        var msg = new TrafficLightUpdateMessage
+        {
+            CorrelationId = correlationId ?? Guid.Empty,
+            IntersectionId = intersection.IntersectionId,
+            IntersectionName = intersection.Name,
+            SourceServices = new() { "Traffic Light Coordinator Service" },
+            DestinationServices = new() { "Intersection Controller Service" },
+            IsOperational = isOperational,
+            CurrentMode = currentMode,
+            TimePlan = timePlan,
+            PhaseDurations = phaseDurations,
+            CycleDurationSec = cycleDurationSec,
+            GlobalOffsetSec = globalOffsetSec,
+            LightOffsets = lightOffsets,
+            Metadata = metadata,
+            Timestamp = DateTime.UtcNow
+        };
+
+        await PublishAsync(intersection.Name, msg);
 
         _logger.LogInformation(
-            "{Tag} Published Light Update for Intersection {IntersectionId} Light {LightId} -> {State} ({RoutingKey})",
-            ServiceTag, message.IntersectionId, message.LightId, message.CurrentState, routingKey
-        );
+            "[{Intersection}] UPDATE published (Mode={Mode}, Plan={Plan}, Cycle={Cycle}s, Offset={Offset}s)",
+            intersection.Name, currentMode, timePlan, cycleDurationSec, globalOffsetSec);
+    }
+
+    // ============================================================
+    // Internal publish logic
+    // ============================================================
+    private async Task PublishAsync(string intersectionName, TrafficLightUpdateMessage msg)
+    {
+        msg.CorrelationId = msg.CorrelationId == Guid.Empty ? Guid.NewGuid() : msg.CorrelationId;
+
+        var routingKey = _routingPattern
+            .Replace("{intersection}", intersectionName.ToLower().Replace(' ', '-'));
+
+        await _bus.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
     }
 }

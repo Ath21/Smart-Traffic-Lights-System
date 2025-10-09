@@ -1,7 +1,5 @@
-using LogMessages;
 using MassTransit;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
+using Messages.Log;
 using SensorStore.Domain;
 
 namespace SensorStore.Publishers.Logs;
@@ -11,11 +9,7 @@ public class SensorLogPublisher : ISensorLogPublisher
     private readonly IBus _bus;
     private readonly ILogger<SensorLogPublisher> _logger;
     private readonly IntersectionContext _intersection;
-    private readonly string _auditKey;
-    private readonly string _errorKey;
-
-    private const string Layer = "Sensor";
-    private const string ServiceName = "Sensor";
+    private readonly string _routingPattern;
 
     public SensorLogPublisher(
         IConfiguration config,
@@ -27,57 +21,99 @@ public class SensorLogPublisher : ISensorLogPublisher
         _logger = logger;
         _intersection = intersection;
 
-        _auditKey = config["RabbitMQ:RoutingKeys:Log:Audit"]
-                    ?? "log.sensor.sensor_service.{intersection}.audit";
-        _errorKey = config["RabbitMQ:RoutingKeys:Log:Error"]
-                    ?? "log.sensor.sensor_service.{intersection}.error";
+        _routingPattern = config["RabbitMQ:RoutingKeys:Log:Sensor"]
+                          ?? "log.sensor.sensor.{type}";
     }
 
-    public async Task PublishAuditAsync(string action, string details, object? metadata = null)
+    // ===========================
+    // AUDIT
+    // ===========================
+    public async Task PublishAuditAsync(string action, string message,
+        Dictionary<string, string>? metadata = null, Guid? correlationId = null)
     {
-        var routingKey = _auditKey.Replace("{intersection}", _intersection.Id.ToString());
+        var log = new LogMessage
+        {
+            CorrelationId = correlationId ?? Guid.Empty,
+            Layer = "Sensor",
+            LogType = "Audit",
+            IntersectionId = _intersection.Id,
+            IntersectionName = _intersection.Name,
+            SourceServices = new() { "Sensor Service" },
+            DestinationServices = new() { "Log Service" },
+            Action = action,
+            Message = message,
+            Metadata = metadata
+        };
+
+        await PublishAsync("audit", log);
+        _logger.LogInformation("[{Intersection}] AUDIT log published (Action={Action})", _intersection.Name, action);
+    }
+
+    // ===========================
+    // ERROR
+    // ===========================
+    public async Task PublishErrorAsync(string action, string errorMessage,
+        Exception? ex = null, Dictionary<string, string>? metadata = null, Guid? correlationId = null)
+    {
+        metadata ??= new();
+        if (ex != null)
+        {
+            metadata["exception_type"] = ex.GetType().Name;
+            metadata["exception_message"] = ex.Message;
+        }
 
         var log = new LogMessage
         {
-            Layer = Layer,
-            Service = ServiceName,
-            Type = "audit",
-            Message = $"{action}: {details}",
-            Timestamp = DateTime.UtcNow,
-            Metadata = BuildMetadata(metadata)
+            CorrelationId = correlationId ?? Guid.Empty,
+            Layer = "Sensor",
+            LogType = "Error",
+            IntersectionId = _intersection.Id,
+            IntersectionName = _intersection.Name,
+            SourceServices = new() { "Sensor Service" },
+            DestinationServices = new() { "Log Service" },
+            Action = action,
+            Message = errorMessage,
+            Metadata = metadata
         };
 
-        await _bus.Publish(log, ctx => ctx.SetRoutingKey(routingKey));
-
-        _logger.LogInformation("[{IntersectionName}][ID={IntersectionId}][AUDIT] {Action} -> {Details}",
-            _intersection.Name, _intersection.Id, action, details);
+        await PublishAsync("error", log);
+        _logger.LogError(ex, "[{Intersection}] ERROR log published (Action={Action}) - {ErrorMessage}",
+            _intersection.Name, action, errorMessage);
     }
 
-    public async Task PublishErrorAsync(string errorType, string message, object? metadata = null)
+    // ===========================
+    // FAILOVER
+    // ===========================
+    public async Task PublishFailoverAsync(string action, string message,
+        Dictionary<string, string>? metadata = null, Guid? correlationId = null)
     {
-        var routingKey = _errorKey.Replace("{intersection}", _intersection.Id.ToString());
-
         var log = new LogMessage
         {
-            Layer = Layer,
-            Service = ServiceName,
-            Type = "error",
-            Message = $"{errorType}: {message}",
-            Timestamp = DateTime.UtcNow,
-            Metadata = BuildMetadata(metadata)
+            CorrelationId = correlationId ?? Guid.Empty,
+            Layer = "Sensor",
+            LogType = "Failover",
+            IntersectionId = _intersection.Id,
+            IntersectionName = _intersection.Name,
+            SourceServices = new() { "Sensor Service" },
+            DestinationServices = new() { "Log Service" },
+            Action = action,
+            Message = message,
+            Metadata = metadata
         };
 
-        await _bus.Publish(log, ctx => ctx.SetRoutingKey(routingKey));
-
-        _logger.LogError("[{IntersectionName}][ID={IntersectionId}][ERROR] {Type} -> {Message}",
-            _intersection.Name, _intersection.Id, errorType, message);
+        await PublishAsync("failover", log);
+        _logger.LogWarning("[{Intersection}] FAILOVER log published (Action={Action})", _intersection.Name, action);
     }
 
-    private Dictionary<string, object>? BuildMetadata(object? metadata)
+    // ===========================
+    // Internal publish logic
+    // ===========================
+    private async Task PublishAsync(string logType, LogMessage msg)
     {
-        var dict = metadata as Dictionary<string, object> ?? new Dictionary<string, object>();
-        dict["IntersectionId"] = _intersection.Id;
-        dict["IntersectionName"] = _intersection.Name;
-        return dict;
+        msg.CorrelationId = msg.CorrelationId == Guid.Empty ? Guid.NewGuid() : msg.CorrelationId;
+        msg.Timestamp = DateTime.UtcNow;
+
+        var routingKey = _routingPattern.Replace("{type}", logType);
+        await _bus.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
     }
 }

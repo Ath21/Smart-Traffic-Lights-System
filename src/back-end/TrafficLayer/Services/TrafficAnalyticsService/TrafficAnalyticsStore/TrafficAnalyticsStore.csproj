@@ -29,4 +29,8 @@
     <ProjectReference Include="../../../Databases/TrafficAnalyticsDB/TrafficAnalyticsData/TrafficAnalyticsData.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Domain/" />
+  </ItemGroup>
+
 </Project>
