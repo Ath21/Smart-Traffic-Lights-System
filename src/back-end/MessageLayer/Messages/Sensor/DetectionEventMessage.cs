@@ -34,8 +34,7 @@ sensor.detection.agiou-spyridonos.emergency
   "Direction": "north",
   "Metadata": {
     "speed_kmh": "65.2",
-    "signal_strength": "0.94",
-    "sensor_id": "sensor-agiou-spyridonos-north"
+    "signal_strength": "0.94"
   }
 }
 
@@ -58,7 +57,6 @@ sensor.detection.kentriki-pyli.public-transport
   "Metadata": {
     "line": "Bus829",
     "arrival_estimated_sec": "45",
-    "passenger_count_estimate": "38"
   }
 }
 

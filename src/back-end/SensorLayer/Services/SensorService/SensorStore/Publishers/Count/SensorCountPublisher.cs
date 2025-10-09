@@ -1,7 +1,4 @@
 using MassTransit;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using SensorMessages.SensorCount;
 using SensorStore.Domain;
 
 namespace SensorStore.Publishers.Count;
@@ -11,11 +8,9 @@ public class SensorCountPublisher : ISensorCountPublisher
     private readonly IBus _bus;
     private readonly ILogger<SensorCountPublisher> _logger;
     private readonly IntersectionContext _intersection;
-    private readonly string _vehicleKey;
-    private readonly string _pedestrianKey;
-    private readonly string _cyclistKey;
+    private readonly string _routingPattern;
 
-    public SensorCountPublisher(
+    public SensorCountPublisherq(
         IConfiguration config,
         ILogger<SensorCountPublisher> logger,
         IBus bus,
@@ -25,66 +20,79 @@ public class SensorCountPublisher : ISensorCountPublisher
         _logger = logger;
         _intersection = intersection;
 
-        _vehicleKey = config["RabbitMQ:RoutingKeys:Sensor:VehicleCount"] ?? "sensor.count.{intersection}.vehicle";
-        _pedestrianKey = config["RabbitMQ:RoutingKeys:Sensor:PedestrianCount"] ?? "sensor.count.{intersection}.pedestrian";
-        _cyclistKey = config["RabbitMQ:RoutingKeys:Sensor:CyclistCount"] ?? "sensor.count.{intersection}.cyclist";
+        _routingPattern = config["RabbitMQ:RoutingKeys:Sensor:Count"]
+                          ?? "sensor.count.{intersection}.{event}";
     }
 
-    public async Task PublishVehicleCountAsync(int count, double avgSpeed, string direction)
+    public async Task PublishVehicleAsync(string vehicleType, int speed_kmh, string direction)
     {
-        var routingKey = _vehicleKey.Replace("{intersection}", _intersection.Id.ToString());
-
-        var msg = new VehicleCountMessage
+        await PublishAsync("vehicle", new SensorCountMessage
         {
+            EventType = "EmergencyVehicle",
+            VehicleType = vehicleType,
+            Direction = direction,
             IntersectionId = _intersection.Id,
             IntersectionName = _intersection.Name,
-            Count = count,
-            AvgSpeed = avgSpeed,
-            Direction = direction,
-            Timestamp = DateTime.UtcNow
-        };
+            Timestamp = DateTime.UtcNow,
+            Metadata = new()
+            {
+                ["SpeedKmh"] = speed_kmh.ToString()
+            }
+        });
 
-        await _bus.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
-
-        _logger.LogInformation("[{IntersectionName}][ID={IntersectionId}] Vehicle count published: {Count} (AvgSpeed={AvgSpeed}, Dir={Direction})",
-            _intersection.Name, _intersection.Id, count, avgSpeed, direction);
+        _logger.LogInformation("[{IntersectionName}] Emergency vehicle published ({VehicleType}, Dir={Direction}, Speed={SpeedKmh})",
+            _intersection.Name, vehicleType, direction, speed_kmh);
     }
 
-    public async Task PublishPedestrianCountAsync(int count, string direction)
+    public async Task PublishPedestrianAsync(string mode, string line, int arrival_estimated_sec, string direction)
     {
-        var routingKey = _pedestrianKey.Replace("{intersection}", _intersection.Id.ToString());
-
-        var msg = new PedestrianCountMessage
+        await PublishAsync("pedestrian", new SensorCountMessage
         {
+            EventType = "Pedestrian",
+            VehicleType = mode,
+            Direction = direction,
             IntersectionId = _intersection.Id,
             IntersectionName = _intersection.Name,
-            Count = count,
-            Direction = direction,
-            Timestamp = DateTime.UtcNow
-        };
+            Timestamp = DateTime.UtcNow,
+            Metadata = new()
+            {
+                ["Line"] = line,
+                ["ArrivalEstimatedSec"] = arrival_estimated_sec.ToString()
+            }
+        });
 
-        await _bus.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
-
-        _logger.LogInformation("[{IntersectionName}][ID={IntersectionId}] Pedestrian count published: {Count} (Dir={Direction})",
-            _intersection.Name, _intersection.Id, count, direction);
+        _logger.LogInformation("[{IntersectionName}] Public transport published ({Mode}, Line={Line}, ArrivalInSec={ArrivalEstimatedSec}, Dir={Direction})",
+            _intersection.Name, mode, line, arrival_estimated_sec, direction);
     }
 
-    public async Task PublishCyclistCountAsync(int count, string direction)
+    public async Task PublishCyclistAsync(string type, int severity, string description, string direction)
     {
-        var routingKey = _cyclistKey.Replace("{intersection}", _intersection.Id.ToString());
-
-        var msg = new CyclistCountMessage
+        await PublishAsync("cyclist", new SensorCountMessage
         {
+            EventType = type,
+            Direction = direction,
             IntersectionId = _intersection.Id,
             IntersectionName = _intersection.Name,
-            Count = count,
-            Direction = direction,
-            Timestamp = DateTime.UtcNow
-        };
+            Timestamp = DateTime.UtcNow,
+            Metadata = new()
+            {
+                ["Severity"] = severity.ToString(),
+                ["Description"] = description
+            }
+        });
+
+        _logger.LogWarning("[{IntersectionName}] Incident published: {Type} (Severity={Severity}, Dir={Direction}) - {Description}",
+            _intersection.Name, type, severity, direction, description);
+    }
+
+    private async Task PublishAsync(string eventKey, SensorCountMessage msg)
+    {
+        var routingKey = _routingPattern
+            .Replace("{intersection}", _intersection.Name.ToLower().Replace(' ', '-'))
+            .Replace("{count}", eventKey);
+
+        msg.CorrelationId = Guid.NewGuid();
 
         await _bus.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
-
-        _logger.LogInformation("[{IntersectionName}][ID={IntersectionId}] Cyclist count published: {Count} (Dir={Direction})",
-            _intersection.Name, _intersection.Id, count, direction);
     }
 }
