@@ -1,16 +1,16 @@
 using LogData;
 using LogStore.Business;
-using LogStore.Consumers.User;
 using LogStore.Middleware;
 using Microsoft.OpenApi.Models;
 using LogData.Repositories.Audit;
 using LogData.Repositories.Error;
-using LogStore.Consumers.Traffic;
-using LogStore.Consumers.Sensor;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using LogData.Repositories.Failover;
+using LogData.Settings;
+using LogData.Repositories.Search;
+using LogStore.Consumers;
 
 namespace LogStore;
 
@@ -46,11 +46,12 @@ public class Startup
         services.AddScoped(typeof(IAuditLogRepository), typeof(AuditLogRepository));
         services.AddScoped(typeof(IErrorLogRepository), typeof(ErrorLogRepository));
         services.AddScoped(typeof(IFailoverLogRepository), typeof(FailoverLogRepository));
+        services.AddScoped(typeof(ISearchLogRepository), typeof(SearchLogRepository));
 
         // ===============================
         // Business Layer (Services)
         // ===============================
-        services.AddScoped(typeof(ILogService), typeof(LogService));
+        services.AddScoped(typeof(ILogBusiness), typeof(LogBusiness));
 
         // ===============================
         // AutoMapper (object-object mapping)
@@ -83,15 +84,7 @@ public class Startup
         // Message Layer (MassTransit with RabbitMQ)
         // ===============================
         // Consumers
-        services.AddScoped<UserErrorLogConsumer>();
-        services.AddScoped<UserAuditLogConsumer>();
-        services.AddScoped<UserFailoverLogConsumer>();
-        services.AddScoped<TrafficErrorLogConsumer>();
-        services.AddScoped<TrafficAuditLogConsumer>();
-        services.AddScoped<TrafficFailoverLogConsumer>();
-        services.AddScoped<SensorErrorLogConsumer>();
-        services.AddScoped<SensorAuditLogConsumer>();
-        services.AddScoped<SensorFailoverLogConsumer>();
+        services.AddScoped<LogConsumer>();
 
         // MassTransit Setup
         services.AddLogServiceMassTransit(_configuration);

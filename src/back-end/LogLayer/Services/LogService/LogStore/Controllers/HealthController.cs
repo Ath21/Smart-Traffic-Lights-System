@@ -4,10 +4,10 @@ using Microsoft.AspNetCore.Mvc;
 namespace LogStore.Controllers
 {
     [ApiController]
-    [Route("log_service")]
+    [Route("log-service")]
     public class HealthController : ControllerBase
     {
-        // Liveness: Service is running (no external deps)
+        // Liveness Probe
         [HttpGet("health")]
         public IActionResult Health()
         {

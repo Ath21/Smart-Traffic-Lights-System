@@ -2260,11 +2260,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/Services/LogService/LogStore/LogStore.csproj",
+      "projectUniqueName": "/home/ath/Desktop/Smart-Traffic-Lights-System/src/back-end/LogLayer/Services/LogService/LogStore/LogStore.csproj",
       "projectName": "LogStore",
-      "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/Services/LogService/LogStore/LogStore.csproj",
+      "projectPath": "/home/ath/Desktop/Smart-Traffic-Lights-System/src/back-end/LogLayer/Services/LogService/LogStore/LogStore.csproj",
       "packagesPath": "/home/ath/.nuget/packages/",
-      "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/Services/LogService/LogStore/obj/",
+      "outputPath": "/home/ath/Desktop/Smart-Traffic-Lights-System/src/back-end/LogLayer/Services/LogService/LogStore/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/home/ath/.nuget/NuGet/NuGet.Config"
@@ -2279,11 +2279,11 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
-            "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/Databases/LogDB/LogData/LogData.csproj": {
-              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/LogLayer/Databases/LogDB/LogData/LogData.csproj"
+            "/home/ath/Desktop/Smart-Traffic-Lights-System/src/back-end/LogLayer/Databases/LogDB/LogData/LogData.csproj": {
+              "projectPath": "/home/ath/Desktop/Smart-Traffic-Lights-System/src/back-end/LogLayer/Databases/LogDB/LogData/LogData.csproj"
             },
-            "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/Messages/Messages.csproj": {
-              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/Messages/Messages.csproj"
+            "/home/ath/Desktop/Smart-Traffic-Lights-System/src/back-end/MessageLayer/Messages/Messages.csproj": {
+              "projectPath": "/home/ath/Desktop/Smart-Traffic-Lights-System/src/back-end/MessageLayer/Messages/Messages.csproj"
             }
           }
         }

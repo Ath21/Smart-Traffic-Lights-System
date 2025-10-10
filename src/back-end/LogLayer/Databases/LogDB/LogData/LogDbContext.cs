@@ -1,4 +1,5 @@
 using LogData.Collections;
+using LogData.Settings;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;

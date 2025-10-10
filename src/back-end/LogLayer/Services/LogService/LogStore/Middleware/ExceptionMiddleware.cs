@@ -1,10 +1,10 @@
 using System.Net;
 using System.Text.Json;
-using MassTransit;
 using MongoDB.Driver;
 using RabbitMQ.Client.Exceptions;
-using LogStore.Business;
-using LogStore.Models.Dtos;
+using LogData.Collections;
+using LogData.Repositories.Error;
+using MassTransit;
 
 namespace LogStore.Middleware;
 
@@ -19,7 +19,7 @@ public class ExceptionMiddleware
         _logger = logger;
     }
 
-    public async Task InvokeAsync(HttpContext context, ILogService logService)
+    public async Task InvokeAsync(HttpContext context, IErrorLogRepository errorRepo)
     {
         try
         {
@@ -31,7 +31,7 @@ public class ExceptionMiddleware
         // ============================
         catch (UnauthorizedAccessException ex)
         {
-            await HandleErrorAsync(context, HttpStatusCode.Unauthorized, "Unauthorized access", "AUTH_ERROR", ex, logService);
+            await HandleErrorAsync(context, errorRepo, HttpStatusCode.Unauthorized, "Unauthorized access", "AUTH_ERROR", ex);
         }
 
         // ============================
@@ -39,31 +39,31 @@ public class ExceptionMiddleware
         // ============================
         catch (KeyNotFoundException ex)
         {
-            await HandleErrorAsync(context, HttpStatusCode.NotFound, "Resource not found", "NOT_FOUND", ex, logService);
+            await HandleErrorAsync(context, errorRepo, HttpStatusCode.NotFound, "Resource not found", "NOT_FOUND", ex);
         }
         catch (InvalidOperationException ex)
         {
-            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid operation", "INVALID_OPERATION", ex, logService);
+            await HandleErrorAsync(context, errorRepo, HttpStatusCode.BadRequest, "Invalid operation", "INVALID_OPERATION", ex);
         }
         catch (ArgumentNullException ex)
         {
-            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Missing required parameter", "ARGUMENT_NULL", ex, logService);
+            await HandleErrorAsync(context, errorRepo, HttpStatusCode.BadRequest, "Missing required parameter", "ARGUMENT_NULL", ex);
         }
         catch (ArgumentException ex)
         {
-            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid parameter", "ARGUMENT_ERROR", ex, logService);
+            await HandleErrorAsync(context, errorRepo, HttpStatusCode.BadRequest, "Invalid parameter", "ARGUMENT_ERROR", ex);
         }
         catch (FormatException ex)
         {
-            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid data format", "FORMAT_ERROR", ex, logService);
+            await HandleErrorAsync(context, errorRepo, HttpStatusCode.BadRequest, "Invalid data format", "FORMAT_ERROR", ex);
         }
         catch (JsonException ex)
         {
-            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid JSON payload", "JSON_ERROR", ex, logService);
+            await HandleErrorAsync(context, errorRepo, HttpStatusCode.BadRequest, "Invalid JSON payload", "JSON_ERROR", ex);
         }
         catch (InvalidCastException ex)
         {
-            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid type conversion", "CAST_ERROR", ex, logService);
+            await HandleErrorAsync(context, errorRepo, HttpStatusCode.BadRequest, "Invalid type conversion", "CAST_ERROR", ex);
         }
 
         // ============================
@@ -71,27 +71,27 @@ public class ExceptionMiddleware
         // ============================
         catch (TimeoutException ex)
         {
-            await HandleErrorAsync(context, HttpStatusCode.RequestTimeout, "Operation timed out", "TIMEOUT", ex, logService);
+            await HandleErrorAsync(context, errorRepo, HttpStatusCode.RequestTimeout, "Operation timed out", "TIMEOUT", ex);
         }
         catch (HttpRequestException ex)
         {
-            await HandleErrorAsync(context, HttpStatusCode.BadGateway, "External service unavailable", "HTTP_REQUEST_ERROR", ex, logService);
+            await HandleErrorAsync(context, errorRepo, HttpStatusCode.BadGateway, "External service unavailable", "HTTP_REQUEST_ERROR", ex);
         }
         catch (TaskCanceledException ex)
         {
-            await HandleErrorAsync(context, HttpStatusCode.RequestTimeout, "Operation canceled or timed out", "TASK_CANCELED", ex, logService);
+            await HandleErrorAsync(context, errorRepo, HttpStatusCode.RequestTimeout, "Operation canceled or timed out", "TASK_CANCELED", ex);
         }
         catch (RequestTimeoutException ex)
         {
-            await HandleErrorAsync(context, HttpStatusCode.GatewayTimeout, "Message broker timeout", "BROKER_TIMEOUT", ex, logService);
+            await HandleErrorAsync(context, errorRepo, HttpStatusCode.GatewayTimeout, "Message broker timeout", "BROKER_TIMEOUT", ex);
         }
         catch (BrokerUnreachableException ex)
         {
-            await HandleErrorAsync(context, HttpStatusCode.BadGateway, "Message broker unreachable", "BROKER_UNREACHABLE", ex, logService);
+            await HandleErrorAsync(context, errorRepo, HttpStatusCode.BadGateway, "Message broker unreachable", "BROKER_UNREACHABLE", ex);
         }
         catch (OperationInterruptedException ex)
         {
-            await HandleErrorAsync(context, HttpStatusCode.ServiceUnavailable, "Message broker interrupted operation", "BROKER_INTERRUPTED", ex, logService);
+            await HandleErrorAsync(context, errorRepo, HttpStatusCode.ServiceUnavailable, "Message broker interrupted operation", "BROKER_INTERRUPTED", ex);
         }
 
         // ============================
@@ -99,19 +99,19 @@ public class ExceptionMiddleware
         // ============================
         catch (MongoAuthenticationException ex)
         {
-            await HandleErrorAsync(context, HttpStatusCode.Unauthorized, "MongoDB authentication failed", "DB_AUTH_ERROR", ex, logService);
+            await HandleErrorAsync(context, errorRepo, HttpStatusCode.Unauthorized, "MongoDB authentication failed", "DB_AUTH_ERROR", ex);
         }
         catch (MongoConnectionException ex)
         {
-            await HandleErrorAsync(context, HttpStatusCode.ServiceUnavailable, "MongoDB connection failure", "DB_CONN_ERROR", ex, logService);
+            await HandleErrorAsync(context, errorRepo, HttpStatusCode.ServiceUnavailable, "MongoDB connection failure", "DB_CONN_ERROR", ex);
         }
         catch (MongoWriteException ex)
         {
-            await HandleErrorAsync(context, HttpStatusCode.Conflict, "MongoDB write conflict", "DB_WRITE_ERROR", ex, logService);
+            await HandleErrorAsync(context, errorRepo, HttpStatusCode.Conflict, "MongoDB write conflict", "DB_WRITE_ERROR", ex);
         }
         catch (MongoException ex)
         {
-            await HandleErrorAsync(context, HttpStatusCode.InternalServerError, "MongoDB error", "DB_ERROR", ex, logService);
+            await HandleErrorAsync(context, errorRepo, HttpStatusCode.InternalServerError, "MongoDB error", "DB_ERROR", ex);
         }
 
         // ============================
@@ -119,45 +119,52 @@ public class ExceptionMiddleware
         // ============================
         catch (Exception ex)
         {
-            await HandleErrorAsync(context, HttpStatusCode.InternalServerError, "An unexpected error occurred", "UNEXPECTED", ex, logService);
+            await HandleErrorAsync(context, errorRepo, HttpStatusCode.InternalServerError, "An unexpected error occurred", "UNEXPECTED", ex);
         }
     }
 
     private async Task HandleErrorAsync(
         HttpContext context,
+        IErrorLogRepository errorRepo,
         HttpStatusCode statusCode,
         string userMessage,
         string errorType,
-        Exception ex,
-        ILogService logService)
+        Exception ex)
     {
         _logger.LogError(ex, "[EXCEPTION] {Message}", userMessage);
 
         try
         {
-            // Store directly in MongoDB via business service
-            await logService.StoreErrorLogAsync(new ErrorLogDto
+            // Create and insert structured error document
+            var log = new ErrorLogCollection
             {
-                LogId = Guid.NewGuid(),
-                ServiceName = "LogService",
-                ErrorType = errorType,
-                Message = $"[EXCEPTION] {ex.Message}",
+                CorrelationId = Guid.NewGuid(),
                 Timestamp = DateTime.UtcNow,
-                Metadata = new Dictionary<string, object>
+                Layer = "System",
+                Service = "Log Service Middleware",
+                IntersectionId = 0,
+                IntersectionName = "N/A",
+                ErrorType = errorType,
+                Action = context.Request.Path,
+                Message = $"{userMessage}: {ex.Message}",
+                Metadata = new MongoDB.Bson.BsonDocument
                 {
-                    ["Path"] = context.Request.Path,
-                    ["Method"] = context.Request.Method,
-                    ["TraceId"] = context.TraceIdentifier,
-                    ["Exception"] = ex.GetType().Name,
-                    ["StackTrace"] = ex.StackTrace ?? ""
+                    { "Path", context.Request.Path.Value ?? "Unknown" },
+                    { "Method", context.Request.Method },
+                    { "TraceId", context.TraceIdentifier },
+                    { "Exception", ex.GetType().Name },
+                    { "StackTrace", ex.StackTrace ?? string.Empty },
+                    { "InnerException", ex.InnerException?.Message ?? string.Empty }
                 }
-            });
+            };
 
-            _logger.LogInformation("[EXCEPTION] Error stored in error_logs collection: {ErrorType}", errorType);
+            await errorRepo.InsertAsync(log);
+
+            _logger.LogInformation("[EXCEPTION] Stored error log ({ErrorType}) in MongoDB.", errorType);
         }
         catch (Exception dbEx)
         {
-            _logger.LogError(dbEx, "[EXCEPTION] Failed to store error log in database");
+            _logger.LogError(dbEx, "[EXCEPTION] Failed to write exception log to MongoDB");
         }
 
         context.Response.StatusCode = (int)statusCode;

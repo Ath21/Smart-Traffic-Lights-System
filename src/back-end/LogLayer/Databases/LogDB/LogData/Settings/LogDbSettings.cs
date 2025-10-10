@@ -1,4 +1,4 @@
-namespace LogData;
+namespace LogData.Settings;
 
 public class LogDbSettings
 {

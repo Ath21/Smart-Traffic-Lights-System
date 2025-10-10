@@ -10,9 +10,9 @@
         "dependencies": {
           "AutoMapper.Extensions.Microsoft.DependencyInjection": "12.0.1",
           "LogData": "1.0.0",
-          "LogMessages": "1.0.0",
           "MassTransit": "8.4.1",
           "MassTransit.RabbitMQ": "8.4.1",
+          "Messages": "1.0.0",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "9.0.0",
           "Microsoft.AspNetCore.OpenApi": "9.0.5",
           "MongoDB.Driver": "3.4.0",
@@ -392,6 +392,7 @@
       },
       "LogData/1.0.0": {
         "dependencies": {
+          "Microsoft.Extensions.Diagnostics.HealthChecks": "9.0.0",
           "Microsoft.Extensions.Options": "9.0.5",
           "MongoDB.Driver": "3.4.0"
         },
@@ -402,9 +403,9 @@
           }
         }
       },
-      "LogMessages/1.0.0": {
+      "Messages/1.0.0": {
         "runtime": {
-          "LogMessages.dll": {
+          "Messages.dll": {
             "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
@@ -752,7 +753,7 @@
       "serviceable": false,
       "sha512": ""
     },
-    "LogMessages/1.0.0": {
+    "Messages/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
