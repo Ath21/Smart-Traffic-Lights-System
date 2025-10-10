@@ -2,24 +2,9 @@ using System;
 
 namespace TrafficLightControllerStore.Publishers.Logs;
 
-public interface ITrafficLogPublisher
+public interface ITrafficLightControllerLogPublisher
 {
-    Task PublishAuditAsync(
-        string action,
-        string details,
-        string intersection,
-        string light,
-        object? metadata = null);
-    Task PublishErrorAsync(
-        string errorType,
-        string message,
-        string intersection,
-        string light,
-        object? metadata = null);
-    Task PublishFailoverAsync(
-        string intersection,
-        string light,
-        string reason,
-        string mode,
-        object? metadata = null);
+    Task PublishAuditAsync(string action, string message, Dictionary<string, string>? metadata = null, Guid? correlationId = null);
+    Task PublishErrorAsync(string action, string errorMessage, Exception? ex = null, Dictionary<string, string>? metadata = null, Guid? correlationId = null);
+    Task PublishFailoverAsync(string action, string message, Dictionary<string, string>? metadata = null, Guid? correlationId = null);
 }

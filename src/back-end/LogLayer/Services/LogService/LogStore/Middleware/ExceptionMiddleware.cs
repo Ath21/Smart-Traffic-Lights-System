@@ -13,8 +13,6 @@ public class ExceptionMiddleware
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionMiddleware> _logger;
 
-    private const string ServiceTag = "[" + nameof(ExceptionMiddleware) + "]";
-
     public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
     {
         _next = next;
@@ -133,7 +131,7 @@ public class ExceptionMiddleware
         Exception ex,
         ILogService logService)
     {
-        _logger.LogError(ex, "{Tag} {Message}", ServiceTag, userMessage);
+        _logger.LogError(ex, "[EXCEPTION] {Message}", userMessage);
 
         try
         {
@@ -143,7 +141,7 @@ public class ExceptionMiddleware
                 LogId = Guid.NewGuid(),
                 ServiceName = "LogService",
                 ErrorType = errorType,
-                Message = $"{ServiceTag} {ex.Message}",
+                Message = $"[EXCEPTION] {ex.Message}",
                 Timestamp = DateTime.UtcNow,
                 Metadata = new Dictionary<string, object>
                 {
@@ -155,11 +153,11 @@ public class ExceptionMiddleware
                 }
             });
 
-            _logger.LogInformation("{Tag} Error stored in error_logs collection: {ErrorType}", ServiceTag, errorType);
+            _logger.LogInformation("[EXCEPTION] Error stored in error_logs collection: {ErrorType}", errorType);
         }
         catch (Exception dbEx)
         {
-            _logger.LogError(dbEx, "{Tag} Failed to store error log in database", ServiceTag);
+            _logger.LogError(dbEx, "[EXCEPTION] Failed to store error log in database");
         }
 
         context.Response.StatusCode = (int)statusCode;

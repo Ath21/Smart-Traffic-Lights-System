@@ -1,125 +1,122 @@
-using LogMessages;
 using MassTransit;
+using Messages.Log;
+using TrafficLightControllerStore.Domain;
 
 namespace TrafficLightControllerStore.Publishers.Logs;
 
-public class TrafficLogPublisher : ITrafficLogPublisher
+public class TrafficLightControllerLogPublisher : ITrafficLightControllerLogPublisher
 {
     private readonly IBus _bus;
-    private readonly ILogger<TrafficLogPublisher> _logger;
-    private readonly string _serviceName = "Traffic Light Controller Service";
-    private readonly string _logExchange;
-    private readonly string _auditKeyTemplate;
-    private readonly string _errorKeyTemplate;
-    private readonly string _failoverKeyTemplate;
+    private readonly ILogger<TrafficLightControllerLogPublisher> _logger;
+    private readonly IntersectionContext _intersection;
+    private readonly TrafficLightContext _trafficLightContext;
+    private readonly string _routingPattern;
 
-    private const string ServiceTag = "[" + nameof(TrafficLogPublisher) + "]";
-
-    public TrafficLogPublisher(IConfiguration configuration, ILogger<TrafficLogPublisher> logger, IBus bus)
+    public TrafficLightControllerLogPublisher(
+        IConfiguration config,
+        ILogger<TrafficLightControllerLogPublisher> logger,
+        IBus bus,
+        IntersectionContext intersection,
+        TrafficLightContext trafficLightContext)
     {
         _bus = bus;
         _logger = logger;
+        _intersection = intersection;
+        _trafficLightContext = trafficLightContext;
 
-        _logExchange = configuration["RabbitMQ:Exchanges:Log"] ?? "LOG.EXCHANGE";
-        _auditKeyTemplate = configuration["RabbitMQ:RoutingKeys:Log:Audit"]
-                            ?? "log.traffic.light_controller.{intersection}.{light}.audit";
-        _errorKeyTemplate = configuration["RabbitMQ:RoutingKeys:Log:Error"]
-                            ?? "log.traffic.light_controller.{intersection}.{light}.error";
-        _failoverKeyTemplate = configuration["RabbitMQ:RoutingKeys:Log:Failover"]
-                            ?? "log.traffic.light_controller.{intersection}.{light}.failover";
+        _routingPattern = config["RabbitMQ:RoutingKeys:Log:TrafficLightController"]
+                          ?? "log.traffic.traffic-light-controller.{type}";
     }
 
-    private async Task PublishAsync<T>(T message, string routingKey)
-    {
-        var endpoint = await _bus.GetSendEndpoint(new Uri($"exchange:{_logExchange}"));
-        await endpoint.Send(message, ctx => ctx.SetRoutingKey(routingKey));
-    }
-
-    // Publishes an audit log with dynamic intersection/light routing
+    // ============================================================
+    // Publish AUDIT log
+    // ============================================================
     public async Task PublishAuditAsync(
         string action,
-        string details,
-        string intersection,
-        string light,
-        object? metadata = null)
-    {
-        var log = new AuditLogMessage(
-            Guid.NewGuid(),
-            _serviceName,
-            action,
-            details,
-            DateTime.UtcNow,
-            metadata
-        );
-
-        var routingKey = _auditKeyTemplate
-            .Replace("{intersection}", intersection)
-            .Replace("{light}", light);
-
-        await PublishAsync(log, routingKey);
-
-        _logger.LogInformation(
-            "{Tag} AUDIT published: Intersection={Intersection}, Light={Light}, Action={Action}, Details={Details}, Metadata={Metadata}",
-            ServiceTag, intersection, light, action, details, metadata ?? "{}"
-        );
-    }
-
-    // Publishes an error log with dynamic intersection/light routing
-    public async Task PublishErrorAsync(
-        string errorType,
         string message,
-        string intersection,
-        string light,
-        object? metadata = null)
+        Dictionary<string, string>? metadata = null,
+        Guid? correlationId = null)
     {
-        var log = new ErrorLogMessage(
-            Guid.NewGuid(),
-            _serviceName,
-            errorType,
-            message,
-            DateTime.UtcNow,
-            metadata
-        );
+        var msg = CreateLog("Audit", action, message, metadata, correlationId);
+        await PublishAsync("audit", msg);
 
-        var routingKey = _errorKeyTemplate
-            .Replace("{intersection}", intersection)
-            .Replace("{light}", light);
-
-        await PublishAsync(log, routingKey);
-
-        _logger.LogError(
-            "{Tag} ERROR published: Intersection={Intersection}, Light={Light}, Type={Type}, Message={Message}, Metadata={Metadata}",
-            ServiceTag, intersection, light, errorType, message, metadata ?? "{}"
-        );
+        _logger.LogInformation("[{Intersection}/{Light}] AUDIT log → {Action}", 
+            _intersection.Name, _trafficLightContext.Name, action);
     }
 
-    // Publishes a failover log (service-specific context)
-    public async Task PublishFailoverAsync(
-        string intersection,
-        string light,
-        string reason,
-        string mode,
-        object? metadata = null)
+    // ============================================================
+    // Publish ERROR log
+    // ============================================================
+    public async Task PublishErrorAsync(
+        string action,
+        string errorMessage,
+        Exception? ex = null,
+        Dictionary<string, string>? metadata = null,
+        Guid? correlationId = null)
     {
-        var msg = new FailoverMessage(
-            Guid.NewGuid(),
-            _serviceName,
-            $"{intersection}.{light}", // generic Context field (service decides how to fill it)
-            reason,
-            mode,
-            DateTime.UtcNow,
-            metadata
-        );
+        metadata ??= new();
+        if (ex != null)
+        {
+            metadata["exception_type"] = ex.GetType().Name;
+            metadata["exception_message"] = ex.Message;
+        }
 
-        var routingKey = _failoverKeyTemplate
-            .Replace("{intersection}", intersection)
-            .Replace("{light}", light);
+        var msg = CreateLog("Error", action, errorMessage, metadata, correlationId);
+        await PublishAsync("error", msg);
 
-        await PublishAsync(msg, routingKey);
+        _logger.LogError(ex, "[{Intersection}/{Light}] ERROR log → {Action} | {Error}", 
+            _intersection.Name, _trafficLightContext.Name, action, errorMessage);
+    }
 
-        _logger.LogWarning(
-            "[Failover] {Service} → Intersection={Intersection}, Light={Light}, Reason={Reason}, Mode={Mode}, Metadata={Metadata}",
-            _serviceName, intersection, light, reason, mode, metadata ?? "{}"
-        );
+    // ============================================================
+    // Publish FAILOVER log
+    // ============================================================
+    public async Task PublishFailoverAsync(
+        string action,
+        string message,
+        Dictionary<string, string>? metadata = null,
+        Guid? correlationId = null)
+    {
+        var msg = CreateLog("Failover", action, message, metadata, correlationId);
+        await PublishAsync("failover", msg);
+
+        _logger.LogWarning("[{Intersection}/{Light}] FAILOVER log → {Action}", 
+            _intersection.Name, _trafficLightContext.Name, action);
+    }
+
+    // ============================================================
+    // Internal helper methods
+    // ============================================================
+    private LogMessage CreateLog(
+        string logType,
+        string action,
+        string message,
+        Dictionary<string, string>? metadata,
+        Guid? correlationId)
+    {
+        return new LogMessage
+        {
+            CorrelationId = correlationId ?? Guid.Empty,
+            Timestamp = DateTime.UtcNow,
+            Layer = "Traffic",
+            LogType = logType,
+            IntersectionId = _intersection.Id,
+            IntersectionName = _intersection.Name,
+            SourceServices = new() { "Traffic Light Controller Service" },
+            DestinationServices = new() { "Log Service" },
+            LightId = new() { _trafficLightContext.Id },
+            TrafficLight = new() { _trafficLightContext.Name },
+            Action = action,
+            Message = message,
+            Metadata = metadata
+        };
+    }
+
+    private async Task PublishAsync(string logType, LogMessage msg)
+    {
+        msg.CorrelationId = msg.CorrelationId == Guid.Empty ? Guid.NewGuid() : msg.CorrelationId;
+
+        var routingKey = _routingPattern.Replace("{type}", logType);
+        await _bus.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
     }
 }

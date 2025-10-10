@@ -1,15 +1,13 @@
-using System;
 using System.Net;
-using System.Threading.Tasks;
-using MassTransit;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.DependencyInjection;
-using StackExchange.Redis;
-using RabbitMQ.Client;
+using System.Text.Json;
+using System.Security.Authentication;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using RabbitMQ.Client.Exceptions;
+using StackExchange.Redis;
+using AutoMapper;
 using TrafficLightControllerStore.Publishers.Logs;
-using TrafficLightControllerStore.Failover;
+using MassTransit;
 
 namespace TrafficLightControllerStore.Middleware;
 
@@ -35,154 +33,163 @@ public class ExceptionMiddleware
         {
             await _next(context);
         }
-        // ========== Security ==========
+
+        // ============================
+        // AUTH / SECURITY
+        // ============================
         catch (UnauthorizedAccessException ex)
         {
-            await HandleErrorAsync(context, HttpStatusCode.Unauthorized, "Security.Unauthorized", ex);
+            await HandleErrorAsync(context, HttpStatusCode.Unauthorized, "Unauthorized access", "AUTH_ERROR", ex);
+        }
+        catch (SecurityTokenException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.Unauthorized, "Invalid or expired token", "TOKEN_ERROR", ex);
+        }
+        catch (AuthenticationException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.Unauthorized, "Authentication failed", "AUTHENTICATION_ERROR", ex);
         }
 
-        // ========== Validation / Input ==========
+        // ============================
+        // CLIENT / VALIDATION
+        // ============================
+        catch (KeyNotFoundException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.NotFound, "Resource not found", "NOT_FOUND", ex);
+        }
+        catch (InvalidOperationException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid operation", "INVALID_OPERATION", ex);
+        }
         catch (ArgumentNullException ex)
         {
-            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Validation.ArgumentNull", ex);
+            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Missing required parameter", "ARGUMENT_NULL", ex);
         }
         catch (ArgumentException ex)
         {
-            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Validation.Argument", ex);
+            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid argument", "ARGUMENT_ERROR", ex);
         }
         catch (FormatException ex)
         {
-            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Validation.Format", ex);
+            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid data format", "FORMAT_ERROR", ex);
         }
-        catch (System.Text.Json.JsonException ex)
+        catch (JsonException ex)
         {
-            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Validation.JsonParse", ex);
+            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid JSON payload", "JSON_ERROR", ex);
         }
-        catch (System.ComponentModel.DataAnnotations.ValidationException ex)
+        catch (AutoMapperMappingException ex)
         {
-            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Validation.DataAnnotations", ex);
+            await HandleErrorAsync(context, HttpStatusCode.InternalServerError, "Mapping error occurred", "MAPPING_ERROR", ex);
         }
 
-        // ========== Resource / Not Found ==========
-        catch (KeyNotFoundException ex)
+        // ============================
+        // DATABASE (EF Core)
+        // ============================
+        catch (DbUpdateConcurrencyException ex)
         {
-            await HandleErrorAsync(context, HttpStatusCode.NotFound, "Resource.NotFound", ex);
+            await HandleErrorAsync(context, HttpStatusCode.Conflict, "Database concurrency conflict", "DB_CONCURRENCY_ERROR", ex);
+        }
+        catch (DbUpdateException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.Conflict, "Database update failed", "DB_UPDATE_ERROR", ex);
         }
 
-        // ========== Infrastructure: Redis ==========
+        // ============================
+        // CACHE (Redis)
+        // ============================
         catch (RedisConnectionException ex)
         {
-            await HandleErrorAsync(context, HttpStatusCode.ServiceUnavailable, "Infrastructure.Redis.Connection", ex, fallback: true);
+            await HandleErrorAsync(context, HttpStatusCode.ServiceUnavailable, "Redis connection error", "REDIS_CONN_ERROR", ex);
         }
         catch (RedisTimeoutException ex)
         {
-            await HandleErrorAsync(context, HttpStatusCode.RequestTimeout, "Infrastructure.Redis.Timeout", ex, fallback: true);
+            await HandleErrorAsync(context, HttpStatusCode.RequestTimeout, "Redis operation timeout", "REDIS_TIMEOUT", ex);
+        }
+        catch (RedisServerException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.BadGateway, "Redis server error", "REDIS_SERVER_ERROR", ex);
         }
 
-        // ========== Infrastructure: RabbitMQ / MassTransit ==========
-        catch (RabbitMQ.Client.Exceptions.BrokerUnreachableException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.ServiceUnavailable, "Infrastructure.RabbitMQ.BrokerUnreachable", ex, fallback: true);
-        }
-        catch (RabbitMQ.Client.Exceptions.OperationInterruptedException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.BadGateway, "Infrastructure.RabbitMQ.OperationInterrupted", ex, fallback: true);
-        }
-
-        // ========== Infrastructure: Database (EF Core, SQL) ==========
-        catch (DbUpdateException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Infrastructure.Database.Update", ex);
-        }
-        catch (InvalidOperationException ex) when (ex.Source?.Contains("Microsoft.EntityFrameworkCore") == true)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Infrastructure.Database.InvalidOperation", ex);
-        }
-
-        // ========== Infrastructure: HTTP / External Calls ==========
+        // ============================
+        // BROKER / NETWORK
+        // ============================
         catch (TimeoutException ex)
         {
-            await HandleErrorAsync(context, HttpStatusCode.RequestTimeout, "Infrastructure.Timeout", ex, fallback: true);
+            await HandleErrorAsync(context, HttpStatusCode.RequestTimeout, "Operation timed out", "TIMEOUT", ex);
         }
-        catch (HttpRequestException ex)
+        catch (RequestTimeoutException ex)
         {
-            await HandleErrorAsync(context, HttpStatusCode.BadGateway, "Infrastructure.HttpRequest", ex, fallback: true);
+            await HandleErrorAsync(context, HttpStatusCode.GatewayTimeout, "RabbitMQ request timeout", "BROKER_TIMEOUT", ex);
         }
-        catch (TaskCanceledException ex)
+        catch (BrokerUnreachableException ex)
         {
-            await HandleErrorAsync(context, HttpStatusCode.RequestTimeout, "Infrastructure.TaskCanceled", ex, fallback: true);
+            await HandleErrorAsync(context, HttpStatusCode.BadGateway, "RabbitMQ unreachable", "BROKER_UNREACHABLE", ex);
+        }
+        catch (OperationInterruptedException ex)
+        {
+            await HandleErrorAsync(context, HttpStatusCode.ServiceUnavailable, "RabbitMQ operation interrupted", "BROKER_INTERRUPTED", ex);
         }
 
-        // ========== Not Implemented ==========
-        catch (NotSupportedException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.NotImplemented, "General.NotSupported", ex);
-        }
-
-        // ========== Catch-All ==========
+        // ============================
+        // FALLBACK
+        // ============================
         catch (Exception ex)
         {
-            await HandleErrorAsync(context, HttpStatusCode.InternalServerError, "General.Unhandled", ex, fallback: true);
+            await HandleErrorAsync(context, HttpStatusCode.InternalServerError, "Unexpected error occurred", "UNEXPECTED", ex);
         }
     }
 
     private async Task HandleErrorAsync(
         HttpContext context,
-        HttpStatusCode statusCode,
+        HttpStatusCode status,
+        string userMessage,
         string errorType,
-        Exception ex,
-        bool fallback = false)
+        Exception ex)
     {
-        _logger.LogError(ex, "[{Type}] {Message}", errorType, ex.Message);
+        var correlationId = context.Request.Headers.ContainsKey("X-Correlation-ID")
+            ? context.Request.Headers["X-Correlation-ID"].ToString()
+            : Guid.NewGuid().ToString();
 
+        _logger.LogError(ex, "[EXCEPTION] {ErrorType} - {Message}", errorType, userMessage);
+
+        // Create scoped DI for publisher (safe for middleware)
         using var scope = _scopeFactory.CreateScope();
-        var logPublisher = scope.ServiceProvider.GetRequiredService<ITrafficLogPublisher>();
+        var logPublisher = scope.ServiceProvider.GetRequiredService<ITrafficLightControllerLogPublisher>();
 
-        // Extract intersection/light from route if available
-        var intersection = context.Request.RouteValues.TryGetValue("intersection", out var iVal)
-            ? iVal?.ToString() ?? "unknown"
-            : "unknown";
-
-        var light = context.Request.RouteValues.TryGetValue("light", out var lVal)
-            ? lVal?.ToString() ?? "unknown"
-            : "unknown";
-
-        await logPublisher.PublishErrorAsync(
-            errorType: errorType,
-            message: ex.Message,
-            intersection: intersection,
-            light: light,
-            metadata: new
-            {
-                Path = context.Request.Path,
-                Method = context.Request.Method,
-                StatusCode = (int)statusCode,
-                Exception = ex.ToString(),
-                FallbackApplied = fallback
-            });
-
-        // Fallback policy — keep light operational in degraded mode
-        if (fallback)
+        // Build metadata for log message
+        var metadata = new Dictionary<string, string>
         {
-            _logger.LogWarning("[FailoverPolicy] Activated for {Intersection}-{Light}", intersection, light);
+            ["path"] = context.Request.Path,
+            ["method"] = context.Request.Method,
+            ["trace_id"] = context.TraceIdentifier,
+            ["correlation_id"] = correlationId,
+            ["exception_type"] = ex.GetType().Name,
+            ["exception_message"] = ex.Message
+        };
 
-            var failoverService = scope.ServiceProvider.GetRequiredService<IFailoverService>();
-
-            // If a specific light is in route values → failover single light
-            if (!string.IsNullOrEmpty(light) && light != "unknown")
-                await failoverService.ApplyFailoverAsync(intersection, light);
-            else
-                await failoverService.ApplyFailoverIntersectionAsync(intersection);
+        try
+        {
+            await logPublisher.PublishErrorAsync(
+                action: errorType,
+                errorMessage: $"[EXCEPTION] {ex.Message}",
+                ex: ex,
+                metadata: metadata,
+                correlationId: Guid.Parse(correlationId));
+        }
+        catch (Exception pubEx)
+        {
+            _logger.LogError(pubEx, "[EXCEPTION] Failed to publish error log");
         }
 
-
-        context.Response.StatusCode = (int)statusCode;
+        context.Response.StatusCode = (int)status;
         context.Response.ContentType = "application/json";
+
         await context.Response.WriteAsJsonAsync(new
         {
-            error = errorType,
+            error = userMessage,
             details = ex.Message,
-            fallbackApplied = fallback
+            traceId = context.TraceIdentifier,
+            correlationId
         });
     }
 }
