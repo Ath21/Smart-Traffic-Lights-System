@@ -6,6 +6,14 @@ using Microsoft.Extensions.Logging;
 
 namespace DetectionStore.Workers;
 
+// ============================================================
+// Detection Worker (Sensor Layer)
+// ------------------------------------------------------------
+// Simulates random detection events for a specific intersection.
+// Publishes data via DetectionBusiness → RabbitMQ topics
+//    sensor.detection.{intersection}.{event}
+// ============================================================
+
 public class DetectionWorker : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
@@ -26,7 +34,7 @@ public class DetectionWorker : BackgroundService
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation(
-            "DetectionWorker started for {IntersectionName} (Id={IntersectionId})",
+            "[WORKER] DetectionWorker started for {IntersectionName} (Id={IntersectionId})",
             _intersection.Name, _intersection.Id);
 
         while (!stoppingToken.IsCancellationRequested)
@@ -34,56 +42,81 @@ public class DetectionWorker : BackgroundService
             try
             {
                 using var scope = _scopeFactory.CreateScope();
-                var business = scope.ServiceProvider.GetRequiredService<IDetectionEventService>();
+                var business = scope.ServiceProvider.GetRequiredService<IDetectionBusiness>();
 
-                // Emergency vehicle detection ~10% chance
+                // ------------------------------------------------------------
+                // Simulate emergency vehicle detections (~10% probability)
+                // ------------------------------------------------------------
                 if (_rand.NextDouble() < 0.1)
                 {
-                    var request = new DetectionEventRequest
+                    var request = new EmergencyVehicleDetectionRequest
                     {
-                        EventType = "emergency",
-                        Detected = true,
-                        Description = _rand.NextDouble() < 0.5 ? "ambulance" : "firetruck"
+                        IntersectionId = _intersection.Id,
+                        Intersection = _intersection.Name,
+                        Direction = GetRandomDirection(),
+                        EmergencyVehicleType = _rand.NextDouble() < 0.5 ? "ambulance" : "firetruck",
+                        DetectedAt = DateTime.UtcNow
                     };
 
-                    await business.ReportEventAsync(request);
+                    await business.CreateEmergencyAsync(request);
+                    _logger.LogInformation("[WORKER] Emergency vehicle detected ({Type}) at {Intersection}",
+                        request.EmergencyVehicleType, _intersection.Name);
                 }
 
-                // Public transport detection ~30% chance
+                // ------------------------------------------------------------
+                // Simulate public transport detections (~30% probability)
+                // ------------------------------------------------------------
                 if (_rand.NextDouble() < 0.3)
                 {
-                    var request = new DetectionEventRequest
+                    var request = new PublicTransportDetectionRequest
                     {
-                        EventType = "public_transport",
-                        Detected = true,
-                        Description = $"Route R{_rand.Next(1, 50)}"
+                        IntersectionId = _intersection.Id,
+                        IntersectionName = _intersection.Name,
+                        LineName = $"Bus{_rand.Next(700, 899)}",
+                        DetectedAt = DateTime.UtcNow
                     };
 
-                    await business.ReportEventAsync(request);
+                    await business.CreatePublicTransportAsync(request);
+                    _logger.LogInformation("[WORKER] Public transport detected ({Line}) at {Intersection}",
+                        request.LineName, _intersection.Name);
                 }
 
-                // Incident detection ~5% chance
+                // ------------------------------------------------------------
+                // Simulate random incidents (~5% probability)
+                // ------------------------------------------------------------
                 if (_rand.NextDouble() < 0.05)
                 {
-                    var request = new DetectionEventRequest
+                    var request = new IncidentDetectionRequest
                     {
-                        EventType = "incident",
-                        Detected = true,
-                        Description = "Random simulated incident"
+                        IntersectionId = _intersection.Id,
+                        Intersection = _intersection.Name,
+                        Description = "Random simulated traffic incident",
+                        ReportedAt = DateTime.UtcNow
                     };
 
-                    await business.ReportEventAsync(request);
+                    await business.CreateIncidentAsync(request);
+                    _logger.LogWarning("[WORKER] Incident reported at {Intersection}: {Description}",
+                        _intersection.Name, request.Description);
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(
                     ex,
-                    "Error in DetectionWorker loop for {IntersectionName} (Id={IntersectionId})",
+                    "[WORKER] Error in DetectionWorker loop for {IntersectionName} (Id={IntersectionId})",
                     _intersection.Name, _intersection.Id);
             }
 
+            // Wait between simulation cycles
             await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
         }
+
+        _logger.LogInformation("[WORKER] DetectionWorker stopped for {IntersectionName}", _intersection.Name);
+    }
+
+    private static string GetRandomDirection()
+    {
+        var directions = new[] { "north", "south", "east", "west" };
+        return directions[Random.Shared.Next(directions.Length)];
     }
 }

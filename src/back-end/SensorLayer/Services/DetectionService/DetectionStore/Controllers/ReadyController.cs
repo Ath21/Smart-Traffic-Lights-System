@@ -1,13 +1,14 @@
 using DetectionCacheData;
 using DetectionData;
 using MassTransit;
+using Messages.Log;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DetectionStore.Controllers
 {
     [ApiController]
-    [Route("detection_service")]
+    [Route("detection-service")]
     public class ReadyController : ControllerBase
     {
         private readonly DetectionDbContext _detectionDbContext;
@@ -21,18 +22,18 @@ namespace DetectionStore.Controllers
             _bus = bus;
         }
 
-        [HttpGet("/ready")]
+        [HttpGet("ready")]
         public async Task<IActionResult> Ready()
         {
             try
             {
                 if (!await _detectionDbContext.CanConnectAsync())
-                    return StatusCode(503, new { status = "Not Ready", reason = "DetectionDB MongoDB unreachable" });
+                    return StatusCode(503, new { status = "Not Ready", reason = "DetectionDB (MongoDB) unreachable" });
 
                 if (!await _detectionCacheDbContext.CanConnectAsync())
-                    return StatusCode(503, new { status = "Not Ready", reason = "DetectionCacheDB Redis unreachable" });
+                    return StatusCode(503, new { status = "Not Ready", reason = "DetectionCacheDB (Redis) unreachable" });
 
-                if (!_bus.Topology.TryGetPublishAddress(typeof(LogMessages.LogMessage), out _))
+                if (!_bus.Topology.TryGetPublishAddress(typeof(LogMessage), out _))
                     return StatusCode(503, new { status = "Not Ready", reason = "RabbitMQ not connected" });
 
                 return Ok(new { status = "Ready", service = "Traffic Analytics Service" });

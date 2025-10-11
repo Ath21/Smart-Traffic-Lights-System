@@ -98,7 +98,7 @@ public class Startup
         // ===============================
         // Business Layer (Services)
         // ===============================
-        services.AddScoped(typeof(ISensorCountService), typeof(SensorCountService));
+        services.AddScoped(typeof(ISensorBusiness), typeof(SensorBusiness));
 
         // ===============================
         // AutoMapper (object-object mapping)
@@ -108,7 +108,7 @@ public class Startup
         // ===============================
         // Workers (Virtual Traffic Sensor)
         // ===============================
-        services.AddHostedService<TrafficSensorWorker>();
+        services.AddHostedService<SensorWorker>();
 
         // ===============================
         // Message Layer (MassTransit with RabbitMQ)

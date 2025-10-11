@@ -11,4 +11,8 @@ public interface ILogBusiness
         string? type,
         DateTime? from,
         DateTime? to);
+    
+        // NEW: Export methods
+    Task<byte[]> ExportLogsToCsvAsync(IEnumerable<object> logs);
+    Task<byte[]> ExportLogsToPdfAsync(IEnumerable<object> logs);
 }

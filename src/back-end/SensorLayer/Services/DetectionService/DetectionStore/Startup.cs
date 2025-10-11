@@ -97,7 +97,7 @@ public class Startup
         // ===============================
         // Business Layer (Services)
         // ===============================
-        services.AddScoped(typeof(IDetectionEventService), typeof(DetectionEventService));
+        services.AddScoped(typeof(IDetectionBusiness), typeof(DetectionBusiness));
 
         // ===============================
         // AutoMapper (object-object mapping)

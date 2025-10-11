@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using DetectionCacheData.Settings;
+using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 
 namespace DetectionCacheData;

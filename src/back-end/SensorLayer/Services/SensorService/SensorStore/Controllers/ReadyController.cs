@@ -1,6 +1,7 @@
 using DetectionCacheData;
 using DetectionData;
 using MassTransit;
+using Messages.Log;
 using Microsoft.AspNetCore.Mvc;
 using SensorStore.Domain;
 
@@ -48,7 +49,7 @@ public class ReadyController : ControllerBase
                     intersection = new { _intersection.Id, _intersection.Name }
                 });
 
-            if (!_bus.Topology.TryGetPublishAddress(typeof(LogMessages.LogMessage), out _))
+            if (!_bus.Topology.TryGetPublishAddress(typeof(LogMessage), out _))
                 return StatusCode(503, new
                 {
                     status = "Not Ready",

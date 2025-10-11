@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "mJqeSeyHExc=",
+  "dgSpecHash": "6VW71g2Dob8=",
   "success": true,
-  "projectFilePath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/DetectionService/DetectionStore/DetectionStore.csproj",
+  "projectFilePath": "/home/ath/Desktop/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/DetectionService/DetectionStore/DetectionStore.csproj",
   "expectedPackageFiles": [
     "/home/ath/.nuget/packages/automapper/14.0.0/automapper.14.0.0.nupkg.sha512",
     "/home/ath/.nuget/packages/dnsclient/1.6.1/dnsclient.1.6.1.nupkg.sha512",

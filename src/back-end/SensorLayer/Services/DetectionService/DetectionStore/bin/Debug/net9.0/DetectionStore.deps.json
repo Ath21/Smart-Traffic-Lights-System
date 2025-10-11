@@ -11,15 +11,14 @@
           "AutoMapper": "14.0.0",
           "DetectionCacheData": "1.0.0",
           "DetectionData": "1.0.0",
-          "LogMessages": "1.0.0",
           "MassTransit": "8.5.0",
           "MassTransit.RabbitMQ": "8.5.0",
+          "Messages": "1.0.0",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "9.0.0",
           "Microsoft.AspNetCore.OpenApi": "9.0.8",
           "Microsoft.EntityFrameworkCore": "9.0.6",
           "MongoDB.Driver": "3.4.0",
           "RabbitMQ.Client": "7.1.2",
-          "SensorMessages": "1.0.0",
           "StackExchange.Redis": "2.9.11",
           "Swashbuckle.AspNetCore": "9.0.1"
         },
@@ -493,6 +492,7 @@
       },
       "DetectionCacheData/1.0.0": {
         "dependencies": {
+          "Microsoft.Extensions.Diagnostics.HealthChecks": "9.0.0",
           "Microsoft.Extensions.Options": "9.0.6",
           "Newtonsoft.Json": "13.0.3",
           "StackExchange.Redis": "2.9.11"
@@ -506,6 +506,7 @@
       },
       "DetectionData/1.0.0": {
         "dependencies": {
+          "Microsoft.Extensions.Diagnostics.HealthChecks": "9.0.0",
           "Microsoft.Extensions.Options": "9.0.6",
           "MongoDB.Driver": "3.4.0"
         },
@@ -516,17 +517,9 @@
           }
         }
       },
-      "LogMessages/1.0.0": {
+      "Messages/1.0.0": {
         "runtime": {
-          "LogMessages.dll": {
-            "assemblyVersion": "1.0.0.0",
-            "fileVersion": "1.0.0.0"
-          }
-        }
-      },
-      "SensorMessages/1.0.0": {
-        "runtime": {
-          "SensorMessages.dll": {
+          "Messages.dll": {
             "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
@@ -935,12 +928,7 @@
       "serviceable": false,
       "sha512": ""
     },
-    "LogMessages/1.0.0": {
-      "type": "project",
-      "serviceable": false,
-      "sha512": ""
-    },
-    "SensorMessages/1.0.0": {
+    "Messages/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

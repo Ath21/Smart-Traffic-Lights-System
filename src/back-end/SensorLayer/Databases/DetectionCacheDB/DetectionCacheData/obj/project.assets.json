@@ -691,11 +691,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Databases/DetectionCacheDB/DetectionCacheData/DetectionCacheData.csproj",
+      "projectUniqueName": "/home/ath/Desktop/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Databases/DetectionCacheDB/DetectionCacheData/DetectionCacheData.csproj",
       "projectName": "DetectionCacheData",
-      "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Databases/DetectionCacheDB/DetectionCacheData/DetectionCacheData.csproj",
+      "projectPath": "/home/ath/Desktop/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Databases/DetectionCacheDB/DetectionCacheData/DetectionCacheData.csproj",
       "packagesPath": "/home/ath/.nuget/packages/",
-      "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Databases/DetectionCacheDB/DetectionCacheData/obj/",
+      "outputPath": "/home/ath/Desktop/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Databases/DetectionCacheDB/DetectionCacheData/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/home/ath/.nuget/NuGet/NuGet.Config"

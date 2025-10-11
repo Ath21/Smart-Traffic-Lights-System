@@ -4,11 +4,11 @@ using Microsoft.AspNetCore.Mvc;
 namespace DetectionStore.Controllers
 {
     [ApiController]
-    [Route("detection_service")]
+    [Route("detection-service")]
     public class HealthController : ControllerBase
     {
         // Liveness: Service is running (no external deps)
-        [HttpGet("/health")]
+        [HttpGet("health")]
         public IActionResult Health()
         {
             return Ok(new { status = "Healthy", service = "Detection Service" });

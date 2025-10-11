@@ -9,13 +9,17 @@ public class SensorStoreProfile : Profile
 {
     public SensorStoreProfile()
     {
-        CreateMap<SensorReportRequest, VehicleCount>()
-            .ForMember(dest => dest.Count, opt => opt.MapFrom(src => src.VehicleCount));
+        // Requests → Mongo collections
+        CreateMap<VehicleCountRequest, VehicleCountCollection>()
+            .ForMember(dest => dest.Timestamp, opt => opt.MapFrom(_ => DateTime.UtcNow));
+        CreateMap<PedestrianCountRequest, PedestrianCountCollection>()
+            .ForMember(dest => dest.Timestamp, opt => opt.MapFrom(_ => DateTime.UtcNow));
+        CreateMap<CyclistCountRequest, CyclistCountCollection>()
+            .ForMember(dest => dest.Timestamp, opt => opt.MapFrom(_ => DateTime.UtcNow));
 
-        CreateMap<SensorReportRequest, PedestrianCount>()
-            .ForMember(dest => dest.Count, opt => opt.MapFrom(src => src.PedestrianCount));
-
-        CreateMap<SensorReportRequest, CyclistCount>()
-            .ForMember(dest => dest.Count, opt => opt.MapFrom(src => src.CyclistCount));
+        // Collections → Responses
+        CreateMap<VehicleCountCollection, VehicleCountResponse>();
+        CreateMap<PedestrianCountCollection, PedestrianCountResponse>();
+        CreateMap<CyclistCountCollection, CyclistCountResponse>();
     }
 }
