@@ -1,15 +1,14 @@
 services:
-  logdb:
+  log_db:
     ports:
       - '27017:27017'
-    environment:
-      MONGO_ROOT_USERNAME: mongo
-      MONGO_ROOT_PASSWORD: mongo123
+    env_file:
+      - ../compose.log-api.secret.env  
     volumes:
       - logdb_data:/data/db
     restart: always
 
-volumes:
+volumes:  
   logdb_data:
     name: logdb_data
     driver: local

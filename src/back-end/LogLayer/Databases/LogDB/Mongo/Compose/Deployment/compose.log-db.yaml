@@ -1,7 +1,7 @@
 services:
-  logdb:
-    image: mongo:6.0
-    container_name: logdb_container
+  log_db:
+    image: ath21/stls-databases:log_mongo
+    container_name: log_db_container
     networks:
       - log_network
 

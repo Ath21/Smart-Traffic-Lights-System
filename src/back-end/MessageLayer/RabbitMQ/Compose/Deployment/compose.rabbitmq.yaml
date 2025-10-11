@@ -1,6 +1,6 @@
 services:
   rabbitmq:
-    image: rabbitmq:3.8-management
+    image: ath21/stls-broker:rabbitmq
     container_name: rabbitmq_container
     networks:
       - rabbitmq_network

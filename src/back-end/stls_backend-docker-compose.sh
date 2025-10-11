@@ -100,8 +100,8 @@ deploy_layer() {
   case $layer in
     message)
       docker compose -p stls_message \
-        -f "$ROOT_DIR/MessageLayer/RabbitMQ/Docker/docker-compose.yaml" \
-        -f "$ROOT_DIR/MessageLayer/RabbitMQ/Docker/docker-compose.override.yaml" up -d
+        -f "$ROOT_DIR/MessageLayer/RabbitMQ/Compose/Deployment/compose.rabbitmq.yaml" \
+        -f "$ROOT_DIR/MessageLayer/RabbitMQ/Compose/Deployment/compose.rabbitmq.override.yaml" up -d
       wait_for_rabbitmq
       ;;
     user)
@@ -147,8 +147,8 @@ deploy_layer() {
       ;;
     log)
       docker compose -p stls_log \
-        -f "$ROOT_DIR/LogLayer/Databases/LogDB/Mongo/Docker/docker-compose.yaml" -f "$ROOT_DIR/LogLayer/Databases/LogDB/Mongo/Docker/docker-compose.override.yaml" \
-        -f "$ROOT_DIR/LogLayer/Services/LogService/Docker/docker-compose.yaml" -f "$ROOT_DIR/LogLayer/Services/LogService/Docker/docker-compose.override.yaml" \
+        -f "$ROOT_DIR/LogLayer/Services/LogService/Compose/Deployment/compose.log-api.yaml" -f "$ROOT_DIR/LogLayer/Services/LogService/Compose/Deployment/compose.log-api.override.yaml" \
+        -f "$ROOT_DIR/LogLayer/Databases/LogDB/Mongo/Compose/Deployment/compose.log-db.yaml" -f "$ROOT_DIR/LogLayer/Databases/LogDB/Mongo/Compose/Deployment/compose.log-db.override.yaml" \
         up -d
       ;;
     *)

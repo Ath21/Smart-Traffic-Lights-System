@@ -3,25 +3,28 @@ set -e
 
 ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
 DOCKER_USERNAME="ath21"
-DOCKER_REPO="stls"
 
+# ============================================================
+# Microservice Dockerfile Paths
+# ============================================================
 declare -A SERVICES_PATHS=(
     [user_api]="UserLayer/Services/UserService/Docker/Dockerfile"
     [notification_api]="UserLayer/Services/NotificationService/Docker/Dockerfile"
     [log_api]="LogLayer/Services/LogService/Docker/Dockerfile"
-    [traffic_analytics_api]="TrafficLayer/Services/TrafficAnalyticsService/Docker/Dockerfile"
-    [traffic_light_controller_api]="TrafficLayer/Services/TrafficLightControllerService/Docker/Dockerfile"
-    [traffic_light_coordinator_api]="TrafficLayer/Services/TrafficLightCoordinatorService/Docker/Dockerfile"
-    [intersection_controller_api]="TrafficLayer/Services/IntersectionControllerService/Docker/Dockerfile"
+    [traffic_analytics]="TrafficLayer/Services/TrafficAnalyticsService/Docker/Dockerfile"
+    [traffic_light_controller]="TrafficLayer/Services/TrafficLightControllerService/Docker/Dockerfile"
+    [traffic_light_coordinator]="TrafficLayer/Services/TrafficLightCoordinatorService/Docker/Dockerfile"
+    [intersection_controller]="TrafficLayer/Services/IntersectionControllerService/Docker/Dockerfile"
     [sensor_api]="SensorLayer/Services/SensorService/Docker/Dockerfile"
     [detection_api]="SensorLayer/Services/DetectionService/Docker/Dockerfile"
 )
 
 usage() {
-    echo "Usage: $0 [--all] [service...]"
+    echo "Usage: $0 [--all] [--infra] [service...]"
     echo ""
     echo "Options:"
-    echo "  --all        Build and push all services"
+    echo "  --all        Build and push all microservices"
+    echo "  --infra      Pull, tag and push all database/broker images"
     echo "  service...   Build and push one or more specific services"
     echo ""
     echo "Available services:"
@@ -30,14 +33,18 @@ usage() {
     done
     echo ""
     echo "Examples:"
-    echo "  ./stls_backend-build.sh --all"
-    echo "  ./stls_backend-build.sh user_api sensor_api"
+    echo "  ./stls_backend-docker-build.sh --all"
+    echo "  ./stls_backend-docker-build.sh --infra"
+    echo "  ./stls_backend-docker-build.sh sensor user notification"
 }
 
-build_and_push_image() {
+# ============================================================
+# Build and Push for Application Services
+# ============================================================
+build_and_push_service() {
     local service="$1"
     local dockerfile="${SERVICES_PATHS[$service]}"
-    local image="$DOCKER_USERNAME/$DOCKER_REPO:$service"
+    local image="${DOCKER_USERNAME}/stls-services:${service}"
 
     if [[ -z "$dockerfile" ]]; then
         echo "Unknown service: $service"
@@ -55,21 +62,79 @@ build_and_push_image() {
     fi
 }
 
+# ============================================================
+# Pull, Tag, and Push Infrastructure Images
+# ============================================================
+push_infra_images() {
+    echo "=============================="
+    echo "Pulling and tagging infrastructure images..."
+    echo "=============================="
+
+    docker pull mongo:6.0
+    docker pull redis:7.4
+    docker pull postgres:16
+    docker pull mcr.microsoft.com/mssql/server:2022-latest
+    docker pull rabbitmq:3.8-management
+
+    echo "Tagging and pushing database and broker images..."
+
+    # Mongo-based
+    docker tag mongo:6.0 ${DOCKER_USERNAME}/stls-databases:log_mongo
+    docker tag mongo:6.0 ${DOCKER_USERNAME}/stls-databases:notification_mongo
+    docker tag mongo:6.0 ${DOCKER_USERNAME}/stls-databases:detection_mongo
+
+    # Redis-based
+    docker tag redis:7.4 ${DOCKER_USERNAME}/stls-databases:trafficlight_redis
+    docker tag redis:7.4 ${DOCKER_USERNAME}/stls-databases:detection_redis
+
+    # MSSQL-based
+    docker tag mcr.microsoft.com/mssql/server:2022-latest ${DOCKER_USERNAME}/stls-databases:trafficlight_mssql
+    docker tag mcr.microsoft.com/mssql/server:2022-latest ${DOCKER_USERNAME}/stls-databases:user_mssql
+
+    # PostgreSQL
+    docker tag postgres:16 ${DOCKER_USERNAME}/stls-databases:analytics_postgres
+
+    # RabbitMQ
+    docker tag rabbitmq:3.8-management ${DOCKER_USERNAME}/stls-broker:rabbitmq
+
+    # Push all images
+    docker push ${DOCKER_USERNAME}/stls-databases:log_mongo
+    docker push ${DOCKER_USERNAME}/stls-databases:notification_mongo
+    docker push ${DOCKER_USERNAME}/stls-databases:detection_mongo
+    docker push ${DOCKER_USERNAME}/stls-databases:trafficlight_redis
+    docker push ${DOCKER_USERNAME}/stls-databases:detection_redis
+    docker push ${DOCKER_USERNAME}/stls-databases:trafficlight_mssql
+    docker push ${DOCKER_USERNAME}/stls-databases:user_mssql
+    docker push ${DOCKER_USERNAME}/stls-databases:analytics_postgres
+    docker push ${DOCKER_USERNAME}/stls-broker:rabbitmq
+
+    echo "Infrastructure images pushed successfully."
+}
+
+# ============================================================
+# Main Logic
+# ============================================================
 main() {
     if [[ $# -eq 0 ]]; then
         usage
         exit 1
     fi
 
-    if [[ "$1" == "--all" ]]; then
-        for service in "${!SERVICES_PATHS[@]}"; do
-            build_and_push_image "$service"
-        done
-    else
-        for service in "$@"; do
-            build_and_push_image "$service"
-        done
-    fi
+    case "$1" in
+        --all)
+            for service in "${!SERVICES_PATHS[@]}"; do
+                build_and_push_service "$service"
+            done
+            ;;
+        --infra)
+            push_infra_images
+            ;;
+        *)
+            for service in "$@"; do
+                build_and_push_service "$service"
+            done
+            ;;
+    esac
 
     echo "Done."
 }

@@ -14,7 +14,7 @@ COPY LogLayer/Services/LogService/LogStore LogLayer/Services/LogService/LogStore
 ## Databases
 COPY LogLayer/Databases/LogDB/LogData LogLayer/Databases/LogDB/LogData/
 ## Messages
-COPY MessageLayer/LogMessages MessageLayer/LogMessages/
+COPY MessageLayer/Messages MessageLayer/Messages/
 
 # Restore dependencies
 RUN dotnet restore LogLayer/Services/LogService/LogStore/LogStore.csproj
