@@ -1,4 +1,5 @@
 using MassTransit;
+using Messages;
 using Messages.Log;
 using Messages.Sensor;
 using RabbitMQ.Client;
@@ -27,8 +28,13 @@ public static class MassTransitSetup
                 // =====================================
                 // Exchanges
                 // =====================================
-                var sensorExchange = rabbit["Exchanges:Sensor"]; 
-                var logExchange    = rabbit["Exchanges:Log"];    
+                var sensorExchange = rabbit["Exchanges:Sensor"];
+                var logExchange = rabbit["Exchanges:Log"];
+
+                // =====================================
+                // Exclude abstract base type from topology
+                // =====================================
+                cfg.Publish<BaseMessage>(m => m.Exclude = true);    
 
                 // =====================================
                 // [PUBLISH] SENSOR DETECTION (Emergency Vehicle, Public Transport, Incident)

@@ -34,7 +34,7 @@ public class LogController : ControllerBase
     // Purpose: Query logs with optional filters (Layer, Service, Type, Date Range)
     // ============================================================
     [HttpGet("search")]
-    [Authorize(Roles = "Admin")]
+    //[Authorize(Roles = "Admin")]
     [ProducesResponseType(typeof(List<SearchLogResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -71,7 +71,7 @@ public class LogController : ControllerBase
     // Purpose: Export filtered logs to CSV or PDF
     // ============================================================
     [HttpPost("export")]
-    [Authorize(Roles = "Admin")]
+    //[Authorize(Roles = "Admin")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ExportLogs([FromBody] SearchLogRequest request, [FromQuery] string format = "csv")

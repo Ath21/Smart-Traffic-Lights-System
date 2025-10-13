@@ -11,6 +11,20 @@ public class SensorLogPublisher : ISensorLogPublisher
     private readonly IntersectionContext _intersection;
     private readonly string _routingPattern;
 
+    public SensorLogPublisher(
+        IBus bus,
+        IConfiguration config,
+        ILogger<SensorLogPublisher> logger,
+        IntersectionContext intersection)
+    {
+        _bus = bus;
+        _logger = logger;
+        _intersection = intersection;
+
+        _routingPattern = config["RabbitMQ:RoutingKeys:Log:Sensor"]
+                          ?? "log.sensor.sensor-service.{type}";
+    }
+
     public async Task PublishAuditAsync(
         string action,
         string message,

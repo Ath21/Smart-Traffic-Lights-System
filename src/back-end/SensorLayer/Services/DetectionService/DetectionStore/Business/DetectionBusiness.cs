@@ -98,7 +98,8 @@ public class DetectionBusiness : IDetectionBusiness
                     IntersectionId = detectionMsg.IntersectionId,
                     Intersection = detectionMsg.IntersectionName,
                     Description = "Incident " + (detectionMsg.Metadata?["incident_type"] ?? "unknown") + " reported",
-                    ReportedAt = detectionMsg.Timestamp
+                    ReportedAt = detectionMsg.Timestamp,    
+                    Metadata = BsonExtensions.ToBsonDocument(detectionMsg.Metadata)
                 });
 
                 await _cacheRepo.SetIncidentDetectedAsync(detectionMsg.IntersectionId, true);

@@ -60,7 +60,7 @@ namespace DetectionStore.Workers
                             _ => "police car"
                         };
 
-                        var metadata = new Dictionary<string, string>
+                        var detectionMetadata = new Dictionary<string, string>
                         {
                             ["speed_kmh"] = _rand.Next(30, 110).ToString(),
                             ["signal_priority_level"] = vehicleType switch
@@ -75,14 +75,22 @@ namespace DetectionStore.Workers
                             ["approach_estimate_seconds"] = _rand.Next(3, 10).ToString(),
                         };
 
+                        var logMetadata = new Dictionary<string, string>
+                        {
+                            ["service_layer"] = "Fog",
+                            ["intersection_id"] = _intersection.Id.ToString(),
+                            ["intersection_name"] = _intersection.Name,
+                            ["event_type"] = "emergency_vehicle"
+                        };
+
                         var correlationId = Guid.NewGuid();
 
-                        var detectionMsg = await eventPublisher.PublishEmergencyVehicleAsync(vehicleType, direction, correlationId, metadata);
+                        var detectionMsg = await eventPublisher.PublishEmergencyVehicleAsync(vehicleType, direction, correlationId, detectionMetadata);
 
                         var logMsg = await logPublisher.PublishAuditAsync(
                             "EmergencyVehicleDetected",
                             $"Emergency vehicle ({vehicleType}) detected at {_intersection.Name}",
-                            metadata,
+                            logMetadata,
                             correlationId);
 
                         await business.ProcessDetectionAsync(detectionMsg);
@@ -96,7 +104,7 @@ namespace DetectionStore.Workers
                         var line = $"Bus{_rand.Next(700, 899)}";
                         var direction = GetRandomDirection();
 
-                        var metadata = new Dictionary<string, string>
+                        var detectionMetadata = new Dictionary<string, string>
                         {
                             ["speed_kmh"] = _rand.Next(20, 70).ToString(),
                             ["occupancy_ratio"] = _rand.NextDouble().ToString("0.00"),
@@ -104,14 +112,21 @@ namespace DetectionStore.Workers
                             ["priority_reason"] = _rand.NextDouble() < 0.5 ? "running_late" : "schedule_priority"
                         };
 
+                        var logMetadata = new Dictionary<string, string>
+                        {
+                            ["service_layer"] = "Fog",
+                            ["intersection_id"] = _intersection.Id.ToString(),
+                            ["intersection_name"] = _intersection.Name,
+                            ["event_type"] = "public_transport"
+                        };
 
                         var correlationId = Guid.NewGuid();
 
-                        var detectionMsg = await eventPublisher.PublishPublicTransportAsync(line, direction, correlationId, metadata);
+                        var detectionMsg = await eventPublisher.PublishPublicTransportAsync(line, direction, correlationId, detectionMetadata);
                         var logMsg = await logPublisher.PublishAuditAsync(
                             "PublicTransportDetected",
                             $"Public transport {line} detected at {_intersection.Name}",
-                            metadata,
+                            logMetadata,
                             correlationId);
 
                         await business.ProcessDetectionAsync(detectionMsg);
@@ -124,7 +139,7 @@ namespace DetectionStore.Workers
                     {
                         var direction = GetRandomDirection();
 
-                        var metadata = new Dictionary<string, string>
+                        var detectionMetadata = new Dictionary<string, string>
                         {
                             ["incident_type"] = GetRandomIncidentType(),
                             ["severity_level"] = _rand.Next(1, 5).ToString(),
@@ -132,13 +147,21 @@ namespace DetectionStore.Workers
                             ["estimated_duration_min"] = _rand.Next(5, 30).ToString()
                         };
 
+                        var logMetadata = new Dictionary<string, string>
+                        {
+                            ["service_layer"] = "Fog",
+                            ["intersection_id"] = _intersection.Id.ToString(),
+                            ["intersection_name"] = _intersection.Name,
+                            ["event_type"] = "incident"
+                        };
+
                         var correlationId = Guid.NewGuid();
 
-                        var detectionMsg = await eventPublisher.PublishIncidentAsync("unknown", direction, correlationId, metadata);
+                        var detectionMsg = await eventPublisher.PublishIncidentAsync("unknown", direction, correlationId, detectionMetadata);
                         var logMsg = await logPublisher.PublishFailoverAsync(
                             "IncidentReported",
                             $"Incident reported at {_intersection.Name}",
-                            metadata,
+                            logMetadata,
                             correlationId);
 
                         await business.ProcessDetectionAsync(detectionMsg);
