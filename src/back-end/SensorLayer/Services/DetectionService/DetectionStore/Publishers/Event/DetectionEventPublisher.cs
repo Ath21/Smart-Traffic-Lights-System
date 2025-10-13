@@ -29,79 +29,102 @@ public class DetectionEventPublisher : IDetectionEventPublisher
 
     public async Task PublishEmergencyVehicleAsync(
         string vehicleType,
-        int speed_kmh,
         string direction,
-        Guid? correlationId = null)
+        Guid? correlationId = null,
+        Dictionary<string, string>? metadata = null)
     {
-        await PublishAsync("emergency_vehicle", new DetectionEventMessage
+        var msg = new DetectionEventMessage
         {
             CorrelationId = correlationId ?? Guid.Empty,
-            EventType = "EmergencyVehicle",
-            VehicleType = vehicleType,
-            Direction = direction,
+            Timestamp = DateTime.UtcNow,
+
+            SourceLayer = "Sensor Layer",
+            DestinationLayer = new() { "Traffic Layer" },
+
+            SourceService = "Detection Service",
+            DestinationServices = new() { "Intersection Controller Service", "Traffic Analytics Service" },
+
             IntersectionId = _intersection.Id,
             IntersectionName = _intersection.Name,
-            Metadata = new()
-            {
-                ["SpeedKmh"] = speed_kmh.ToString()
-            }
-        });
 
-        _logger.LogInformation("[{Intersection}] EMERGENCY VEHICLE published ({VehicleType}, Dir={Direction}, Speed={SpeedKmh})",
-            _intersection.Name, vehicleType, direction, speed_kmh);
+            EventType = "Emergency Vehicle",
+            VehicleType = vehicleType,
+            Direction = direction,
+
+            Metadata = metadata
+        };
+
+        await PublishAsync("emergency-vehicle", msg);
+
+        _logger.LogInformation("[PUBLISHER][EVENT][{Intersection}] EMERGENCY VEHICLE published ({VehicleType}, Dir={Direction}",
+            _intersection.Name, vehicleType, direction);
     }
 
     public async Task PublishPublicTransportAsync(
-        string mode,
-        string line,
-        int arrival_estimated_sec,
+        string vehicleType,
         string direction,
-        Guid? correlationId = null)
+        Guid? correlationId = null,
+        Dictionary<string, string>? metadata = null)
     {
-        await PublishAsync("public_transport", new DetectionEventMessage
+        var msg = new DetectionEventMessage
         {
             CorrelationId = correlationId ?? Guid.Empty,
-            EventType = "PublicTransport",
-            VehicleType = mode,
-            Direction = direction,
+            Timestamp = DateTime.UtcNow,
+
+            SourceLayer = "Sensor Layer",
+            DestinationLayer = new() { "Traffic Layer" },
+
+            SourceService = "Detection Service",
+            DestinationServices = new() { "Intersection Controller Service", "Traffic Analytics Service" },
+
             IntersectionId = _intersection.Id,
             IntersectionName = _intersection.Name,
-            Metadata = new()
-            {
-                ["Line"] = line,
-                ["ArrivalEstimatedSec"] = arrival_estimated_sec.ToString()
-            }
-        });
 
-        _logger.LogInformation("[{Intersection}] PUBLIC TRANSPORT published ({Mode}, Line={Line}, ArrivalInSec={ArrivalInSec}, Dir={Direction})",
-            _intersection.Name, mode, line, arrival_estimated_sec, direction);
+            EventType = "Public Transport",
+            VehicleType = vehicleType,
+            Direction = direction,
+
+            Metadata = metadata
+        };
+
+        await PublishAsync("public-transport", msg);
+
+        _logger.LogInformation("[PUBLISHER][EVENT][{Intersection}] PUBLIC TRANSPORT published ({VehicleType}, Dir={Direction}",
+            _intersection.Name, vehicleType, direction);
     }
 
     public async Task PublishIncidentAsync(
-        string type,
-        int severity,
-        string description,
+        string vehicleType,
         string direction,
-        Guid? correlationId = null)
+        Guid? correlationId = null,
+        Dictionary<string, string>? metadata = null)
     {
-        await PublishAsync("incident", new DetectionEventMessage
+        var msg = new DetectionEventMessage
         {
             CorrelationId = correlationId ?? Guid.Empty,
-            EventType = type,
-            Direction = direction,
+            Timestamp = DateTime.UtcNow,
+
+            SourceLayer = "Sensor Layer",
+            DestinationLayer = new() { "Traffic Layer" },
+
+            SourceService = "Detection Service",
+            DestinationServices = new() { "Intersection Controller Service", "Traffic Analytics Service" },
+
             IntersectionId = _intersection.Id,
             IntersectionName = _intersection.Name,
-            Metadata = new()
-            {
-                ["Severity"] = severity.ToString(),
-                ["Description"] = description
-            }
-        });
 
-        _logger.LogWarning("[{Intersection}] INCIDENT published: {Type} (Severity={Severity}, Dir={Direction}) - {Description}",
-            _intersection.Name, type, severity, direction, description);
+            EventType = "Incident",
+            VehicleType = vehicleType,
+            Direction = direction,
+
+            Metadata = metadata
+        };
+
+        await PublishAsync("incident", msg);
+
+        _logger.LogInformation("[PUBLISHER][EVENT][{Intersection}] INCIDENT published ({VehicleType}, Dir={Direction}",
+            _intersection.Name, vehicleType, direction);
     }
-
     private async Task PublishAsync(string eventKey, DetectionEventMessage msg)
     {
         msg.CorrelationId = msg.CorrelationId == Guid.Empty ? Guid.NewGuid() : msg.CorrelationId;
@@ -110,9 +133,6 @@ public class DetectionEventPublisher : IDetectionEventPublisher
         var routingKey = _routingPattern
             .Replace("{intersection}", _intersection.Name.ToLower().Replace(' ', '-'))
             .Replace("{event}", eventKey);
-
-        msg.SourceServices = new() { "Detection Service" };
-        msg.DestinationServices = new() { "Intersection Controller Service", "Traffic Analytics Service" };
 
         await _bus.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
     }

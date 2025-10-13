@@ -8,14 +8,14 @@ public interface ISensorCountPublisher
         double avgWait,
         double flowRate,
         Dictionary<string, int>? breakdown = null,
-        Guid? correlationId = null);
+        Guid? correlationId = null,
+        Dictionary<string, string>? metadata = null);
     Task PublishPedestrianCountAsync(
         int count,
-        Guid? correlationId = null);
+        Guid? correlationId = null,
+        Dictionary<string, string>? metadata = null);
     Task PublishCyclistCountAsync(
         int count,
-        double avgSpeed = 0,
-        double flowRate = 0,
-        Dictionary<string, int>? breakdown = null,
-        Guid? correlationId = null);
+        Guid? correlationId = null,
+        Dictionary<string, string>? metadata = null);
 }

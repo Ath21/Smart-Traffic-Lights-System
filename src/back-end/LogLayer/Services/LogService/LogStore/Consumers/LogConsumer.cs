@@ -5,6 +5,7 @@ using LogData.Repositories.Audit;
 using LogData.Repositories.Error;
 using LogData.Repositories.Failover;
 using MongoDB.Bson;
+using LogData.Extensions;
 
 namespace LogStore.Consumers;
 
@@ -40,22 +41,22 @@ public class LogConsumer : IConsumer<LogMessage>
         }
 
         // Convert metadata dictionary (if any)
-        var metadataDoc = msg.Metadata != null
-            ? new BsonDocument(msg.Metadata)
-            : new BsonDocument();
+        var metadataDoc = BsonExtensions.ToBsonDocument(msg.Metadata ?? new());
 
         switch (msg.LogType.ToLowerInvariant())
         {
-            // 🔹 AUDIT LOG -------------------------------------------------
             case "audit":
                 var audit = new AuditLogCollection
                 {
                     CorrelationId = msg.CorrelationId,
                     Timestamp = msg.Timestamp,
+
                     Layer = msg.SourceLayer,
-                    Service = msg.SourceServices?.FirstOrDefault() ?? "unknown",
+                    Service = msg.SourceService,
+
                     Action = msg.Action,
                     Message = msg.Message,
+
                     Metadata = metadataDoc
                 };
 
@@ -65,16 +66,18 @@ public class LogConsumer : IConsumer<LogMessage>
                     audit.Service, audit.Layer, audit.CorrelationId);
                 break;
 
-            // 🔹 ERROR LOG -------------------------------------------------
             case "error":
                 var error = new ErrorLogCollection
                 {
                     CorrelationId = msg.CorrelationId,
                     Timestamp = msg.Timestamp,
+
                     Layer = msg.SourceLayer,
-                    Service = msg.SourceServices?.FirstOrDefault() ?? "unknown",
+                    Service = msg.SourceService,
+
                     Action = msg.Action,
                     Message = msg.Message,
+
                     Metadata = metadataDoc
                 };
 
@@ -84,16 +87,18 @@ public class LogConsumer : IConsumer<LogMessage>
                     error.Service, error.Layer, error.CorrelationId);
                 break;
 
-            // 🔹 FAILOVER LOG ----------------------------------------------
             case "failover":
                 var failover = new FailoverLogCollection
                 {
                     CorrelationId = msg.CorrelationId,
                     Timestamp = msg.Timestamp,
+
                     Layer = msg.SourceLayer,
-                    Service = msg.SourceServices?.FirstOrDefault() ?? "unknown",
+                    Service = msg.SourceService,
+
                     Action = msg.Action,
                     Message = msg.Message,
+
                     Metadata = metadataDoc
                 };
 
@@ -102,13 +107,12 @@ public class LogConsumer : IConsumer<LogMessage>
                     "[CONSUMER] Stored FAILOVER log from {Service} ({Layer}) | CorrelationId={CorrelationId}",
                     failover.Service, failover.Layer, failover.CorrelationId);
                 break;
-
-            // 🔸 UNKNOWN TYPE ----------------------------------------------
+                
             default:
                 _logger.LogWarning(
                     "[CONSUMER] Unknown log type '{Type}' from {Service} ({Layer}) | CorrelationId={CorrelationId}",
                     msg.LogType,
-                    msg.SourceServices?.FirstOrDefault() ?? "unknown",
+                    msg.SourceService,
                     msg.SourceLayer,
                     msg.CorrelationId);
                 break;

@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Messages.Sensor;
 using SensorStore.Domain;
 using SensorStore.Publishers.Count;
+using System.Reflection.Metadata.Ecma335;
 
 namespace SensorStore.Publishers.Count;
 
@@ -37,26 +38,37 @@ public class SensorCountPublisher : ISensorCountPublisher
         double avgWait,
         double flowRate,
         Dictionary<string, int>? breakdown = null,
-        Guid? correlationId = null)
+        Guid? correlationId = null,
+        Dictionary<string, string>? metadata = null)
     {
         var msg = new SensorCountMessage
         {
+            CorrelationId = correlationId ?? Guid.Empty,
+            Timestamp = DateTime.UtcNow,
+
+            SourceLayer = "Sensor Layer",
+            DestinationLayer = new() { "Traffic Layer" },
+
+            SourceService = "Sensor Service",
+            DestinationServices = new() { "Intersection Controller Service", "Traffic Analytics Service" },
+
+            IntersectionId = _intersection.Id,
+            IntersectionName = _intersection.Name,
+
             CountType = "Vehicle",
             Count = count,
             AverageSpeedKmh = avgSpeed,
             AverageWaitTimeSec = avgWait,
             FlowRate = flowRate,
             Breakdown = breakdown,
-            IntersectionId = _intersection.Id,
-            IntersectionName = _intersection.Name,
-            SourceServices = new() { "Sensor Service" },
-            DestinationServices = new() { "Intersection Controller Service", "Traffic Analytics Service" }
+
+            Metadata = metadata
         };
 
         await PublishAsync("vehicle", msg);
 
         _logger.LogInformation(
-            "[{Intersection}] VEHICLE count published: {Count} (Speed={Speed:F1} km/h, Wait={Wait:F1}s, Flow={Flow:F2}/s)",
+            "[PUBLISHER][COUNT][{Intersection}] VEHICLE count published: {Count} (Speed={Speed:F1} km/h, Wait={Wait:F1}s, Flow={Flow:F2}/s)",
             _intersection.Name, count, avgSpeed, avgWait, flowRate);
     }
 
@@ -65,27 +77,37 @@ public class SensorCountPublisher : ISensorCountPublisher
     // ============================================================
     public async Task PublishPedestrianCountAsync(
         int count,
-        Guid? correlationId = null)
+        Guid? correlationId = null,
+        Dictionary<string, string>? metadata = null)
     {
         var msg = new SensorCountMessage
         {
             CorrelationId = correlationId ?? Guid.Empty,
+            Timestamp = DateTime.UtcNow,
+
+            SourceLayer = "Sensor Layer",
+            DestinationLayer = new() { "Traffic Layer" },
+
+            SourceService = "Sensor Service",
+            DestinationServices = new() { "Intersection Controller Service", "Traffic Analytics Service" },
+
+            IntersectionId = _intersection.Id,
+            IntersectionName = _intersection.Name,
+
             CountType = "Pedestrian",
             Count = count,
             AverageSpeedKmh = 0,
             AverageWaitTimeSec = 0,
             FlowRate = 0,
             Breakdown = null,
-            IntersectionId = _intersection.Id,
-            IntersectionName = _intersection.Name,
-            SourceServices = new() { "Sensor Service" },
-            DestinationServices = new() { "Intersection Controller Service", "Traffic Analytics Service" }
+
+            Metadata = metadata
         };
 
         await PublishAsync("pedestrian", msg);
 
         _logger.LogInformation(
-            "[{Intersection}] PEDESTRIAN count published: {Count}", _intersection.Name, count);
+            "[PUBLISHER][COUNT][{Intersection}] PEDESTRIAN count published: {Count}", _intersection.Name, count);
     }
 
     // ============================================================
@@ -93,31 +115,37 @@ public class SensorCountPublisher : ISensorCountPublisher
     // ============================================================
     public async Task PublishCyclistCountAsync(
         int count,
-        double avgSpeed = 0,
-        double flowRate = 0,
-        Dictionary<string, int>? breakdown = null,
-        Guid? correlationId = null)
+        Guid? correlationId = null,
+        Dictionary<string, string>? metadata = null)
     {
         var msg = new SensorCountMessage
         {
             CorrelationId = correlationId ?? Guid.Empty,
-            CountType = "Cyclist",
-            Count = count,
-            AverageSpeedKmh = avgSpeed,
-            AverageWaitTimeSec = 0,
-            FlowRate = flowRate,
-            Breakdown = breakdown,
+            Timestamp = DateTime.UtcNow,
+
+            SourceLayer = "Sensor Layer",
+            DestinationLayer = new() { "Traffic Layer" },
+
+            SourceService = "Sensor Service",
+            DestinationServices = new() { "Intersection Controller Service", "Traffic Analytics Service" },
+
             IntersectionId = _intersection.Id,
             IntersectionName = _intersection.Name,
-            SourceServices = new() { "Sensor Service" },
-            DestinationServices = new() { "Intersection Controller Service", "Traffic Analytics Service" }
+
+            CountType = "Cyclist",
+            Count = count,
+            AverageSpeedKmh = 0,
+            AverageWaitTimeSec = 0,
+            FlowRate = 0,
+            Breakdown = null,
+
+            Metadata = metadata
         };
 
         await PublishAsync("cyclist", msg);
 
         _logger.LogInformation(
-            "[{Intersection}] CYCLIST count published: {Count} (Speed={Speed:F1} km/h, Flow={Flow:F2}/s)",
-            _intersection.Name, count, avgSpeed, flowRate);
+            "[PUBLISHER][COUNT][{Intersection}] CYCLIST count published: {Count}", _intersection.Name, count);
     }
 
     // ============================================================

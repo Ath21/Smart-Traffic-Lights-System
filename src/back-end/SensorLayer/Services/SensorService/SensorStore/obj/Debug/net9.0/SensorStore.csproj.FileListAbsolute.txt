@@ -54,10 +54,6 @@
 /home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/SensorService/SensorStore/bin/Debug/net9.0/ZstdSharp.dll
 /home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/SensorService/SensorStore/bin/Debug/net9.0/DetectionCacheData.dll
 /home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/SensorService/SensorStore/bin/Debug/net9.0/DetectionData.dll
-/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/SensorService/SensorStore/bin/Debug/net9.0/LogMessages.dll
-/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/SensorService/SensorStore/bin/Debug/net9.0/SensorMessages.dll
-/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/SensorService/SensorStore/bin/Debug/net9.0/LogMessages.pdb
-/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/SensorService/SensorStore/bin/Debug/net9.0/SensorMessages.pdb
 /home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/SensorService/SensorStore/bin/Debug/net9.0/DetectionCacheData.pdb
 /home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/SensorService/SensorStore/bin/Debug/net9.0/DetectionData.pdb
 /home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/SensorService/SensorStore/obj/Debug/net9.0/rjimswa.dswa.cache.json
@@ -148,3 +144,5 @@
 /home/ath/Desktop/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/SensorService/SensorStore/obj/Debug/net9.0/SensorSt.88B60843.Up2Date
 /home/ath/Desktop/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/SensorService/SensorStore/obj/Debug/net9.0/SensorStore.genruntimeconfig.cache
 /home/ath/Desktop/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/SensorService/SensorStore/obj/Debug/net9.0/ref/SensorStore.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/SensorService/SensorStore/bin/Debug/net9.0/Messages.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/SensorService/SensorStore/bin/Debug/net9.0/Messages.pdb

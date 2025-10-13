@@ -36,23 +36,28 @@ public class DetectionLogPublisher : IDetectionLogPublisher
         await PublishAsync("audit", new LogMessage
         {
             CorrelationId = correlationId ?? Guid.Empty,
-            Layer = "Sensor",
-            LogType = "Audit",
-            IntersectionId = _intersection.Id,
-            IntersectionName = _intersection.Name,
-            SourceServices = new() { "Detection Service" },
+            Timestamp = DateTime.UtcNow,
+
+            SourceLayer = "Sensor Layer",
+            DestinationLayer = new () { "Log Layer" },
+
+            SourceService = "Detection Service",
             DestinationServices = new() { "Log Service" },
+
+            LogType = "Audit",
+
             Action = action,
             Message = message,
+
             Metadata = metadata
         });
 
-        _logger.LogInformation("[{Intersection}] AUDIT log published (Action={Action})", _intersection.Name, action);
+        _logger.LogInformation("[PUBLISHER][LOG][{Intersection}] AUDIT log published (Action={Action}) - Message={Message}", _intersection.Name, action, message);
     }
 
     public async Task PublishErrorAsync(
         string action,
-        string errorMessage,
+        string message,
         Exception? ex = null,
         Dictionary<string, string>? metadata = null,
         Guid? correlationId = null)
@@ -67,19 +72,23 @@ public class DetectionLogPublisher : IDetectionLogPublisher
         await PublishAsync("error", new LogMessage
         {
             CorrelationId = correlationId ?? Guid.Empty,
-            Layer = "Sensor",
-            LogType = "Error",
-            IntersectionId = _intersection.Id,
-            IntersectionName = _intersection.Name,
-            SourceServices = new() { "Detection Service" },
+            Timestamp = DateTime.UtcNow,
+
+            SourceLayer = "Sensor Layer",
+            DestinationLayer = new () { "Log Layer" },
+
+            SourceService = "Detection Service",
             DestinationServices = new() { "Log Service" },
+
+            LogType = "Error",
+
             Action = action,
-            Message = errorMessage,
+            Message = message,
+
             Metadata = metadata
         });
 
-        _logger.LogError(ex, "[{Intersection}] ERROR log published (Action={Action}) - {ErrorMessage}",
-            _intersection.Name, action, errorMessage);
+        _logger.LogError("[PUBLISHER][LOG][{Intersection}] ERROR log published (Action={Action}) - Message={Message}", _intersection.Name, action, message);
     }
 
     public async Task PublishFailoverAsync(
@@ -91,18 +100,23 @@ public class DetectionLogPublisher : IDetectionLogPublisher
         await PublishAsync("failover", new LogMessage
         {
             CorrelationId = correlationId ?? Guid.Empty,
-            Layer = "Sensor",
-            LogType = "Failover",
-            IntersectionId = _intersection.Id,
-            IntersectionName = _intersection.Name,
-            SourceServices = new() { "Detection Service" },
+            Timestamp = DateTime.UtcNow,
+
+            SourceLayer = "Sensor Layer",
+            DestinationLayer = new () { "Log Layer" },
+
+            SourceService = "Detection Service",
             DestinationServices = new() { "Log Service" },
+
+            LogType = "Failover",
+
             Action = action,
             Message = message,
+
             Metadata = metadata
         });
 
-        _logger.LogWarning("[{Intersection}] FAILOVER log published (Action={Action})", _intersection.Name, action);
+        _logger.LogWarning("[PUBLISHER][LOG][{Intersection}] FAILOVER log published (Action={Action} - Message={Message})", _intersection.Name, action, message);
     }
 
     private async Task PublishAsync(string logType, LogMessage msg)

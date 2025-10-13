@@ -4,19 +4,17 @@ public interface IDetectionEventPublisher
 {
     Task PublishEmergencyVehicleAsync(
         string vehicleType,
-        int speed_kmh,
         string direction,
-        Guid? correlationId = null);
+        Guid? correlationId = null,
+        Dictionary<string, string>? metadata = null);
     Task PublishPublicTransportAsync(
-        string mode,
-        string line,
-        int arrival_estimated_sec,
+        string vehicleType,
         string direction,
-        Guid? correlationId = null);
+        Guid? correlationId = null,
+        Dictionary<string, string>? metadata = null);
     Task PublishIncidentAsync(
-        string type,
-        int severity,
-        string description,
+        string vehicleType,
         string direction,
-        Guid? correlationId = null);
+        Guid? correlationId = null,
+        Dictionary<string, string>? metadata = null);
 }

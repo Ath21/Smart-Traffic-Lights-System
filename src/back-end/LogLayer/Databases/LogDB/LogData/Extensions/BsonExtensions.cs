@@ -1,4 +1,7 @@
 using MongoDB.Bson;
+using MongoDB.Bson.IO;
+using MongoDB.Bson.Serialization;
+using System.Text.Json;
 
 namespace LogData.Extensions;
 
@@ -10,7 +13,6 @@ public static class BsonExtensions
 
         foreach (var element in bson.Elements)
         {
-            // Convert nested BsonDocuments and arrays to JSON strings
             if (element.Value.IsBsonDocument || element.Value.IsBsonArray)
                 dict[element.Name] = element.Value.ToJson();
             else
@@ -18,5 +20,48 @@ public static class BsonExtensions
         }
 
         return dict;
+    }
+
+    public static BsonDocument ToBsonDocument(this Dictionary<string, string> dict)
+    {
+        var bson = new BsonDocument();
+
+        foreach (var kvp in dict)
+        {
+            var key = kvp.Key;
+            var value = kvp.Value;
+
+            if (string.IsNullOrEmpty(value))
+            {
+                bson[key] = BsonNull.Value;
+                continue;
+            }
+
+            try
+            {
+                using var jsonDoc = JsonDocument.Parse(value);
+                var root = jsonDoc.RootElement;
+
+                if (root.ValueKind == JsonValueKind.Object)
+                {
+                    bson[key] = BsonDocument.Parse(value);
+                }
+                else if (root.ValueKind == JsonValueKind.Array)
+                {
+                    // Correct way: use BsonSerializer
+                    bson[key] = BsonSerializer.Deserialize<BsonArray>(value);
+                }
+                else
+                {
+                    bson[key] = BsonValue.Create(value);
+                }
+            }
+            catch
+            {
+                bson[key] = BsonValue.Create(value);
+            }
+        }
+
+        return bson;
     }
 }

@@ -2405,11 +2405,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/ath/Desktop/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/DetectionService/DetectionStore/DetectionStore.csproj",
+      "projectUniqueName": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/DetectionService/DetectionStore/DetectionStore.csproj",
       "projectName": "DetectionStore",
-      "projectPath": "/home/ath/Desktop/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/DetectionService/DetectionStore/DetectionStore.csproj",
+      "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/DetectionService/DetectionStore/DetectionStore.csproj",
       "packagesPath": "/home/ath/.nuget/packages/",
-      "outputPath": "/home/ath/Desktop/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/DetectionService/DetectionStore/obj/",
+      "outputPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/DetectionService/DetectionStore/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/home/ath/.nuget/NuGet/NuGet.Config"
@@ -2424,14 +2424,14 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
-            "/home/ath/Desktop/Smart-Traffic-Lights-System/src/back-end/MessageLayer/Messages/Messages.csproj": {
-              "projectPath": "/home/ath/Desktop/Smart-Traffic-Lights-System/src/back-end/MessageLayer/Messages/Messages.csproj"
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/Messages/Messages.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/Messages/Messages.csproj"
             },
-            "/home/ath/Desktop/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Databases/DetectionCacheDB/DetectionCacheData/DetectionCacheData.csproj": {
-              "projectPath": "/home/ath/Desktop/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Databases/DetectionCacheDB/DetectionCacheData/DetectionCacheData.csproj"
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Databases/DetectionCacheDB/DetectionCacheData/DetectionCacheData.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Databases/DetectionCacheDB/DetectionCacheData/DetectionCacheData.csproj"
             },
-            "/home/ath/Desktop/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Databases/DetectionDB/DetectionData/DetectionData.csproj": {
-              "projectPath": "/home/ath/Desktop/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Databases/DetectionDB/DetectionData/DetectionData.csproj"
+            "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Databases/DetectionDB/DetectionData/DetectionData.csproj": {
+              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Databases/DetectionDB/DetectionData/DetectionData.csproj"
             }
           }
         }

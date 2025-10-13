@@ -11,49 +11,40 @@ public class SensorLogPublisher : ISensorLogPublisher
     private readonly IntersectionContext _intersection;
     private readonly string _routingPattern;
 
-    public SensorLogPublisher(
-        IConfiguration config,
-        ILogger<SensorLogPublisher> logger,
-        IBus bus,
-        IntersectionContext intersection)
+    public async Task PublishAuditAsync(
+        string action,
+        string message,
+        Dictionary<string, string>? metadata = null,
+        Guid? correlationId = null)
     {
-        _bus = bus;
-        _logger = logger;
-        _intersection = intersection;
-
-        _routingPattern = config["RabbitMQ:RoutingKeys:Log:Sensor"]
-                          ?? "log.sensor.sensor-service.{type}";
-    }
-
-    // ===========================
-    // AUDIT
-    // ===========================
-    public async Task PublishAuditAsync(string action, string message,
-        Dictionary<string, string>? metadata = null, Guid? correlationId = null)
-    {
-        var log = new LogMessage
+        await PublishAsync("audit", new LogMessage
         {
             CorrelationId = correlationId ?? Guid.Empty,
-            Layer = "Sensor",
-            LogType = "Audit",
-            IntersectionId = _intersection.Id,
-            IntersectionName = _intersection.Name,
-            SourceServices = new() { "Sensor Service" },
+            Timestamp = DateTime.UtcNow,
+
+            SourceLayer = "Sensor Layer",
+            DestinationLayer = new () { "Log Layer" },
+
+            SourceService = "Detection Service",
             DestinationServices = new() { "Log Service" },
+
+            LogType = "Audit",
+
             Action = action,
             Message = message,
-            Metadata = metadata
-        };
 
-        await PublishAsync("audit", log);
-        _logger.LogInformation("[{Intersection}] AUDIT log published (Action={Action})", _intersection.Name, action);
+            Metadata = metadata
+        });
+
+        _logger.LogInformation("[PUBLISHER][LOG][{Intersection}] AUDIT log published (Action={Action}) - Message={Message}", _intersection.Name, action, message);
     }
 
-    // ===========================
-    // ERROR
-    // ===========================
-    public async Task PublishErrorAsync(string action, string errorMessage,
-        Exception? ex = null, Dictionary<string, string>? metadata = null, Guid? correlationId = null)
+    public async Task PublishErrorAsync(
+        string action,
+        string message,
+        Exception? ex = null,
+        Dictionary<string, string>? metadata = null,
+        Guid? correlationId = null)
     {
         metadata ??= new();
         if (ex != null)
@@ -62,52 +53,56 @@ public class SensorLogPublisher : ISensorLogPublisher
             metadata["exception_message"] = ex.Message;
         }
 
-        var log = new LogMessage
+        await PublishAsync("error", new LogMessage
         {
             CorrelationId = correlationId ?? Guid.Empty,
-            Layer = "Sensor",
+            Timestamp = DateTime.UtcNow,
+
+            SourceLayer = "Sensor Layer",
+            DestinationLayer = new () { "Log Layer" },
+
+            SourceService = "Sensor Service",
+            DestinationServices = new() { "Log Service" },
+
             LogType = "Error",
-            IntersectionId = _intersection.Id,
-            IntersectionName = _intersection.Name,
-            SourceServices = new() { "Sensor Service" },
-            DestinationServices = new() { "Log Service" },
-            Action = action,
-            Message = errorMessage,
-            Metadata = metadata
-        };
 
-        await PublishAsync("error", log);
-        _logger.LogError(ex, "[{Intersection}] ERROR log published (Action={Action}) - {ErrorMessage}",
-            _intersection.Name, action, errorMessage);
-    }
-
-    // ===========================
-    // FAILOVER
-    // ===========================
-    public async Task PublishFailoverAsync(string action, string message,
-        Dictionary<string, string>? metadata = null, Guid? correlationId = null)
-    {
-        var log = new LogMessage
-        {
-            CorrelationId = correlationId ?? Guid.Empty,
-            Layer = "Sensor",
-            LogType = "Failover",
-            IntersectionId = _intersection.Id,
-            IntersectionName = _intersection.Name,
-            SourceServices = new() { "Sensor Service" },
-            DestinationServices = new() { "Log Service" },
             Action = action,
             Message = message,
-            Metadata = metadata
-        };
 
-        await PublishAsync("failover", log);
-        _logger.LogWarning("[{Intersection}] FAILOVER log published (Action={Action})", _intersection.Name, action);
+            Metadata = metadata
+        });
+
+        _logger.LogError("[PUBLISHER][LOG][{Intersection}] ERROR log published (Action={Action}) - Message={Message}", _intersection.Name, action, message);
     }
 
-    // ===========================
-    // Internal publish logic
-    // ===========================
+    public async Task PublishFailoverAsync(
+        string action,
+        string message,
+        Dictionary<string, string>? metadata = null,
+        Guid? correlationId = null)
+    {
+        await PublishAsync("failover", new LogMessage
+        {
+            CorrelationId = correlationId ?? Guid.Empty,
+            Timestamp = DateTime.UtcNow,
+
+            SourceLayer = "Sensor Layer",
+            DestinationLayer = new () { "Log Layer" },
+
+            SourceService = "Detection Service",
+            DestinationServices = new() { "Log Service" },
+
+            LogType = "Failover",
+
+            Action = action,
+            Message = message,
+
+            Metadata = metadata
+        });
+
+        _logger.LogWarning("[PUBLISHER][LOG][{Intersection}] FAILOVER log published (Action={Action} - Message={Message})", _intersection.Name, action, message);
+    }
+
     private async Task PublishAsync(string logType, LogMessage msg)
     {
         msg.CorrelationId = msg.CorrelationId == Guid.Empty ? Guid.NewGuid() : msg.CorrelationId;

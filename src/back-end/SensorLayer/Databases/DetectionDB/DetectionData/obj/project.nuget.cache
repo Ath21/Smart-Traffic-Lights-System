@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "2UVFPzXL4RE=",
+  "dgSpecHash": "fr7QTTdmgoo=",
   "success": true,
-  "projectFilePath": "/home/ath/Desktop/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Databases/DetectionDB/DetectionData/DetectionData.csproj",
+  "projectFilePath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Databases/DetectionDB/DetectionData/DetectionData.csproj",
   "expectedPackageFiles": [
     "/home/ath/.nuget/packages/dnsclient/1.6.1/dnsclient.1.6.1.nupkg.sha512",
     "/home/ath/.nuget/packages/microsoft.extensions.configuration.abstractions/9.0.0/microsoft.extensions.configuration.abstractions.9.0.0.nupkg.sha512",

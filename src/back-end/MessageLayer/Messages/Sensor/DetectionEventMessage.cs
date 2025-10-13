@@ -9,6 +9,8 @@ namespace Messages.Sensor;
 
 public class DetectionEventMessage : BaseMessage
 {
+  public int IntersectionId { get; set; }
+  public string? IntersectionName { get; set; }
   public string? EventType { get; set; }
   public string? VehicleType { get; set; }
   public string? Direction { get; set; }
