@@ -53,14 +53,26 @@ namespace DetectionStore.Workers
                     if (_rand.NextDouble() < 0.1)
                     {
                         var direction = GetRandomDirection();
-                        var vehicleType = _rand.NextDouble() < 0.5 ? "ambulance" : "firetruck";
+                        var vehicleType = _rand.Next(3) switch
+                        {
+                            0 => "ambulance",
+                            1 => "firetruck",
+                            _ => "police car"
+                        };
 
                         var metadata = new Dictionary<string, string>
                         {
-                            ["intersection_id"] = _intersection.Id.ToString(),
-                            ["intersection_name"] = _intersection.Name,
-                            ["direction"] = direction,
-                            ["vehicle_type"] = vehicleType
+                            ["speed_kmh"] = _rand.Next(30, 110).ToString(),
+                            ["signal_priority_level"] = vehicleType switch
+                            {
+                                "ambulance" => "high",
+                                "firetruck" => "medium",
+                                "police car" => "law-enforcement",
+                                _ => "normal"
+                            },
+                            ["last_known_location"] = GetRandomCoordinates(),
+                            ["sirens_detected"] = (_rand.NextDouble() > 0.2).ToString().ToLower(),
+                            ["approach_estimate_seconds"] = _rand.Next(3, 10).ToString(),
                         };
 
                         var correlationId = Guid.NewGuid();
@@ -86,11 +98,12 @@ namespace DetectionStore.Workers
 
                         var metadata = new Dictionary<string, string>
                         {
-                            ["intersection_id"] = _intersection.Id.ToString(),
-                            ["intersection_name"] = _intersection.Name,
-                            ["line_name"] = line,
-                            ["direction"] = direction
+                            ["speed_kmh"] = _rand.Next(20, 70).ToString(),
+                            ["occupancy_ratio"] = _rand.NextDouble().ToString("0.00"),
+                            ["schedule_deviation_min"] = _rand.Next(-3, 5).ToString(), // early(-)/late(+)
+                            ["priority_reason"] = _rand.NextDouble() < 0.5 ? "running_late" : "schedule_priority"
                         };
+
 
                         var correlationId = Guid.NewGuid();
 
@@ -113,10 +126,10 @@ namespace DetectionStore.Workers
 
                         var metadata = new Dictionary<string, string>
                         {
-                            ["intersection_id"] = _intersection.Id.ToString(),
-                            ["intersection_name"] = _intersection.Name,
-                            ["description"] = "Random simulated traffic incident",
-                            ["direction"] = direction
+                            ["incident_type"] = GetRandomIncidentType(),
+                            ["severity_level"] = _rand.Next(1, 5).ToString(),
+                            ["lanes_blocked"] = _rand.Next(0, 2).ToString(),
+                            ["estimated_duration_min"] = _rand.Next(5, 30).ToString()
                         };
 
                         var correlationId = Guid.NewGuid();
@@ -144,10 +157,36 @@ namespace DetectionStore.Workers
             _logger.LogInformation("[WORKER][DETECTION] Stopped for {IntersectionName}", _intersection.Name);
         }
 
-        private static string GetRandomDirection()
-        {
-            var directions = new[] { "north", "south", "east", "west" };
-            return directions[Random.Shared.Next(directions.Length)];
-        }
+
+    // ============================================================
+    // Helper utilities
+    // ============================================================
+    private static string GetRandomDirection()
+    {
+        var directions = new[] { "north", "south", "east", "west" };
+        return directions[Random.Shared.Next(directions.Length)];
+    }
+
+    private static string GetRandomEmergencyType()
+    {
+        var types = new[] { "ambulance", "firetruck", "police car" };
+        return types[Random.Shared.Next(types.Length)];
+    }
+
+    private static string GetRandomIncidentType()
+    {
+        var types = new[] { "collision", "breakdown", "roadwork", "obstruction" };
+        return types[Random.Shared.Next(types.Length)];
+    }
+
+    private string GetRandomCoordinates()
+    {
+        // random offset near intersection (example Athens area)
+        var baseLat = 37.9750;
+        var baseLon = 23.7350;
+        var lat = baseLat + (_rand.NextDouble() - 0.5) * 0.002; // ±0.001 deg ~ ±100m
+        var lon = baseLon + (_rand.NextDouble() - 0.5) * 0.002;
+        return $"{lat:F6}, {lon:F6}";
+    }
     }
 }
