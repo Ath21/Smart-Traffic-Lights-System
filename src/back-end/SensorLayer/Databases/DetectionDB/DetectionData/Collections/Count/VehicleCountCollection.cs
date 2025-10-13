@@ -33,8 +33,8 @@ public class VehicleCountCollection
     [BsonElement("average_wait_time_sec")]
     public double AverageWaitTimeSec { get; set; }
 
-    [BsonElement("count_by_direction")]
-    public Dictionary<string, int>? CountByDirection { get; set; } 
+    [BsonElement("flow_rate")]
+    public double? FlowRate { get; set; } // vehicles per minute
 
     [BsonElement("vehicle_breakdown")]
     public Dictionary<string, int>? VehicleBreakdown { get; set; } // e.g., car, truck, bus, motorcycle   

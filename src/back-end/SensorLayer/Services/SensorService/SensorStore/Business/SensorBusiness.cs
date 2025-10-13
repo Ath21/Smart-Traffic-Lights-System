@@ -45,64 +45,83 @@ public class SensorBusiness : ISensorBusiness
         _logger = logger;
     }
 
+    // ============================================================
+    // PROCESS SENSOR COUNT MESSAGE (from worker or event)
+    // ============================================================
     public async Task ProcessSensorAsync(SensorCountMessage sensorMsg)
     {
         switch (sensorMsg.CountType?.ToLowerInvariant())
         {
             // ============================================================
-            // VEHICLE
+            // VEHICLE COUNT
             // ============================================================
             case "vehicle":
-                await _vehicleRepo.InsertAsync(new VehicleCountCollection
+                var vehicleDoc = new VehicleCountCollection
                 {
                     IntersectionId = sensorMsg.IntersectionId,
                     Intersection = sensorMsg.IntersectionName,
-                    Direction = sensorMsg,
-                    EmergencyVehicleType = detectionMsg.VehicleType,
-                    DetectedAt = detectionMsg.Timestamp
-                });
+                    Timestamp = sensorMsg.Timestamp,
+                    CountTotal = sensorMsg.Count,
+                    AverageSpeedKmh = sensorMsg.AverageSpeedKmh,
+                    AverageWaitTimeSec = sensorMsg.AverageWaitTimeSec,
+                    FlowRate = sensorMsg.FlowRate,
+                    VehicleBreakdown = sensorMsg.Breakdown
+                };
 
-                await _cacheRepo.SetEmergencyDetectedAsync(detectionMsg.IntersectionId, true);
-                _logger.LogInformation("[BUSINESS] Emergency event persisted at {Intersection}", detectionMsg.IntersectionName);
+                await _vehicleRepo.InsertAsync(vehicleDoc);
+                await _cacheRepo.SetVehicleCountAsync(sensorMsg.IntersectionId, sensorMsg.Count);
+
+                _logger.LogInformation(
+                    "[BUSINESS] Vehicle count persisted at {Intersection} | Total={Total}, FlowRate={FlowRate}",
+                    sensorMsg.IntersectionName, sensorMsg.Count, sensorMsg.FlowRate);
                 break;
 
             // ============================================================
-            // PUBLIC TRANSPORT
+            // PEDESTRIAN COUNT
             // ============================================================
-            case "public transport":
-                await _publicRepo.InsertAsync(new PublicTransportDetectionCollection
+            case "pedestrian":
+                var pedDoc = new PedestrianCountCollection
                 {
-                    IntersectionId = detectionMsg.IntersectionId,
-                    IntersectionName = detectionMsg.IntersectionName,
-                    LineName = detectionMsg.VehicleType, // using VehicleType as line name
-                    DetectedAt = detectionMsg.Timestamp
-                });
+                    IntersectionId = sensorMsg.IntersectionId,
+                    Intersection = sensorMsg.IntersectionName,
+                    Timestamp = sensorMsg.Timestamp,
+                    Count = sensorMsg.Count
+                };
 
-                await _cacheRepo.SetPublicTransportDetectedAsync(detectionMsg.IntersectionId, true);
-                _logger.LogInformation("[BUSINESS] Public transport event persisted at {Intersection}", detectionMsg.IntersectionName);
+                await _pedestrianRepo.InsertAsync(pedDoc);
+                await _cacheRepo.SetPedestrianCountAsync(sensorMsg.IntersectionId, sensorMsg.Count);
+
+                _logger.LogInformation(
+                    "[BUSINESS] Pedestrian count persisted at {Intersection} | Count={Count}",
+                    sensorMsg.IntersectionName, sensorMsg.Count);
                 break;
 
             // ============================================================
-            // INCIDENT
+            // CYCLIST COUNT
             // ============================================================
-            case "incident":
-                await _incidentRepo.InsertAsync(new IncidentDetectionCollection
+            case "cyclist":
+                var cycDoc = new CyclistCountCollection
                 {
-                    IntersectionId = detectionMsg.IntersectionId,
-                    Intersection = detectionMsg.IntersectionName,
-                    Description = detectionMsg.Metadata?["description"] ?? "unknown",
-                    ReportedAt = detectionMsg.Timestamp
-                });
+                    IntersectionId = sensorMsg.IntersectionId,
+                    Intersection = sensorMsg.IntersectionName,
+                    Timestamp = sensorMsg.Timestamp,
+                    Count = sensorMsg.Count
+                };
 
-                await _cacheRepo.SetIncidentDetectedAsync(detectionMsg.IntersectionId, true);
-                _logger.LogWarning("[BUSINESS] Incident event persisted at {Intersection}", detectionMsg.IntersectionName);
+                await _cyclistRepo.InsertAsync(cycDoc);
+                await _cacheRepo.SetCyclistCountAsync(sensorMsg.IntersectionId, sensorMsg.Count);
+
+                _logger.LogInformation(
+                    "[BUSINESS] Cyclist count persisted at {Intersection} | Count={Count}",
+                    sensorMsg.IntersectionName, sensorMsg.Count);
                 break;
 
             default:
-                _logger.LogWarning("[BUSINESS] Unknown detection type: {Type}", detectionMsg.EventType);
+                _logger.LogWarning(
+                    "[BUSINESS] Unknown sensor count type: {Type} (Intersection={Intersection})",
+                    sensorMsg.CountType, sensorMsg.IntersectionName);
                 break;
         }
-
     }
 
     // ============================================================
