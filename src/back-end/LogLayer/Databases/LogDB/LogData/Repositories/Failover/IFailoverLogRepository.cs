@@ -4,9 +4,6 @@ using MongoDB.Driver;
 
 namespace LogData.Repositories.Failover;
 
-public interface IFailoverLogRepository
+public interface IFailoverLogRepository : IBaseLogRepository<FailoverLogCollection>
 {
-    Task<IEnumerable<FailoverLogCollection>> GetAllAsync();
-    Task<IEnumerable<FailoverLogCollection>> GetByReasonAsync(string reason);
-    Task InsertAsync(FailoverLogCollection log);
 }

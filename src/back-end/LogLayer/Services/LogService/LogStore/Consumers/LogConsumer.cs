@@ -1,29 +1,26 @@
-using AutoMapper;
 using MassTransit;
 using Messages.Log;
 using LogData.Collections;
 using LogData.Repositories.Audit;
 using LogData.Repositories.Error;
 using LogData.Repositories.Failover;
+using MongoDB.Bson;
 
 namespace LogStore.Consumers;
 
 public class LogConsumer : IConsumer<LogMessage>
 {
-    private readonly IMapper _mapper;
     private readonly IAuditLogRepository _auditRepo;
     private readonly IErrorLogRepository _errorRepo;
     private readonly IFailoverLogRepository _failoverRepo;
     private readonly ILogger<LogConsumer> _logger;
 
     public LogConsumer(
-        IMapper mapper,
         IAuditLogRepository auditRepo,
         IErrorLogRepository errorRepo,
         IFailoverLogRepository failoverRepo,
         ILogger<LogConsumer> logger)
     {
-        _mapper = mapper;
         _auditRepo = auditRepo;
         _errorRepo = errorRepo;
         _failoverRepo = failoverRepo;
@@ -33,34 +30,87 @@ public class LogConsumer : IConsumer<LogMessage>
     public async Task Consume(ConsumeContext<LogMessage> context)
     {
         var msg = context.Message;
-        if (string.IsNullOrEmpty(msg.LogType))
+
+        if (string.IsNullOrWhiteSpace(msg.LogType))
         {
-            _logger.LogWarning("[CONSUMER] Skipping log message without LogType (CorrelationId={CorrelationId})", msg.CorrelationId);
+            _logger.LogWarning(
+                "[CONSUMER] Skipping log message without LogType (CorrelationId={CorrelationId})",
+                msg.CorrelationId);
             return;
         }
 
+        // Convert metadata dictionary (if any)
+        var metadataDoc = msg.Metadata != null
+            ? new BsonDocument(msg.Metadata)
+            : new BsonDocument();
+
         switch (msg.LogType.ToLowerInvariant())
         {
+            // 🔹 AUDIT LOG -------------------------------------------------
             case "audit":
-                var audit = _mapper.Map<AuditLogCollection>(msg);
+                var audit = new AuditLogCollection
+                {
+                    CorrelationId = msg.CorrelationId,
+                    Timestamp = msg.Timestamp,
+                    Layer = msg.SourceLayer,
+                    Service = msg.SourceServices?.FirstOrDefault() ?? "unknown",
+                    Action = msg.Action,
+                    Message = msg.Message,
+                    Metadata = metadataDoc
+                };
+
                 await _auditRepo.InsertAsync(audit);
-                _logger.LogInformation("[CONSUMER] Stored AUDIT log from {Service} ({Layer})", audit.Service, audit.Layer);
+                _logger.LogInformation(
+                    "[CONSUMER] Stored AUDIT log from {Service} ({Layer}) | CorrelationId={CorrelationId}",
+                    audit.Service, audit.Layer, audit.CorrelationId);
                 break;
 
+            // 🔹 ERROR LOG -------------------------------------------------
             case "error":
-                var error = _mapper.Map<ErrorLogCollection>(msg);
+                var error = new ErrorLogCollection
+                {
+                    CorrelationId = msg.CorrelationId,
+                    Timestamp = msg.Timestamp,
+                    Layer = msg.SourceLayer,
+                    Service = msg.SourceServices?.FirstOrDefault() ?? "unknown",
+                    Action = msg.Action,
+                    Message = msg.Message,
+                    Metadata = metadataDoc
+                };
+
                 await _errorRepo.InsertAsync(error);
-                _logger.LogInformation("[CONSUMER] Stored ERROR log from {Service} ({Layer})", error.Service, error.Layer);
+                _logger.LogInformation(
+                    "[CONSUMER] Stored ERROR log from {Service} ({Layer}) | CorrelationId={CorrelationId}",
+                    error.Service, error.Layer, error.CorrelationId);
                 break;
 
+            // 🔹 FAILOVER LOG ----------------------------------------------
             case "failover":
-                var failover = _mapper.Map<FailoverLogCollection>(msg);
+                var failover = new FailoverLogCollection
+                {
+                    CorrelationId = msg.CorrelationId,
+                    Timestamp = msg.Timestamp,
+                    Layer = msg.SourceLayer,
+                    Service = msg.SourceServices?.FirstOrDefault() ?? "unknown",
+                    Action = msg.Action,
+                    Message = msg.Message,
+                    Metadata = metadataDoc
+                };
+
                 await _failoverRepo.InsertAsync(failover);
-                _logger.LogInformation("[CONSUMER] Stored FAILOVER log from {Service} ({Layer})", failover.Service, failover.Layer);
+                _logger.LogInformation(
+                    "[CONSUMER] Stored FAILOVER log from {Service} ({Layer}) | CorrelationId={CorrelationId}",
+                    failover.Service, failover.Layer, failover.CorrelationId);
                 break;
 
+            // 🔸 UNKNOWN TYPE ----------------------------------------------
             default:
-                _logger.LogWarning("[CONSUMER] Unknown log type '{Type}' from {Service}", msg.LogType, msg.Layer);
+                _logger.LogWarning(
+                    "[CONSUMER] Unknown log type '{Type}' from {Service} ({Layer}) | CorrelationId={CorrelationId}",
+                    msg.LogType,
+                    msg.SourceServices?.FirstOrDefault() ?? "unknown",
+                    msg.SourceLayer,
+                    msg.CorrelationId);
                 break;
         }
     }

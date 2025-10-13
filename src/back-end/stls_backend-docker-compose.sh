@@ -2,6 +2,8 @@
 set -e
 
 ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
+export ROOT_DIR
+echo "ROOT_DIR resolved to: $ROOT_DIR"
 
 LAYERS=("message" "user" "traffic" "sensor" "log")
 
@@ -32,17 +34,16 @@ usage() {
 # Networks
 # ----------------------------------------------------
 NETWORKS=(
-  user_network
-  notification_network
-  log_network
-  sensor_network
-  detection_network
-  detection_cache_network
-  traffic_network
-  traffic_light_network
-  traffic_light_cache_network
-  traffic_analytics_network
-  rabbitmq_network
+  user-network
+  notification-network
+  log-network
+  sensor-network
+  detection-network
+  detection-cache-network
+  traffic-light-network
+  traffic-light-cache-network
+  traffic-analytics-network
+  rabbitmq-network
 )
 
 create_networks() {
@@ -100,8 +101,8 @@ deploy_layer() {
   case $layer in
     message)
       docker compose -p stls_message \
-        -f "$ROOT_DIR/MessageLayer/RabbitMQ/Compose/Deployment/compose.rabbitmq.yaml" \
-        -f "$ROOT_DIR/MessageLayer/RabbitMQ/Compose/Deployment/compose.rabbitmq.override.yaml" up -d
+        -f "$ROOT_DIR/MessageLayer/RabbitMQ/Compose/compose.rabbitmq.yaml" \
+        -f "$ROOT_DIR/MessageLayer/RabbitMQ/Compose/compose.rabbitmq.override.yaml" up -d
       wait_for_rabbitmq
       ;;
     user)
@@ -129,26 +130,38 @@ deploy_layer() {
       ;;
     sensor)
       docker compose -p stls_sensor \
-        -f "$ROOT_DIR/SensorLayer/Databases/DetectionCacheDB/Redis/Docker-Compose/docker-compose.yaml" \
-        -f "$ROOT_DIR/SensorLayer/Databases/DetectionCacheDB/Redis/Docker-Compose/docker-compose.override.yaml" up -d
-      wait_for_redis "detectioncachedb" "DetectionCacheDB"
+        -f "$ROOT_DIR/SensorLayer/Databases/DetectionCacheDB/Redis/Compose/compose.detection-cache-db.yaml" \
+        -f "$ROOT_DIR/SensorLayer/Databases/DetectionCacheDB/Redis/Compose/compose.detection-cache-db.override.yaml" \
+        up -d
+      wait_for_redis "detection-cache-db" "DetectionCacheDB"
 
       docker compose -p stls_sensor \
-        -f "$ROOT_DIR/SensorLayer/Databases/DetectionDB/Mongo/Docker-Compose/docker-compose.yaml" \
-        -f "$ROOT_DIR/SensorLayer/Databases/DetectionDB/Mongo/Docker-Compose/docker-compose.override.yaml" up -d
+        -f "$ROOT_DIR/SensorLayer/Databases/DetectionDB/Mongo/Compose/compose.detection-db.yaml" \
+        -f "$ROOT_DIR/SensorLayer/Databases/DetectionDB/Mongo/Compose/compose.detection-db.override.yaml" \
+        up -d
 
-      for file in "$ROOT_DIR"/SensorLayer/Services/DetectionService/Docker-Compose/docker-compose.detectionapi.*.yaml; do
-        docker compose -p stls_sensor -f "$file" --env-file "$ROOT_DIR/SensorLayer/Services/DetectionService/Docker-Compose/secret.env" up -d
-      done
+      docker compose -p stls_sensor \
+        -f "$ROOT_DIR/SensorLayer/Services/DetectionService/Compose/compose.detection-api.agiou-spyridonos.yaml" \
+        -f "$ROOT_DIR/SensorLayer/Services/DetectionService/Compose/compose.detection-api.anatoliki-pyli.yaml" \
+        -f "$ROOT_DIR/SensorLayer/Services/DetectionService/Compose/compose.detection-api.dytiki-pyli.yaml" \
+        -f "$ROOT_DIR/SensorLayer/Services/DetectionService/Compose/compose.detection-api.ekklisia.yaml" \
+        -f "$ROOT_DIR/SensorLayer/Services/DetectionService/Compose/compose.detection-api.kentriki-pyli.yaml" \
+        up -d
 
-      for file in "$ROOT_DIR"/SensorLayer/Services/SensorService/Docker-Compose/docker-compose.sensorapi.*.yaml; do
-        docker compose -p stls_sensor -f "$file" --env-file "$ROOT_DIR/SensorLayer/Services/SensorService/Docker-Compose/secret.env" up -d
-      done
+      docker compose -p stls_sensor \
+        -f "$ROOT_DIR/SensorLayer/Services/SensorService/Compose/compose.sensor-api.agiou-spyridonos.yaml" \
+        -f "$ROOT_DIR/SensorLayer/Services/SensorService/Compose/compose.sensor-api.anatoliki-pyli.yaml" \
+        -f "$ROOT_DIR/SensorLayer/Services/SensorService/Compose/compose.sensor-api.dytiki-pyli.yaml" \
+        -f "$ROOT_DIR/SensorLayer/Services/SensorService/Compose/compose.sensor-api.ekklisia.yaml" \
+        -f "$ROOT_DIR/SensorLayer/Services/SensorService/Compose/compose.sensor-api.kentriki-pyli.yaml" \
+        up -d
       ;;
     log)
       docker compose -p stls_log \
-        -f "$ROOT_DIR/LogLayer/Services/LogService/Compose/Deployment/compose.log-api.yaml" -f "$ROOT_DIR/LogLayer/Services/LogService/Compose/Deployment/compose.log-api.override.yaml" \
-        -f "$ROOT_DIR/LogLayer/Databases/LogDB/Mongo/Compose/Deployment/compose.log-db.yaml" -f "$ROOT_DIR/LogLayer/Databases/LogDB/Mongo/Compose/Deployment/compose.log-db.override.yaml" \
+        -f "$ROOT_DIR/LogLayer/Databases/LogDB/Mongo/Compose/compose.log-db.yaml" \
+        -f "$ROOT_DIR/LogLayer/Databases/LogDB/Mongo/Compose/compose.log-db.override.yaml" \
+        -f "$ROOT_DIR/LogLayer/Services/LogService/Compose/compose.log-api.yaml" \
+        -f "$ROOT_DIR/LogLayer/Services/LogService/Compose/compose.log-api.override.yaml" \
         up -d
       ;;
     *)

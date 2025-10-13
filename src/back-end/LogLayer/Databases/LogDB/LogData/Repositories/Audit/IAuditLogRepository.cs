@@ -5,9 +5,6 @@ using MongoDB.Driver;
 namespace LogData.Repositories.Audit;
 
 
-public interface IAuditLogRepository
+public interface IAuditLogRepository : IBaseLogRepository<AuditLogCollection>
 {
-    Task<IEnumerable<AuditLogCollection>> GetAllAsync();
-    Task<IEnumerable<AuditLogCollection>> GetByIntersectionAsync(int intersectionId);
-    Task InsertAsync(AuditLogCollection log);
 }

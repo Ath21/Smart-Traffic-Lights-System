@@ -54,11 +54,6 @@ public class Startup
         services.AddScoped(typeof(ILogBusiness), typeof(LogBusiness));
 
         // ===============================
-        // AutoMapper (object-object mapping)
-        // ===============================
-        services.AddAutoMapper(typeof(LogStoreProfile));
-
-        // ===============================
         // JWT (Authentication & Authorization)
         // ===============================
         var jwtSettings = _configuration.GetSection("Jwt");

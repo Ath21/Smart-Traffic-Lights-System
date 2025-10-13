@@ -23,7 +23,7 @@ public class DetectionEventPublisher : IDetectionEventPublisher
         _logger = logger;
         _intersection = intersection;
 
-        _routingPattern = config["RabbitMQ:RoutingKeys:Sensor:Detection"]
+        _routingPattern = config["RabbitMQ:RoutingKeys:Detection:Event"]
                           ?? "sensor.detection.{intersection}.{event}";
     }
 

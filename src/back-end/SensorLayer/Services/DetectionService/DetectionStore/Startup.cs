@@ -37,8 +37,8 @@ public class Startup
         // ===============================
         services.AddSingleton(sp =>
         {
-            var id = int.Parse(_configuration["INTERSECTION:ID"] ?? throw new InvalidOperationException("Intersection Id missing"));
-            var name = _configuration["INTERSECTION:NAME"] ?? "Unknown";
+            var id = int.Parse(_configuration["Intersection:Id"] ?? throw new InvalidOperationException("Intersection Id missing"));
+            var name = _configuration["Intersection:Name"] ?? "Unknown";
             return new IntersectionContext(id, name);
         });
 
@@ -54,9 +54,9 @@ public class Startup
                 VehicleCount = _configuration["Mongo:Collections:VehicleCount"],
                 PedestrianCount = _configuration["Mongo:Collections:PedestrianCount"],
                 CyclistCount = _configuration["Mongo:Collections:CyclistCount"],
-                PublicTransport = _configuration["Mongo:Collections:PublicTransport"],
-                EmergencyVehicle = _configuration["Mongo:Collections:EmergencyVehicle"],
-                Incident = _configuration["Mongo:Collections:Incident"]
+                PublicTransport = _configuration["Mongo:Collections:PublicTransportDetections"],
+                EmergencyVehicle = _configuration["Mongo:Collections:EmergencyVehicleDetections"],
+                Incident = _configuration["Mongo:Collections:IncidentDetections"]
             };
         });
         services.AddSingleton<DetectionDbContext>();
@@ -81,12 +81,12 @@ public class Startup
             options.Database = int.Parse(_configuration["Redis:Database"]);
             options.KeyPrefix = new KeyPrefixSettings
             {
-                VehicleCount = _configuration["Redis:KeyPrefix:VehicleCount"],
-                PedestrianCount = _configuration["Redis:KeyPrefix:PedestrianCount"],
-                CyclistCount = _configuration["Redis:KeyPrefix:CyclistCount"],
-                PublicTransportDetections = _configuration["Redis:KeyPrefix:PublicTransportDetections"],
-                EmergencyVehicleDetections = _configuration["Redis:KeyPrefix:EmergencyVehicleDetections"],
-                IncidentDetections = _configuration["Redis:KeyPrefix:IncidentDetections"]
+                VehicleCount = _configuration["Redis:Sensor:KeyPrefix:VehicleCount"],
+                PedestrianCount = _configuration["Redis:Sensor:KeyPrefix:PedestrianCount"],
+                CyclistCount = _configuration["Redis:Sensor:KeyPrefix:CyclistCount"],
+                PublicTransportDetections = _configuration["Redis:Detection:KeyPrefix:PublicTransportDetections"],
+                EmergencyVehicleDetections = _configuration["Redis:Detection:KeyPrefix:EmergencyVehicleDetections"],
+                IncidentDetections = _configuration["Redis:Detection:KeyPrefix:IncidentDetections"]
             };
         });
         services.AddSingleton<DetectionCacheDbContext>();
@@ -168,7 +168,7 @@ public class Startup
         // ===============================
         // Swagger (API Documentation)
         // ===============================
-        var intersectionName = _configuration["INTERSECTION:NAME"] ?? "Unknown Intersection";
+        var intersectionName = _configuration["Intersection:Name"] ?? "Unknown Intersection";
 
         services.AddSwaggerGen(c =>
         {
@@ -207,7 +207,7 @@ public class Startup
 
     public void Configure(WebApplication app, IWebHostEnvironment env)
     {
-        var intersectionName = _configuration["INTERSECTION:NAME"] ?? "Unknown Intersection";
+        var intersectionName = _configuration["Intersection:Name"] ?? "Unknown Intersection";
 
         // ===============================
         // Swagger UI

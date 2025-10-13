@@ -1,77 +1,82 @@
 using DetectionCacheData;
 using DetectionData;
+using SensorStore.Domain;
 using MassTransit;
 using Messages.Log;
 using Microsoft.AspNetCore.Mvc;
-using SensorStore.Domain;
 
-namespace SensorStore.Controllers;
-
-[ApiController]
-[Route("api/sensors")]
-public class ReadyController : ControllerBase
+namespace SensorStore.Controllers
 {
-    private readonly DetectionDbContext _detectionDbContext;
-    private readonly DetectionCacheDbContext _detectionCacheDbContext;
-    private readonly IBusControl _bus;
-    private readonly IntersectionContext _intersection;
-
-    public ReadyController(
-        DetectionDbContext detectionDbContext,
-        DetectionCacheDbContext detectionCacheDbContext,
-        IBusControl bus,
-        IntersectionContext intersection)
+    [ApiController]
+    [Route("sensor-service")]
+    public class ReadyController : ControllerBase
     {
-        _detectionDbContext = detectionDbContext;
-        _detectionCacheDbContext = detectionCacheDbContext;
-        _bus = bus;
-        _intersection = intersection;
-    }
+        private readonly DetectionDbContext _detectionDbContext;
+        private readonly DetectionCacheDbContext _detectionCacheDbContext;
+        private readonly IBusControl _bus;
+        private readonly IntersectionContext _intersection;
 
-    [HttpGet("ready")]
-    public async Task<IActionResult> Ready()
-    {
-        try
+        public ReadyController(
+            DetectionDbContext detectionDbContext,
+            DetectionCacheDbContext detectionCacheDbContext,
+            IBusControl bus,
+            IntersectionContext intersection)
         {
-            if (!await _detectionDbContext.CanConnectAsync())
-                return StatusCode(503, new
-                {
-                    status = "Not Ready",
-                    reason = "DetectionDB MongoDB unreachable",
-                    intersection = new { _intersection.Id, _intersection.Name }
-                });
-
-            if (!await _detectionCacheDbContext.CanConnectAsync())
-                return StatusCode(503, new
-                {
-                    status = "Not Ready",
-                    reason = "DetectionCacheDB Redis unreachable",
-                    intersection = new { _intersection.Id, _intersection.Name }
-                });
-
-            if (!_bus.Topology.TryGetPublishAddress(typeof(LogMessage), out _))
-                return StatusCode(503, new
-                {
-                    status = "Not Ready",
-                    reason = "RabbitMQ not connected",
-                    intersection = new { _intersection.Id, _intersection.Name }
-                });
-
-            return Ok(new
-            {
-                status = "Ready",
-                service = "Sensor Service",
-                intersection = new { _intersection.Id, _intersection.Name }
-            });
+            _detectionDbContext = detectionDbContext;
+            _detectionCacheDbContext = detectionCacheDbContext;
+            _bus = bus;
+            _intersection = intersection;
         }
-        catch (Exception ex)
+
+        [HttpGet("ready")]
+        public async Task<IActionResult> Ready()
         {
-            return StatusCode(503, new
+            try
             {
-                status = "Not Ready",
-                error = ex.Message,
-                intersection = new { _intersection.Id, _intersection.Name }
-            });
+                if (!await _detectionDbContext.CanConnectAsync())
+                    return StatusCode(503, new
+                    {
+                        status = "Not Ready",
+                        reason = "DetectionDB (MongoDB) unreachable",
+                        intersection = _intersection
+                    });
+
+                if (!await _detectionCacheDbContext.CanConnectAsync())
+                    return StatusCode(503, new
+                    {
+                        status = "Not Ready",
+                        reason = "DetectionCacheDB (Redis) unreachable",
+                        intersection = _intersection
+                    });
+
+                if (!_bus.Topology.TryGetPublishAddress(typeof(LogMessage), out _))
+                    return StatusCode(503, new
+                    {
+                        status = "Not Ready",
+                        reason = "RabbitMQ not connected",
+                        intersection = _intersection
+                    });
+
+                return Ok(new
+                {
+                    status = "Ready",
+                    service = "Sensor Service",
+                    intersection = new
+                    {
+                        id = _intersection.Id,
+                        name = _intersection.Name
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(503, new
+                {
+                    status = "Not Ready",
+                    error = ex.Message,
+                    intersection = _intersection
+                });
+            }
         }
     }
 }

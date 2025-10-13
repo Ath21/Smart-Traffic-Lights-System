@@ -184,22 +184,4 @@ public class DetectionBusiness : IDetectionBusiness
         var data = await _incidentRepo.GetRecentIncidentsAsync(intersectionId);
         return _mapper.Map<IEnumerable<IncidentDetectionResponse>>(data);
     }
-
-    // ============================================================
-    // CACHE FLAGS (for local intersection controllers)
-    // ============================================================
-    public async Task<object> GetDetectionFlagsAsync(int intersectionId)
-    {
-        var emergency = await _cacheRepo.GetEmergencyDetectedAsync(intersectionId);
-        var incident = await _cacheRepo.GetIncidentDetectedAsync(intersectionId);
-        var transport = await _cacheRepo.GetPublicTransportDetectedAsync(intersectionId);
-
-        return new
-        {
-            intersectionId,
-            emergency,
-            incident,
-            publicTransport = transport
-        };
-    }
 }

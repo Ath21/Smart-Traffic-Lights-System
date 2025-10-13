@@ -87,12 +87,6 @@ public class LogController : ControllerBase
             return NotFound();
         }
 
-        if (format.Equals("pdf", StringComparison.OrdinalIgnoreCase))
-        {
-            var pdfBytes = await _logBusiness.ExportLogsToPdfAsync(logs);
-            return File(pdfBytes, "application/pdf", $"logs_export_{DateTime.UtcNow:yyyyMMdd_HHmm}.pdf");
-        }
-
         // Default to CSV
         var csvBytes = await _logBusiness.ExportLogsToCsvAsync(logs);
         return File(csvBytes, "text/csv", $"logs_export_{DateTime.UtcNow:yyyyMMdd_HHmm}.csv");

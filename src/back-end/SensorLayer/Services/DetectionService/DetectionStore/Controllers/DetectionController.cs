@@ -124,16 +124,4 @@ public class DetectionController : ControllerBase
             detections.Count(), intersectionId);
         return Ok(detections);
     }
-
-    // ============================================================
-    // CACHE STATUS (Redis Flags)
-    // ============================================================
-    [HttpGet("cache/{intersectionId:int}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetCacheFlags(int intersectionId)
-    {
-        var result = await _service.GetDetectionFlagsAsync(intersectionId);
-        _logger.LogInformation("[CONTROLLER] Cache flags retrieved for intersection {Id}", intersectionId);
-        return Ok(result);
-    }
 }

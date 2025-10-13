@@ -22,7 +22,7 @@ public class SensorLogPublisher : ISensorLogPublisher
         _intersection = intersection;
 
         _routingPattern = config["RabbitMQ:RoutingKeys:Log:Sensor"]
-                          ?? "log.sensor.sensor.{type}";
+                          ?? "log.sensor.sensor-service.{type}";
     }
 
     // ===========================

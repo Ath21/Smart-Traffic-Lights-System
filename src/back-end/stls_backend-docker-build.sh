@@ -8,15 +8,15 @@ DOCKER_USERNAME="ath21"
 # Microservice Dockerfile Paths
 # ============================================================
 declare -A SERVICES_PATHS=(
-    [user_api]="UserLayer/Services/UserService/Docker/Dockerfile"
-    [notification_api]="UserLayer/Services/NotificationService/Docker/Dockerfile"
-    [log_api]="LogLayer/Services/LogService/Docker/Dockerfile"
-    [traffic_analytics]="TrafficLayer/Services/TrafficAnalyticsService/Docker/Dockerfile"
-    [traffic_light_controller]="TrafficLayer/Services/TrafficLightControllerService/Docker/Dockerfile"
-    [traffic_light_coordinator]="TrafficLayer/Services/TrafficLightCoordinatorService/Docker/Dockerfile"
-    [intersection_controller]="TrafficLayer/Services/IntersectionControllerService/Docker/Dockerfile"
-    [sensor_api]="SensorLayer/Services/SensorService/Docker/Dockerfile"
-    [detection_api]="SensorLayer/Services/DetectionService/Docker/Dockerfile"
+    [user-api]="UserLayer/Services/UserService/Docker/Dockerfile"
+    [notification-api]="UserLayer/Services/NotificationService/Docker/Dockerfile"
+    [log-api]="LogLayer/Services/LogService/Docker/Dockerfile"
+    [traffic-analytics]="TrafficLayer/Services/TrafficAnalyticsService/Docker/Dockerfile"
+    [traffic-light-controller]="TrafficLayer/Services/TrafficLightControllerService/Docker/Dockerfile"
+    [traffic-light-coordinator]="TrafficLayer/Services/TrafficLightCoordinatorService/Docker/Dockerfile"
+    [intersection-controller]="TrafficLayer/Services/IntersectionControllerService/Docker/Dockerfile"
+    [sensor-api]="SensorLayer/Services/SensorService/Docker/Dockerfile"
+    [detection-api]="SensorLayer/Services/DetectionService/Docker/Dockerfile"
 )
 
 usage() {
@@ -35,7 +35,7 @@ usage() {
     echo "Examples:"
     echo "  ./stls_backend-docker-build.sh --all"
     echo "  ./stls_backend-docker-build.sh --infra"
-    echo "  ./stls_backend-docker-build.sh sensor user notification"
+    echo "  ./stls_backend-docker-build.sh sensor-api user-api notification-api"
 }
 
 # ============================================================
@@ -79,33 +79,33 @@ push_infra_images() {
     echo "Tagging and pushing database and broker images..."
 
     # Mongo-based
-    docker tag mongo:6.0 ${DOCKER_USERNAME}/stls-databases:log_mongo
-    docker tag mongo:6.0 ${DOCKER_USERNAME}/stls-databases:notification_mongo
-    docker tag mongo:6.0 ${DOCKER_USERNAME}/stls-databases:detection_mongo
+    docker tag mongo:6.0 ${DOCKER_USERNAME}/stls-databases:log-mongo
+    docker tag mongo:6.0 ${DOCKER_USERNAME}/stls-databases:notification-mongo
+    docker tag mongo:6.0 ${DOCKER_USERNAME}/stls-databases:detection-mongo
 
     # Redis-based
-    docker tag redis:7.4 ${DOCKER_USERNAME}/stls-databases:trafficlight_redis
-    docker tag redis:7.4 ${DOCKER_USERNAME}/stls-databases:detection_redis
+    docker tag redis:7.4 ${DOCKER_USERNAME}/stls-databases:traffic-light-redis
+    docker tag redis:7.4 ${DOCKER_USERNAME}/stls-databases:detection-redis
 
     # MSSQL-based
-    docker tag mcr.microsoft.com/mssql/server:2022-latest ${DOCKER_USERNAME}/stls-databases:trafficlight_mssql
-    docker tag mcr.microsoft.com/mssql/server:2022-latest ${DOCKER_USERNAME}/stls-databases:user_mssql
+    docker tag mcr.microsoft.com/mssql/server:2022-latest ${DOCKER_USERNAME}/stls-databases:traffic-light-mssql
+    docker tag mcr.microsoft.com/mssql/server:2022-latest ${DOCKER_USERNAME}/stls-databases:user-mssql
 
     # PostgreSQL
-    docker tag postgres:16 ${DOCKER_USERNAME}/stls-databases:analytics_postgres
+    docker tag postgres:16 ${DOCKER_USERNAME}/stls-databases:traffic-analytics-postgres
 
     # RabbitMQ
     docker tag rabbitmq:3.8-management ${DOCKER_USERNAME}/stls-broker:rabbitmq
 
     # Push all images
-    docker push ${DOCKER_USERNAME}/stls-databases:log_mongo
-    docker push ${DOCKER_USERNAME}/stls-databases:notification_mongo
-    docker push ${DOCKER_USERNAME}/stls-databases:detection_mongo
-    docker push ${DOCKER_USERNAME}/stls-databases:trafficlight_redis
-    docker push ${DOCKER_USERNAME}/stls-databases:detection_redis
-    docker push ${DOCKER_USERNAME}/stls-databases:trafficlight_mssql
-    docker push ${DOCKER_USERNAME}/stls-databases:user_mssql
-    docker push ${DOCKER_USERNAME}/stls-databases:analytics_postgres
+    docker push ${DOCKER_USERNAME}/stls-databases:log-mongo
+    docker push ${DOCKER_USERNAME}/stls-databases:notification-mongo
+    docker push ${DOCKER_USERNAME}/stls-databases:detection-mongo
+    docker push ${DOCKER_USERNAME}/stls-databases:traffic-light-redis
+    docker push ${DOCKER_USERNAME}/stls-databases:detection-redis
+    docker push ${DOCKER_USERNAME}/stls-databases:traffic-light-mssql
+    docker push ${DOCKER_USERNAME}/stls-databases:user-mssql
+    docker push ${DOCKER_USERNAME}/stls-databases:traffic-analytics-postgres
     docker push ${DOCKER_USERNAME}/stls-broker:rabbitmq
 
     echo "Infrastructure images pushed successfully."

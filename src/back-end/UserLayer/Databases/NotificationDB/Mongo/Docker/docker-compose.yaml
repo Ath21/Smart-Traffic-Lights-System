@@ -1,0 +1,12 @@
+services:
+  notification_db:
+    image: mongo:6.0
+    container_name: notificationdb_container
+    networks:
+      - notification_network
+
+networks:
+  notification_network:
+    name: notification_network
+    driver: bridge
+    external: true

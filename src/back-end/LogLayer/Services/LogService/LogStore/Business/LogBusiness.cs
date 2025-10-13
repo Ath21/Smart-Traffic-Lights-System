@@ -1,41 +1,28 @@
 using System.Text;
-using LogStore.Models.Responses;
-using ReportLab = iText.Kernel.Pdf; // placeholder comment if using actual PDF generator
 using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Collections.Generic;
-using iText.Kernel.Pdf;
-using iText.Layout;
-using iText.Layout.Element;
-using iText.Layout.Properties;
+using LogStore.Models.Responses;
 using LogData.Repositories.Search;
-using AutoMapper;
 using LogData.Collections;
-
+using LogData.Extensions;
 
 namespace LogStore.Business;
 
 public class LogBusiness : ILogBusiness
 {
     private readonly ISearchLogRepository _searchRepo;
-    private readonly IMapper _mapper;
     private readonly ILogger<LogBusiness> _logger;
 
     public LogBusiness(
         ISearchLogRepository searchRepo,
-        IMapper mapper,
         ILogger<LogBusiness> logger)
     {
         _searchRepo = searchRepo;
-        _mapper = mapper;
         _logger = logger;
     }
 
     // ============================================================
     // SEARCH METHOD
     // ============================================================
-
     public async Task<IEnumerable<SearchLogResponse>> SearchLogsAsync(
         string? layer,
         string? service,
@@ -43,24 +30,35 @@ public class LogBusiness : ILogBusiness
         DateTime? from,
         DateTime? to)
     {
-        _logger.LogInformation("[BUSINESS] SearchLogsAsync called with layer={Layer}, service={Service}, type={Type}, from={From}, to={To}", layer, service, type, from, to);
+        _logger.LogInformation(
+            "[BUSINESS] SearchLogsAsync called with layer={Layer}, service={Service}, type={Type}, from={From}, to={To}",
+            layer, service, type, from, to);
 
         var results = await _searchRepo.SearchAsync(layer, service, type, from, to);
+        _logger.LogInformation("[BUSINESS] Retrieved {Count} logs from repository", results.Count());
 
-        _logger.LogInformation("[BUSINESS] SearchLogsAsync retrieved {Count} results from repository", results.Count());
+        var responses = new List<SearchLogResponse>();
 
-        // Convert each Mongo entity to SearchLogResponse
-        var mapped = results.Select(obj => obj switch
+        foreach (var obj in results)
         {
-            AuditLogCollection audit => _mapper.Map<SearchLogResponse>(audit),
-            ErrorLogCollection error => _mapper.Map<SearchLogResponse>(error),
-            FailoverLogCollection failover => _mapper.Map<SearchLogResponse>(failover),
-            _ => null
-        }).Where(x => x != null)!;
+            switch (obj)
+            {
+                case AuditLogCollection audit:
+                    responses.Add(MapAuditLog(audit));
+                    break;
 
-        _logger.LogInformation("[BUSINESS] SearchLogsAsync mapped results to {MappedCount} SearchLogResponse objects", mapped.Count());
+                case ErrorLogCollection error:
+                    responses.Add(MapErrorLog(error));
+                    break;
 
-        return mapped;
+                case FailoverLogCollection failover:
+                    responses.Add(MapFailoverLog(failover));
+                    break;
+            }
+        }
+
+        _logger.LogInformation("[BUSINESS] Mapped {Count} results to SearchLogResponse", responses.Count);
+        return responses;
     }
 
     // ============================================================
@@ -73,12 +71,10 @@ public class LogBusiness : ILogBusiness
 
         foreach (var log in logs)
         {
-            // Using reflection for polymorphic types (Audit/Error/Failover)
             var timestamp = log.GetType().GetProperty("Timestamp")?.GetValue(log)?.ToString() ?? "";
             var layer = log.GetType().GetProperty("Layer")?.GetValue(log)?.ToString() ?? "";
             var service = log.GetType().GetProperty("Service")?.GetValue(log)?.ToString() ?? "";
-            var type = log.GetType().GetProperty("LogType")?.GetValue(log)?.ToString()
-                       ?? log.GetType().Name.Replace("Collection", "");
+            var type = log.GetType().Name.Replace("Collection", "");
             var message = log.GetType().GetProperty("Message")?.GetValue(log)?.ToString()?.Replace(",", " ") ?? "";
 
             sb.AppendLine($"{timestamp},{layer},{service},{type},\"{message}\"");
@@ -88,45 +84,57 @@ public class LogBusiness : ILogBusiness
     }
 
     // ============================================================
-    // EXPORT: PDF
+    // MANUAL MAPPERS
     // ============================================================
-    public async Task<byte[]> ExportLogsToPdfAsync(IEnumerable<object> logs)
+
+    private static SearchLogResponse MapAuditLog(AuditLogCollection log)
     {
-        using var ms = new MemoryStream();
-
-        using (var writer = new PdfWriter(ms))
-        using (var pdf = new PdfDocument(writer))
+        var response = new SearchLogResponse
         {
-            var doc = new Document(pdf);
-            doc.Add(new Paragraph("Log Export Report")
-                .SetTextAlignment(TextAlignment.CENTER)
-                .SetFontSize(16));
+            LogType = "Audit",
+            CorrelationId = log.CorrelationId,
+            Timestamp = log.Timestamp,
+            Layer = log.Layer ?? string.Empty,
+            Service = log.Service ?? string.Empty,
+            Action = log.Action,
+            Message = log.Message,
+            Metadata = BsonExtensions.ToDictionary(log.Metadata)
+        };
 
-            doc.Add(new Paragraph($"Generated at: {DateTime.UtcNow:u}")
-                .SetTextAlignment(TextAlignment.RIGHT)
-                .SetFontSize(10));
+        return response;
+    }
 
-            var table = new Table(5).UseAllAvailableWidth();
-            table.AddHeaderCell("Timestamp");
-            table.AddHeaderCell("Layer");
-            table.AddHeaderCell("Service");
-            table.AddHeaderCell("Type");
-            table.AddHeaderCell("Message");
+    private static SearchLogResponse MapErrorLog(ErrorLogCollection log)
+    {
+        var response = new SearchLogResponse
+        {
+            LogType = "Error",
+            CorrelationId = log.CorrelationId,
+            Timestamp = log.Timestamp,
+            Layer = log.Layer ?? string.Empty,
+            Service = log.Service ?? string.Empty,
+            Action = log.Action,
+            Message = log.Message,
+            Metadata = BsonExtensions.ToDictionary(log.Metadata)
+        };
 
-            foreach (var log in logs)
-            {
-                table.AddCell(log.GetType().GetProperty("Timestamp")?.GetValue(log)?.ToString() ?? "");
-                table.AddCell(log.GetType().GetProperty("Layer")?.GetValue(log)?.ToString() ?? "");
-                table.AddCell(log.GetType().GetProperty("Service")?.GetValue(log)?.ToString() ?? "");
-                table.AddCell(log.GetType().GetProperty("LogType")?.GetValue(log)?.ToString()
-                              ?? log.GetType().Name.Replace("Collection", ""));
-                table.AddCell(log.GetType().GetProperty("Message")?.GetValue(log)?.ToString() ?? "");
-            }
+        return response;
+    }
 
-            doc.Add(table);
-            doc.Close();
-        }
+    private static SearchLogResponse MapFailoverLog(FailoverLogCollection log)
+    {
+        var response = new SearchLogResponse
+        {
+            LogType = "Failover",
+            CorrelationId = log.CorrelationId,
+            Timestamp = log.Timestamp,
+            Layer = log.Layer ?? string.Empty,
+            Service = log.Service ?? string.Empty,
+            Action = log.Action,
+            Message = log.Message,
+            Metadata = BsonExtensions.ToDictionary(log.Metadata)
+        };
 
-        return await Task.FromResult(ms.ToArray());
+        return response;
     }
 }

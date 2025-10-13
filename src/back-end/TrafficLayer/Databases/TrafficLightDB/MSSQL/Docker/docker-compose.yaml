@@ -1,0 +1,12 @@
+services:  
+  traffic_light_db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: trafficlightdb_container
+    networks:
+      - traffic_light_network
+
+networks:
+  traffic_light_network:
+    name: traffic_light_network
+    driver: bridge
+    external: true

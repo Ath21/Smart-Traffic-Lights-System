@@ -24,7 +24,7 @@ public class DetectionLogPublisher : IDetectionLogPublisher
         _intersection = intersection;
 
         _routingPattern = config["RabbitMQ:RoutingKeys:Log:Detection"]
-                          ?? "log.sensor.detection.{type}";
+                          ?? "log.sensor.detection-service.{type}";
     }
 
     public async Task PublishAuditAsync(

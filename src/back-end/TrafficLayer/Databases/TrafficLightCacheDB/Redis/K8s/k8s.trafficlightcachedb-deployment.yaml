@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trafficlightcachedb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: trafficlightcachedb
+  template:
+    metadata:
+      labels:
+        app: trafficlightcachedb
+    spec:
+      containers:
+      - name: redis
+        image: redis:7.4
+        command: ["redis-server", "--appendonly", "yes"]
+        ports:
+        - containerPort: 6379
+        volumeMounts:
+        - name: redis-storage
+          mountPath: /data
+      volumes:
+      - name: redis-storage
+        persistentVolumeClaim:
+          claimName: trafficlightcachedb-pvc

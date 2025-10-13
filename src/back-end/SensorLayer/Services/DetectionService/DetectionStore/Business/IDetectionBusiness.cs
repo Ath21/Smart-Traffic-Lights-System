@@ -16,7 +16,4 @@ public interface IDetectionBusiness
     // Incident
     Task<IncidentDetectionResponse> CreateIncidentAsync(IncidentDetectionRequest request);
     Task<IEnumerable<IncidentDetectionResponse>> GetRecentIncidentsAsync(int intersectionId);
-
-    // Cache
-    Task<object> GetDetectionFlagsAsync(int intersectionId);
 }

@@ -1,8 +1,8 @@
 using DetectionCacheData;
 using DetectionData;
+using DetectionStore.Domain;
 using MassTransit;
 using Messages.Log;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DetectionStore.Controllers
@@ -14,12 +14,18 @@ namespace DetectionStore.Controllers
         private readonly DetectionDbContext _detectionDbContext;
         private readonly DetectionCacheDbContext _detectionCacheDbContext;
         private readonly IBusControl _bus;
+        private readonly IntersectionContext _intersection;
 
-        public ReadyController(DetectionDbContext detectionDbContext, DetectionCacheDbContext detectionCacheDbContext, IBusControl bus)
+        public ReadyController(
+            DetectionDbContext detectionDbContext,
+            DetectionCacheDbContext detectionCacheDbContext,
+            IBusControl bus,
+            IntersectionContext intersection)
         {
             _detectionDbContext = detectionDbContext;
             _detectionCacheDbContext = detectionCacheDbContext;
             _bus = bus;
+            _intersection = intersection;
         }
 
         [HttpGet("ready")]
@@ -28,19 +34,48 @@ namespace DetectionStore.Controllers
             try
             {
                 if (!await _detectionDbContext.CanConnectAsync())
-                    return StatusCode(503, new { status = "Not Ready", reason = "DetectionDB (MongoDB) unreachable" });
+                    return StatusCode(503, new
+                    {
+                        status = "Not Ready",
+                        reason = "DetectionDB (MongoDB) unreachable",
+                        intersection = _intersection
+                    });
 
                 if (!await _detectionCacheDbContext.CanConnectAsync())
-                    return StatusCode(503, new { status = "Not Ready", reason = "DetectionCacheDB (Redis) unreachable" });
+                    return StatusCode(503, new
+                    {
+                        status = "Not Ready",
+                        reason = "DetectionCacheDB (Redis) unreachable",
+                        intersection = _intersection
+                    });
 
                 if (!_bus.Topology.TryGetPublishAddress(typeof(LogMessage), out _))
-                    return StatusCode(503, new { status = "Not Ready", reason = "RabbitMQ not connected" });
+                    return StatusCode(503, new
+                    {
+                        status = "Not Ready",
+                        reason = "RabbitMQ not connected",
+                        intersection = _intersection
+                    });
 
-                return Ok(new { status = "Ready", service = "Traffic Analytics Service" });
+                return Ok(new
+                {
+                    status = "Ready",
+                    service = "Detection Service",
+                    intersection = new
+                    {
+                        id = _intersection.Id,
+                        name = _intersection.Name
+                    }
+                });
             }
             catch (Exception ex)
             {
-                return StatusCode(503, new { status = "Not Ready", error = ex.Message });
+                return StatusCode(503, new
+                {
+                    status = "Not Ready",
+                    error = ex.Message,
+                    intersection = _intersection
+                });
             }
         }
     }

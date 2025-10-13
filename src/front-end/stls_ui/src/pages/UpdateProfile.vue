@@ -1,0 +1,97 @@
+<template>
+  <div class="update-profile-page">
+    <div class="update-card">
+      <h1 class="title">Update Profile</h1>
+
+      <form class="form" @submit.prevent="submit">
+        <!-- Email -->
+        <label>Email</label>
+        <input
+          v-model="form.email"
+          type="email"
+          required
+          class="input"
+        />
+
+        <!-- Username -->
+        <label>Username</label>
+        <input
+          v-model="form.username"
+          type="text"
+          required
+          class="input"
+        />
+
+        <!-- Password -->
+        <label>New Password</label>
+        <input
+          v-model="form.password"
+          type="password"
+          placeholder="Leave blank to keep old password"
+          class="input"
+        />
+
+        <!-- Confirm Password -->
+        <label>Confirm New Password</label>
+        <input
+          v-model="form.confirmPassword"
+          type="password"
+          placeholder="Re-enter new password"
+          class="input"
+        />
+
+        <!-- Error Message -->
+        <p v-if="error" class="error-msg">❌ {{ error }}</p>
+
+        <button class="btn" type="submit">Save Changes</button>
+      </form>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useAuth } from '../stores/users'
+import { updateProfileApi } from "../services/userApi"
+import '../assets/update-profile.css'
+
+const auth = useAuth()
+
+const form = ref({
+  email: auth.user?.email || '',
+  username: auth.user?.username || '',
+  password: '',
+  confirmPassword: '',
+  status: auth.user?.status || 'active',
+  role: auth.user?.role || 'user'
+})
+
+const error = ref('') // ✅ error state
+
+async function submit() {
+  error.value = '' // reset error
+
+  // client-side validation
+  if (form.value.password && form.value.password !== form.value.confirmPassword) {
+    error.value = "Passwords do not match!"
+    return
+  }
+
+  try {
+    await updateProfileApi(auth.token, form.value)
+
+    auth.user = {
+      ...auth.user,
+      email: form.value.email,
+      username: form.value.username,
+      role: form.value.role,
+      status: form.value.status
+    }
+
+    error.value = '' // clear if success
+  } catch (err) {
+    console.error(err)
+    error.value = "Failed to update profile ❌"
+  }
+}
+</script>

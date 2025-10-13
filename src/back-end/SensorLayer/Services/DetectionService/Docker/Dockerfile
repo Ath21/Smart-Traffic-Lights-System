@@ -15,8 +15,7 @@ COPY SensorLayer/Services/DetectionService/DetectionStore SensorLayer/Services/D
 COPY SensorLayer/Databases/DetectionDB/DetectionData SensorLayer/Databases/DetectionDB/DetectionData/
 COPY SensorLayer/Databases/DetectionCacheDB/DetectionCacheData SensorLayer/Databases/DetectionCacheDB/DetectionCacheData/
 ## Messages
-COPY MessageLayer/SensorMessages MessageLayer/SensorMessages/
-COPY MessageLayer/LogMessages MessageLayer/LogMessages/
+COPY MessageLayer/Messages MessageLayer/Messages/
 
 # Restore dependencies
 RUN dotnet restore SensorLayer/Services/DetectionService/DetectionStore/DetectionStore.csproj

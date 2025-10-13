@@ -1,0 +1,12 @@
+services:  
+  user_db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: userdb_container
+    networks:
+      - user_network
+
+networks:
+  user_network:
+    name: user_network
+    driver: bridge
+    external: true

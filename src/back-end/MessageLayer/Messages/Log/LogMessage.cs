@@ -13,12 +13,9 @@ namespace Messages.Log;
 
 public class LogMessage : BaseMessage
 {
-  public string? Layer { get; set; }
-  public string? LogType { get; set; }
-  public List<int>? LightId { get; set; }
-  public List<string>? TrafficLight { get; set; }
-  public string? Action { get; set; }
-  public string? Message { get; set; }
+    public string? LogType { get; set; }
+    public string? Action { get; set; }
+    public string? Message { get; set; }
 }
 
 /*

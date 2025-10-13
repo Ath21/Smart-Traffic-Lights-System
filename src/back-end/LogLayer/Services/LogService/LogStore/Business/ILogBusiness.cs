@@ -14,5 +14,4 @@ public interface ILogBusiness
     
         // NEW: Export methods
     Task<byte[]> ExportLogsToCsvAsync(IEnumerable<object> logs);
-    Task<byte[]> ExportLogsToPdfAsync(IEnumerable<object> logs);
 }
