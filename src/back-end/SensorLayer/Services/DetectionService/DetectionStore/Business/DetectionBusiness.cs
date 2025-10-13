@@ -107,7 +107,6 @@ public class DetectionBusiness : IDetectionBusiness
                 break;
         }
 
-        // Optional: persist logMsg details for audit if needed
     }
 
     public async Task<IEnumerable<EmergencyVehicleDetectionResponse>> GetRecentEmergenciesAsync(int intersectionId)
