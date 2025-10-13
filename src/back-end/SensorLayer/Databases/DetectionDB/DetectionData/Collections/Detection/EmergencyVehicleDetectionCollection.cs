@@ -27,6 +27,9 @@ public class EmergencyVehicleDetectionCollection
     public string? Direction { get; set; }
 
     public string? EmergencyVehicleType { get; set; }
+      
+    [BsonElement("metadata")]
+    public BsonDocument? Metadata { get; set; }
 }
 
 /*

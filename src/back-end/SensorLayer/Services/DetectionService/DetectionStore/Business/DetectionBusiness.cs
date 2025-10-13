@@ -1,6 +1,7 @@
 using AutoMapper;
 using DetectionCacheData.Repositories;
 using DetectionData.Collections.Detection;
+using DetectionData.Extensions;
 using DetectionData.Repositories.EmergencyVehicle;
 using DetectionData.Repositories.Incident;
 using DetectionData.Repositories.PublicTransport;
@@ -63,7 +64,8 @@ public class DetectionBusiness : IDetectionBusiness
                     Intersection = detectionMsg.IntersectionName,
                     Direction = detectionMsg.Direction,
                     EmergencyVehicleType = detectionMsg.VehicleType,
-                    DetectedAt = detectionMsg.Timestamp
+                    DetectedAt = detectionMsg.Timestamp,
+                    Metadata = BsonExtensions.ToBsonDocument(detectionMsg.Metadata)
                 });
 
                 await _cacheRepo.SetEmergencyDetectedAsync(detectionMsg.IntersectionId, true);
@@ -78,8 +80,9 @@ public class DetectionBusiness : IDetectionBusiness
                 {
                     IntersectionId = detectionMsg.IntersectionId,
                     IntersectionName = detectionMsg.IntersectionName,
-                    LineName = detectionMsg.VehicleType, // using VehicleType as line name
-                    DetectedAt = detectionMsg.Timestamp
+                    LineName = detectionMsg.VehicleType, 
+                    DetectedAt = detectionMsg.Timestamp,
+                    Metadata = BsonExtensions.ToBsonDocument(detectionMsg.Metadata)
                 });
 
                 await _cacheRepo.SetPublicTransportDetectedAsync(detectionMsg.IntersectionId, true);
@@ -94,7 +97,7 @@ public class DetectionBusiness : IDetectionBusiness
                 {
                     IntersectionId = detectionMsg.IntersectionId,
                     Intersection = detectionMsg.IntersectionName,
-                    Description = detectionMsg.Metadata?["description"] ?? "unknown",
+                    Description = "Incident " + (detectionMsg.Metadata?["incident_type"] ?? "unknown") + " reported",
                     ReportedAt = detectionMsg.Timestamp
                 });
 

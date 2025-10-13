@@ -25,6 +25,9 @@ public class IncidentDetectionCollection
 
     [BsonElement("description")]
     public string? Description { get; set; }
+    
+    [BsonElement("metadata")]
+    public BsonDocument? Metadata { get; set; }
 }
 
 /*

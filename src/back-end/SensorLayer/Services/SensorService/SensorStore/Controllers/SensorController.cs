@@ -30,22 +30,6 @@ public class SensorController : ControllerBase
     // ============================================================
     // VEHICLE COUNTS
     // ============================================================
-
-    [HttpPost("vehicle")]
-    [ProducesResponseType(typeof(VehicleCountResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> RecordVehicleCount([FromBody] VehicleCountRequest request)
-    {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
-        var result = await _business.RecordVehicleCountAsync(request);
-        _logger.LogInformation("[CONTROLLER] Vehicle count recorded for {Intersection} (Total={Total})",
-            request.Intersection, request.CountTotal);
-
-        return Ok(result);
-    }
-
     [HttpGet("vehicle/{intersectionId:int}")]
     [ProducesResponseType(typeof(IEnumerable<VehicleCountResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -68,22 +52,6 @@ public class SensorController : ControllerBase
     // ============================================================
     // PEDESTRIAN COUNTS
     // ============================================================
-
-    [HttpPost("pedestrian")]
-    [ProducesResponseType(typeof(PedestrianCountResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> RecordPedestrianCount([FromBody] PedestrianCountRequest request)
-    {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
-        var result = await _business.RecordPedestrianCountAsync(request);
-        _logger.LogInformation("[CONTROLLER] Pedestrian count recorded for {Intersection} (Count={Count})",
-            request.Intersection, request.Count);
-
-        return Ok(result);
-    }
-
     [HttpGet("pedestrian/{intersectionId:int}")]
     [ProducesResponseType(typeof(IEnumerable<PedestrianCountResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -106,22 +74,6 @@ public class SensorController : ControllerBase
     // ============================================================
     // CYCLIST COUNTS
     // ============================================================
-
-    [HttpPost("cyclist")]
-    [ProducesResponseType(typeof(CyclistCountResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> RecordCyclistCount([FromBody] CyclistCountRequest request)
-    {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
-        var result = await _business.RecordCyclistCountAsync(request);
-        _logger.LogInformation("[CONTROLLER] Cyclist count recorded for {Intersection} (Count={Count})",
-            request.Intersection, request.Count);
-
-        return Ok(result);
-    }
-
     [HttpGet("cyclist/{intersectionId:int}")]
     [ProducesResponseType(typeof(IEnumerable<CyclistCountResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

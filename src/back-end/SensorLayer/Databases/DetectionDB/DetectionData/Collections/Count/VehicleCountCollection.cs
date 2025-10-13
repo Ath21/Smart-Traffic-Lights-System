@@ -37,7 +37,7 @@ public class VehicleCountCollection
     public Dictionary<string, int>? CountByDirection { get; set; } 
 
     [BsonElement("vehicle_breakdown")]
-    public Dictionary<string, int>? VehicleBreakdown { get; set; } // e.g., car, truck, bus, motorcycle
+    public Dictionary<string, int>? VehicleBreakdown { get; set; } // e.g., car, truck, bus, motorcycle   
 }
 
 /*

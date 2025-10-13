@@ -6,6 +6,7 @@ using DetectionData.Repositories.Pedestrian;
 using DetectionData.Repositories.Cyclist;
 using SensorStore.Models.Requests;
 using SensorStore.Models.Responses;
+using Messages.Sensor;
 
 namespace SensorStore.Business;
 
@@ -44,25 +45,69 @@ public class SensorBusiness : ISensorBusiness
         _logger = logger;
     }
 
+    public async Task ProcessSensorAsync(SensorCountMessage sensorMsg)
+    {
+        switch (sensorMsg.CountType?.ToLowerInvariant())
+        {
+            // ============================================================
+            // VEHICLE
+            // ============================================================
+            case "vehicle":
+                await _vehicleRepo.InsertAsync(new VehicleCountCollection
+                {
+                    IntersectionId = sensorMsg.IntersectionId,
+                    Intersection = sensorMsg.IntersectionName,
+                    Direction = sensorMsg,
+                    EmergencyVehicleType = detectionMsg.VehicleType,
+                    DetectedAt = detectionMsg.Timestamp
+                });
+
+                await _cacheRepo.SetEmergencyDetectedAsync(detectionMsg.IntersectionId, true);
+                _logger.LogInformation("[BUSINESS] Emergency event persisted at {Intersection}", detectionMsg.IntersectionName);
+                break;
+
+            // ============================================================
+            // PUBLIC TRANSPORT
+            // ============================================================
+            case "public transport":
+                await _publicRepo.InsertAsync(new PublicTransportDetectionCollection
+                {
+                    IntersectionId = detectionMsg.IntersectionId,
+                    IntersectionName = detectionMsg.IntersectionName,
+                    LineName = detectionMsg.VehicleType, // using VehicleType as line name
+                    DetectedAt = detectionMsg.Timestamp
+                });
+
+                await _cacheRepo.SetPublicTransportDetectedAsync(detectionMsg.IntersectionId, true);
+                _logger.LogInformation("[BUSINESS] Public transport event persisted at {Intersection}", detectionMsg.IntersectionName);
+                break;
+
+            // ============================================================
+            // INCIDENT
+            // ============================================================
+            case "incident":
+                await _incidentRepo.InsertAsync(new IncidentDetectionCollection
+                {
+                    IntersectionId = detectionMsg.IntersectionId,
+                    Intersection = detectionMsg.IntersectionName,
+                    Description = detectionMsg.Metadata?["description"] ?? "unknown",
+                    ReportedAt = detectionMsg.Timestamp
+                });
+
+                await _cacheRepo.SetIncidentDetectedAsync(detectionMsg.IntersectionId, true);
+                _logger.LogWarning("[BUSINESS] Incident event persisted at {Intersection}", detectionMsg.IntersectionName);
+                break;
+
+            default:
+                _logger.LogWarning("[BUSINESS] Unknown detection type: {Type}", detectionMsg.EventType);
+                break;
+        }
+
+    }
+
     // ============================================================
     // VEHICLE COUNTS
     // ============================================================
-
-    public async Task<VehicleCountResponse> RecordVehicleCountAsync(VehicleCountRequest request)
-    {
-        var entity = _mapper.Map<VehicleCountCollection>(request);
-        entity.Timestamp = DateTime.UtcNow;
-
-        await _vehicleRepo.InsertAsync(entity);
-        await _cacheRepo.SetVehicleCountAsync(request.IntersectionId, request.CountTotal);
-
-        _logger.LogInformation(
-            "[BUSINESS] Vehicle count stored for {Intersection} (Total={Total}, AvgSpeed={Speed} km/h)",
-            request.Intersection, request.CountTotal, request.AverageSpeedKmh);
-
-        return _mapper.Map<VehicleCountResponse>(entity);
-    }
-
     public async Task<IEnumerable<VehicleCountResponse>> GetRecentVehicleCountsAsync(int intersectionId)
     {
         var data = await _vehicleRepo.GetRecentByIntersectionAsync(intersectionId);
@@ -78,22 +123,6 @@ public class SensorBusiness : ISensorBusiness
     // ============================================================
     // PEDESTRIAN COUNTS
     // ============================================================
-
-    public async Task<PedestrianCountResponse> RecordPedestrianCountAsync(PedestrianCountRequest request)
-    {
-        var entity = _mapper.Map<PedestrianCountCollection>(request);
-        entity.Timestamp = DateTime.UtcNow;
-
-        await _pedestrianRepo.InsertAsync(entity);
-        await _cacheRepo.SetPedestrianCountAsync(request.IntersectionId, request.Count);
-
-        _logger.LogInformation(
-            "[BUSINESS] Pedestrian count stored for {Intersection} (Count={Count})",
-            request.Intersection, request.Count);
-
-        return _mapper.Map<PedestrianCountResponse>(entity);
-    }
-
     public async Task<IEnumerable<PedestrianCountResponse>> GetRecentPedestrianCountsAsync(int intersectionId)
     {
         var data = await _pedestrianRepo.GetRecentByIntersectionAsync(intersectionId);
@@ -109,22 +138,6 @@ public class SensorBusiness : ISensorBusiness
     // ============================================================
     // CYCLIST COUNTS
     // ============================================================
-
-    public async Task<CyclistCountResponse> RecordCyclistCountAsync(CyclistCountRequest request)
-    {
-        var entity = _mapper.Map<CyclistCountCollection>(request);
-        entity.Timestamp = DateTime.UtcNow;
-
-        await _cyclistRepo.InsertAsync(entity);
-        await _cacheRepo.SetCyclistCountAsync(request.IntersectionId, request.Count);
-
-        _logger.LogInformation(
-            "[BUSINESS] Cyclist count stored for {Intersection} (Count={Count})",
-            request.Intersection, request.Count);
-
-        return _mapper.Map<CyclistCountResponse>(entity);
-    }
-
     public async Task<IEnumerable<CyclistCountResponse>> GetRecentCyclistCountsAsync(int intersectionId)
     {
         var data = await _cyclistRepo.GetRecentByIntersectionAsync(intersectionId);

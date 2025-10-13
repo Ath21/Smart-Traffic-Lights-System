@@ -25,9 +25,9 @@ public class PublicTransportDetectionCollection
 
     [BsonElement("detectedAt")]
     public DateTime DetectedAt { get; set; } 
-
-    [BsonElement("line")]
-    public string? Line { get; set; }  // Bus829, Bus703, Bus831, Bus891
+    
+    [BsonElement("metadata")]
+    public BsonDocument? Metadata { get; set; }
 }
 
 /*
