@@ -27,7 +27,7 @@ public class DetectionEventPublisher : IDetectionEventPublisher
                           ?? "sensor.detection.{intersection}.{event}";
     }
 
-    public async Task PublishEmergencyVehicleAsync(
+    public async Task<DetectionEventMessage> PublishEmergencyVehicleAsync(
         string vehicleType,
         string direction,
         Guid? correlationId = null,
@@ -58,9 +58,11 @@ public class DetectionEventPublisher : IDetectionEventPublisher
 
         _logger.LogInformation("[PUBLISHER][EVENT][{Intersection}] EMERGENCY VEHICLE published ({VehicleType}, Dir={Direction}",
             _intersection.Name, vehicleType, direction);
+
+        return msg;
     }
 
-    public async Task PublishPublicTransportAsync(
+    public async Task<DetectionEventMessage> PublishPublicTransportAsync(
         string vehicleType,
         string direction,
         Guid? correlationId = null,
@@ -91,9 +93,11 @@ public class DetectionEventPublisher : IDetectionEventPublisher
 
         _logger.LogInformation("[PUBLISHER][EVENT][{Intersection}] PUBLIC TRANSPORT published ({VehicleType}, Dir={Direction}",
             _intersection.Name, vehicleType, direction);
+    
+        return msg;
     }
 
-    public async Task PublishIncidentAsync(
+    public async Task<DetectionEventMessage> PublishIncidentAsync(
         string vehicleType,
         string direction,
         Guid? correlationId = null,
@@ -124,6 +128,8 @@ public class DetectionEventPublisher : IDetectionEventPublisher
 
         _logger.LogInformation("[PUBLISHER][EVENT][{Intersection}] INCIDENT published ({VehicleType}, Dir={Direction}",
             _intersection.Name, vehicleType, direction);
+
+        return msg;
     }
     private async Task PublishAsync(string eventKey, DetectionEventMessage msg)
     {

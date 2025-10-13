@@ -45,10 +45,6 @@
 /home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/DetectionService/DetectionStore/bin/Debug/net9.0/ZstdSharp.dll
 /home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/DetectionService/DetectionStore/bin/Debug/net9.0/DetectionCacheData.dll
 /home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/DetectionService/DetectionStore/bin/Debug/net9.0/DetectionData.dll
-/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/DetectionService/DetectionStore/bin/Debug/net9.0/LogMessages.dll
-/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/DetectionService/DetectionStore/bin/Debug/net9.0/SensorMessages.dll
-/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/DetectionService/DetectionStore/bin/Debug/net9.0/LogMessages.pdb
-/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/DetectionService/DetectionStore/bin/Debug/net9.0/SensorMessages.pdb
 /home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/DetectionService/DetectionStore/bin/Debug/net9.0/DetectionCacheData.pdb
 /home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/DetectionService/DetectionStore/bin/Debug/net9.0/DetectionData.pdb
 /home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/DetectionService/DetectionStore/obj/Debug/net9.0/DetectionStore.csproj.AssemblyReference.cache
@@ -148,3 +144,5 @@
 /home/ath/Desktop/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/DetectionService/DetectionStore/obj/Debug/net9.0/Detectio.5898E3F7.Up2Date
 /home/ath/Desktop/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/DetectionService/DetectionStore/obj/Debug/net9.0/DetectionStore.genruntimeconfig.cache
 /home/ath/Desktop/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/DetectionService/DetectionStore/obj/Debug/net9.0/ref/DetectionStore.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/DetectionService/DetectionStore/bin/Debug/net9.0/Messages.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/SensorLayer/Services/DetectionService/DetectionStore/bin/Debug/net9.0/Messages.pdb

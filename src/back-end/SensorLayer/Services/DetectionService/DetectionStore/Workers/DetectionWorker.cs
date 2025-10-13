@@ -1,122 +1,153 @@
-using DetectionStore.Business;
-using DetectionStore.Domain;
-using DetectionStore.Models.Requests;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using DetectionStore.Domain;
+using DetectionStore.Business;
+using DetectionStore.Publishers.Event;
+using DetectionStore.Publishers.Logs;
+using Messages.Log;
+using Messages.Sensor;
 
-namespace DetectionStore.Workers;
-
-// ============================================================
-// Detection Worker (Sensor Layer)
-// ------------------------------------------------------------
-// Simulates random detection events for a specific intersection.
-// Publishes data via DetectionBusiness → RabbitMQ topics
-//    sensor.detection.{intersection}.{event}
-// ============================================================
-
-public class DetectionWorker : BackgroundService
+namespace DetectionStore.Workers
 {
-    private readonly IServiceScopeFactory _scopeFactory;
-    private readonly ILogger<DetectionWorker> _logger;
-    private readonly IntersectionContext _intersection;
-    private readonly Random _rand = new();
-
-    public DetectionWorker(
-        IServiceScopeFactory scopeFactory,
-        ILogger<DetectionWorker> logger,
-        IntersectionContext intersection)
+    public class DetectionWorker : BackgroundService
     {
-        _scopeFactory = scopeFactory;
-        _logger = logger;
-        _intersection = intersection;
-    }
+        private readonly IServiceScopeFactory _scopeFactory;
+        private readonly ILogger<DetectionWorker> _logger;
+        private readonly IntersectionContext _intersection;
+        private readonly Random _rand = new();
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        _logger.LogInformation(
-            "[WORKER] DetectionWorker started for {IntersectionName} (Id={IntersectionId})",
-            _intersection.Name, _intersection.Id);
-
-        while (!stoppingToken.IsCancellationRequested)
+        public DetectionWorker(
+            IServiceScopeFactory scopeFactory,
+            ILogger<DetectionWorker> logger,
+            IntersectionContext intersection)
         {
-            try
-            {
-                using var scope = _scopeFactory.CreateScope();
-                var business = scope.ServiceProvider.GetRequiredService<IDetectionBusiness>();
-
-                // ------------------------------------------------------------
-                // Simulate emergency vehicle detections (~10% probability)
-                // ------------------------------------------------------------
-                if (_rand.NextDouble() < 0.1)
-                {
-                    var request = new EmergencyVehicleDetectionRequest
-                    {
-                        IntersectionId = _intersection.Id,
-                        Intersection = _intersection.Name,
-                        Direction = GetRandomDirection(),
-                        EmergencyVehicleType = _rand.NextDouble() < 0.5 ? "ambulance" : "firetruck",
-                        DetectedAt = DateTime.UtcNow
-                    };
-
-                    await business.CreateEmergencyAsync(request);
-                    _logger.LogInformation("[WORKER] Emergency vehicle detected ({Type}) at {Intersection}",
-                        request.EmergencyVehicleType, _intersection.Name);
-                }
-
-                // ------------------------------------------------------------
-                // Simulate public transport detections (~30% probability)
-                // ------------------------------------------------------------
-                if (_rand.NextDouble() < 0.3)
-                {
-                    var request = new PublicTransportDetectionRequest
-                    {
-                        IntersectionId = _intersection.Id,
-                        IntersectionName = _intersection.Name,
-                        LineName = $"Bus{_rand.Next(700, 899)}",
-                        DetectedAt = DateTime.UtcNow
-                    };
-
-                    await business.CreatePublicTransportAsync(request);
-                    _logger.LogInformation("[WORKER] Public transport detected ({Line}) at {Intersection}",
-                        request.LineName, _intersection.Name);
-                }
-
-                // ------------------------------------------------------------
-                // Simulate random incidents (~5% probability)
-                // ------------------------------------------------------------
-                if (_rand.NextDouble() < 0.05)
-                {
-                    var request = new IncidentDetectionRequest
-                    {
-                        IntersectionId = _intersection.Id,
-                        Intersection = _intersection.Name,
-                        Description = "Random simulated traffic incident",
-                        ReportedAt = DateTime.UtcNow
-                    };
-
-                    await business.CreateIncidentAsync(request);
-                    _logger.LogWarning("[WORKER] Incident reported at {Intersection}: {Description}",
-                        _intersection.Name, request.Description);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(
-                    ex,
-                    "[WORKER] Error in DetectionWorker loop for {IntersectionName} (Id={IntersectionId})",
-                    _intersection.Name, _intersection.Id);
-            }
-
-            // Wait between simulation cycles
-            await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
+            _scopeFactory = scopeFactory;
+            _logger = logger;
+            _intersection = intersection;
         }
 
-        _logger.LogInformation("[WORKER] DetectionWorker stopped for {IntersectionName}", _intersection.Name);
-    }
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            _logger.LogInformation(
+                "[WORKER][DETECTION] Started for {IntersectionName} (Id={IntersectionId})",
+                _intersection.Name, _intersection.Id);
 
-    private static string GetRandomDirection()
-    {
-        var directions = new[] { "north", "south", "east", "west" };
-        return directions[Random.Shared.Next(directions.Length)];
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                try
+                {
+                    using var scope = _scopeFactory.CreateScope();
+
+                    var eventPublisher = scope.ServiceProvider.GetRequiredService<IDetectionEventPublisher>();
+                    var logPublisher   = scope.ServiceProvider.GetRequiredService<IDetectionLogPublisher>();
+                    var business       = scope.ServiceProvider.GetRequiredService<IDetectionBusiness>();
+
+                    // ============================================================
+                    // EMERGENCY VEHICLE DETECTION (~10%)
+                    // ============================================================
+                    if (_rand.NextDouble() < 0.1)
+                    {
+                        var direction = GetRandomDirection();
+                        var vehicleType = _rand.NextDouble() < 0.5 ? "ambulance" : "firetruck";
+
+                        var metadata = new Dictionary<string, string>
+                        {
+                            ["intersection_id"] = _intersection.Id.ToString(),
+                            ["intersection_name"] = _intersection.Name,
+                            ["direction"] = direction,
+                            ["vehicle_type"] = vehicleType
+                        };
+
+                        var correlationId = Guid.NewGuid();
+
+                        var detectionMsg = await eventPublisher.PublishEmergencyVehicleAsync(vehicleType, direction, correlationId, metadata);
+
+                        var logMsg = await logPublisher.PublishAuditAsync(
+                            "EmergencyVehicleDetected",
+                            $"Emergency vehicle ({vehicleType}) detected at {_intersection.Name}",
+                            metadata,
+                            correlationId);
+
+                        await business.ProcessDetectionAsync(detectionMsg);
+                    }
+
+                    // ============================================================
+                    // PUBLIC TRANSPORT (~30%)
+                    // ============================================================
+                    if (_rand.NextDouble() < 0.3)
+                    {
+                        var line = $"Bus{_rand.Next(700, 899)}";
+                        var direction = GetRandomDirection();
+
+                        var metadata = new Dictionary<string, string>
+                        {
+                            ["intersection_id"] = _intersection.Id.ToString(),
+                            ["intersection_name"] = _intersection.Name,
+                            ["line_name"] = line,
+                            ["direction"] = direction
+                        };
+
+                        var correlationId = Guid.NewGuid();
+
+                        var detectionMsg = await eventPublisher.PublishPublicTransportAsync(line, direction, correlationId, metadata);
+                        var logMsg = await logPublisher.PublishAuditAsync(
+                            "PublicTransportDetected",
+                            $"Public transport {line} detected at {_intersection.Name}",
+                            metadata,
+                            correlationId);
+
+                        await business.ProcessDetectionAsync(detectionMsg);
+                    }
+
+                    // ============================================================
+                    // INCIDENT (~5%)
+                    // ============================================================
+                    if (_rand.NextDouble() < 0.05)
+                    {
+                        var direction = GetRandomDirection();
+
+                        var metadata = new Dictionary<string, string>
+                        {
+                            ["intersection_id"] = _intersection.Id.ToString(),
+                            ["intersection_name"] = _intersection.Name,
+                            ["description"] = "Random simulated traffic incident",
+                            ["direction"] = direction
+                        };
+
+                        var correlationId = Guid.NewGuid();
+
+                        var detectionMsg = await eventPublisher.PublishIncidentAsync("unknown", direction, correlationId, metadata);
+                        var logMsg = await logPublisher.PublishFailoverAsync(
+                            "IncidentReported",
+                            $"Incident reported at {_intersection.Name}",
+                            metadata,
+                            correlationId);
+
+                        await business.ProcessDetectionAsync(detectionMsg);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex,
+                        "[WORKER][DETECTION] Error in DetectionWorker loop for {IntersectionName}",
+                        _intersection.Name);
+                }
+
+                await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
+            }
+
+            _logger.LogInformation("[WORKER][DETECTION] Stopped for {IntersectionName}", _intersection.Name);
+        }
+
+        private static string GetRandomDirection()
+        {
+            var directions = new[] { "north", "south", "east", "west" };
+            return directions[Random.Shared.Next(directions.Length)];
+        }
     }
 }

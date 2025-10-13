@@ -29,19 +29,6 @@ public class DetectionController : ControllerBase
     // ============================================================
     // EMERGENCY VEHICLE DETECTIONS
     // ============================================================
-    [HttpPost("emergency")]
-    [ProducesResponseType(typeof(EmergencyVehicleDetectionResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> CreateEmergency([FromBody] EmergencyVehicleDetectionRequest request)
-    {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
-        var result = await _service.CreateEmergencyAsync(request);
-        _logger.LogInformation("[CONTROLLER] Emergency detection received at {Intersection}", request.Intersection);
-        return Ok(result);
-    }
-
     [HttpGet("emergency/{intersectionId:int}")]
     [ProducesResponseType(typeof(IEnumerable<EmergencyVehicleDetectionResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -62,19 +49,6 @@ public class DetectionController : ControllerBase
     // ============================================================
     // PUBLIC TRANSPORT DETECTIONS
     // ============================================================
-    [HttpPost("public-transport")]
-    [ProducesResponseType(typeof(PublicTransportDetectionResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> CreatePublicTransport([FromBody] PublicTransportDetectionRequest request)
-    {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
-        var result = await _service.CreatePublicTransportAsync(request);
-        _logger.LogInformation("[CONTROLLER] Public transport detection received at {Intersection}", request.IntersectionName);
-        return Ok(result);
-    }
-
     [HttpGet("public-transport/{intersectionId:int}")]
     [ProducesResponseType(typeof(IEnumerable<PublicTransportDetectionResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -95,19 +69,6 @@ public class DetectionController : ControllerBase
     // ============================================================
     // INCIDENT DETECTIONS
     // ============================================================
-    [HttpPost("incident")]
-    [ProducesResponseType(typeof(IncidentDetectionResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> CreateIncident([FromBody] IncidentDetectionRequest request)
-    {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
-        var result = await _service.CreateIncidentAsync(request);
-        _logger.LogInformation("[CONTROLLER] Incident detection received at {Intersection}", request.Intersection);
-        return Ok(result);
-    }
-
     [HttpGet("incident/{intersectionId:int}")]
     [ProducesResponseType(typeof(IEnumerable<IncidentDetectionResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

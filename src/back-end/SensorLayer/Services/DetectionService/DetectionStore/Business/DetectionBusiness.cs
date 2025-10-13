@@ -8,6 +8,8 @@ using DetectionStore.Models.Requests;
 using DetectionStore.Models.Responses;
 using DetectionStore.Publishers.Event;
 using DetectionStore.Publishers.Logs;
+using Messages.Log;
+using Messages.Sensor;
 using Microsoft.Extensions.Logging;
 
 namespace DetectionStore.Business;
@@ -47,42 +49,65 @@ public class DetectionBusiness : IDetectionBusiness
         _logPublisher = logPublisher;
     }
 
-    // ============================================================
-    // EMERGENCY VEHICLE DETECTION
-    // ============================================================
-    public async Task<EmergencyVehicleDetectionResponse> CreateEmergencyAsync(EmergencyVehicleDetectionRequest request)
+    public async Task ProcessDetectionAsync(DetectionEventMessage detectionMsg)
     {
-        try
+        switch (detectionMsg.EventType?.ToLowerInvariant())
         {
-            var entity = _mapper.Map<EmergencyVehicleDetectionCollection>(request);
-            await _emergencyRepo.InsertAsync(entity);
+            // ============================================================
+            // EMERGENCY VEHICLE
+            // ============================================================
+            case "emergency vehicle":
+                await _emergencyRepo.InsertAsync(new EmergencyVehicleDetectionCollection
+                {
+                    IntersectionId = detectionMsg.IntersectionId,
+                    Intersection = detectionMsg.IntersectionName,
+                    Direction = detectionMsg.Direction,
+                    EmergencyVehicleType = detectionMsg.VehicleType,
+                    DetectedAt = detectionMsg.Timestamp
+                });
 
-            await _cacheRepo.SetEmergencyDetectedAsync(request.IntersectionId, true);
+                await _cacheRepo.SetEmergencyDetectedAsync(detectionMsg.IntersectionId, true);
+                _logger.LogInformation("[BUSINESS] Emergency event persisted at {Intersection}", detectionMsg.IntersectionName);
+                break;
 
-            // Publish detection event
-            await _eventPublisher.PublishEmergencyVehicleAsync(
-                vehicleType: request.EmergencyVehicleType,
-                speed_kmh: 0,
-                direction: request.Direction);
+            // ============================================================
+            // PUBLIC TRANSPORT
+            // ============================================================
+            case "public transport":
+                await _publicRepo.InsertAsync(new PublicTransportDetectionCollection
+                {
+                    IntersectionId = detectionMsg.IntersectionId,
+                    IntersectionName = detectionMsg.IntersectionName,
+                    LineName = detectionMsg.VehicleType, // using VehicleType as line name
+                    DetectedAt = detectionMsg.Timestamp
+                });
 
-            // Publish audit log
-            await _logPublisher.PublishAuditAsync(
-                action: "EmergencyVehicleDetected",
-                message: $"Emergency vehicle ({request.EmergencyVehicleType}) detected from {request.Direction} at {request.Intersection}");
+                await _cacheRepo.SetPublicTransportDetectedAsync(detectionMsg.IntersectionId, true);
+                _logger.LogInformation("[BUSINESS] Public transport event persisted at {Intersection}", detectionMsg.IntersectionName);
+                break;
 
-            _logger.LogInformation("[Detection] Emergency vehicle detected at {Intersection}", request.Intersection);
-            return _mapper.Map<EmergencyVehicleDetectionResponse>(entity);
+            // ============================================================
+            // INCIDENT
+            // ============================================================
+            case "incident":
+                await _incidentRepo.InsertAsync(new IncidentDetectionCollection
+                {
+                    IntersectionId = detectionMsg.IntersectionId,
+                    Intersection = detectionMsg.IntersectionName,
+                    Description = detectionMsg.Metadata?["description"] ?? "unknown",
+                    ReportedAt = detectionMsg.Timestamp
+                });
+
+                await _cacheRepo.SetIncidentDetectedAsync(detectionMsg.IntersectionId, true);
+                _logger.LogWarning("[BUSINESS] Incident event persisted at {Intersection}", detectionMsg.IntersectionName);
+                break;
+
+            default:
+                _logger.LogWarning("[BUSINESS] Unknown detection type: {Type}", detectionMsg.EventType);
+                break;
         }
-        catch (Exception ex)
-        {
-            await _logPublisher.PublishErrorAsync(
-                action: "CreateEmergencyAsync",
-                errorMessage: ex.Message,
-                ex: ex);
 
-            _logger.LogError(ex, "[Detection] Failed to create emergency detection");
-            throw;
-        }
+        // Optional: persist logMsg details for audit if needed
     }
 
     public async Task<IEnumerable<EmergencyVehicleDetectionResponse>> GetRecentEmergenciesAsync(int intersectionId)
@@ -91,92 +116,10 @@ public class DetectionBusiness : IDetectionBusiness
         return _mapper.Map<IEnumerable<EmergencyVehicleDetectionResponse>>(data);
     }
 
-    // ============================================================
-    // PUBLIC TRANSPORT DETECTION
-    // ============================================================
-    public async Task<PublicTransportDetectionResponse> CreatePublicTransportAsync(PublicTransportDetectionRequest request)
-    {
-        try
-        {
-            var entity = _mapper.Map<PublicTransportDetectionCollection>(request);
-            await _publicRepo.InsertAsync(entity);
-
-            await _cacheRepo.SetPublicTransportDetectedAsync(request.IntersectionId, true);
-
-            // Publish detection event
-            await _eventPublisher.PublishPublicTransportAsync(
-                mode: "Bus",
-                line: request.LineName,
-                arrival_estimated_sec: 0,
-                direction: "unknown");
-
-            // Publish audit log
-            await _logPublisher.PublishAuditAsync(
-                action: "PublicTransportDetected",
-                message: $"Public transport ({request.LineName}) detected at {request.IntersectionName}");
-
-            _logger.LogInformation("[Detection] Public transport ({Line}) detected at {Intersection}",
-                request.LineName, request.IntersectionName);
-
-            return _mapper.Map<PublicTransportDetectionResponse>(entity);
-        }
-        catch (Exception ex)
-        {
-            await _logPublisher.PublishErrorAsync(
-                action: "CreatePublicTransportAsync",
-                errorMessage: ex.Message,
-                ex: ex);
-
-            _logger.LogError(ex, "[Detection] Failed to create public transport detection");
-            throw;
-        }
-    }
-
     public async Task<IEnumerable<PublicTransportDetectionResponse>> GetPublicTransportsAsync(int intersectionId)
     {
         var data = await _publicRepo.GetByLineAsync(""); // optional filter later
         return _mapper.Map<IEnumerable<PublicTransportDetectionResponse>>(data);
-    }
-
-    // ============================================================
-    // INCIDENT DETECTION
-    // ============================================================
-    public async Task<IncidentDetectionResponse> CreateIncidentAsync(IncidentDetectionRequest request)
-    {
-        try
-        {
-            var entity = _mapper.Map<IncidentDetectionCollection>(request);
-            await _incidentRepo.InsertAsync(entity);
-
-            await _cacheRepo.SetIncidentDetectedAsync(request.IntersectionId, true);
-
-            // Publish detection event
-            await _eventPublisher.PublishIncidentAsync(
-                type: "Incident",
-                severity: 2,
-                description: request.Description,
-                direction: "unknown");
-
-            // Publish audit log
-            await _logPublisher.PublishAuditAsync(
-                action: "IncidentDetected",
-                message: $"Incident detected at {request.Intersection}: {request.Description}");
-
-            _logger.LogWarning("[Detection] Incident detected at {Intersection}: {Desc}",
-                request.Intersection, request.Description);
-
-            return _mapper.Map<IncidentDetectionResponse>(entity);
-        }
-        catch (Exception ex)
-        {
-            await _logPublisher.PublishErrorAsync(
-                action: "CreateIncidentAsync",
-                errorMessage: ex.Message,
-                ex: ex);
-
-            _logger.LogError(ex, "[Detection] Failed to create incident detection");
-            throw;
-        }
     }
 
     public async Task<IEnumerable<IncidentDetectionResponse>> GetRecentIncidentsAsync(int intersectionId)
