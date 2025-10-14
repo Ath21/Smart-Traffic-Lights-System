@@ -18,8 +18,7 @@ COPY TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinato
 COPY TrafficLayer/Databases/TrafficLightDB/TrafficLightData TrafficLayer/Databases/TrafficLightDB/TrafficLightData/
 COPY TrafficLayer/Databases/TrafficLightCacheDB/TrafficLightCacheData TrafficLayer/Databases/TrafficLightCacheDB/TrafficLightCacheData/
 ## Messages
-COPY MessageLayer/TrafficMessages MessageLayer/TrafficMessages/
-COPY MessageLayer/LogMessages MessageLayer/LogMessages/
+COPY MessageLayer/Messages MessageLayer/Messages/
 
 
 # Restore NuGet packages

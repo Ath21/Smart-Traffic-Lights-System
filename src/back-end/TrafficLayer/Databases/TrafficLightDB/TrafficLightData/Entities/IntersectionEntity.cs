@@ -27,6 +27,7 @@ public class IntersectionEntity
 
     [Required]
     public int LightCount { get; set; } = 0;
+    public string MappedLightIdsJson { get; set; } = "[]";
 
     [Required]
     public bool IsActive { get; set; } = true;

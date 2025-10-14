@@ -12,11 +12,12 @@ using TrafficLightData.Repositories.Intersections;
 using TrafficLightData.Repositories.Light;
 using TrafficLightData.Repositories.TrafficConfig;
 using TrafficLightData.Settings;
-using TrafficLightCoordinatorStore.Business.Coordination;
-using TrafficLightCoordinatorStore.Consumers;
 using TrafficLightCoordinatorStore.Middleware;
+using TrafficLightCoordinatorStore.Business;
+using TrafficLightCoordinatorStore.Engine;
+using TrafficLightCoordinatorStore.Publishers.Schedule;
 using TrafficLightCoordinatorStore.Publishers.Logs;
-using TrafficLightCoordinatorStore.Publishers.Update;
+using TrafficLightCoordinatorStore.Consumers;
 
 namespace TrafficLightCoordinatorStore;
 
@@ -78,23 +79,20 @@ public class Startup
         // ===============================
         // Business Layer (Services)
         // ===============================
-        services.AddScoped(typeof(ICoordinatorService), typeof(CoordinatorService));
-
-        // ===============================
-        // AutoMapper
-        // ===============================
-        services.AddAutoMapper(typeof(TrafficLightCoordinatorStoreProfile));
+        services.AddScoped(typeof(ICoordinatorBusiness), typeof(CoordinatorBusiness));
+        services.AddScoped(typeof(IDecisionEngine), typeof(DecisionEngine));
 
         // ===============================
         // Message Layer (MassTransit with RabbitMQ)
         // ===============================
         // Publishers
-        services.AddScoped(typeof(ILightUpdatePublisher), typeof(LightUpdatePublisher));
-        services.AddScoped(typeof(ITrafficLogPublisher), typeof(TrafficLogPublisher));
+        services.AddScoped(typeof(ITrafficLightSchedulePublisher), typeof(TrafficLightSchedulePublisher));
+        services.AddScoped(typeof(ICoordinatorLogPublisher), typeof(CoordinatorLogPublisher));
 
         // Consumers
-        services.AddScoped<TrafficCongestionAlertConsumer>();
-        services.AddScoped<PriorityMessageConsumer>();
+        services.AddScoped<PriorityCountConsumer>();
+        services.AddScoped<PriorityEventConsumer>();
+        services.AddScoped<TrafficAnalyticsConsumer>();
 
         // MassTransit Setup
         services.AddTrafficCoordinatorMassTransit(_configuration);

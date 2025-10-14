@@ -12,27 +12,13 @@ public class TrafficConfigurationEntity
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int ConfigurationId { get; set; }
 
-    [Required]
-    public int IntersectionId { get; set; }
-
-    [ForeignKey(nameof(IntersectionId))]
-    public IntersectionEntity? Intersection { get; set; }
-
     [Required, MaxLength(50)]
     public string Mode { get; set; } = "Standard"; // Standard, Peak, Night, Manual, Failover
-
-    [Required, MaxLength(20)]
-    public string TimePlan { get; set; } = "Day";
-
     public int CycleDurationSec { get; set; } = 60;
     public int GlobalOffsetSec { get; set; } = 0;
-
-    // Serialized JSON field for phase durations
-    public string PhaseDurationsJson { get; set; } = "{}";
-
-    // Serialized JSON field for per-light offsets
-    public string LightOffsetsJson { get; set; } = "{}";
-
+  // Serialized JSON field for phase durations
+  public string PhaseDurationsJson { get; set; } = "{}";
+    public string Purpose { get; set; } = string.Empty; // NEW: Purpose or description of the configuration
     public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
 }
 

@@ -10,9 +10,9 @@ public class TrafficConfigurationRepository : BaseRepository<TrafficConfiguratio
 {
     public TrafficConfigurationRepository(TrafficLightDbContext context) : base(context) { }
 
-    public async Task<TrafficConfigurationEntity?> GetLatestByIntersectionAsync(int intersectionId)
+    public async Task<TrafficConfigurationEntity?> GetLatestByIntersectionAsync(int configId)
         => await _context.TrafficConfigurations
-            .Where(c => c.IntersectionId == intersectionId)
+            .Where(c => c.ConfigurationId == configId)
             .OrderByDescending(c => c.LastUpdated)
             .FirstOrDefaultAsync();
 

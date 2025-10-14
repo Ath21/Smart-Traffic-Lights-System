@@ -11,7 +11,7 @@ public class TrafficLightDbContextFactory : IDesignTimeDbContextFactory<TrafficL
     {
         // Local connection for design-time migrations
         const string connectionString =
-            "Server=localhost,1433;Database=TrafficLightDB;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True;";
+            "Server=localhost,1433;Database=TrafficLightDB;User Id=sa;Password=MyPass@word;TrustServerCertificate=True;";
 
         var optionsBuilder = new DbContextOptionsBuilder<TrafficLightDbContext>();
         optionsBuilder.UseSqlServer(connectionString);

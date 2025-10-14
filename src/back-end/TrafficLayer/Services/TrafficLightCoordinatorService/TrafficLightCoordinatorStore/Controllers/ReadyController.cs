@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TrafficLightData;
 using TrafficLightCacheData;
+using Messages.Log;
 
 namespace TrafficLightCoordinatorStore.Controllers
 {
@@ -24,7 +25,7 @@ namespace TrafficLightCoordinatorStore.Controllers
             _bus = bus;
         }
 
-        [HttpGet("/ready")]
+        [HttpGet("ready")]
         public async Task<IActionResult> Ready()
         {
             try
@@ -35,7 +36,7 @@ namespace TrafficLightCoordinatorStore.Controllers
                 if (!await _cacheDbContext.CanConnectAsync())
                     return StatusCode(503, new { status = "Not Ready", reason = "TrafficLightCacheDB Redis unreachable" });
 
-                if (!_bus.Topology.TryGetPublishAddress(typeof(LogMessages.AuditLogMessage), out _))
+                if (!_bus.Topology.TryGetPublishAddress(typeof(LogMessage), out _))
                     return StatusCode(503, new { status = "Not Ready", reason = "RabbitMQ not connected" });
 
                 return Ok(new { status = "Ready", service = "Traffic Light Coordinator Service" });

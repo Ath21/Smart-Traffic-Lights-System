@@ -8,7 +8,7 @@ namespace TrafficLightCoordinatorStore.Controllers
     public class HealthController : ControllerBase
     {
         // Liveness: Service is running (no external deps)
-        [HttpGet("/health")]
+        [HttpGet("health")]
         public IActionResult Health()
         {
             return Ok(new { status = "Healthy", service = "Traffic Light Coordinator Service" });

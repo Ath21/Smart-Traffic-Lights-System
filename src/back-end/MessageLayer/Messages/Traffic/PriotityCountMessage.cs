@@ -9,6 +9,8 @@ namespace Messages.Traffic;
 
 public class PriorityCountMessage : BaseMessage
 {
+  public int IntersectionId { get; set; }
+  public string? IntersectionName { get; set; }
   public string? CountType { get; set; }  // Vehicle, Pedestrian, Cyclist
   public int TotalCount { get; set; }
   public int PriorityLevel { get; set; }   // 1 (Low), 2 (Medium), 3 (High)

@@ -9,6 +9,8 @@ namespace Messages.Traffic;
 
 public class PriorityEventMessage : BaseMessage
 {
+  public int IntersectionId { get; set; }
+  public string? IntersectionName { get; set; }
   public string? EventType { get; set; }
   public string? VehicleType { get; set; }
   public int PriorityLevel { get; set; }  // 1 (Low), 2 (Medium), 3 (High)

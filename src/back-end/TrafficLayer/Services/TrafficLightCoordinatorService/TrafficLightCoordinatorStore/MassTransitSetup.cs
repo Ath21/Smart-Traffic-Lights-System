@@ -15,7 +15,7 @@ public static class MassTransitSetup
             // =====================================================
             // Register Consumers
             // =====================================================
-            x.AddConsumer<PriorityDetectionConsumer>();
+            x.AddConsumer<PriorityEventConsumer>();
             x.AddConsumer<PriorityCountConsumer>();
             x.AddConsumer<TrafficAnalyticsConsumer>();
 
