@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SensorStore")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9f8c3f6dff31f69e20d4d23bdf3888ce11868487")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b5b8304646b169fbf5238c6331d01144f6c1f558")]
 [assembly: System.Reflection.AssemblyProductAttribute("SensorStore")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SensorStore")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

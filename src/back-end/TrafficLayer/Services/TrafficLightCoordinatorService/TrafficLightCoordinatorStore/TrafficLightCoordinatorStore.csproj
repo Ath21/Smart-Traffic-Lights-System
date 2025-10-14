@@ -30,4 +30,8 @@
     <ProjectReference Include="../../../Databases/TrafficLightDB/TrafficLightData/TrafficLightData.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Publishers/Logs/" />
+  </ItemGroup>
+
 </Project>
