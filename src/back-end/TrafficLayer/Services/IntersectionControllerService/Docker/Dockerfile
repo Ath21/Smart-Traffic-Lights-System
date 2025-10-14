@@ -15,9 +15,7 @@ COPY TrafficLayer/Services/IntersectionControllerService/IntersectionControllerS
 COPY TrafficLayer/Databases/TrafficLightCacheDB/TrafficLightCacheData TrafficLayer/Databases/TrafficLightCacheDB/TrafficLightCacheData/
 COPY SensorLayer/Databases/DetectionCacheDB/DetectionCacheData SensorLayer/Databases/DetectionCacheDB/DetectionCacheData/
 ## Messages
-COPY MessageLayer/TrafficMessages MessageLayer/TrafficMessages/
-COPY MessageLayer/LogMessages MessageLayer/LogMessages/
-COPY MessageLayer/SensorMessages MessageLayer/SensorMessages/
+COPY MessageLayer/Messages MessageLayer/Messages/
 
 # Restore dependencies
 RUN dotnet restore TrafficLayer/Services/IntersectionControllerService/IntersectionControllerStore/IntersectionControllerStore.csproj

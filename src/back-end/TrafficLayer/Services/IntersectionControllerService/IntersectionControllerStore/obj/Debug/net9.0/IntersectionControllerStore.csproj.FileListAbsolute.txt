@@ -118,13 +118,7 @@
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/IntersectionControllerService/IntersectionControllerStore/bin/Debug/net9.0/Swashbuckle.AspNetCore.SwaggerUI.dll
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/IntersectionControllerService/IntersectionControllerStore/bin/Debug/net9.0/System.IdentityModel.Tokens.Jwt.dll
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/IntersectionControllerService/IntersectionControllerStore/bin/Debug/net9.0/DetectionCacheData.dll
-/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/IntersectionControllerService/IntersectionControllerStore/bin/Debug/net9.0/LogMessages.dll
-/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/IntersectionControllerService/IntersectionControllerStore/bin/Debug/net9.0/SensorMessages.dll
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/IntersectionControllerService/IntersectionControllerStore/bin/Debug/net9.0/TrafficLightCacheData.dll
-/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/IntersectionControllerService/IntersectionControllerStore/bin/Debug/net9.0/TrafficMessages.dll
-/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/IntersectionControllerService/IntersectionControllerStore/bin/Debug/net9.0/LogMessages.pdb
-/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/IntersectionControllerService/IntersectionControllerStore/bin/Debug/net9.0/SensorMessages.pdb
-/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/IntersectionControllerService/IntersectionControllerStore/bin/Debug/net9.0/TrafficMessages.pdb
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/IntersectionControllerService/IntersectionControllerStore/bin/Debug/net9.0/DetectionCacheData.pdb
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/IntersectionControllerService/IntersectionControllerStore/bin/Debug/net9.0/TrafficLightCacheData.pdb
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/IntersectionControllerService/IntersectionControllerStore/obj/Debug/net9.0/rjimswa.dswa.cache.json
@@ -139,3 +133,5 @@
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/IntersectionControllerService/IntersectionControllerStore/obj/Debug/net9.0/IntersectionControllerStore.genruntimeconfig.cache
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/IntersectionControllerService/IntersectionControllerStore/obj/Debug/net9.0/ref/IntersectionControllerStore.dll
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/IntersectionControllerService/IntersectionControllerStore/bin/Debug/net9.0/Newtonsoft.Json.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/IntersectionControllerService/IntersectionControllerStore/bin/Debug/net9.0/Messages.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/IntersectionControllerService/IntersectionControllerStore/bin/Debug/net9.0/Messages.pdb

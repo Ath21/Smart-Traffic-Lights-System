@@ -1,15 +1,19 @@
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using Messages.Sensor;
+using IntersectionControllerStore.Business.Priority;
 
 namespace IntersectionControllerStore.Consumers;
 
+
 public class DetectionEventConsumer : IConsumer<DetectionEventMessage>
 {
+    private readonly PriorityBusiness _priorityProcessor;
     private readonly ILogger<DetectionEventConsumer> _logger;
 
-    public DetectionEventConsumer(ILogger<DetectionEventConsumer> logger)
+    public DetectionEventConsumer(PriorityBusiness priorityProcessor, ILogger<DetectionEventConsumer> logger)
     {
+        _priorityProcessor = priorityProcessor;
         _logger = logger;
     }
 
@@ -18,27 +22,17 @@ public class DetectionEventConsumer : IConsumer<DetectionEventMessage>
         var msg = context.Message;
 
         _logger.LogInformation(
-            "[CONSUMER][EVENT][{Intersection}] {EventType} detected ({VehicleType}, Dir={Direction})",
-            msg.IntersectionName,
-            msg.EventType,
-            msg.VehicleType,
-            msg.Direction);
+            "[CONSUMER][DETECTION][{Intersection}] EventType={Event}, Vehicle={VehicleType}, Direction={Direction}",
+            msg.IntersectionName, msg.EventType, msg.VehicleType, msg.Direction);
 
-        switch (msg.EventType.ToLowerInvariant())
+        try
         {
-            case "emergency vehicle":
-                _logger.LogInformation("→ Initiating emergency vehicle handling logic for {Intersection}", msg.IntersectionName);
-                break;
-
-            case "public transport":
-                _logger.LogInformation("→ Applying priority timing for public transport at {Intersection}", msg.IntersectionName);
-                break;
-
-            case "incident":
-                _logger.LogWarning("→ Incident detected at {Intersection}, notifying analytics/log subsystems", msg.IntersectionName);
-                break;
+            await _priorityProcessor.HandleDetectionEventAsync(msg);
         }
-
-        await Task.CompletedTask;
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[CONSUMER][DETECTION][{Intersection}] Error processing detection", msg.IntersectionName);
+            throw;
+        }
     }
 }

@@ -15,7 +15,7 @@ public static class MassTransitSetup
             // =====================================================
             // Register Consumers
             // =====================================================
-            x.AddConsumer<TrafficLightUpdateConsumer>();
+            x.AddConsumer<LightScheduleConsumer>();
             x.AddConsumer<SensorCountConsumer>();
             x.AddConsumer<DetectionEventConsumer>();
 
@@ -42,13 +42,13 @@ public static class MassTransitSetup
 
                 // Queues
                 var trafficQueue = rabbit["Queues:Traffic:LightUpdate"];
-                var sensorCountQueue = rabbit["Queues:Sensor:Count:IntersectionController"];
-                var detectionQueue   = rabbit["Queues:Sensor:Detection:IntersectionController"];
+                var sensorCountQueue = rabbit["Queues:Sensor:Count"];
+                var detectionQueue   = rabbit["Queues:Sensor:Detection"];
 
                 // Routing keys
                 var trafficKeys   = rabbit.GetSection("RoutingKeys:Traffic").Get<string[]>() ?? Array.Empty<string>();
                 var countKeys     = rabbit.GetSection("RoutingKeys:SensorCount").Get<string[]>() ?? Array.Empty<string>();
-                var detectionKeys = rabbit.GetSection("RoutingKeys:SensorDetection").Get<string[]>() ?? Array.Empty<string>();
+                var detectionKeys = rabbit.GetSection("RoutingKeys:DetectionEvent").Get<string[]>() ?? Array.Empty<string>();
 
                 // ===============================
                 // [PUBLISH] TRAFFIC LIGHT CONTROL (agiou-spyridonos.agiou-spyridonos101, agiou-spyridonos.dimitsanas102, ...)
@@ -134,7 +134,7 @@ public static class MassTransitSetup
                         });
                     }
 
-                    e.ConfigureConsumer<TrafficLightUpdateConsumer>(context);
+                    e.ConfigureConsumer<LightScheduleConsumer>(context);
                     e.PrefetchCount = 10;
                     e.ConcurrentMessageLimit = 5;
                 });

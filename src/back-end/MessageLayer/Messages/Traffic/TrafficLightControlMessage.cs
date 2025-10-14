@@ -13,13 +13,27 @@ namespace Messages.Traffic;
 
 public class TrafficLightControlMessage : BaseMessage
 {
-  public int LightId { get; set; }
-  public string? LightName { get; set; }
-  public string? Mode { get; set; }
-  public string? TimePlan { get; set; } // Standard, Peak, Night, Manual, Failover, Emergency
-  public Dictionary<string, int>? PhaseDurations { get; set; } // { "Green": 30, "Yellow": 5, "Red": 25 }
-  public string? OperationalMode { get; set; } // Normal, Flashing, Off
+    public int IntersectionId { get; set; }
+    public string? IntersectionName { get; set; }
+
+    public int LightId { get; set; }
+    public string? LightName { get; set; }
+
+    public string? Mode { get; set; }              // Standard, Peak, Night, etc.
+    public string? TimePlan { get; set; }          // Day, RushHour, Holiday
+    public string? OperationalMode { get; set; }   // Normal, Flashing, Off
+
+    public Dictionary<string, int>? PhaseDurations { get; set; }  // { "Green": 30, "Yellow": 5, "Red": 25 }
+    public string? CurrentPhase { get; set; }      // Green, Yellow, Red
+    public int RemainingTimeSec { get; set; }      // Remaining time in current phase
+    public int CycleDurationSec { get; set; }      // Full cycle duration
+    public int LocalOffsetSec { get; set; }        // Offset within intersection cycle
+    public double CycleProgressSec { get; set; }   // Time elapsed in current cycle
+    public int PriorityLevel { get; set; }         // 1–3 priority indicator
+    public bool IsFailoverActive { get; set; }     // Indicates local failover active
+    public DateTime LastUpdate { get; set; } = DateTime.UtcNow;
 }
+
 
 /*
 
