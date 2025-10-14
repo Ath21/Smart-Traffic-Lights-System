@@ -40,12 +40,12 @@ public static class MassTransitSetup
                 var logExchange     = rabbit["Exchanges:Log"];
 
                 // Queues 
-                var sensorCountQueue = rabbit["Queues:Sensor:Count:TrafficAnalytics"];
-                var detectionQueue   = rabbit["Queues:Sensor:Detection:TrafficAnalytics"];
+                var sensorCountQueue = rabbit["Queues:Sensor:Count"];
+                var detectionQueue   = rabbit["Queues:Detection:Event"];
 
                 // Routing Keys
-                var sensorCountKeys     = rabbit.GetSection("RoutingKeys:SensorCount").Get<string[]>() ?? Array.Empty<string>();
-                var sensorDetectionKeys = rabbit.GetSection("RoutingKeys:SensorDetection").Get<string[]>() ?? Array.Empty<string>();
+                var sensorCountKeys     = rabbit.GetSection("RoutingKeys:Sensor:Count").Get<string[]>() ?? Array.Empty<string>();
+                var sensorDetectionKeys = rabbit.GetSection("RoutingKeys:Detection:Event").Get<string[]>() ?? Array.Empty<string>();
 
                 // =====================================================
                 // [PUBLISH] TRAFFIC ANALYTICS METRICS (Congestion, Summary, Incident)

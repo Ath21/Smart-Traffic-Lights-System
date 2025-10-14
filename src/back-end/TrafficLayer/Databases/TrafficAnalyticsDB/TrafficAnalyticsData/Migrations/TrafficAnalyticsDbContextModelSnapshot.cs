@@ -22,69 +22,77 @@ namespace TrafficAnalyticsData.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("TrafficAnalyticsData.Entities.Alert", b =>
+            modelBuilder.Entity("TrafficAnalyticsData.Entities.AlertEntity", b =>
                 {
-                    b.Property<Guid>("AlertId")
+                    b.Property<int>("AlertId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("alert_id");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("AlertId"));
 
                     b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-                    b.Property<Guid>("IntersectionId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("intersection_id");
+                    b.Property<string>("Intersection")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("IntersectionId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Message")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("message");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<string>("Type")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("type");
+                        .HasColumnType("character varying(50)");
 
                     b.HasKey("AlertId");
 
-                    b.ToTable("alerts");
+                    b.ToTable("alerts", (string)null);
                 });
 
-            modelBuilder.Entity("TrafficAnalyticsData.Entities.DailySummary", b =>
+            modelBuilder.Entity("TrafficAnalyticsData.Entities.DailySummaryEntity", b =>
                 {
-                    b.Property<Guid>("SummaryId")
+                    b.Property<int>("SummaryId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("summary_id");
+                        .HasColumnType("integer");
 
-                    b.Property<float>("AvgSpeed")
-                        .HasColumnType("real")
-                        .HasColumnName("avg_speed");
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("SummaryId"));
 
-                    b.Property<string>("CongestionLevel")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("congestion_level");
+                    b.Property<double>("AverageSpeedKmh")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("AverageWaitTimeSec")
+                        .HasColumnType("double precision");
 
                     b.Property<DateTime>("Date")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("date");
+                        .HasColumnType("date");
 
-                    b.Property<Guid>("IntersectionId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("intersection_id");
+                    b.Property<string>("Intersection")
+                        .IsRequired()
+                        .HasColumnType("text");
 
-                    b.Property<int>("VehicleCount")
-                        .HasColumnType("integer")
-                        .HasColumnName("vehicle_count");
+                    b.Property<int>("IntersectionId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TotalCyclists")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TotalPedestrians")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TotalVehicles")
+                        .HasColumnType("integer");
 
                     b.HasKey("SummaryId");
 
-                    b.ToTable("daily_summaries");
+                    b.ToTable("daily_summaries", (string)null);
                 });
 #pragma warning restore 612, 618
         }

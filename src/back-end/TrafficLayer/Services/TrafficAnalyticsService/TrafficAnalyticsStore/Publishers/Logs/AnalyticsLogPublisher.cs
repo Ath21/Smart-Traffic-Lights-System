@@ -1,46 +1,126 @@
-using LogMessages;
+using System;
 using MassTransit;
+using Messages.Log;
 
 namespace TrafficAnalyticsStore.Publishers.Logs;
 
-public class AnalyticsLogPublisher : IAnalyticsLogPublisher
+public class AnalyticsLogPublisher
 {
     private readonly IBus _bus;
     private readonly ILogger<AnalyticsLogPublisher> _logger;
-    private readonly string _auditKey;
-    private readonly string _errorKey;
+    private readonly string _routingPattern;
 
-    private const string ServiceTag = "[" + nameof(AnalyticsLogPublisher) + "]";
-
-    public AnalyticsLogPublisher(IConfiguration configuration, ILogger<AnalyticsLogPublisher> logger, IBus bus)
+    public AnalyticsLogPublisher(
+        IBus bus,
+        IConfiguration config,
+        ILogger<AnalyticsLogPublisher> logger)
     {
         _bus = bus;
         _logger = logger;
 
-        _auditKey = configuration["RabbitMQ:RoutingKeys:Log:Audit"] 
-                    ?? "log.traffic.analytics_service.audit";
-
-        _errorKey = configuration["RabbitMQ:RoutingKeys:Log:Error"] 
-                    ?? "log.traffic.analytics_service.error";
+        _routingPattern = config["RabbitMQ:RoutingKeys:Log:Analytics"]
+                          ?? "log.sensor.traffic-analytics-service.{type}";
     }
 
-    public async Task PublishAuditAsync(AuditLogMessage message)
+    public async Task PublishAuditAsync(
+        string action,
+        string message,
+        Dictionary<string, string>? metadata = null,
+        Guid? correlationId = null)
     {
-        await _bus.Publish(message, ctx => ctx.SetRoutingKey(_auditKey));
+        await PublishAsync("audit", new LogMessage
+        {
+            CorrelationId = correlationId ?? Guid.Empty,
+            Timestamp = DateTime.UtcNow,
 
-        _logger.LogInformation(
-            "{Tag} Published Audit Log {LogId} for Service {Service}: {Action} - {Details}",
-            ServiceTag, message.LogId, message.ServiceName, message.Action, message.Details
-        );
+            SourceLayer = "Traffic Layer",
+            DestinationLayer = new () { "Log Layer" },
+
+            SourceService = "Traffic Analytics Service",
+            DestinationServices = new() { "Log Service" },
+
+            LogType = "Audit",
+
+            Action = action,
+            Message = message,
+
+            Metadata = metadata
+        });
+
+        _logger.LogInformation("[PUBLISHER][LOG] AUDIT log published (Action={Action}) - Message={Message}", action, message);
     }
 
-    public async Task PublishErrorAsync(ErrorLogMessage message)
+    public async Task PublishErrorAsync(
+        string action,
+        string message,
+        Exception? ex = null,
+        Dictionary<string, string>? metadata = null,
+        Guid? correlationId = null)
     {
-        await _bus.Publish(message, ctx => ctx.SetRoutingKey(_errorKey));
+        metadata ??= new();
+        if (ex != null)
+        {
+            metadata["exception_type"] = ex.GetType().Name;
+            metadata["exception_message"] = ex.Message;
+        }
 
-        _logger.LogError(
-            "{Tag} Published Error Log {LogId} for Service {Service}: {ErrorType} - {Message}",
-            ServiceTag, message.LogId, message.ServiceName, message.ErrorType, message.Message
-        );
+        await PublishAsync("error", new LogMessage
+        {
+            CorrelationId = correlationId ?? Guid.Empty,
+            Timestamp = DateTime.UtcNow,
+
+            SourceLayer = "Traffic Layer",
+            DestinationLayer = new () { "Log Layer" },
+
+            SourceService = "Traffic Analytics Service",
+            DestinationServices = new() { "Log Service" },
+
+            LogType = "Error",
+
+            Action = action,
+            Message = message,
+
+            Metadata = metadata
+        });
+
+        _logger.LogError("[PUBLISHER][LOG] ERROR log published (Action={Action}) - Message={Message}", action, message);
+    }
+
+    public async Task PublishFailoverAsync(
+        string action,
+        string message,
+        Dictionary<string, string>? metadata = null,
+        Guid? correlationId = null)
+    {
+        await PublishAsync("failover", new LogMessage
+        {
+            CorrelationId = correlationId ?? Guid.Empty,
+            Timestamp = DateTime.UtcNow,
+
+            SourceLayer = "Traffic Layer",
+            DestinationLayer = new () { "Log Layer" },
+
+            SourceService = "Traffic Analytics Service",
+            DestinationServices = new() { "Log Service" },
+
+            LogType = "Failover",
+
+            Action = action,
+            Message = message,
+
+            Metadata = metadata
+        });
+
+        _logger.LogWarning("[PUBLISHER][LOG] FAILOVER log published (Action={Action} - Message={Message})", action, message);
+    }
+
+    private async Task PublishAsync(string logType, LogMessage msg)
+    {
+        msg.CorrelationId = msg.CorrelationId == Guid.Empty ? Guid.NewGuid() : msg.CorrelationId;
+        msg.Timestamp = DateTime.UtcNow;
+
+        var routingKey = _routingPattern.Replace("{type}", logType);
+        await _bus.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
     }
 }
+

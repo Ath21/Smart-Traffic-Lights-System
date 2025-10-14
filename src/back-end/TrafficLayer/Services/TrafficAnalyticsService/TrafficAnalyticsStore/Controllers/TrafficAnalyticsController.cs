@@ -1,93 +1,74 @@
 using Microsoft.AspNetCore.Mvc;
-using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
-using TrafficAnalyticsStore.Models.Responses;
-using TrafficAnalyticsStore.Business;
+using System.Globalization;
+using System.Text;
+using TrafficAnalyticsStore.Business.Alerts;
+using TrafficAnalyticsStore.Business.DailySummary;
+using TrafficAnalyticsStore.Models;
 
-namespace TrafficAnalyticsStore.Controllers;
-
-// ============================================================
-// Traffic Layer / Traffic Analytics Service - Data Insights
-//
-// Provides congestion, incident, and summary reports.
-// ============================================================
+namespace TrafficAnalyticsStore.Api.Controllers;
 
 [ApiController]
-[Route("api/traffic/analytics")]
-public class TrafficAnalyticsController : ControllerBase
+[Route("api/analytics")]
+public class AnalyticsController : ControllerBase
 {
-    private readonly ITrafficAnalyticsService _service;
-    private readonly IMapper _mapper;
+    private readonly IDailySummaryBusiness _summaryService;
+    private readonly IAlertBusiness _alertService;
+    private readonly ILogger<AnalyticsController> _logger;
 
-    public TrafficAnalyticsController(ITrafficAnalyticsService service, IMapper mapper)
+    public AnalyticsController(
+        IDailySummaryBusiness summaryService,
+        IAlertBusiness alertService,
+        ILogger<AnalyticsController> logger)
     {
-        _service = service;
-        _mapper = mapper;
+        _summaryService = summaryService;
+        _alertService = alertService;
+        _logger = logger;
     }
 
     // ============================================================
-    // GET: /api/traffic/analytics/congestion/{intersectionId}
-    // Roles: Anonymous
-    // Purpose: Get current congestion data for a specific intersection
+    // 1️⃣  Summaries for UI Graphs (JSON)
     // ============================================================
-    [HttpGet("congestion/{intersectionId:guid}")]
-    [AllowAnonymous]
-    [ProducesResponseType(typeof(CongestionResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetCongestion(Guid intersectionId)
+    [HttpGet("summaries")]
+    public async Task<ActionResult<IEnumerable<DailySummaryDto>>> GetSummaries(
+        [FromQuery] int? intersectionId = null,
+        [FromQuery] string? intersection = null,
+        [FromQuery] DateTime? from = null,
+        [FromQuery] DateTime? to = null)
     {
-        var dto = await _service.GetCurrentCongestionAsync(intersectionId);
-        if (dto == null) return NotFound(new { error = "No congestion data available" });
-
-        var response = _mapper.Map<CongestionResponse>(dto);
-        return Ok(response);
+        var summaries = await _summaryService.GetSummariesAsync(intersectionId, intersection, from, to);
+        return Ok(summaries);
     }
 
     // ============================================================
-    // GET: /api/traffic/analytics/incidents/{intersectionId}
-    // Roles: TrafficOperator, Admin
-    // Purpose: Get all incidents detected for a specific intersection
+    // 2️⃣  Export Summaries as CSV
     // ============================================================
-    [HttpGet("incidents/{intersectionId:guid}")]
-    [Authorize(Roles = "TrafficOperator,Admin")]
-    [ProducesResponseType(typeof(IEnumerable<IncidentResponse>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetIncidents(Guid intersectionId)
+    [HttpGet("summaries/export")]
+    public async Task<IActionResult> ExportSummariesCsv(
+        [FromQuery] int? intersectionId = null,
+        [FromQuery] string? intersection = null,
+        [FromQuery] DateTime? from = null,
+        [FromQuery] DateTime? to = null)
     {
-        var dtos = await _service.GetIncidentsAsync(intersectionId);
-        var responses = _mapper.Map<IEnumerable<IncidentResponse>>(dtos);
-        return Ok(responses);
+        var bytes = await _summaryService.ExportSummariesCsvAsync(intersectionId, intersection, from, to);
+
+        if (bytes.Length == 0)
+            return NotFound("No data found for the given filters.");
+
+        var fileName = $"traffic_summaries_{DateTime.UtcNow:yyyyMMddHHmm}.csv";
+        return File(bytes, "text/csv", fileName);
     }
 
     // ============================================================
-    // GET: /api/traffic/analytics/summary/{intersectionId}/{date}
-    // Roles: User, TrafficOperator, Admin
-    // Purpose: Get daily traffic summary for a specific intersection and date
+    // 3️⃣  Alerts (for notifications / admin)
     // ============================================================
-    [HttpGet("summary/{intersectionId:guid}/{date}")]
-    [Authorize(Roles = "User,TrafficOperator,Admin")]
-    [ProducesResponseType(typeof(SummaryResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetSummary(Guid intersectionId, DateTime date)
+    [HttpGet("alerts")]
+    public async Task<ActionResult<IEnumerable<AlertDto>>> GetAlerts(
+        [FromQuery] string? type = null,
+        [FromQuery] string? intersection = null,
+        [FromQuery] DateTime? from = null,
+        [FromQuery] DateTime? to = null)
     {
-        var dto = await _service.GetDailySummaryAsync(intersectionId, date);
-        if (dto == null) return NotFound(new { error = "No summary available for given date" });
-
-        var response = _mapper.Map<SummaryResponse>(dto);
-        return Ok(response);
-    }
-
-    // ============================================================
-    // GET: /api/traffic/analytics/reports/daily
-    // Roles: TrafficOperator, Admin
-    // Purpose: Get all daily traffic reports (system-wide)
-    // ============================================================
-    [HttpGet("reports/daily")]
-    [Authorize(Roles = "TrafficOperator,Admin")]
-    [ProducesResponseType(typeof(IEnumerable<SummaryResponse>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetDailyReport()
-    {
-        var dtos = await _service.GetDailyReportsAsync();
-        var responses = _mapper.Map<IEnumerable<SummaryResponse>>(dtos);
-        return Ok(responses);
+        var alerts = await _alertService.GetAlertsAsync(type, intersection, from, to);
+        return Ok(alerts);
     }
 }

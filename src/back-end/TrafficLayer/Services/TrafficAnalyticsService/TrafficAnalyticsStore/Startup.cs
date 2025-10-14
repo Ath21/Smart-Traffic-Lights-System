@@ -8,15 +8,20 @@ using TrafficAnalyticsData.Repositories.Summary;
 using TrafficAnalyticsData.Repositories.Alerts;
 using TrafficAnalyticsData.Settings;
 using TrafficAnalyticsStore.Middleware;
-using TrafficAnalyticsStore.Publishers.Congestion;
-using TrafficAnalyticsStore.Publishers.Incident;
-using TrafficAnalyticsStore.Publishers.Summary;
 using TrafficAnalyticsStore.Publishers.Logs;
+using DetectionData;
+using DetectionData.Repositories.Vehicle;
+using DetectionData.Repositories.Pedestrian;
+using DetectionData.Repositories.Cyclist;
+using DetectionData.Repositories.PublicTransport;
+using DetectionData.Repositories.EmergencyVehicle;
+using DetectionData.Repositories.Incident;
+using TrafficAnalyticsStore.Publishers.Analytics;
 using TrafficAnalyticsStore.Consumers;
-using TrafficAnalyticsStore.Business;
-using DetectionCacheData;
-using DetectionCacheData.Repositories;
-using DetectionCacheData.Settings;
+using TrafficAnalyticsStore.Business.Alerts;
+using TrafficAnalyticsStore.Business.DailySummary;
+using TrafficAnalyticsStore.Aggregators;
+
 
 namespace TrafficAnalyticsStore;
 
@@ -47,56 +52,49 @@ public class Startup
         services.AddScoped(typeof(IAlertRepository), typeof(AlertRepository));
 
         // ===============================
-        // Data Layer (Redis - DetectionCacheDB)
+        // Data Layer (MongoDB - DetectionDB)
         // ===============================
-        // Db Context 
-        services.Configure<DetectionCacheDbSettings>(options =>
+        services.Configure<DetectionDbSettings>(options =>
         {
-            options.Host = _configuration["Redis:Host"];
-            options.Port = int.Parse(_configuration["Redis:Port"]);
-            options.Password = _configuration["Redis:Password"];
-            options.Database = int.Parse(_configuration["Redis:Database"]);
-            options.KeyPrefix = new KeyPrefixSettings
+            options.ConnectionString = _configuration["Mongo:ConnectionString"];
+            options.Database = _configuration["Mongo:Database"];
+            options.Collections = new CollectionsSettings
             {
-                VehicleCount = _configuration["Redis:KeyPrefix:VehicleCount"],
-                PedestrianCount = _configuration["Redis:KeyPrefix:PedestrianCount"],
-                CyclistCount = _configuration["Redis:KeyPrefix:CyclistCount"],
-                PublicTransportDetections = _configuration["Redis:KeyPrefix:PublicTransportDetections"],
-                EmergencyVehicleDetections = _configuration["Redis:KeyPrefix:EmergencyVehicleDetections"],
-                IncidentDetections = _configuration["Redis:KeyPrefix:IncidentDetections"]
+                VehicleCount = _configuration["Mongo:Collections:VehicleCount"],
+                PedestrianCount = _configuration["Mongo:Collections:PedestrianCount"],
+                CyclistCount = _configuration["Mongo:Collections:CyclistCount"],
+                PublicTransport = _configuration["Mongo:Collections:PublicTransportDetections"],
+                EmergencyVehicle = _configuration["Mongo:Collections:EmergencyVehicleDetections"],
+                Incident = _configuration["Mongo:Collections:IncidentDetections"]
             };
         });
-        services.AddSingleton<DetectionCacheDbContext>();
+        services.AddSingleton<DetectionDbContext>();
 
         // Repositories
-        services.AddScoped(typeof(IDetectionCacheRepository), typeof(DetectionCacheRepository));
+        services.AddScoped(typeof(IVehicleCountRepository), typeof(VehicleCountRepository));
+        services.AddScoped(typeof(IPedestrianCountRepository), typeof(PedestrianCountRepository));
+        services.AddScoped(typeof(ICyclistCountRepository), typeof(CyclistCountRepository));
+        services.AddScoped(typeof(IEmergencyVehicleDetectionRepository), typeof(EmergencyVehicleDetectionRepository));
+        services.AddScoped(typeof(IPublicTransportDetectionRepository), typeof(PublicTransportDetectionRepository));
+        services.AddScoped(typeof(IIncidentDetectionRepository), typeof(IncidentDetectionRepository));
 
         // ===============================
         // Business Layer (Services)
         // ===============================
-        services.AddScoped(typeof(ITrafficAnalyticsService), typeof(TrafficAnalyticsService));
-
-        // ===============================
-        // AutoMapper (object-object mapping)
-        // ===============================
-        services.AddAutoMapper(typeof(TrafficAnalyticsStoreProfile));
+        services.AddScoped(typeof(IAlertBusiness), typeof(AlertBusiness));
+        services.AddScoped(typeof(IDailySummaryBusiness), typeof(DailySummaryBusiness));
+        services.AddScoped(typeof(TrafficAnalyticsAggregator));
 
         // ===============================
         // Message Layer (MassTransit with RabbitMQ)
         // ===============================
         // Publishers
-        services.AddScoped(typeof(ITrafficCongestionPublisher), typeof(TrafficCongestionPublisher));
-        services.AddScoped(typeof(ITrafficIncidentPublisher), typeof(TrafficIncidentPublisher));
-        services.AddScoped(typeof(ITrafficSummaryPublisher), typeof(TrafficSummaryPublisher));
+        services.AddScoped(typeof(ITrafficAnalyticsPublisher), typeof(TrafficAnalyticsPublisher));
         services.AddScoped(typeof(IAnalyticsLogPublisher), typeof(AnalyticsLogPublisher));
 
         // Consumers
-        services.AddScoped<VehicleCountConsumer>();
-        services.AddScoped<EmergencyVehicleDetectionConsumer>();
-        services.AddScoped<PublicTransportDetectionConsumer>();
-        services.AddScoped<PedestrianCountConsumer>();
-        services.AddScoped<CyclistCountConsumer>();
-        services.AddScoped<IncidentDetectionConsumer>();
+        services.AddScoped<DetectionEventConsumer>();
+        services.AddScoped<SensorCountConsumer>();
 
         // MassTransit Setup
         services.AddTrafficAnalyticsMassTransit(_configuration);

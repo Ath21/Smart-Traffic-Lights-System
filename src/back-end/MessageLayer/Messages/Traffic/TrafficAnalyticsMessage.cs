@@ -9,6 +9,8 @@ namespace Messages.Traffic;
 
 public class TrafficAnalyticsMessage : BaseMessage
 {
+  public int IntersectionId { get; set; }
+  public string? IntersectionName { get; set; }
   public string? MetricType { get; set; }  // Incident, Congestion, Summary
 
   public double AverageSpeedKmh { get; set; }

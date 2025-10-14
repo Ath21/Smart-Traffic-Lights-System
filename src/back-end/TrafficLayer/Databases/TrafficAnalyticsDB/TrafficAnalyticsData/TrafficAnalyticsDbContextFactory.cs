@@ -10,7 +10,7 @@ public class TrafficAnalyticsDbContextFactory : IDesignTimeDbContextFactory<Traf
     {
         // You can adjust this connection for local migration execution
         const string connectionString =
-            "Host=localhost;Port=5432;Database=TrafficAnalyticsDB;Username=postgres;Password=postgres";
+            "Host=localhost;Port=5432;Database=TrafficAnalyticsDB;Username=postgres;Password=postgres123";
 
         var optionsBuilder = new DbContextOptionsBuilder<TrafficAnalyticsDbContext>();
         optionsBuilder.UseNpgsql(connectionString);

@@ -1,6 +1,5 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using TrafficLightData.Entities;
 
 namespace TrafficAnalyticsData.Entities;
 

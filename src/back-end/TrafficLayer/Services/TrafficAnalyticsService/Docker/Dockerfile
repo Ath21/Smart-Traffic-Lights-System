@@ -13,11 +13,9 @@ WORKDIR /src
 COPY TrafficLayer/Services/TrafficAnalyticsService/TrafficAnalyticsStore TrafficLayer/Services/TrafficAnalyticsService/TrafficAnalyticsStore/
 ## Databases
 COPY TrafficLayer/Databases/TrafficAnalyticsDB/TrafficAnalyticsData TrafficLayer/Databases/TrafficAnalyticsDB/TrafficAnalyticsData/
-COPY SensorLayer/Databases/DetectionCacheDB/DetectionCacheData SensorLayer/Databases/DetectionCacheDB/DetectionCacheData/
+COPY SensorLayer/Databases/DetectionDB/DetectionData SensorLayer/Databases/DetectionDB/DetectionData/
 ## Messages
-COPY MessageLayer/SensorMessages MessageLayer/SensorMessages/
-COPY MessageLayer/TrafficMessages MessageLayer/TrafficMessages/
-COPY MessageLayer/LogMessages MessageLayer/LogMessages/
+COPY MessageLayer/Messages MessageLayer/Messages/
 
 # Restore dependencies
 RUN dotnet restore TrafficLayer/Services/TrafficAnalyticsService/TrafficAnalyticsStore/TrafficAnalyticsStore.csproj

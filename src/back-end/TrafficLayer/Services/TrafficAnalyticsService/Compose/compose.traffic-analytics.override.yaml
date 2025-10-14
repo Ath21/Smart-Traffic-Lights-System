@@ -1,0 +1,57 @@
+services:
+  traffic-analytics:
+    ports:
+      - '5208:8080'
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+
+      # DetectionDB (MongoDB)
+      Mongo__ConnectionString: mongodb://mongo:mongo123@detection-db:27017
+      Mongo__Database: DetectionDB
+      Mongo__Collections__VehicleCount: vehicle_count
+      Mongo__Collections__PedestrianCount: pedestrian_count
+      Mongo__Collections__CyclistCount: cyclist_count
+      Mongo__Collections__EmergencyVehicleDetections: emergency_vehicle_detections
+      Mongo__Collections__PublicTransportDetections: public_transport_detections
+      Mongo__Collections__IncidentDetections: incident_detections
+
+      ## TrafficAnalyticsDB (PostgreSQL)
+      ConnectionStrings__PostgreSQLConnection: Host=traffic-analytics-db;Port=5432;Database=TrafficAnalyticsDB;Username=postgres;Password=postgres123
+
+      # CORS
+      Cors__AllowedOrigins: http://localhost:5173,https://stls.local
+      Cors__AllowedMethods: GET,POST,PUT,PATCH,DELETE,OPTIONS
+      Cors__AllowedHeaders: Content-Type,Authorization
+
+      # JWT
+      Jwt__Issuer: http://stls_backend:8080
+      Jwt__Audience: http://stls_backend:8080
+      Jwt__Key: Nn7kLa8Rzv1XHt9UwMqP4YbFdJxVt2Km
+
+      # RabbitMQ
+      ## Configuration
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__VirtualHost: /
+      RabbitMQ__Port: 5672
+      RabbitMQ__Username: rabbitmq
+      RabbitMQ__Password: rabbitmq123
+
+      ## Exchanges & Routing Keys
+      RabbitMQ__Exchanges__Sensor: SENSOR.EXCHANGE
+      RabbitMQ__Queues__Sensor__Count: analytics.sensor.count.queue
+      RabbitMQ__RoutingKeys__Sensor__Count: sensor.count.{intersection}.{type}
+      RabbitMQ__Queues__Detection__Event: analytics.detection.event.queue
+      RabbitMQ__RoutingKeys__Detection__Event: sensor.detection.{intersection}.{event}
+
+      RabbitMQ__Exchanges__Traffic: TRAFFIC.EXCHANGE
+      RabbitMQ__RoutingKeys__Analytics: traffic.analytics.{intersection}.{metric}
+      
+      RabbitMQ__Exchanges__Log: LOG.EXCHANGE
+      RabbitMQ__RoutingKeys__Log__Analytics: log.sensor.traffic-analytics-service.{type}
+
+    depends_on:
+      traffic-analytics-db:
+        condition: service_healthy
+
+    restart: always
