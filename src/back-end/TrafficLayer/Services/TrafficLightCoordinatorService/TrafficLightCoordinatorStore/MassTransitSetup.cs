@@ -56,11 +56,11 @@ public static class MassTransitSetup
                 // Topic pattern : traffic.light.update.{intersection}.{light}
                 // Example key   : traffic.light.update.agiou-spyridonos.agiou-spyridonos101
                 //
-                cfg.Message<TrafficLightUpdateMessage>(m =>
+                cfg.Message<TrafficLightScheduleMessage>(m =>
                 {
                     m.SetEntityName(trafficExchange);
                 });
-                cfg.Publish<TrafficLightUpdateMessage>(m =>
+                cfg.Publish<TrafficLightScheduleMessage>(m =>
                 {
                     m.ExchangeType = ExchangeType.Topic;
                 });
@@ -101,7 +101,7 @@ public static class MassTransitSetup
                         });
                     }
 
-                    e.ConfigureConsumer<PriorityDetectionConsumer>(context);
+                    e.ConfigureConsumer<PriorityEventConsumer>(context);
                     e.PrefetchCount = 10;
                     e.ConcurrentMessageLimit = 5;
                 });
