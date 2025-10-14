@@ -48,7 +48,7 @@ services:
       RabbitMQ__RoutingKeys__Analytics: traffic.analytics.{intersection}.{metric}
       
       RabbitMQ__Exchanges__Log: LOG.EXCHANGE
-      RabbitMQ__RoutingKeys__Log__Analytics: log.sensor.traffic-analytics-service.{type}
+      RabbitMQ__RoutingKeys__Log__Analytics: log.traffic.analytics.{type}
 
     depends_on:
       traffic-analytics-db:

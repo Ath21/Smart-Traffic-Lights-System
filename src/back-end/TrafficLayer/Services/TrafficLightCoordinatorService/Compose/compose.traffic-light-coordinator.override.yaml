@@ -40,11 +40,12 @@ services:
 
       ## Exchanges & Routing Keys
       RabbitMQ__Exchange__Traffic: TRAFFIC.EXCHANGE
+      RabbitMQ__RoutingKeys__Traffic__LightSchedule: traffic.light.schedule.{intersection}
       RabbitMQ__Queues__Priority__Detection: coordinator.priority.detection.queue
-      RabbitMQ__RoutingKeys__Priority__Detection: priority.detection.{intersection}.{event}
+      RabbitMQ__RoutingKeys__PriorityDetection: priority.detection.{intersection}.{event}
       RabbitMQ__Queues__Priority__Count: coordinator.priority.count.queue
-      RabbitMQ__RoutingKeys__Priority__Count: priority.count.{intersection}.{type}
-      RabbitMQ__Queues__Analytics: coordinator.analytics.queue
+      RabbitMQ__RoutingKeys__PriorityCount: priority.count.{intersection}.{type}
+      RabbitMQ__Queues__Traffic__Analytics: coordinator.analytics.queue
       RabbitMQ__RoutingKeys__TrafficAnalytics: traffic.analytics.{intersection}.{metric}
 
       RabbitMQ__Exchange__Log: LOG.EXCHANGE

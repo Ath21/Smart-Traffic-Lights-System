@@ -9,9 +9,9 @@
       "TrafficLightCoordinatorStore/1.0.0": {
         "dependencies": {
           "AutoMapper.Extensions.Microsoft.DependencyInjection": "12.0.1",
-          "LogMessages": "1.0.0",
           "MassTransit": "8.3.3",
           "MassTransit.RabbitMQ": "8.3.3",
+          "Messages": "1.0.0",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "9.0.0",
           "Microsoft.AspNetCore.OpenApi": "9.0.7",
           "Microsoft.EntityFrameworkCore": "9.0.8",
@@ -22,8 +22,7 @@
           "Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite": "9.0.4",
           "Swashbuckle.AspNetCore": "6.6.2",
           "TrafficLightCacheData": "1.0.0",
-          "TrafficLightData": "1.0.0",
-          "TrafficMessages": "1.0.0"
+          "TrafficLightData": "1.0.0"
         },
         "runtime": {
           "TrafficLightCoordinatorStore.dll": {}
@@ -1254,9 +1253,9 @@
           }
         }
       },
-      "LogMessages/1.0.0": {
+      "Messages/1.0.0": {
         "runtime": {
-          "LogMessages.dll": {
+          "Messages.dll": {
             "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
@@ -1266,6 +1265,7 @@
         "dependencies": {
           "Microsoft.Extensions.Configuration.Abstractions": "9.0.8",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.8",
+          "Microsoft.Extensions.Diagnostics.HealthChecks": "9.0.0",
           "Microsoft.Extensions.Options": "9.0.8",
           "StackExchange.Redis": "2.9.11"
         },
@@ -1282,18 +1282,11 @@
           "Microsoft.EntityFrameworkCore.Abstractions": "9.0.8",
           "Microsoft.EntityFrameworkCore.Analyzers": "9.0.8",
           "Microsoft.EntityFrameworkCore.SqlServer": "9.0.4",
-          "Microsoft.Extensions.Configuration": "9.0.5"
+          "Microsoft.Extensions.Configuration": "9.0.5",
+          "Microsoft.Extensions.Diagnostics.HealthChecks": "9.0.0"
         },
         "runtime": {
           "TrafficLightData.dll": {
-            "assemblyVersion": "1.0.0.0",
-            "fileVersion": "1.0.0.0"
-          }
-        }
-      },
-      "TrafficMessages/1.0.0": {
-        "runtime": {
-          "TrafficMessages.dll": {
             "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
@@ -2028,7 +2021,7 @@
       "path": "system.windows.extensions/6.0.0",
       "hashPath": "system.windows.extensions.6.0.0.nupkg.sha512"
     },
-    "LogMessages/1.0.0": {
+    "Messages/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -2039,11 +2032,6 @@
       "sha512": ""
     },
     "TrafficLightData/1.0.0": {
-      "type": "project",
-      "serviceable": false,
-      "sha512": ""
-    },
-    "TrafficMessages/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

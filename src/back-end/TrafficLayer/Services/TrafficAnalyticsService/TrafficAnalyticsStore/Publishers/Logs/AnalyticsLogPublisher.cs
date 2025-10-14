@@ -19,7 +19,7 @@ public class AnalyticsLogPublisher
         _logger = logger;
 
         _routingPattern = config["RabbitMQ:RoutingKeys:Log:Analytics"]
-                          ?? "log.sensor.traffic-analytics-service.{type}";
+                          ?? "log.traffic.analytics.{type}";
     }
 
     public async Task PublishAuditAsync(

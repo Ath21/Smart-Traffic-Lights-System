@@ -19,7 +19,7 @@ public class CoordinatorLogPublisher
         _logger = logger;
 
         _routingPattern = config["RabbitMQ:RoutingKeys:Log:Coordinator"]
-                          ?? "log.sensor.traffic-light-coordinator-service.{type}";
+                          ?? "log.traffic.light-coordinator.{type}";
     }
 
     public async Task PublishAuditAsync(
