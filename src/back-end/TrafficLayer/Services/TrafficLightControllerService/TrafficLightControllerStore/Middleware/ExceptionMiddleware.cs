@@ -6,8 +6,8 @@ using Microsoft.IdentityModel.Tokens;
 using RabbitMQ.Client.Exceptions;
 using StackExchange.Redis;
 using AutoMapper;
-using TrafficLightControllerStore.Publishers.Logs;
 using MassTransit;
+using TrafficLightControllerStore.Publishers.Logs;
 
 namespace TrafficLightControllerStore.Middleware;
 
@@ -33,163 +33,120 @@ public class ExceptionMiddleware
         {
             await _next(context);
         }
-
-        // ============================
-        // AUTH / SECURITY
-        // ============================
-        catch (UnauthorizedAccessException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.Unauthorized, "Unauthorized access", "AUTH_ERROR", ex);
-        }
-        catch (SecurityTokenException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.Unauthorized, "Invalid or expired token", "TOKEN_ERROR", ex);
-        }
-        catch (AuthenticationException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.Unauthorized, "Authentication failed", "AUTHENTICATION_ERROR", ex);
-        }
-
-        // ============================
-        // CLIENT / VALIDATION
-        // ============================
-        catch (KeyNotFoundException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.NotFound, "Resource not found", "NOT_FOUND", ex);
-        }
-        catch (InvalidOperationException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid operation", "INVALID_OPERATION", ex);
-        }
-        catch (ArgumentNullException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Missing required parameter", "ARGUMENT_NULL", ex);
-        }
-        catch (ArgumentException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid argument", "ARGUMENT_ERROR", ex);
-        }
-        catch (FormatException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid data format", "FORMAT_ERROR", ex);
-        }
-        catch (JsonException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid JSON payload", "JSON_ERROR", ex);
-        }
-        catch (AutoMapperMappingException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.InternalServerError, "Mapping error occurred", "MAPPING_ERROR", ex);
-        }
-
-        // ============================
-        // DATABASE (EF Core)
-        // ============================
-        catch (DbUpdateConcurrencyException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.Conflict, "Database concurrency conflict", "DB_CONCURRENCY_ERROR", ex);
-        }
-        catch (DbUpdateException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.Conflict, "Database update failed", "DB_UPDATE_ERROR", ex);
-        }
-
-        // ============================
-        // CACHE (Redis)
-        // ============================
-        catch (RedisConnectionException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.ServiceUnavailable, "Redis connection error", "REDIS_CONN_ERROR", ex);
-        }
-        catch (RedisTimeoutException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.RequestTimeout, "Redis operation timeout", "REDIS_TIMEOUT", ex);
-        }
-        catch (RedisServerException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.BadGateway, "Redis server error", "REDIS_SERVER_ERROR", ex);
-        }
-
-        // ============================
-        // BROKER / NETWORK
-        // ============================
-        catch (TimeoutException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.RequestTimeout, "Operation timed out", "TIMEOUT", ex);
-        }
-        catch (RequestTimeoutException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.GatewayTimeout, "RabbitMQ request timeout", "BROKER_TIMEOUT", ex);
-        }
-        catch (BrokerUnreachableException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.BadGateway, "RabbitMQ unreachable", "BROKER_UNREACHABLE", ex);
-        }
-        catch (OperationInterruptedException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.ServiceUnavailable, "RabbitMQ operation interrupted", "BROKER_INTERRUPTED", ex);
-        }
-
-        // ============================
-        // FALLBACK
-        // ============================
         catch (Exception ex)
         {
-            await HandleErrorAsync(context, HttpStatusCode.InternalServerError, "Unexpected error occurred", "UNEXPECTED", ex);
+            // ============================================================
+            // Unified Exception Classification (tuple switch)
+            // ============================================================
+            var (statusCode, userMessage, errorType) = ex switch
+            {
+                // ============================
+                // AUTH / SECURITY
+                // ============================
+                UnauthorizedAccessException   => (HttpStatusCode.Unauthorized, "Unauthorized access", "AUTH_ERROR"),
+                SecurityTokenException        => (HttpStatusCode.Unauthorized, "Invalid or expired token", "TOKEN_ERROR"),
+                AuthenticationException       => (HttpStatusCode.Unauthorized, "Authentication failed", "AUTHENTICATION_ERROR"),
+
+                // ============================
+                // CLIENT / VALIDATION
+                // ============================
+                KeyNotFoundException          => (HttpStatusCode.NotFound, "Resource not found", "NOT_FOUND"),
+                InvalidOperationException     => (HttpStatusCode.BadRequest, "Invalid operation", "INVALID_OPERATION"),
+                ArgumentNullException         => (HttpStatusCode.BadRequest, "Missing required parameter", "ARGUMENT_NULL"),
+                ArgumentException             => (HttpStatusCode.BadRequest, "Invalid argument", "ARGUMENT_ERROR"),
+                FormatException               => (HttpStatusCode.BadRequest, "Invalid data format", "FORMAT_ERROR"),
+                JsonException                 => (HttpStatusCode.BadRequest, "Invalid JSON payload", "JSON_ERROR"),
+                AutoMapperMappingException    => (HttpStatusCode.InternalServerError, "Mapping error occurred", "MAPPING_ERROR"),
+
+                // ============================
+                // DATABASE (EF Core)
+                // ============================
+                DbUpdateConcurrencyException  => (HttpStatusCode.Conflict, "Database concurrency conflict", "DB_CONCURRENCY_ERROR"),
+                DbUpdateException             => (HttpStatusCode.Conflict, "Database update failed", "DB_UPDATE_ERROR"),
+
+                // ============================
+                // CACHE (Redis)
+                // ============================
+                RedisConnectionException      => (HttpStatusCode.ServiceUnavailable, "Redis connection error", "REDIS_CONN_ERROR"),
+                RedisTimeoutException         => (HttpStatusCode.RequestTimeout, "Redis operation timeout", "REDIS_TIMEOUT"),
+                RedisServerException          => (HttpStatusCode.BadGateway, "Redis server error", "REDIS_SERVER_ERROR"),
+
+                // ============================
+                // BROKER / NETWORK
+                // ============================
+                RequestTimeoutException       => (HttpStatusCode.GatewayTimeout, "RabbitMQ request timeout", "BROKER_TIMEOUT"),
+                BrokerUnreachableException    => (HttpStatusCode.BadGateway, "RabbitMQ unreachable", "BROKER_UNREACHABLE"),
+                OperationInterruptedException => (HttpStatusCode.ServiceUnavailable, "RabbitMQ operation interrupted", "BROKER_INTERRUPTED"),
+                TimeoutException              => (HttpStatusCode.RequestTimeout, "Operation timed out", "TIMEOUT"),
+
+                // ============================
+                // FALLBACK
+                // ============================
+                _                             => (HttpStatusCode.InternalServerError, "Unexpected error occurred", "UNEXPECTED")
+            };
+
+            await HandleErrorAsync(context, statusCode, userMessage, errorType, ex);
         }
     }
 
     private async Task HandleErrorAsync(
         HttpContext context,
-        HttpStatusCode status,
+        HttpStatusCode statusCode,
         string userMessage,
         string errorType,
         Exception ex)
     {
-        var correlationId = context.Request.Headers.ContainsKey("X-Correlation-ID")
+        _logger.LogError(ex, "[EXCEPTION] {ErrorType} - {Message}", errorType, userMessage);
+
+        // Generate or read correlation ID
+        string correlationId = context.Request.Headers.ContainsKey("X-Correlation-ID")
             ? context.Request.Headers["X-Correlation-ID"].ToString()
             : Guid.NewGuid().ToString();
 
-        _logger.LogError(ex, "[EXCEPTION] {ErrorType} - {Message}", errorType, userMessage);
-
-        // Create scoped DI for publisher (safe for middleware)
-        using var scope = _scopeFactory.CreateScope();
-        var logPublisher = scope.ServiceProvider.GetRequiredService<ITrafficLightControllerLogPublisher>();
-
-        // Build metadata for log message
         var metadata = new Dictionary<string, string>
         {
             ["path"] = context.Request.Path,
             ["method"] = context.Request.Method,
             ["trace_id"] = context.TraceIdentifier,
             ["correlation_id"] = correlationId,
-            ["exception_type"] = ex.GetType().Name,
-            ["exception_message"] = ex.Message
+            ["exception_type"] = ex.GetType().FullName ?? "Unknown",
+            ["exception_message"] = ex.Message,
+            ["stack_trace"] = ex.StackTrace ?? string.Empty
         };
 
+        // Publish error log
         try
         {
+            using var scope = _scopeFactory.CreateScope();
+            var logPublisher = scope.ServiceProvider.GetRequiredService<TrafficLightLogPublisher>();
+
             await logPublisher.PublishErrorAsync(
                 action: errorType,
-                errorMessage: $"[EXCEPTION] {ex.Message}",
+                message: $"[{errorType}] {userMessage}: {ex.Message}",
                 ex: ex,
                 metadata: metadata,
                 correlationId: Guid.Parse(correlationId));
+
+            _logger.LogInformation("[EXCEPTION] Published error log ({ErrorType}) via RabbitMQ", errorType);
         }
         catch (Exception pubEx)
         {
-            _logger.LogError(pubEx, "[EXCEPTION] Failed to publish error log");
+            _logger.LogError(pubEx, "[EXCEPTION] Failed to publish log to RabbitMQ");
         }
 
-        context.Response.StatusCode = (int)status;
+        // Build and send HTTP response
+        context.Response.StatusCode = (int)statusCode;
         context.Response.ContentType = "application/json";
 
-        await context.Response.WriteAsJsonAsync(new
+        var response = new
         {
             error = userMessage,
             details = ex.Message,
+            type = errorType,
             traceId = context.TraceIdentifier,
             correlationId
-        });
+        };
+
+        await context.Response.WriteAsync(JsonSerializer.Serialize(response));
     }
 }

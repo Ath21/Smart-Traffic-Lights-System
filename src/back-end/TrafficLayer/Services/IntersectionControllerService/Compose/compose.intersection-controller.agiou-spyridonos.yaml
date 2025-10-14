@@ -89,8 +89,14 @@ services:
 
 networks:
   traffic-light-cache-network:
+    name: traffic-light-cache-network
+    driver: bridge
     external: true
   detection-cache-network:
+    name: detection-cache-network
+    driver: bridge
     external: true
   rabbitmq-network:
+    name: rabbitmq-network
+    driver: bridge
     external: true

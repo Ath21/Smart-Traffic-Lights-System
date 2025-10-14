@@ -9,17 +9,16 @@
       "TrafficLightControllerStore/1.0.0": {
         "dependencies": {
           "AutoMapper": "14.0.0",
-          "LogMessages": "1.0.0",
           "MassTransit": "8.5.0",
           "MassTransit.RabbitMQ": "8.5.0",
+          "Messages": "1.0.0",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "9.0.0",
           "Microsoft.AspNetCore.OpenApi": "9.0.7",
           "Microsoft.EntityFrameworkCore": "9.0.6",
           "RabbitMQ.Client": "7.1.2",
           "StackExchange.Redis": "2.9.11",
           "Swashbuckle.AspNetCore": "9.0.1",
-          "TrafficLightCacheData": "1.0.0",
-          "TrafficMessages": "1.0.0"
+          "TrafficLightCacheData": "1.0.0"
         },
         "runtime": {
           "TrafficLightControllerStore.dll": {}
@@ -400,9 +399,9 @@
       },
       "System.IO.Pipelines/8.0.0": {},
       "System.Threading.RateLimiting/8.0.0": {},
-      "LogMessages/1.0.0": {
+      "Messages/1.0.0": {
         "runtime": {
-          "LogMessages.dll": {
+          "Messages.dll": {
             "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
@@ -412,19 +411,12 @@
         "dependencies": {
           "Microsoft.Extensions.Configuration.Abstractions": "9.0.0",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.6",
+          "Microsoft.Extensions.Diagnostics.HealthChecks": "9.0.0",
           "Microsoft.Extensions.Options": "9.0.6",
           "StackExchange.Redis": "2.9.11"
         },
         "runtime": {
           "TrafficLightCacheData.dll": {
-            "assemblyVersion": "1.0.0.0",
-            "fileVersion": "1.0.0.0"
-          }
-        }
-      },
-      "TrafficMessages/1.0.0": {
-        "runtime": {
-          "TrafficMessages.dll": {
             "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
@@ -725,17 +717,12 @@
       "path": "system.threading.ratelimiting/8.0.0",
       "hashPath": "system.threading.ratelimiting.8.0.0.nupkg.sha512"
     },
-    "LogMessages/1.0.0": {
+    "Messages/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
     },
     "TrafficLightCacheData/1.0.0": {
-      "type": "project",
-      "serviceable": false,
-      "sha512": ""
-    },
-    "TrafficMessages/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

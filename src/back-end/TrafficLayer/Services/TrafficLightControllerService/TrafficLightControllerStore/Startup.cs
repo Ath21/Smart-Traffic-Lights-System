@@ -6,9 +6,10 @@ using TrafficLightCacheData;
 using TrafficLightCacheData.Repositories;
 using TrafficLightCacheData.Settings;
 using TrafficLightControllerStore.Business;
+using TrafficLightControllerStore.Business.Failover;
+using TrafficLightControllerStore.Business.LightControl;
 using TrafficLightControllerStore.Consumers;
 using TrafficLightControllerStore.Domain;
-using TrafficLightControllerStore.Failover;
 using TrafficLightControllerStore.Middleware;
 using TrafficLightControllerStore.Publishers.Logs;
 
@@ -26,75 +27,89 @@ public class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         // ===============================
-        // Intersection Context
-        // ===============================
-        services.AddSingleton(sp =>
-        {
-            var id = int.Parse(_configuration["INTERSECTION:ID"] ?? throw new InvalidOperationException("Intersection Id missing"));
-            var name = _configuration["INTERSECTION:NAME"] ?? "Unknown";
-            return new IntersectionContext(id, name);
-        });
-
-        // ===============================
         // Traffic Light Context
         // ===============================
         services.AddSingleton(sp =>
         {
-            var id = int.Parse(_configuration["TRAFFIC_LIGHT:ID"] ?? throw new InvalidOperationException("Traffic Light Id missing"));
-            var name = _configuration["TRAFFIC_LIGHT:NAME"] ?? "Unknown";
+            var id = int.Parse(_configuration["Traffic_Light:Id"] ?? throw new InvalidOperationException("Traffic Light Id missing"));
+            var name = _configuration["Traffic_Light:Name"] ?? "Unknown";
             return new TrafficLightContext(id, name);
+        });
+
+        // ===============================
+        // Intersection Context
+        // ===============================
+        services.AddSingleton(sp =>
+        {
+            var id = int.Parse(_configuration["Intersection:Id"] ?? throw new InvalidOperationException("Intersection Id missing"));
+            var name = _configuration["Intersection:Name"] ?? "Unknown";
+            return new IntersectionContext(id, name);
         });
 
         // ===============================
         // Data Layer (Redis - TrafficLightCacheDB)
         // ===============================
-        // Db Context
         services.Configure<TrafficLightCacheDbSettings>(options =>
         {
-            options.Host = _configuration["Redis:Host"];
-            options.Port = int.Parse(_configuration["Redis:Port"] ?? "6379");
-            options.Password = _configuration["Redis:Password"];
-            options.Database = int.Parse(_configuration["Redis:Database"] ?? "0");
+            options.Host = _configuration["Redis:TrafficLight:Host"];
+            options.Port = int.Parse(_configuration["Redis:TrafficLight:Port"] ?? "6379");
+            options.Password = _configuration["Redis:TrafficLight:Password"];
+            options.Database = int.Parse(_configuration["Redis:TrafficLight:Database"] ?? "0");
 
             options.KeyPrefix = new TrafficLightCacheData.Settings.KeyPrefixSettings
             {
-                State = _configuration["Redis:KeyPrefix:State"],
-                Duration = _configuration["Redis:KeyPrefix:Duration"],
-                LastUpdate = _configuration["Redis:KeyPrefix:LastUpdate"],
-                Mode = _configuration["Redis:KeyPrefix:Mode"],
-                Priority = _configuration["Redis:KeyPrefix:Priority"],
-                FailoverActive = _configuration["Redis:KeyPrefix:FailoverActive"],
-                Heartbeat = _configuration["Redis:KeyPrefix:Heartbeat"],
-                LastCoordinatorSync = _configuration["Redis:KeyPrefix:LastCoordinatorSync"]
+                // --------------------------
+                // Core State
+                // --------------------------
+                State = _configuration["Redis:TrafficLight:KeyPrefix:State"],
+                CurrentPhase = _configuration["Redis:TrafficLight:KeyPrefix:CurrentPhase"],
+                RemainingTime = _configuration["Redis:TrafficLight:KeyPrefix:RemainingTime"],
+                Duration = _configuration["Redis:TrafficLight:KeyPrefix:Duration"],
+                LastUpdate = _configuration["Redis:TrafficLight:KeyPrefix:LastUpdate"],
+
+                // --------------------------
+                // Synchronization
+                // --------------------------
+                CycleDuration = _configuration["Redis:TrafficLight:KeyPrefix:CycleDuration"],
+                Offset = _configuration["Redis:TrafficLight:KeyPrefix:Offset"],
+                LocalOffset = _configuration["Redis:TrafficLight:KeyPrefix:LocalOffset"],
+                CycleProgress = _configuration["Redis:TrafficLight:KeyPrefix:CycleProgress"],
+
+                // --------------------------
+                // Configuration & Priority
+                // --------------------------
+                Mode = _configuration["Redis:TrafficLight:KeyPrefix:Mode"],
+                Priority = _configuration["Redis:TrafficLight:KeyPrefix:Priority"],
+                CachedPhases = _configuration["Redis:TrafficLight:KeyPrefix:CachedPhases"],
+
+                // --------------------------
+                // Failover & Diagnostics
+                // --------------------------
+                FailoverActive = _configuration["Redis:TrafficLight:KeyPrefix:FailoverActive"],
+                Heartbeat = _configuration["Redis:TrafficLight:KeyPrefix:Heartbeat"],
+                LastCoordinatorSync = _configuration["Redis:TrafficLight:KeyPrefix:LastCoordinatorSync"]
             };
         });
-        services.AddSingleton<TrafficLightCacheDbContext>();
 
-        // Repositories
-        services.AddScoped(typeof(ITrafficLightCacheRepository), typeof(TrafficLightCacheRepository));
+        services.AddSingleton<TrafficLightCacheDbContext>();
 
         // ===============================
         // Business Layer (Services)
         // ===============================
-        services.AddScoped(typeof(ITrafficLightControlService), typeof(TrafficLightControlService));
-        services.AddScoped(typeof(IFailoverService), typeof(FailoverService));
-
-        // ===============================
-        // AutoMapper (object-object mapping)
-        // ===============================
-        services.AddAutoMapper(typeof(TrafficLightControlStoreProfile));
+        services.AddScoped(typeof(ITrafficLightControlBusiness), typeof(TrafficLightControlBusiness));
+        services.AddScoped(typeof(IFailoverBusiness), typeof(FailoverBusiness));
 
         // ===============================
         // Message Layer (MassTransit with RabbitMQ)
         // ===============================
         // Publishers
-        services.AddScoped(typeof(ITrafficLogPublisher), typeof(TrafficLogPublisher));
+        services.AddScoped(typeof(ITrafficLightLogPublisher), typeof(TrafficLightLogPublisher));
 
         // Consumers
         services.AddScoped<TrafficLightControlConsumer>();
 
         // MassTransit Setup
-        services.AddTrafficLightControlMassTransit(_configuration);
+        services.AddTrafficLightControllerMassTransit(_configuration);
 
         // ===============================
         // JWT Authentication
@@ -145,8 +160,8 @@ public class Startup
         // ===============================
         // Swagger (API Documentation)
         // ===============================
-        var intersectionName = _configuration["INTERSECTION:NAME"] ?? "Unknown Intersection";
-        var trafficLightName = _configuration["TRAFFIC_LIGHT:NAME"] ?? "Unknown Traffic Light";
+        var intersectionName = _configuration["Intersection:Name"] ?? "Unknown Intersection";
+        var trafficLightName = _configuration["TrafficLight:Name"] ?? "Unknown Traffic Light";
 
         services.AddSwaggerGen(c =>
         {
@@ -185,8 +200,8 @@ public class Startup
 
     public void Configure(WebApplication app, IWebHostEnvironment env)
     {
-        var intersectionName = _configuration["INTERSECTION:NAME"] ?? "Unknown Intersection";
-        var trafficLightName = _configuration["TRAFFIC_LIGHT:NAME"] ?? "Unknown Traffic Light";
+        var intersectionName = _configuration["Intersection:Name"] ?? "Unknown Intersection";
+        var trafficLightName = _configuration["TrafficLight:Name"] ?? "Unknown Traffic Light";
 
         // ===============================
         // Swagger UI
