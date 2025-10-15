@@ -56,13 +56,16 @@ services:
       RabbitMQ__Password: rabbitmq123
 
       ## Exchanges & Routing Keys
+      ### Traffic
       RabbitMQ__Exchanges__Traffic: TRAFFIC.EXCHANGE
-      RabbitMQ__Queues__Traffic__LightControl: intersection-controller-2-traffic-light-control.queue
+
+      RabbitMQ__Queues__Traffic__LightControl: intersection-controller.2.traffic-light-control.queue
       RabbitMQ__RoutingKeys__Traffic__LightControl: traffic.light.control.{intersection}.{light}
       
+      ### Log
       RabbitMQ__Exchanges__Log: LOG.EXCHANGE
+      
       RabbitMQ__RoutingKeys__Log__Intersection: log.traffic.traffic-light-controller-service.{type}
-
     restart: always
 
     networks:

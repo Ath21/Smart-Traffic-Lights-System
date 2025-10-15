@@ -1,6 +1,6 @@
 services:
   traffic-light-coordinator:
-    image: ath21/stls:traffic-light-coordinator
+    image: ath21/stls-services:traffic-light-coordinator
     container_name: traffic-light-coordinator-container
     networks:
       - traffic-light-cache-network

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TrafficLightCacheData")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+da1c7cc29083a53260ee174bdb1259eaf9b860fc")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cde21ab961967c097d4de0a487ef2b52395de0b7")]
 [assembly: System.Reflection.AssemblyProductAttribute("TrafficLightCacheData")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TrafficLightCacheData")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

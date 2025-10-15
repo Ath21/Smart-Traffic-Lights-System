@@ -39,20 +39,27 @@ services:
       RabbitMQ__Password: rabbitmq123
 
       ## Exchanges & Routing Keys
+      ### Traffic
       RabbitMQ__Exchange__Traffic: TRAFFIC.EXCHANGE
-      RabbitMQ__RoutingKeys__Traffic__LightSchedule: traffic.light.schedule.{intersection}
-      RabbitMQ__Queues__Priority__Detection: coordinator.priority.detection.queue
+
+      RabbitMQ__Queues__Priority__Detection: priority-detection.2.coordinator.queue
       RabbitMQ__RoutingKeys__PriorityDetection: priority.detection.{intersection}.{event}
-      RabbitMQ__Queues__Priority__Count: coordinator.priority.count.queue
+
+      RabbitMQ__Queues__Priority__Count: priority-count.2.coordinator.queue
       RabbitMQ__RoutingKeys__PriorityCount: priority.count.{intersection}.{type}
-      RabbitMQ__Queues__Traffic__Analytics: coordinator.analytics.queue
+
+      RabbitMQ__Queues__Traffic__Analytics: traffic-analytics.2.coordinator.queue
       RabbitMQ__RoutingKeys__TrafficAnalytics: traffic.analytics.{intersection}.{metric}
 
+      RabbitMQ__RoutingKeys__Traffic__LightSchedule: traffic.light.schedule.{intersection}
+
+      ### Log
       RabbitMQ__Exchange__Log: LOG.EXCHANGE
+      
       RabbitMQ__RoutingKeys__Log__Coordinator: log.traffic.light-coordinator.{type}
 
     depends_on:
-      traffic_light_db:
+      traffic-light-db:
         condition: service_started
 
     restart: always

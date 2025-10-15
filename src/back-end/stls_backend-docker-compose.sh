@@ -93,9 +93,6 @@ wait_for_redis() {
   echo "$friendly is ready."
 }
 
-# ----------------------------------------------------
-# Deploy and stop layers
-# ----------------------------------------------------
 deploy_layer() {
   local layer=$1
   case $layer in
@@ -107,27 +104,62 @@ deploy_layer() {
       ;;
     user)
       docker compose -p stls_user \
-        -f "$ROOT_DIR/UserLayer/Databases/UserDB/MSSQL/Docker/docker-compose.yaml" -f "$ROOT_DIR/UserLayer/Databases/UserDB/MSSQL/Docker/docker-compose.override.yaml" \
-        -f "$ROOT_DIR/UserLayer/Databases/NotificationDB/Mongo/Docker/docker-compose.yaml" -f "$ROOT_DIR/UserLayer/Databases/NotificationDB/Mongo/Docker/docker-compose.override.yaml" \
-        -f "$ROOT_DIR/UserLayer/Services/UserService/Docker/docker-compose.yaml" -f "$ROOT_DIR/UserLayer/Services/UserService/Docker/docker-compose.override.yaml" \
-        -f "$ROOT_DIR/UserLayer/Services/NotificationService/Docker/docker-compose.yaml" -f "$ROOT_DIR/UserLayer/Services/NotificationService/Docker/docker-compose.override.yaml" \
+        -f "$ROOT_DIR/UserLayer/Databases/UserDB/MSSQL/Compose/compose.user-db.yaml" \
+        -f "$ROOT_DIR/UserLayer/Databases/UserDB/MSSQL/Compose/compose.user-db.override.yaml" \
+        -f "$ROOT_DIR/UserLayer/Databases/NotificationDB/Mongo/Compose/compose.notification-db.yaml" \
+        -f "$ROOT_DIR/UserLayer/Databases/NotificationDB/Mongo/Compose/compose.notification-db.override.yaml" \
+        -f "$ROOT_DIR/UserLayer/Services/UserService/Compose/compose.user-api.yaml" \
+        -f "$ROOT_DIR/UserLayer/Services/UserService/Compose/compose.user-api.override.yaml" \
+        -f "$ROOT_DIR/UserLayer/Services/NotificationService/Compose/compose.notification-api.yaml" \
+        -f "$ROOT_DIR/UserLayer/Services/NotificationService/Compose/compose.notification-api.override.yaml" \
         up -d
       ;;
-    traffic)
-      docker compose -p stls_traffic \
-        -f "$ROOT_DIR/TrafficLayer/Databases/TrafficLightCacheDB/Redis/Docker/docker-compose.yaml" \
-        -f "$ROOT_DIR/TrafficLayer/Databases/TrafficLightCacheDB/Redis/Docker/docker-compose.override.yaml" up -d
-      wait_for_redis "trafficlightcachedb_container" "TrafficLightCacheDB"
 
+    traffic)
+      # --- TRAFFIC CACHE DB ---
       docker compose -p stls_traffic \
-        -f "$ROOT_DIR/TrafficLayer/Databases/TrafficAnalyticsDB/PostgreSQL/Docker/docker-compose.yaml" -f "$ROOT_DIR/TrafficLayer/Databases/TrafficAnalyticsDB/PostgreSQL/Docker/docker-compose.override.yaml" \
-        -f "$ROOT_DIR/TrafficLayer/Databases/TrafficLightDB/MSSQL/Docker/docker-compose.yaml" -f "$ROOT_DIR/TrafficLayer/Databases/TrafficLightDB/MSSQL/Docker/docker-compose.override.yaml" \
-        -f "$ROOT_DIR/TrafficLayer/Services/TrafficAnalyticsService/Docker/docker-compose.yaml" -f "$ROOT_DIR/TrafficLayer/Services/TrafficAnalyticsService/Docker/docker-compose.override.yaml" \
-        -f "$ROOT_DIR/TrafficLayer/Services/TrafficLightCoordinatorService/Docker/docker-compose.yaml" -f "$ROOT_DIR/TrafficLayer/Services/TrafficLightCoordinatorService/Docker/docker-compose.override.yaml" \
-        -f "$ROOT_DIR/TrafficLayer/Services/IntersectionControllerService/Docker/docker-compose.yaml" -f "$ROOT_DIR/TrafficLayer/Services/IntersectionControllerService/Docker/docker-compose.override.yaml" \
-        -f "$ROOT_DIR/TrafficLayer/Services/TrafficLightControllerService/Docker/docker-compose.yaml" -f "$ROOT_DIR/TrafficLayer/Services/TrafficLightControllerService/Docker/docker-compose.override.yaml" \
+        -f "$ROOT_DIR/TrafficLayer/Databases/TrafficLightCacheDB/Redis/Compose/compose.traffic-light-cache-db.yaml" \
+        -f "$ROOT_DIR/TrafficLayer/Databases/TrafficLightCacheDB/Redis/Compose/compose.traffic-light-cache-db.override.yaml" up -d
+      wait_for_redis "traffic-light-cache-db" "TrafficLightCacheDB"
+
+      # --- TRAFFIC DATABASES + CORE SERVICES ---
+      docker compose -p stls_traffic \
+        -f "$ROOT_DIR/TrafficLayer/Databases/TrafficAnalyticsDB/PostgreSQL/Compose/compose.traffic-analytics-db.yaml" \
+        -f "$ROOT_DIR/TrafficLayer/Databases/TrafficAnalyticsDB/PostgreSQL/Compose/compose.traffic-analytics-db.override.yaml" \
+        -f "$ROOT_DIR/TrafficLayer/Databases/TrafficLightDB/MSSQL/Compose/compose.traffic-light-db.yaml" \
+        -f "$ROOT_DIR/TrafficLayer/Databases/TrafficLightDB/MSSQL/Compose/compose.traffic-light-db.override.yaml" \
+        -f "$ROOT_DIR/TrafficLayer/Services/TrafficAnalyticsService/Compose/compose.traffic-analytics.yaml" \
+        -f "$ROOT_DIR/TrafficLayer/Services/TrafficAnalyticsService/Compose/compose.traffic-analytics.override.yaml" \
+        -f "$ROOT_DIR/TrafficLayer/Services/TrafficLightCoordinatorService/Compose/compose.traffic-light-coordinator.yaml" \
+        -f "$ROOT_DIR/TrafficLayer/Services/TrafficLightCoordinatorService/Compose/compose.traffic-light-coordinator.override.yaml" \
+        up -d
+
+      # --- INTERSECTION CONTROLLERS ---
+      docker compose -p stls_traffic \
+        -f "$ROOT_DIR/TrafficLayer/Services/IntersectionControllerService/Compose/compose.intersection-controller.agiou-spyridonos.yaml" \
+        -f "$ROOT_DIR/TrafficLayer/Services/IntersectionControllerService/Compose/compose.intersection-controller.anatoliki-pyli.yaml" \
+        -f "$ROOT_DIR/TrafficLayer/Services/IntersectionControllerService/Compose/compose.intersection-controller.dytiki-pyli.yaml" \
+        -f "$ROOT_DIR/TrafficLayer/Services/IntersectionControllerService/Compose/compose.intersection-controller.ekklisia.yaml" \
+        -f "$ROOT_DIR/TrafficLayer/Services/IntersectionControllerService/Compose/compose.intersection-controller.kentriki-pyli.yaml" \
+        up -d
+
+      # --- TRAFFIC LIGHT CONTROLLERS (ALL INTERSECTIONS) ---
+      docker compose -p stls_traffic \
+        -f "$ROOT_DIR/TrafficLayer/Services/TrafficLightControllerService/Compose/AgiouSpyridonos/compose.traffic-light-controller.agiou-spyridonos101.yaml" \
+        -f "$ROOT_DIR/TrafficLayer/Services/TrafficLightControllerService/Compose/AgiouSpyridonos/compose.traffic-light-controller.dimitsanas102.yaml" \
+        -f "$ROOT_DIR/TrafficLayer/Services/TrafficLightControllerService/Compose/AnatolikiPyli/compose.traffic-light-controller.anatoliki-pyli201.yaml" \
+        -f "$ROOT_DIR/TrafficLayer/Services/TrafficLightControllerService/Compose/AnatolikiPyli/compose.traffic-light-controller.agiou-spyridonos202.yaml" \
+        -f "$ROOT_DIR/TrafficLayer/Services/TrafficLightControllerService/Compose/DytikiPyli/compose.traffic-light-controller.dytiki-pyli301.yaml" \
+        -f "$ROOT_DIR/TrafficLayer/Services/TrafficLightControllerService/Compose/DytikiPyli/compose.traffic-light-controller.dimitsanas-north302.yaml" \
+        -f "$ROOT_DIR/TrafficLayer/Services/TrafficLightControllerService/Compose/DytikiPyli/compose.traffic-light-controller.dimitsanas-south303.yaml" \
+        -f "$ROOT_DIR/TrafficLayer/Services/TrafficLightControllerService/Compose/Ekklisia/compose.traffic-light-controller.dimitsanas401.yaml" \
+        -f "$ROOT_DIR/TrafficLayer/Services/TrafficLightControllerService/Compose/Ekklisia/compose.traffic-light-controller.edessis402.yaml" \
+        -f "$ROOT_DIR/TrafficLayer/Services/TrafficLightControllerService/Compose/Ekklisia/compose.traffic-light-controller.korytsas403.yaml" \
+        -f "$ROOT_DIR/TrafficLayer/Services/TrafficLightControllerService/Compose/KentrikiPyli/compose.traffic-light-controller.kentriki-pyli501.yaml" \
+        -f "$ROOT_DIR/TrafficLayer/Services/TrafficLightControllerService/Compose/KentrikiPyli/compose.traffic-light-controller.agiou-spyridonos502.yaml" \
         up -d
       ;;
+
     sensor)
       docker compose -p stls_sensor \
         -f "$ROOT_DIR/SensorLayer/Databases/DetectionCacheDB/Redis/Compose/compose.detection-cache-db.yaml" \
@@ -156,6 +188,7 @@ deploy_layer() {
         -f "$ROOT_DIR/SensorLayer/Services/SensorService/Compose/compose.sensor-api.kentriki-pyli.yaml" \
         up -d
       ;;
+
     log)
       docker compose -p stls_log \
         -f "$ROOT_DIR/LogLayer/Databases/LogDB/Mongo/Compose/compose.log-db.yaml" \
@@ -170,6 +203,7 @@ deploy_layer() {
       ;;
   esac
 }
+
 
 stop_layer() {
   local layer=$1

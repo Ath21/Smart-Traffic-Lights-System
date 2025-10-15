@@ -38,16 +38,23 @@ services:
       RabbitMQ__Password: rabbitmq123
 
       ## Exchanges & Routing Keys
+      ### Sensor
       RabbitMQ__Exchanges__Sensor: SENSOR.EXCHANGE
-      RabbitMQ__Queues__Sensor__Count: analytics.sensor.count.queue
+
+      RabbitMQ__Queues__Sensor__Count: sensor.2.traffic-analytics.queue
       RabbitMQ__RoutingKeys__Sensor__Count: sensor.count.{intersection}.{type}
-      RabbitMQ__Queues__Detection__Event: analytics.detection.event.queue
+
+      RabbitMQ__Queues__Detection__Event: detection.2.traffic-analytics.queue
       RabbitMQ__RoutingKeys__Detection__Event: sensor.detection.{intersection}.{event}
 
+      ### Traffic
       RabbitMQ__Exchanges__Traffic: TRAFFIC.EXCHANGE
+
       RabbitMQ__RoutingKeys__Analytics: traffic.analytics.{intersection}.{metric}
       
+      ### Log
       RabbitMQ__Exchanges__Log: LOG.EXCHANGE
+      
       RabbitMQ__RoutingKeys__Log__Analytics: log.traffic.analytics.{type}
 
     depends_on:

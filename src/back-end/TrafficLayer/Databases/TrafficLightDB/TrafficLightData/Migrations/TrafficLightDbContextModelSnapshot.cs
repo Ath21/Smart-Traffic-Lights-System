@@ -69,7 +69,7 @@ namespace TrafficLightData.Migrations
                         new
                         {
                             IntersectionId = 1,
-                            CreatedAt = new DateTime(2025, 10, 14, 20, 56, 15, 923, DateTimeKind.Utc).AddTicks(3754),
+                            CreatedAt = new DateTime(2025, 10, 8, 7, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
                             Latitude = 38.004677m,
                             LightCount = 2,
@@ -81,7 +81,7 @@ namespace TrafficLightData.Migrations
                         new
                         {
                             IntersectionId = 2,
-                            CreatedAt = new DateTime(2025, 10, 14, 20, 56, 15, 923, DateTimeKind.Utc).AddTicks(4026),
+                            CreatedAt = new DateTime(2025, 10, 8, 7, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
                             Latitude = 38.003558m,
                             LightCount = 2,
@@ -93,7 +93,7 @@ namespace TrafficLightData.Migrations
                         new
                         {
                             IntersectionId = 3,
-                            CreatedAt = new DateTime(2025, 10, 14, 20, 56, 15, 923, DateTimeKind.Utc).AddTicks(4060),
+                            CreatedAt = new DateTime(2025, 10, 8, 7, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
                             Latitude = 38.002644m,
                             LightCount = 3,
@@ -105,7 +105,7 @@ namespace TrafficLightData.Migrations
                         new
                         {
                             IntersectionId = 4,
-                            CreatedAt = new DateTime(2025, 10, 14, 20, 56, 15, 923, DateTimeKind.Utc).AddTicks(4063),
+                            CreatedAt = new DateTime(2025, 10, 8, 7, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
                             Latitude = 38.001580m,
                             LightCount = 3,
@@ -117,7 +117,7 @@ namespace TrafficLightData.Migrations
                         new
                         {
                             IntersectionId = 5,
-                            CreatedAt = new DateTime(2025, 10, 14, 20, 56, 15, 923, DateTimeKind.Utc).AddTicks(4065),
+                            CreatedAt = new DateTime(2025, 10, 8, 7, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
                             Latitude = 38.004456m,
                             LightCount = 2,
@@ -178,7 +178,7 @@ namespace TrafficLightData.Migrations
                             LastUpdated = new DateTime(2025, 10, 8, 7, 0, 0, 0, DateTimeKind.Utc),
                             Mode = "Standard",
                             PhaseDurationsJson = "{\"Green\":40, \"Yellow\":5, \"Red\":15}",
-                            Purpose = "Balanced baseline cycle. 40 s green handles moderate mixed traffic. The 10 s offset keeps 'Agiou Spyridonos → Kentriki Pyli → Anatoliki Pyli' coordinated in sequence."
+                            Purpose = "Balanced baseline cycle. 40 s green handles moderate mixed traffic."
                         },
                         new
                         {
@@ -188,7 +188,7 @@ namespace TrafficLightData.Migrations
                             LastUpdated = new DateTime(2025, 10, 8, 17, 0, 0, 0, DateTimeKind.Utc),
                             Mode = "Peak",
                             PhaseDurationsJson = "{\"Green\":50, \"Yellow\":5, \"Red\":20}",
-                            Purpose = "Longer green (50 s) for vehicle-heavy times, typically class start/end. Larger offset means each intersection starts slightly later to avoid queue buildup (a 'green wave')."
+                            Purpose = "Longer green for heavy traffic periods."
                         },
                         new
                         {
@@ -198,7 +198,7 @@ namespace TrafficLightData.Migrations
                             LastUpdated = new DateTime(2025, 10, 8, 23, 0, 0, 0, DateTimeKind.Utc),
                             Mode = "Night",
                             PhaseDurationsJson = "{\"Green\":15, \"Yellow\":5, \"Red\":30}",
-                            Purpose = "Minimal traffic → short green, long red for energy saving. Offset 0 means intersections act independently (no synchronization)."
+                            Purpose = "Short green, long red for minimal traffic."
                         },
                         new
                         {
@@ -208,7 +208,7 @@ namespace TrafficLightData.Migrations
                             LastUpdated = new DateTime(2025, 10, 8, 10, 0, 0, 0, DateTimeKind.Utc),
                             Mode = "Emergency",
                             PhaseDurationsJson = "{\"Green\":25, \"Yellow\":3, \"Red\":2}",
-                            Purpose = "Grants immediate priority (25 s green) on the active corridor. Offset ignored because the controller overrides normal scheduling."
+                            Purpose = "Immediate priority for emergency vehicles."
                         },
                         new
                         {
@@ -218,7 +218,7 @@ namespace TrafficLightData.Migrations
                             LastUpdated = new DateTime(2025, 10, 8, 9, 0, 0, 0, DateTimeKind.Utc),
                             Mode = "PublicTransport",
                             PhaseDurationsJson = "{\"Green\":45, \"Yellow\":5, \"Red\":15}",
-                            Purpose = "Similar to Standard but extends green for bus approach. The offset allows a slight stagger to clear the next intersection first."
+                            Purpose = "Extended green for bus approach."
                         },
                         new
                         {
@@ -228,7 +228,7 @@ namespace TrafficLightData.Migrations
                             LastUpdated = new DateTime(2025, 10, 9, 17, 0, 0, 0, DateTimeKind.Utc),
                             Mode = "Pedestrian",
                             PhaseDurationsJson = "{\"Green\":20, \"Yellow\":5, \"Red\":15}",
-                            Purpose = "Gives pedestrians half the cycle (20 s green). No offset — triggers only at one intersection when pedestrian button/sensor active."
+                            Purpose = "Half-cycle pedestrian focus."
                         },
                         new
                         {
@@ -238,7 +238,7 @@ namespace TrafficLightData.Migrations
                             LastUpdated = new DateTime(2025, 10, 9, 8, 0, 0, 0, DateTimeKind.Utc),
                             Mode = "Cyclist",
                             PhaseDurationsJson = "{\"Green\":30, \"Yellow\":5, \"Red\":15}",
-                            Purpose = "Keeps bikes moving with modest cycle. Small offset helps align with vehicle flow without full coupling."
+                            Purpose = "Cycle optimized for bicycle flow."
                         },
                         new
                         {
@@ -248,7 +248,7 @@ namespace TrafficLightData.Migrations
                             LastUpdated = new DateTime(2025, 10, 9, 18, 0, 0, 0, DateTimeKind.Utc),
                             Mode = "Incident",
                             PhaseDurationsJson = "{\"Green\":0, \"Yellow\":0, \"Red\":20}",
-                            Purpose = "Locks red for safety or re-routing when a crash or obstruction occurs."
+                            Purpose = "Lock red in case of crash or obstruction."
                         },
                         new
                         {
@@ -258,7 +258,7 @@ namespace TrafficLightData.Migrations
                             LastUpdated = new DateTime(2025, 10, 10, 12, 0, 0, 0, DateTimeKind.Utc),
                             Mode = "Manual",
                             PhaseDurationsJson = "{\"Green\":20, \"Yellow\":5, \"Red\":35}",
-                            Purpose = "Operator control. Longer red margin to allow manual phase switching or testing."
+                            Purpose = "Operator control mode."
                         },
                         new
                         {
@@ -268,7 +268,7 @@ namespace TrafficLightData.Migrations
                             LastUpdated = new DateTime(2025, 10, 10, 12, 5, 0, 0, DateTimeKind.Utc),
                             Mode = "Failover",
                             PhaseDurationsJson = "{\"Green\":2, \"Yellow\":3, \"Red\":5}",
-                            Purpose = "Safety fallback — short loop, often implemented as flashing yellow. Offset irrelevant here."
+                            Purpose = "Flashing yellow fallback mode."
                         });
                 });
 

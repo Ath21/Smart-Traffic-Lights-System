@@ -86,11 +86,11 @@ namespace TrafficLightData.Migrations
                 columns: new[] { "IntersectionId", "CreatedAt", "IsActive", "Latitude", "LightCount", "Location", "Longitude", "MappedLightIdsJson", "Name" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2025, 10, 14, 20, 56, 15, 923, DateTimeKind.Utc).AddTicks(3754), true, 38.004677m, 2, "Agiou Spyridonos & Dimitsanas Street", 23.676086m, "[101, 102]", "Agiou Spyridonos" },
-                    { 2, new DateTime(2025, 10, 14, 20, 56, 15, 923, DateTimeKind.Utc).AddTicks(4026), true, 38.003558m, 2, "Eastern Gate", 23.678042m, "[201, 202]", "Anatoliki Pyli" },
-                    { 3, new DateTime(2025, 10, 14, 20, 56, 15, 923, DateTimeKind.Utc).AddTicks(4060), true, 38.002644m, 3, "Western Gate", 23.674499m, "[301, 302, 303]", "Dytiki Pyli" },
-                    { 4, new DateTime(2025, 10, 14, 20, 56, 15, 923, DateTimeKind.Utc).AddTicks(4063), true, 38.001580m, 3, "Church Intersection", 23.673638m, "[401, 402, 403]", "Ekklisia" },
-                    { 5, new DateTime(2025, 10, 14, 20, 56, 15, 923, DateTimeKind.Utc).AddTicks(4065), true, 38.004456m, 2, "Central Gate", 23.676483m, "[501, 502]", "Kentriki Pyli" }
+                    { 1, new DateTime(2025, 10, 8, 7, 0, 0, 0, DateTimeKind.Utc), true, 38.004677m, 2, "Agiou Spyridonos & Dimitsanas Street", 23.676086m, "[101, 102]", "Agiou Spyridonos" },
+                    { 2, new DateTime(2025, 10, 8, 7, 0, 0, 0, DateTimeKind.Utc), true, 38.003558m, 2, "Eastern Gate", 23.678042m, "[201, 202]", "Anatoliki Pyli" },
+                    { 3, new DateTime(2025, 10, 8, 7, 0, 0, 0, DateTimeKind.Utc), true, 38.002644m, 3, "Western Gate", 23.674499m, "[301, 302, 303]", "Dytiki Pyli" },
+                    { 4, new DateTime(2025, 10, 8, 7, 0, 0, 0, DateTimeKind.Utc), true, 38.001580m, 3, "Church Intersection", 23.673638m, "[401, 402, 403]", "Ekklisia" },
+                    { 5, new DateTime(2025, 10, 8, 7, 0, 0, 0, DateTimeKind.Utc), true, 38.004456m, 2, "Central Gate", 23.676483m, "[501, 502]", "Kentriki Pyli" }
                 });
 
             migrationBuilder.InsertData(
@@ -98,16 +98,16 @@ namespace TrafficLightData.Migrations
                 columns: new[] { "ConfigurationId", "CycleDurationSec", "GlobalOffsetSec", "IntersectionEntityIntersectionId", "LastUpdated", "Mode", "PhaseDurationsJson", "Purpose" },
                 values: new object[,]
                 {
-                    { 1, 60, 10, null, new DateTime(2025, 10, 8, 7, 0, 0, 0, DateTimeKind.Utc), "Standard", "{\"Green\":40, \"Yellow\":5, \"Red\":15}", "Balanced baseline cycle. 40 s green handles moderate mixed traffic. The 10 s offset keeps 'Agiou Spyridonos → Kentriki Pyli → Anatoliki Pyli' coordinated in sequence." },
-                    { 2, 75, 20, null, new DateTime(2025, 10, 8, 17, 0, 0, 0, DateTimeKind.Utc), "Peak", "{\"Green\":50, \"Yellow\":5, \"Red\":20}", "Longer green (50 s) for vehicle-heavy times, typically class start/end. Larger offset means each intersection starts slightly later to avoid queue buildup (a 'green wave')." },
-                    { 3, 50, 0, null, new DateTime(2025, 10, 8, 23, 0, 0, 0, DateTimeKind.Utc), "Night", "{\"Green\":15, \"Yellow\":5, \"Red\":30}", "Minimal traffic → short green, long red for energy saving. Offset 0 means intersections act independently (no synchronization)." },
-                    { 4, 30, 0, null, new DateTime(2025, 10, 8, 10, 0, 0, 0, DateTimeKind.Utc), "Emergency", "{\"Green\":25, \"Yellow\":3, \"Red\":2}", "Grants immediate priority (25 s green) on the active corridor. Offset ignored because the controller overrides normal scheduling." },
-                    { 5, 65, 10, null, new DateTime(2025, 10, 8, 9, 0, 0, 0, DateTimeKind.Utc), "PublicTransport", "{\"Green\":45, \"Yellow\":5, \"Red\":15}", "Similar to Standard but extends green for bus approach. The offset allows a slight stagger to clear the next intersection first." },
-                    { 6, 40, 0, null, new DateTime(2025, 10, 9, 17, 0, 0, 0, DateTimeKind.Utc), "Pedestrian", "{\"Green\":20, \"Yellow\":5, \"Red\":15}", "Gives pedestrians half the cycle (20 s green). No offset — triggers only at one intersection when pedestrian button/sensor active." },
-                    { 7, 50, 5, null, new DateTime(2025, 10, 9, 8, 0, 0, 0, DateTimeKind.Utc), "Cyclist", "{\"Green\":30, \"Yellow\":5, \"Red\":15}", "Keeps bikes moving with modest cycle. Small offset helps align with vehicle flow without full coupling." },
-                    { 8, 20, 0, null, new DateTime(2025, 10, 9, 18, 0, 0, 0, DateTimeKind.Utc), "Incident", "{\"Green\":0, \"Yellow\":0, \"Red\":20}", "Locks red for safety or re-routing when a crash or obstruction occurs." },
-                    { 9, 60, 0, null, new DateTime(2025, 10, 10, 12, 0, 0, 0, DateTimeKind.Utc), "Manual", "{\"Green\":20, \"Yellow\":5, \"Red\":35}", "Operator control. Longer red margin to allow manual phase switching or testing." },
-                    { 10, 10, 0, null, new DateTime(2025, 10, 10, 12, 5, 0, 0, DateTimeKind.Utc), "Failover", "{\"Green\":2, \"Yellow\":3, \"Red\":5}", "Safety fallback — short loop, often implemented as flashing yellow. Offset irrelevant here." }
+                    { 1, 60, 10, null, new DateTime(2025, 10, 8, 7, 0, 0, 0, DateTimeKind.Utc), "Standard", "{\"Green\":40, \"Yellow\":5, \"Red\":15}", "Balanced baseline cycle. 40 s green handles moderate mixed traffic." },
+                    { 2, 75, 20, null, new DateTime(2025, 10, 8, 17, 0, 0, 0, DateTimeKind.Utc), "Peak", "{\"Green\":50, \"Yellow\":5, \"Red\":20}", "Longer green for heavy traffic periods." },
+                    { 3, 50, 0, null, new DateTime(2025, 10, 8, 23, 0, 0, 0, DateTimeKind.Utc), "Night", "{\"Green\":15, \"Yellow\":5, \"Red\":30}", "Short green, long red for minimal traffic." },
+                    { 4, 30, 0, null, new DateTime(2025, 10, 8, 10, 0, 0, 0, DateTimeKind.Utc), "Emergency", "{\"Green\":25, \"Yellow\":3, \"Red\":2}", "Immediate priority for emergency vehicles." },
+                    { 5, 65, 10, null, new DateTime(2025, 10, 8, 9, 0, 0, 0, DateTimeKind.Utc), "PublicTransport", "{\"Green\":45, \"Yellow\":5, \"Red\":15}", "Extended green for bus approach." },
+                    { 6, 40, 0, null, new DateTime(2025, 10, 9, 17, 0, 0, 0, DateTimeKind.Utc), "Pedestrian", "{\"Green\":20, \"Yellow\":5, \"Red\":15}", "Half-cycle pedestrian focus." },
+                    { 7, 50, 5, null, new DateTime(2025, 10, 9, 8, 0, 0, 0, DateTimeKind.Utc), "Cyclist", "{\"Green\":30, \"Yellow\":5, \"Red\":15}", "Cycle optimized for bicycle flow." },
+                    { 8, 20, 0, null, new DateTime(2025, 10, 9, 18, 0, 0, 0, DateTimeKind.Utc), "Incident", "{\"Green\":0, \"Yellow\":0, \"Red\":20}", "Lock red in case of crash or obstruction." },
+                    { 9, 60, 0, null, new DateTime(2025, 10, 10, 12, 0, 0, 0, DateTimeKind.Utc), "Manual", "{\"Green\":20, \"Yellow\":5, \"Red\":35}", "Operator control mode." },
+                    { 10, 10, 0, null, new DateTime(2025, 10, 10, 12, 5, 0, 0, DateTimeKind.Utc), "Failover", "{\"Green\":2, \"Yellow\":3, \"Red\":5}", "Flashing yellow fallback mode." }
                 });
 
             migrationBuilder.InsertData(

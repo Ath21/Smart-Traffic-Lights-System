@@ -17,8 +17,7 @@ COPY TrafficLayer/Services/TrafficLightControllerService/TrafficLightControllerS
 ## Databases
 COPY TrafficLayer/Databases/TrafficLightCacheDB/TrafficLightCacheData TrafficLayer/Databases/TrafficLightCacheDB/TrafficLightCacheData/
 ## Messages
-COPY MessageLayer/TrafficMessages MessageLayer/TrafficMessages/
-COPY MessageLayer/LogMessages MessageLayer/LogMessages/
+COPY MessageLayer/Messages MessageLayer/Messages/
 
 # Restore dependencies
 RUN dotnet restore TrafficLayer/Services/TrafficLightControllerService/TrafficLightControllerStore/TrafficLightControllerStore.csproj
