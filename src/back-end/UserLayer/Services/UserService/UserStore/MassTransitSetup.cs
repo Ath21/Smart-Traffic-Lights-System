@@ -3,6 +3,7 @@ using RabbitMQ.Client;
 using Messages.Log;
 using Messages.User;
 using Messages.Traffic;
+using UserStore.Consumers;
 
 namespace UserStore;
 
@@ -16,7 +17,6 @@ public static class MassTransitSetup
             // Register Consumers
             // =====================================================
             x.AddConsumer<UserNotificationConsumer>();
-            x.AddConsumer<TrafficAnalyticsConsumer>();
 
             x.UsingRabbitMq((context, cfg) =>
             {
@@ -40,11 +40,9 @@ public static class MassTransitSetup
 
                 // Queues
                 var userQueue    = rabbit["Queues:User:Notifications"];
-                var trafficQueue = rabbit["Queues:Traffic:Analytics:User"];
 
                 // Routing Keys
                 var userNotifKeys     = rabbit.GetSection("RoutingKeys:UserNotifications").Get<string[]>() ?? Array.Empty<string>();
-                var trafficAnalyticsKeys = rabbit.GetSection("RoutingKeys:TrafficAnalytics").Get<string[]>() ?? Array.Empty<string>();
 
                 // =====================================================
                 // [PUBLISH] LOGS
@@ -121,32 +119,6 @@ public static class MassTransitSetup
                     e.ConcurrentMessageLimit = 5;
                 });
 
-                // =====================================================
-                // [CONSUME] TRAFFIC ANALYTICS METRICS
-                // =====================================================
-                //
-                // Topic pattern : traffic.analytics.{intersection}.{metric}
-                // Example key   : traffic.analytics.kentriki-pyli.summary
-                //
-                cfg.ReceiveEndpoint(trafficQueue, e =>
-                {
-                    e.ConfigureConsumeTopology = false;
-
-                    foreach (var key in trafficAnalyticsKeys)
-                    {
-                        e.Bind(trafficExchange, s =>
-                        {
-                            s.RoutingKey = key;
-                            s.ExchangeType = ExchangeType.Topic;
-                        });
-                    }
-
-                    e.ConfigureConsumer<TrafficAnalyticsConsumer>(context);
-                    e.PrefetchCount = 10;
-                    e.ConcurrentMessageLimit = 5;
-                });
-
-                cfg.ConfigureEndpoints(context);
             });
         });
 

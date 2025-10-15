@@ -1,7 +1,7 @@
 services:
-  user_api:
+  notification-api:
     ports:
-      - '5055:8080'
+      - '5087:8080'
     environment:
       # ===============================
       # ASP.NET Core
@@ -12,8 +12,11 @@ services:
       # Databases
       # ===============================
 
-      ## UserDB (MSSQL)
-      MSSQL__ConnectionString: Server=user_db,1433;Database=UserDB;User Id=sa;Password=MyPass@word;TrustServerCertificate=True
+      ## NotificationDB (MongoDB)
+      Mongo__ConnectionString: mongodb://mongo:mongo123@notification-db:27017
+      Mongo__Database: NotificationDB
+      Mongo__NotificationsCollection: notifications
+      Mongo__DeliveryLogsCollection: delivery_logs
 
       # ===============================
       # CORS Policy
@@ -30,6 +33,16 @@ services:
       Jwt__Key: Nn7kLa8Rzv1XHt9UwMqP4YbFdJxVt2Km
 
       # ===============================
+      # Email Settings
+      # ===============================
+      Email__SmtpServer: smtp.gmail.com
+      Email__Port: 587
+      Email__SenderName: UNIWA STLS
+      Email__SenderEmail: ice19390005@gmail.com
+      Email__Username: ice19390005@gmail.com
+      Email__Password: waqr ilfj fxpu banq
+
+      # ===============================
       # RabbitMQ Connection
       # ===============================
       RabbitMQ__Host: rabbitmq
@@ -44,19 +57,16 @@ services:
       ## USER.EXCHANGE
       RabbitMQ__Exchanges__User: USER.EXCHANGE
       # --- Publish
-      RabbitMQ__RoutingKeys__User__NotificationRequest: user.notification.request
-      # --- Consume
-      RabbitMQ__Queues__User__Notifications: notifications.user.queue
       RabbitMQ__RoutingKeys__User__NotificationAlert: user.notification.alert
       RabbitMQ__RoutingKeys__User__NotificationPublic: notification.event.public_notice
+      # --- Consume
+      RabbitMQ__Queues__User__Requests: requests.notification.queue
+      RabbitMQ__RoutingKeys__User__NotificationRequest: user.notification.request
 
       ## TRAFFIC.EXCHANGE
       RabbitMQ__Exchanges__Traffic: TRAFFIC.EXCHANGE
-      # --- Publish
-      RabbitMQ__RoutingKeys__Traffic__LightControl: traffic.light.control.{intersection_id}.{light_id}
-      RabbitMQ__RoutingKeys__Traffic__LightUpdate: traffic.light.update.{intersection_id}
       # --- Consume
-      RabbitMQ__Queues__Traffic__Analytics: traffic.analytics.user.queue
+      RabbitMQ__Queues__Traffic__Analytics: traffic.analytics.notification.queue
       RabbitMQ__RoutingKeys__Traffic__Congestion: traffic.analytics.congestion.{intersection_id}
       RabbitMQ__RoutingKeys__Traffic__Summary: traffic.analytics.summary.{intersection_id}
       RabbitMQ__RoutingKeys__Traffic__Incident: traffic.analytics.incident.{intersection_id}
@@ -64,11 +74,11 @@ services:
       ## LOG.EXCHANGE
       RabbitMQ__Exchanges__Log: LOG.EXCHANGE
       # --- Publish
-      RabbitMQ__RoutingKeys__Log__Audit: log.user.user_service.audit
-      RabbitMQ__RoutingKeys__Log__Error: log.user.user_service.error
-    
+      RabbitMQ__RoutingKeys__Log__Audit: log.user.notification_service.audit
+      RabbitMQ__RoutingKeys__Log__Error: log.user.notification_service.error
+
     depends_on:
-      user_db:
+      notification-db:
         condition: service_started
-        
+
     restart: always

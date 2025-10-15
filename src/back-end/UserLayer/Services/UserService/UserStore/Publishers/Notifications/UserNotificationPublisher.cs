@@ -1,5 +1,6 @@
 using MassTransit;
-
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Messages.User;
 
 namespace UserStore.Publishers.Notifications;
@@ -11,9 +12,9 @@ public class UserNotificationPublisher : IUserNotificationPublisher
     private readonly string _routingPattern;
 
     public UserNotificationPublisher(
+        IBus bus,
         IConfiguration config,
-        ILogger<UserNotificationPublisher> logger,
-        IBus bus)
+        ILogger<UserNotificationPublisher> logger)
     {
         _bus = bus;
         _logger = logger;
@@ -22,39 +23,39 @@ public class UserNotificationPublisher : IUserNotificationPublisher
                           ?? "user.notification.{type}";
     }
 
-    // ============================================================
-    // Publish REQUEST (User action request)
-    // ============================================================
-    public async Task PublishRequestAsync(
+    public async Task PublishNotificationAsync(
+        string notificationType,
         string title,
         string body,
         string recipientEmail,
         string status = "Pending",
-        Guid? correlationId = null)
+        Guid? correlationId = null,
+        Dictionary<string, string>? metadata = null)
     {
-        await PublishAsync("request", new UserNotificationMessage
+        var msg = new UserNotificationMessage
         {
-            NotificationType = "Request",
+            CorrelationId = correlationId ?? Guid.NewGuid(),
+            Timestamp = DateTime.UtcNow,
+
+            SourceLayer = "User Layer",
+            DestinationLayer = new() { "User Layer" },
+
+            SourceService = "User Service",
+            DestinationServices = new() { "Notification Service" },
+
+            NotificationType = notificationType,
             Title = title,
             Body = body,
             RecipientEmail = recipientEmail,
             Status = status,
-            SourceServices = new() { "User Service" },
-            DestinationServices = new() { "Notification Service" }
-        }, correlationId);
+            Metadata = metadata
+        };
 
-        _logger.LogInformation("REQUEST notification sent to {Recipient}", recipientEmail);
-    }
+        var routingKey = _routingPattern.Replace("{type}", notificationType.ToLower());
 
-    // ============================================================
-    // Internal Publish Logic
-    // ============================================================
-    private async Task PublishAsync(string type, UserNotificationMessage msg, Guid? correlationId)
-    {
-        msg.CorrelationId = correlationId ?? Guid.NewGuid();
-        msg.Timestamp = DateTime.UtcNow;
-
-        var routingKey = _routingPattern.Replace("{type}", type);
         await _bus.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
+
+        _logger.LogInformation("[PUBLISHER][NOTIFICATION] Sent '{Type}' notification to {Recipient}",
+            notificationType, recipientEmail);
     }
 }

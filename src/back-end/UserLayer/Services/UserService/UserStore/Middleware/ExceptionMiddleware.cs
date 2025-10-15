@@ -157,10 +157,9 @@ public class ExceptionMiddleware
         {
             await logPublisher.PublishErrorAsync(
                 action: errorType,
-                errorMessage: $"[EXCEPTION]{ex.Message}",
+                message: $"[EXCEPTION]{ex.Message}",
                 ex: ex,
-                metadata: metadata,
-                correlationId: Guid.Parse(correlationId));
+                metadata: metadata);
         }
         catch (Exception pubEx)
         {

@@ -15,7 +15,7 @@ namespace UserStore.Business.Usr;
 public class UsrService : IUsrService
 {
     private readonly IUserRepository _userRepository;
-    private readonly IAuditLogRepository _auditLogRepository;
+    private readonly IUserAuditRepository _auditLogRepository;
     private readonly ISessionRepository _sessionRepository;
     private readonly ITokenService _tokenService;
     private readonly IPasswordHasher _passwordHasher;
@@ -27,7 +27,7 @@ public class UsrService : IUsrService
 
     public UsrService(
         IUserRepository userRepository,
-        IAuditLogRepository auditLogRepository,
+        IUserAuditRepository auditLogRepository,
         ISessionRepository sessionRepository,
         ITokenService tokenService,
         IPasswordHasher passwordHasher,
@@ -90,7 +90,7 @@ public class UsrService : IUsrService
 
         var (token, expiresAt) = _tokenService.GenerateToken(user);
 
-        var session = new Session
+        var session = new SessionEntity
         {
             SessionId = Guid.NewGuid(),
             UserId = user.UserId,

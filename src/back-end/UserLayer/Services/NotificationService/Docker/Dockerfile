@@ -16,9 +16,7 @@ COPY UserLayer/Services/NotificationService/NotificationStore UserLayer/Services
 ## Databases
 COPY UserLayer/Databases/NotificationDB/NotificationData UserLayer/Databases/NotificationDB/NotificationData/
 ## Messages
-COPY MessageLayer/UserMessages MessageLayer/UserMessages/
-COPY MessageLayer/LogMessages MessageLayer/LogMessages/
-COPY MessageLayer/TrafficMessages MessageLayer/TrafficMessages/
+COPY MessageLayer/Messages MessageLayer/Messages/
 
 # Restore dependencies
 RUN dotnet restore UserLayer/Services/NotificationService/NotificationStore/NotificationStore.csproj

@@ -14,9 +14,7 @@ COPY UserLayer/Services/UserService/UserStore UserLayer/Services/UserService/Use
 ## Databases
 COPY UserLayer/Databases/UserDB/UserData UserLayer/Databases/UserDB/UserData/
 ## Messages
-COPY MessageLayer/UserMessages MessageLayer/UserMessages/
-COPY MessageLayer/LogMessages MessageLayer/LogMessages/
-COPY MessageLayer/TrafficMessages MessageLayer/TrafficMessages/
+COPY MessageLayer/Messages MessageLayer/Messages/
 
 # Restore dependencies
 RUN dotnet restore UserLayer/Services/UserService/UserStore/UserStore.csproj

@@ -8,7 +8,7 @@ namespace UserStore.Controllers
     [Route("user_service")]
     public class HealthController : ControllerBase
     {
-        [HttpGet("/health")]
+        [HttpGet("health")]
         public IActionResult Health()
         {
             return Ok(new { status = "Healthy", service = "User Service" });

@@ -1,4 +1,5 @@
 using MassTransit;
+using Messages.Log;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using UserData;
@@ -18,7 +19,7 @@ namespace UserStore.Controllers
             _bus = bus;
         }
 
-        [HttpGet("/ready")]
+        [HttpGet("ready")]
         public async Task<IActionResult> Ready()
         {
             try
@@ -26,7 +27,7 @@ namespace UserStore.Controllers
                 if (!await _dbContext.CanConnectAsync())
                     return StatusCode(503, new { status = "Not Ready", reason = "UserDB MSSQL unreachable" });
 
-                if (!_bus.Topology.TryGetPublishAddress(typeof(LogMessages.AuditLogMessage), out _))
+                if (!_bus.Topology.TryGetPublishAddress(typeof(LogMessage), out _))
                     return StatusCode(503, new { status = "Not Ready", reason = "RabbitMQ not connected" });
 
                 return Ok(new { status = "Ready", service = "User Service" });

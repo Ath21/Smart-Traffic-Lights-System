@@ -2,5 +2,12 @@ namespace UserStore.Publishers.Notifications;
 
 public interface IUserNotificationPublisher
 {
-    Task PublishRequestAsync(string title, string body, string recipientEmail, string status = "Pending", Guid? correlationId = null);
+    Task PublishNotificationAsync(
+        string notificationType,
+        string title,
+        string body,
+        string recipientEmail,
+        string status = "Pending",
+        Guid? correlationId = null,
+        Dictionary<string, string>? metadata = null);
 }

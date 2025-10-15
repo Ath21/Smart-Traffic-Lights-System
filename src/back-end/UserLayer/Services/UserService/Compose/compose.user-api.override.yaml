@@ -1,5 +1,5 @@
 services:
-  user_api:
+  user-api:
     ports:
       - '5055:8080'
     environment:
@@ -13,7 +13,7 @@ services:
       # ===============================
 
       ## UserDB (MSSQL)
-      ConnectionStrings__MSSQLConnection: Server=user_db,1433;Database=UserDB;User Id=sa;Password=MyPass@word;TrustServerCertificate=True
+      ConnectionStrings__MSSQLConnection: Server=user-db,1433;Database=UserDB;User Id=sa;Password=MyPass@word;TrustServerCertificate=True
 
       # ===============================
       # CORS Policy
@@ -68,7 +68,7 @@ services:
       RabbitMQ__RoutingKeys__Log__Error: log.user.user_service.error
     
     depends_on:
-      user_db:
+      user-db:
         condition: service_started
         
     restart: always
