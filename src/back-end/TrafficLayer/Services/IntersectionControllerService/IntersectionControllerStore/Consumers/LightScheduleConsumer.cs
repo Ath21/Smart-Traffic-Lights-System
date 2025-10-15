@@ -7,10 +7,10 @@ namespace IntersectionControllerStore.Consumers;
 
 public class LightScheduleConsumer : IConsumer<TrafficLightScheduleMessage>
 {
-    private readonly LightScheduleBusiness _processor;
+    private readonly ILightScheduleBusiness _processor;
     private readonly ILogger<LightScheduleConsumer> _logger;
 
-    public LightScheduleConsumer(LightScheduleBusiness processor, ILogger<LightScheduleConsumer> logger)
+    public LightScheduleConsumer(ILightScheduleBusiness processor, ILogger<LightScheduleConsumer> logger)
     {
         _processor = processor;
         _logger = logger;

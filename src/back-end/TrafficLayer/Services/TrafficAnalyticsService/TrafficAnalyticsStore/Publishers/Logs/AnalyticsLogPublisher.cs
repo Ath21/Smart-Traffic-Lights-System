@@ -4,7 +4,7 @@ using Messages.Log;
 
 namespace TrafficAnalyticsStore.Publishers.Logs;
 
-public class AnalyticsLogPublisher
+public class AnalyticsLogPublisher : IAnalyticsLogPublisher
 {
     private readonly IBus _bus;
     private readonly ILogger<AnalyticsLogPublisher> _logger;

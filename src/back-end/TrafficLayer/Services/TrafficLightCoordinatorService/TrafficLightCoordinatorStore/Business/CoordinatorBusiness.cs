@@ -9,19 +9,19 @@ using TrafficLightData;
 
 namespace TrafficLightCoordinatorStore.Business;
 
-public class CoordinatorBusiness
+public class CoordinatorBusiness : ICoordinatorBusiness
 {
     private readonly ILogger<CoordinatorBusiness> _logger;
     private readonly IDecisionEngine _engine;
     private readonly ITrafficLightSchedulePublisher _schedulePublisher;
-    private readonly CoordinatorLogPublisher _logPublisher;
+    private readonly ICoordinatorLogPublisher _logPublisher;
     private readonly TrafficLightDbContext _db;
 
     public CoordinatorBusiness(
         ILogger<CoordinatorBusiness> logger,
         IDecisionEngine engine,
         ITrafficLightSchedulePublisher schedulePublisher,
-        CoordinatorLogPublisher logPublisher,
+        ICoordinatorLogPublisher logPublisher,
         TrafficLightDbContext db)
     {
         _logger = logger;

@@ -4,7 +4,7 @@ using Messages.Log;
 
 namespace TrafficLightCoordinatorStore.Publishers.Logs;
 
-public class CoordinatorLogPublisher
+public class CoordinatorLogPublisher : ICoordinatorLogPublisher
 {
     private readonly IBus _bus;
     private readonly ILogger<CoordinatorLogPublisher> _logger;

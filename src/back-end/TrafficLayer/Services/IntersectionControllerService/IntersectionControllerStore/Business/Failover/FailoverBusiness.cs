@@ -8,13 +8,13 @@ namespace IntersectionControllerStore.Business.Failover;
 
 public class FailoverBusiness : IFailoverBusiness
 {
-    private readonly TrafficLightControlPublisher _controlPublisher;
-    private readonly IntersectionLogPublisher _logPublisher;
+    private readonly ITrafficLightControlPublisher _controlPublisher;
+    private readonly IIntersectionLogPublisher _logPublisher;
     private readonly ILogger<FailoverBusiness> _logger;
 
     public FailoverBusiness(
-        TrafficLightControlPublisher controlPublisher,
-        IntersectionLogPublisher logPublisher,
+        ITrafficLightControlPublisher controlPublisher,
+        IIntersectionLogPublisher logPublisher,
         ILogger<FailoverBusiness> logger)
     {
         _controlPublisher = controlPublisher;

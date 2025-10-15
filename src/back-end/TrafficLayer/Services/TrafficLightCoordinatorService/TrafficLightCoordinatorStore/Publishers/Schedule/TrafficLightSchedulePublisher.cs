@@ -8,10 +8,7 @@ using Messages.Traffic;
 
 namespace TrafficLightCoordinatorStore.Publishers.Schedule
 {
-    /// <summary>
-    /// Publishes updated traffic light schedules to Intersection Controllers.
-    /// </summary>
-    public class TrafficLightSchedulePublisher
+    public class TrafficLightSchedulePublisher : ITrafficLightSchedulePublisher
     {
         private readonly IBus _bus;
         private readonly ILogger<TrafficLightSchedulePublisher> _logger;

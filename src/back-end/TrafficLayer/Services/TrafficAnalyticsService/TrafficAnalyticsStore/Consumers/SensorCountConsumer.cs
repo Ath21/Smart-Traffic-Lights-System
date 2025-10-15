@@ -7,9 +7,9 @@ namespace TrafficAnalyticsStore.Consumers;
 public class SensorCountConsumer : IConsumer<SensorCountMessage>
 {
     private readonly ILogger<SensorCountConsumer> _logger;
-    private readonly TrafficAnalyticsAggregator _aggregator;
+    private readonly ITrafficAnalyticsAggregator _aggregator;
 
-    public SensorCountConsumer(ILogger<SensorCountConsumer> logger, TrafficAnalyticsAggregator aggregator)
+    public SensorCountConsumer(ILogger<SensorCountConsumer> logger, ITrafficAnalyticsAggregator aggregator)
     {
         _logger = logger;
         _aggregator = aggregator;

@@ -7,11 +7,11 @@ namespace TrafficLightControllerStore.Consumers;
 
 public class TrafficLightControlConsumer : IConsumer<TrafficLightControlMessage>
 {
-    private readonly TrafficLightControlBusiness _service;
+    private readonly ITrafficLightControlBusiness _service;
     private readonly ILogger<TrafficLightControlConsumer> _logger;
 
     public TrafficLightControlConsumer(
-        TrafficLightControlBusiness service,
+        ITrafficLightControlBusiness service,
         ILogger<TrafficLightControlConsumer> logger)
     {
         _service = service;

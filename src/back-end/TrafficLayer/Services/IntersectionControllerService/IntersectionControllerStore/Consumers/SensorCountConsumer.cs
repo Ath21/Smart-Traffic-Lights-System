@@ -7,10 +7,10 @@ namespace IntersectionControllerStore.Consumers;
 
 public class SensorCountConsumer : IConsumer<SensorCountMessage>
 {
-    private readonly PriorityBusiness _priorityProcessor;
+    private readonly IPriorityBusiness _priorityProcessor;
     private readonly ILogger<SensorCountConsumer> _logger;
 
-    public SensorCountConsumer(PriorityBusiness priorityProcessor, ILogger<SensorCountConsumer> logger)
+    public SensorCountConsumer(IPriorityBusiness priorityProcessor, ILogger<SensorCountConsumer> logger)
     {
         _priorityProcessor = priorityProcessor;
         _logger = logger;

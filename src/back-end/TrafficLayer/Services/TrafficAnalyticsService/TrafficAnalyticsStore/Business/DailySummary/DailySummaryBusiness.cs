@@ -8,7 +8,7 @@ using TrafficAnalyticsStore.Models;
 
 namespace TrafficAnalyticsStore.Business.DailySummary;
 
-public class DailySummaryBusiness
+public class DailySummaryBusiness : IDailySummaryBusiness
 {
     private readonly TrafficAnalyticsDbContext _db;
     private readonly ILogger<DailySummaryBusiness> _logger;

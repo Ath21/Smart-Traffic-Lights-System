@@ -113,7 +113,7 @@ public class ExceptionMiddleware
         try
         {
             using var scope = _scopeFactory.CreateScope();
-            var logPublisher = scope.ServiceProvider.GetRequiredService<IntersectionLogPublisher>();
+            var logPublisher = scope.ServiceProvider.GetRequiredService<IIntersectionLogPublisher>();
 
             await logPublisher.PublishErrorAsync(
                 action: errorType,

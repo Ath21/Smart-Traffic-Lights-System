@@ -6,7 +6,7 @@ using TrafficAnalyticsStore.Models;
 
 namespace TrafficAnalyticsStore.Business.Alerts;
 
-public class AlertBusiness
+public class AlertBusiness : IAlertBusiness
 {
     private readonly TrafficAnalyticsDbContext _db;
     private readonly ILogger<AlertBusiness> _logger;

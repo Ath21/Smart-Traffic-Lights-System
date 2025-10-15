@@ -105,7 +105,7 @@ public class ExceptionMiddleware
         try
         {
             using var scope = _scopeFactory.CreateScope();
-            var logPublisher = scope.ServiceProvider.GetRequiredService<CoordinatorLogPublisher>();
+            var logPublisher = scope.ServiceProvider.GetRequiredService<ICoordinatorLogPublisher>();
 
             await logPublisher.PublishErrorAsync(
                 action: errorType,

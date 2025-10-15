@@ -8,10 +8,10 @@ namespace IntersectionControllerStore.Consumers;
 
 public class DetectionEventConsumer : IConsumer<DetectionEventMessage>
 {
-    private readonly PriorityBusiness _priorityProcessor;
+    private readonly IPriorityBusiness _priorityProcessor;
     private readonly ILogger<DetectionEventConsumer> _logger;
 
-    public DetectionEventConsumer(PriorityBusiness priorityProcessor, ILogger<DetectionEventConsumer> logger)
+    public DetectionEventConsumer(IPriorityBusiness priorityProcessor, ILogger<DetectionEventConsumer> logger)
     {
         _priorityProcessor = priorityProcessor;
         _logger = logger;

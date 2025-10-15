@@ -10,14 +10,14 @@ namespace IntersectionControllerStore.Business.LightSchedule;
 public class LightScheduleBusiness : ILightScheduleBusiness
 {
     private readonly ITrafficLightCacheRepository _cacheRepo;
-    private readonly TrafficLightControlPublisher _controlPublisher;
-    private readonly IntersectionLogPublisher _logPublisher;
+    private readonly ITrafficLightControlPublisher _controlPublisher;
+    private readonly IIntersectionLogPublisher _logPublisher;
     private readonly ILogger<LightScheduleBusiness> _logger;
 
     public LightScheduleBusiness(
         ITrafficLightCacheRepository cacheRepo,
-        TrafficLightControlPublisher controlPublisher,
-        IntersectionLogPublisher logPublisher,
+        ITrafficLightControlPublisher controlPublisher,
+        IIntersectionLogPublisher logPublisher,
         ILogger<LightScheduleBusiness> logger)
     {
         _cacheRepo = cacheRepo;

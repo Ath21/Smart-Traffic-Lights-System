@@ -93,6 +93,8 @@ public class Startup
 
         services.AddSingleton<TrafficLightCacheDbContext>();
 
+        services.AddScoped(typeof(ITrafficLightCacheRepository), typeof(TrafficLightCacheRepository));
+
         // ===============================
         // Business Layer (Services)
         // ===============================

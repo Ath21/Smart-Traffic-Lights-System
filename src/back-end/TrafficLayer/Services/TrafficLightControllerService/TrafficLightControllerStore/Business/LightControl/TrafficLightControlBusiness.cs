@@ -4,7 +4,7 @@ using TrafficLightControllerStore.Publishers.Logs;
 
 namespace TrafficLightControllerStore.Business.LightControl;
 
-public class TrafficLightControlBusiness
+public class TrafficLightControlBusiness : ITrafficLightControlBusiness
 {
     private readonly ITrafficLightCacheRepository _cache;
     private readonly ITrafficLightLogPublisher _logPublisher;

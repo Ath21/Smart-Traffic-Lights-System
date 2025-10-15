@@ -9,13 +9,13 @@ namespace IntersectionControllerStore.Business.Priority;
 
 public class PriorityBusiness : IPriorityBusiness
 {
-    private readonly PriorityPublisher _priorityPublisher;
-    private readonly IntersectionLogPublisher _logPublisher;
+    private readonly IPriorityPublisher _priorityPublisher;
+    private readonly IIntersectionLogPublisher _logPublisher;
     private readonly ILogger<PriorityBusiness> _logger;
 
     public PriorityBusiness(
-        PriorityPublisher priorityPublisher,
-        IntersectionLogPublisher logPublisher,
+        IPriorityPublisher priorityPublisher,
+        IIntersectionLogPublisher logPublisher,
         ILogger<PriorityBusiness> logger)
     {
         _priorityPublisher = priorityPublisher;

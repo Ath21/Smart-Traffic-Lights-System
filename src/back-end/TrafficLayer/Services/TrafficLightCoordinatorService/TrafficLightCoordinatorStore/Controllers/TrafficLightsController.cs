@@ -5,7 +5,7 @@ using TrafficLightData;
 namespace TrafficLightCoordinatorStore.Controllers;
 
 [ApiController]
-[Route("api/trafficlights")]
+[Route("api/traffic-lights")]
 public class TrafficLightsController : ControllerBase
 {
     private readonly TrafficLightDbContext _db;

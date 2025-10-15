@@ -83,7 +83,7 @@ public class Startup
         // ===============================
         services.AddScoped(typeof(IAlertBusiness), typeof(AlertBusiness));
         services.AddScoped(typeof(IDailySummaryBusiness), typeof(DailySummaryBusiness));
-        services.AddScoped(typeof(TrafficAnalyticsAggregator));
+        services.AddScoped(typeof(ITrafficAnalyticsAggregator), typeof(TrafficAnalyticsAggregator));
 
         // ===============================
         // Message Layer (MassTransit with RabbitMQ)
