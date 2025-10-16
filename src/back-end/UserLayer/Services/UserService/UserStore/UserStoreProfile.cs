@@ -1,6 +1,5 @@
 using AutoMapper;
 using UserData.Entities;
-using UserStore.Models.Dtos;
 using UserStore.Models.Requests;
 using UserStore.Models.Responses;
 
@@ -10,27 +9,24 @@ public class UserStoreProfile : Profile
 {
     public UserStoreProfile()
     {
-        // Entity --> DTO
-        CreateMap<User, UserDto>();
-        CreateMap<User, UserProfileDto>();
-        CreateMap<AuditLog, AuditLogDto>();
-        CreateMap<Session, SessionDto>();
+        // RegisterUserRequest → UserEntity
+        CreateMap<RegisterUserRequest, UserEntity>()
+            .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.Username))
+            .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+            .ForMember(dest => dest.PasswordHash, opt => opt.Ignore()) // handled by PasswordHasher
+            .ForMember(dest => dest.Role, opt => opt.Ignore())
+            .ForMember(dest => dest.IsActive, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.Sessions, opt => opt.Ignore())
+            .ForMember(dest => dest.Audits, opt => opt.Ignore());
 
-        /// Entity --> Response
-        CreateMap<User, UserResponse>();
-        CreateMap<User, UserProfileResponse>();
+        // UserEntity → UserResponse
+        CreateMap<UserEntity, UserResponse>()
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.IsActive ? "Active" : "Inactive"));
 
-        // DTO --> Response
-        CreateMap<UserDto, UserResponse>();
-        CreateMap<UserProfileDto, UserProfileResponse>();
-
-        // Request --> Entity
-        CreateMap<RegisterUserRequest, User>()
-            .ForMember(dest => dest.PasswordHash, opt => opt.Ignore())
-            .ForMember(dest => dest.Role, opt => opt.Ignore());
-
-        CreateMap<UpdateProfileRequest, User>()
-            .ForMember(dest => dest.PasswordHash, opt => opt.Ignore())
-            .ForMember(dest => dest.Role, opt => opt.Ignore());
+        // UserEntity → UserProfileResponse
+        CreateMap<UserEntity, UserProfileResponse>()
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.IsActive ? "Active" : "Inactive"))
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore()); // filled at runtime
     }
 }

@@ -2,8 +2,7 @@ namespace UserStore.Publishers.Notifications;
 
 public interface IUserNotificationPublisher
 {
-    Task PublishNotificationAsync(
-        string notificationType,
+    Task PublishNotificationRequestAsync(
         string title,
         string body,
         string recipientEmail,

@@ -15,7 +15,7 @@ public class TokenService : ITokenService
         _configuration = configuration;
     }
 
-    public (string toke, DateTime expiration) GenerateToken(User user)
+    public (string token, DateTime expiration) GenerateToken(UserEntity user)
     {
         var expiresAt = DateTime.UtcNow.AddHours(2);
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
@@ -27,7 +27,7 @@ public class TokenService : ITokenService
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
             new Claim(ClaimTypes.Name, user.Username),
             new Claim(ClaimTypes.Role, user.Role.ToString()),
-            new Claim("status", user.Status)
+            new Claim("status", user.IsActive ? "active" : "inactive"),
         };
 
         var token = new JwtSecurityToken(

@@ -36,7 +36,6 @@ public static class MassTransitSetup
                 // =====================================================
                 var logExchange     = rabbit["Exchanges:Log"];
                 var userExchange    = rabbit["Exchanges:User"];
-                var trafficExchange = rabbit["Exchanges:Traffic"];
 
                 // Queues
                 var userQueue    = rabbit["Queues:User:Notifications"];
@@ -72,22 +71,6 @@ public static class MassTransitSetup
                     m.SetEntityName(userExchange);
                 });
                 cfg.Publish<UserNotificationMessage>(m =>
-                {
-                    m.ExchangeType = ExchangeType.Topic;
-                });
-
-                // =====================================================
-                // [PUBLISH] TRAFFIC LIGHT CONTROL COMMANDS
-                // =====================================================
-                //
-                // Topic pattern : traffic.light.control.{intersection}.{light}
-                // Example key   : traffic.light.control.agiou-spyridonos.101
-                //
-                cfg.Message<TrafficLightControlMessage>(m =>
-                {
-                    m.SetEntityName(trafficExchange);
-                });
-                cfg.Publish<TrafficLightControlMessage>(m =>
                 {
                     m.ExchangeType = ExchangeType.Topic;
                 });

@@ -166,13 +166,11 @@ public class UserController : ControllerBase
     }
 
     // Helper to extract UserId from JWT Claims
-    private Guid GetUserId()
+    private int GetUserId()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)
                     ?? User.FindFirstValue(ClaimTypes.Name);
 
-        return Guid.TryParse(userId, out var guid)
-            ? guid
-            : throw new UnauthorizedAccessException("Invalid token.");
+        return int.TryParse(userId, out var id) ? id : throw new UnauthorizedAccessException("Invalid user ID.");
     }
 }

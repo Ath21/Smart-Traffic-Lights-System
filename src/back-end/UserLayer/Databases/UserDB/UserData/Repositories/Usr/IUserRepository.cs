@@ -4,9 +4,12 @@ namespace UserData.Repositories.Usr;
 
 public interface IUserRepository
 {
+    Task<UserEntity?> GetByIdAsync(int id);
     Task<UserEntity?> GetByEmailAsync(string email);
     Task<UserEntity?> GetByUsernameAsync(string username);
     Task<IEnumerable<UserEntity>> GetActiveUsersAsync();
-    Task InsertAsync(UserEntity user);
-    Task UpdateAsync(UserEntity user);
+    Task InsertAsync(UserEntity entity);
+    Task UpdateAsync(UserEntity entity);
+    Task DeleteAsync(UserEntity entity);
+    Task<bool> ExistsAsync(string username, string email);
 }

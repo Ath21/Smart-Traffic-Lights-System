@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace UserStore.Models.Requests;
 
+
 public class ResetPasswordRequest
 {
     [Required]

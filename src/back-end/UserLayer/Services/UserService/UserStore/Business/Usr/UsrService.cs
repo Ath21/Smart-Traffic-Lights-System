@@ -15,103 +15,101 @@ namespace UserStore.Business.Usr;
 public class UsrService : IUsrService
 {
     private readonly IUserRepository _userRepository;
-    private readonly IUserAuditRepository _auditLogRepository;
+    private readonly IUserAuditRepository _auditRepository;
     private readonly ISessionRepository _sessionRepository;
     private readonly ITokenService _tokenService;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IMapper _mapper;
-    private readonly IUserLogPublisher _userLogPublisher;
+    private readonly IUserLogPublisher _logPublisher;
     private readonly IUserNotificationPublisher _notificationPublisher;
 
-    private const string ServiceTag = "[" + nameof(UsrService) + "]";
+    private const string ServiceTag = "[BUSINESS][USER]";
 
     public UsrService(
         IUserRepository userRepository,
-        IUserAuditRepository auditLogRepository,
+        IUserAuditRepository auditRepository,
         ISessionRepository sessionRepository,
         ITokenService tokenService,
         IPasswordHasher passwordHasher,
         IMapper mapper,
-        IUserLogPublisher userLogPublisher,
+        IUserLogPublisher logPublisher,
         IUserNotificationPublisher notificationPublisher)
     {
         _userRepository = userRepository;
-        _auditLogRepository = auditLogRepository;
+        _auditRepository = auditRepository;
         _sessionRepository = sessionRepository;
         _tokenService = tokenService;
         _passwordHasher = passwordHasher;
         _mapper = mapper;
-        _userLogPublisher = userLogPublisher;
+        _logPublisher = logPublisher;
         _notificationPublisher = notificationPublisher;
     }
 
-    // [POST]   /api/users/register
+    // [POST] /api/users/register
     public async Task<UserResponse> RegisterAsync(RegisterUserRequest request)
     {
         if (await _userRepository.ExistsAsync(request.Username, request.Email))
-            throw new InvalidOperationException("Username or email already exists");
+            throw new InvalidOperationException("Username or email already exists.");
 
         if (request.Password != request.ConfirmPassword)
-            throw new ArgumentException("Passwords do not match");
+            throw new ArgumentException("Passwords do not match.");
 
-        var user = _mapper.Map<User>(request);
-        user.UserId = Guid.NewGuid();
+        var user = _mapper.Map<UserEntity>(request);
         user.PasswordHash = _passwordHasher.HashPassword(request.Password);
-        user.Role = UserRole.User;
-        user.Status = "Active";
+        user.Role = "User";
+        user.IsActive = true;
         user.CreatedAt = DateTime.UtcNow;
-        user.UpdatedAt = DateTime.UtcNow;
 
-        await _userRepository.AddAsync(user);
+        await _userRepository.InsertAsync(user);
 
-        await _auditLogRepository.AddAsync(new AuditLog
+        await _auditRepository.InsertAsync(new UserAuditEntity
         {
-            LogId = Guid.NewGuid(),
             UserId = user.UserId,
             Action = "REGISTER",
-            Timestamp = DateTime.UtcNow,
-            Details = $"{ServiceTag} User {user.Username} registered"
+            Details = $"{ServiceTag} User '{user.Username}' registered.",
+            Timestamp = DateTime.UtcNow
         });
 
-        await _userLogPublisher.PublishAuditAsync(
+        await _logPublisher.PublishAuditAsync(
             "REGISTER",
-            $"{ServiceTag} User {user.Username} registered",
-            new { user.UserId });
+            $"{ServiceTag} User '{user.Username}' registered.",
+            new Dictionary<string, string> { { "UserId", user.UserId.ToString() } });
 
         return _mapper.Map<UserResponse>(user);
     }
 
-    // [POST]   /api/users/login
+    // [POST] /api/users/login
     public async Task<LoginResponse> LoginAsync(LoginRequest request)
     {
-        var user = await _userRepository.GetByUsernameOrEmailAsync(request.Email);
-        if (user == null || !_passwordHasher.VerifyPassword(user.PasswordHash, request.Password))
-            throw new UnauthorizedAccessException("Invalid email or password");
+        var user = await _userRepository.GetByEmailAsync(request.Email)
+                   ?? await _userRepository.GetByUsernameAsync(request.Email);
+
+        if (user == null || !_passwordHasher.VerifyPassword(user.PasswordHash!, request.Password))
+            throw new UnauthorizedAccessException("Invalid email or password.");
 
         var (token, expiresAt) = _tokenService.GenerateToken(user);
 
         var session = new SessionEntity
         {
-            SessionId = Guid.NewGuid(),
             UserId = user.UserId,
-            Token = token,
-            ExpiresAt = expiresAt
+            Session = token,
+            LoginTime = DateTime.UtcNow,
+            IsActive = true
         };
-        await _sessionRepository.AddAsync(session);
+        await _sessionRepository.InsertAsync(session);
 
-        await _auditLogRepository.AddAsync(new AuditLog
+        await _auditRepository.InsertAsync(new UserAuditEntity
         {
-            LogId = Guid.NewGuid(),
             UserId = user.UserId,
             Action = "LOGIN",
-            Timestamp = DateTime.UtcNow,
-            Details = $"{ServiceTag} User {user.Username} logged in"
+            Details = $"{ServiceTag} User '{user.Username}' logged in.",
+            Timestamp = DateTime.UtcNow
         });
 
-        await _userLogPublisher.PublishAuditAsync(
+        await _logPublisher.PublishAuditAsync(
             "LOGIN",
-            $"{ServiceTag} User {user.Username} logged in",
-            new { user.UserId });
+            $"{ServiceTag} User '{user.Username}' logged in.",
+            new Dictionary<string, string> { { "UserId", user.UserId.ToString() } });
 
         return new LoginResponse
         {
@@ -120,45 +118,47 @@ public class UsrService : IUsrService
         };
     }
 
-    // [POST]   /api/users/logout
+    // [POST] /api/users/logout
     public async Task LogoutAsync(string token)
     {
         var session = await _sessionRepository.GetByTokenAsync(token);
         if (session == null) return;
 
-        await _sessionRepository.DeleteByTokenAsync(token);
+        await _sessionRepository.DeleteAsync(session);
 
-        await _auditLogRepository.AddAsync(new AuditLog
+        await _auditRepository.InsertAsync(new UserAuditEntity
         {
-            LogId = Guid.NewGuid(),
             UserId = session.UserId,
             Action = "LOGOUT",
-            Timestamp = DateTime.UtcNow,
-            Details = $"{ServiceTag} User {session.UserId} logged out"
+            Details = $"{ServiceTag} User {session.UserId} logged out.",
+            Timestamp = DateTime.UtcNow
         });
 
-        await _userLogPublisher.PublishAuditAsync(
+        await _logPublisher.PublishAuditAsync(
             "LOGOUT",
-            $"{ServiceTag} User {session.UserId} logged out",
-            new { session.UserId });
+            $"{ServiceTag} User {session.UserId} logged out.",
+            new Dictionary<string, string> { { "UserId", session.UserId.ToString() } });
     }
 
-    // [GET]    /api/users/profile
-    public async Task<UserProfileResponse> GetProfileAsync(Guid userId)
+    // [GET] /api/users/profile
+    public async Task<UserProfileResponse> GetProfileAsync(int userId)
     {
         var user = await _userRepository.GetByIdAsync(userId);
         if (user == null)
-            throw new KeyNotFoundException("User not found");
+            throw new KeyNotFoundException("User not found.");
 
-        return _mapper.Map<UserProfileResponse>(user);
+        var profile = _mapper.Map<UserProfileResponse>(user);
+        profile.Status = user.IsActive ? "Active" : "Inactive";
+        profile.UpdatedAt = DateTime.UtcNow;
+        return profile;
     }
 
-    // [PUT]    /api/users/update
-    public async Task<UserResponse> UpdateProfileAsync(Guid userId, UpdateProfileRequest request)
+    // [PUT] /api/users/update
+    public async Task<UserResponse> UpdateProfileAsync(int userId, UpdateProfileRequest request)
     {
         var user = await _userRepository.GetByIdAsync(userId);
         if (user == null)
-            throw new KeyNotFoundException("User not found");
+            throw new KeyNotFoundException("User not found.");
 
         user.Username = request.Username;
         user.Email = request.Email;
@@ -166,72 +166,84 @@ public class UsrService : IUsrService
         if (!string.IsNullOrEmpty(request.Password))
         {
             if (request.Password != request.ConfirmPassword)
-                throw new ArgumentException("Passwords do not match");
-
+                throw new ArgumentException("Passwords do not match.");
             user.PasswordHash = _passwordHasher.HashPassword(request.Password);
         }
 
-        user.UpdatedAt = DateTime.UtcNow;
-
         await _userRepository.UpdateAsync(user);
 
-        await _auditLogRepository.AddAsync(new AuditLog
+        await _auditRepository.InsertAsync(new UserAuditEntity
         {
-            LogId = Guid.NewGuid(),
             UserId = user.UserId,
             Action = "UPDATE_PROFILE",
-            Timestamp = DateTime.UtcNow,
-            Details = $"{ServiceTag} User {user.Username} updated profile"
+            Details = $"{ServiceTag} User '{user.Username}' updated profile.",
+            Timestamp = DateTime.UtcNow
         });
 
-        await _userLogPublisher.PublishAuditAsync(
+        await _logPublisher.PublishAuditAsync(
             "UPDATE_PROFILE",
-            $"{ServiceTag} User {user.Username} updated profile",
-            new { user.UserId });
+            $"{ServiceTag} User '{user.Username}' updated profile.",
+            new Dictionary<string, string> { { "UserId", user.UserId.ToString() } });
 
         return _mapper.Map<UserResponse>(user);
     }
 
-    // [POST]   /api/users/reset-password
+    // [POST] /api/users/reset-password
     public async Task ResetPasswordAsync(ResetPasswordRequest request)
     {
-        var user = await _userRepository.GetByUsernameOrEmailAsync(request.Email);
+        var user = await _userRepository.GetByEmailAsync(request.Email)
+                   ?? await _userRepository.GetByUsernameAsync(request.Email);
         if (user == null)
-            throw new KeyNotFoundException("User not found");
+            throw new KeyNotFoundException("User not found.");
+
+        if (request.NewPassword != request.ConfirmPassword)
+            throw new ArgumentException("Passwords do not match.");
 
         user.PasswordHash = _passwordHasher.HashPassword(request.NewPassword);
-        user.UpdatedAt = DateTime.UtcNow;
-
         await _userRepository.UpdateAsync(user);
 
-        await _auditLogRepository.AddAsync(new AuditLog
+        await _auditRepository.InsertAsync(new UserAuditEntity
         {
-            LogId = Guid.NewGuid(),
             UserId = user.UserId,
             Action = "RESET_PASSWORD",
-            Timestamp = DateTime.UtcNow,
-            Details = $"{ServiceTag} User {user.Username} reset password"
+            Details = $"{ServiceTag} User '{user.Username}' reset password.",
+            Timestamp = DateTime.UtcNow
         });
 
-        await _userLogPublisher.PublishAuditAsync(
+        await _logPublisher.PublishAuditAsync(
             "RESET_PASSWORD",
-            $"{ServiceTag} User {user.Username} reset password",
-            new { user.UserId });
+            $"{ServiceTag} User '{user.Username}' reset password.",
+            new Dictionary<string, string> { { "UserId", user.UserId.ToString() } });
     }
 
-    // [POST]   /api/users/send-notification-request
-    public async Task SendNotificationRequestAsync(Guid userId, string message, string type)
+    // [POST] /api/users/send-notification-request
+    public async Task SendNotificationRequestAsync(int userId, string message, string type)
     {
         var user = await _userRepository.GetByIdAsync(userId);
         if (user == null)
-            throw new KeyNotFoundException("User not found");
+            throw new KeyNotFoundException("User not found.");
 
-        await _notificationPublisher.PublishNotificationAsync(
-            user.UserId,
-            user.Email,
-            type,
-            $"{ServiceTag} {message}",
-            "User"
+        await _notificationPublisher.PublishNotificationRequestAsync(
+            title: $"UNIWA STLS {type} notification",
+            body: message,
+            recipientEmail: user.Email!
         );
+
+        await _auditRepository.InsertAsync(new UserAuditEntity
+        {
+            UserId = user.UserId,
+            Action = "SEND_NOTIFICATION",
+            Details = $"{ServiceTag} Sent notification ({type}) to '{user.Email}'.",
+            Timestamp = DateTime.UtcNow
+        });
+
+        await _logPublisher.PublishAuditAsync(
+            "SEND_NOTIFICATION",
+            $"{ServiceTag} Sent notification ({type}) to '{user.Email}'.",
+            new Dictionary<string, string>
+            {
+                { "UserId", user.UserId.ToString() },
+                { "Type", type }
+            });
     }
 }

@@ -1,48 +1,39 @@
 using MassTransit;
-using NotificationStore.Business.Notify;
-using UserMessages;
+using Messages.User;
+using Microsoft.Extensions.Logging;
+using NotificationService.Services;
 
 namespace NotificationStore.Consumers;
 
-public class NotificationRequestConsumer : IConsumer<UserNotificationRequest>
+public class UserNotificationConsumer : IConsumer<UserNotificationMessage>
 {
-    private readonly ILogger<NotificationRequestConsumer> _logger;
-    private readonly INotificationService _notificationService;
+    private readonly INotificationProcessor _processor;
+    private readonly ILogger<UserNotificationConsumer> _logger;
 
-    private const string ServiceTag = "[" + nameof(NotificationRequestConsumer) + "]";
-
-    public NotificationRequestConsumer(
-        ILogger<NotificationRequestConsumer> logger, 
-        INotificationService notificationService)
+    public UserNotificationConsumer(
+        INotificationProcessor processor,
+        ILogger<UserNotificationConsumer> logger)
     {
-        _notificationService = notificationService;
+        _processor = processor;
         _logger = logger;
     }
 
-    public async Task Consume(ConsumeContext<UserNotificationRequest> context)
+    public async Task Consume(ConsumeContext<UserNotificationMessage> context)
     {
         var msg = context.Message;
 
-        _logger.LogInformation(
-            "{Tag} Received {Type} for user {UserId}, email {Email}, message: {Message}",
-            ServiceTag, msg.Type, msg.UserId, msg.RecipientEmail, msg.Message);
+        _logger.LogInformation("📨 [CONSUMER][NOTIFICATION] Received '{Type}' message for {Recipient}",
+            msg.NotificationType, msg.RecipientEmail);
 
-        if (msg.UserId != Guid.Empty && !string.IsNullOrWhiteSpace(msg.RecipientEmail))
+        try
         {
-            await _notificationService.SendUserNotificationAsync(
-                msg.UserId,
-                msg.RecipientEmail,
-                msg.Message ?? string.Empty,
-                msg.Type ?? "General"
-            );
+            await _processor.ProcessNotificationAsync(msg);
+            _logger.LogInformation("✅ Notification processed successfully for {Recipient}", msg.RecipientEmail);
         }
-        else
+        catch (Exception ex)
         {
-            await _notificationService.SendPublicNoticeAsync(
-                msg.Type ?? "Notice",
-                msg.Message ?? string.Empty,
-                msg.TargetAudience ?? "All"
-            );
+            _logger.LogError(ex, "❌ Failed to process notification for {Recipient}", msg.RecipientEmail);
+            throw;
         }
     }
 }

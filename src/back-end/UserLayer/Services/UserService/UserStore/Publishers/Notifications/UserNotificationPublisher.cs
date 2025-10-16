@@ -23,8 +23,7 @@ public class UserNotificationPublisher : IUserNotificationPublisher
                           ?? "user.notification.{type}";
     }
 
-    public async Task PublishNotificationAsync(
-        string notificationType,
+    public async Task PublishNotificationRequestAsync(
         string title,
         string body,
         string recipientEmail,
@@ -43,7 +42,7 @@ public class UserNotificationPublisher : IUserNotificationPublisher
             SourceService = "User Service",
             DestinationServices = new() { "Notification Service" },
 
-            NotificationType = notificationType,
+            NotificationType = "request",
             Title = title,
             Body = body,
             RecipientEmail = recipientEmail,
@@ -51,11 +50,11 @@ public class UserNotificationPublisher : IUserNotificationPublisher
             Metadata = metadata
         };
 
-        var routingKey = _routingPattern.Replace("{type}", notificationType.ToLower());
+        var routingKey = _routingPattern.Replace("{type}", "request");
 
         await _bus.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
 
         _logger.LogInformation("[PUBLISHER][NOTIFICATION] Sent '{Type}' notification to {Recipient}",
-            notificationType, recipientEmail);
+            "request", recipientEmail);
     }
 }

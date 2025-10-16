@@ -14,9 +14,7 @@ using UserStore.Business.Usr;
 using UserStore.Middleware;
 using UserStore.Publishers.Logs;
 using UserStore.Publishers.Notifications;
-using UserStore.Consumers.Traffic;
-using UserStore.Consumers.Usr;
-
+using UserStore.Consumers;
 namespace UserStore;
 
 public class Startup
@@ -89,11 +87,7 @@ public class Startup
         services.AddScoped(typeof(IUserNotificationPublisher), typeof(UserNotificationPublisher));
 
         // Consumers
-        services.AddScoped<UserNotificationAlertConsumer>();
-        services.AddScoped<PublicNoticeConsumer>();
-        services.AddScoped<TrafficCongestionConsumer>();
-        services.AddScoped<TrafficSummaryConsumer>();
-        services.AddScoped<TrafficIncidentConsumer>();
+        services.AddScoped<UserNotificationConsumer>();
 
         // MassTransit Setup
         services.AddUserServiceMassTransit(_configuration);
