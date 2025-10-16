@@ -15,8 +15,8 @@ public class NotificationLogPublisher : INotificationLogPublisher
         _logger = logger;
 
         // Pattern: log.user.notification.{type}
-        _routingPattern = config["RabbitMQ:RoutingKeys:Log:UserNotification"]
-                          ?? "log.user.notification.{type}";
+        _routingPattern = config["RabbitMQ:RoutingKeys:Log:Notification"]
+                          ?? "log.user.notification-service.{type}";
     }
 
     public async Task PublishAuditAsync(string action, string message, Dictionary<string, string>? metadata = null)

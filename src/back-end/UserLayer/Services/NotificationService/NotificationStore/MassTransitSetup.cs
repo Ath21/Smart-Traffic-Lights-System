@@ -16,7 +16,7 @@ public static class MassTransitSetup
             // =====================================================
             // Register Consumers
             // =====================================================
-            x.AddConsumer<UserNotificationRequestConsumer>();
+            x.AddConsumer<UserNotificationConsumer>();
             x.AddConsumer<TrafficAnalyticsConsumer>();
 
             x.UsingRabbitMq((context, cfg) =>
@@ -41,11 +41,11 @@ public static class MassTransitSetup
                 var logExchange = rabbit["Exchanges:Log"];
 
                 // Queues
-                var userQueue = rabbit["Queues:User:NotificationRequest"];
-                var trafficQueue = rabbit["Queues:Traffic:Analytics:Notification"];
+                var userQueue = rabbit["Queues:User:Notification"];
+                var trafficQueue = rabbit["Queues:Traffic:Analytics"];
 
                 // Routing Keys
-                var userRequestKeys = rabbit.GetSection("RoutingKeys:UserRequests").Get<string[]>() ?? Array.Empty<string>();
+                var userRequestKeys = rabbit.GetSection("RoutingKeys:UserNotifications").Get<string[]>() ?? Array.Empty<string>();
                 var trafficMetricsKeys = rabbit.GetSection("RoutingKeys:TrafficAnalytics").Get<string[]>() ?? Array.Empty<string>();
 
                 // =====================================================
@@ -100,7 +100,7 @@ public static class MassTransitSetup
                         });
                     }
 
-                    e.ConfigureConsumer<UserNotificationRequestConsumer>(context);
+                    e.ConfigureConsumer<UserNotificationConsumer>(context);
                     e.PrefetchCount = 10;
                     e.ConcurrentMessageLimit = 5;
                 });

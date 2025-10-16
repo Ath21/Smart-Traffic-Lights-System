@@ -44,7 +44,13 @@ services:
 
       RabbitMQ__Queues__User__Notification: user-2-notification.queue
       RabbitMQ__RoutingKeys__UserNotifications: user.notification.{type}
-      
+
+      ## Traffic
+      RabbitMQ__Exchanges__Traffic: TRAFFIC.EXCHANGE
+
+      RabbitMQ__Queues__Traffic__Analytics: analytics-2-notification.queue
+      RabbitMQ__RoutingKeys__TrafficAnalytics: traffic.analytics.{intersection}.{metric}
+
       ### Log
       RabbitMQ__Exchanges__Log: LOG.EXCHANGE
 
