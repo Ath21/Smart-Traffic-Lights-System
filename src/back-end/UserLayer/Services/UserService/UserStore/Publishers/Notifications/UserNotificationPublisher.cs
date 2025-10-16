@@ -19,7 +19,7 @@ public class UserNotificationPublisher : IUserNotificationPublisher
         _bus = bus;
         _logger = logger;
 
-        _routingPattern = config["RabbitMQ:RoutingKeys:User:Notification"]
+        _routingPattern = config["RabbitMQ:RoutingKeys:UserNotifications"]
                           ?? "user.notification.{type}";
     }
 

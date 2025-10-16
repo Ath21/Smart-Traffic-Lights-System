@@ -38,7 +38,7 @@ public static class MassTransitSetup
                 var userExchange    = rabbit["Exchanges:User"];
 
                 // Queues
-                var userQueue    = rabbit["Queues:User:Notifications"];
+                var userQueue    = rabbit["Queues:User:Notification"];
 
                 // Routing Keys
                 var userNotifKeys     = rabbit.GetSection("RoutingKeys:UserNotifications").Get<string[]>() ?? Array.Empty<string>();
