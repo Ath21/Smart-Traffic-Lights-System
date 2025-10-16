@@ -32,7 +32,7 @@ services:
       RabbitMQ__Exchanges__User: USER.EXCHANGE
 
       RabbitMQ__Queues__User__Notification: notification-2-user.queue
-      RabbitMQ__RoutingKeys__UserNotifications: user.notifications.{type}
+      RabbitMQ__RoutingKeys__UserNotifications: user.notification.{type}
       
       ### Log
       RabbitMQ__Exchanges__Log: LOG.EXCHANGE

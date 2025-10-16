@@ -16,8 +16,8 @@ public class NotificationDbContext
         var client = new MongoClient(settings.ConnectionString);
         _database = client.GetDatabase(settings.Database);
 
-        Notifications = _database.GetCollection<NotificationCollection>(settings.Collections.Notifications);
-        DeliveryLogs = _database.GetCollection<DeliveryLogCollection>(settings.Collections.DeliveryLogs);
+        Notifications = _database.GetCollection<NotificationCollection>(settings.NotificationsCollection);
+        DeliveryLogs = _database.GetCollection<DeliveryLogCollection>(settings.DeliveryLogsCollection);
     }
 
     public IMongoCollection<NotificationCollection> Notifications { get; }

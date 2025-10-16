@@ -9,42 +9,43 @@ namespace NotificationData.Collections;
 [BsonIgnoreExtraElements]
 public class DeliveryLogCollection
 {
-    // unique delivery log ID
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
     public string DeliveryId { get; set; } = string.Empty;
 
-     // reference to parent notification
     [BsonElement("notification_id")]
     public string NotificationId { get; set; } = string.Empty;
 
-    // delivery status (Broadcasted, Delivered, Failed)
+    [BsonElement("recipient_email")]
+    public string RecipientEmail { get; set; } = string.Empty;
+
     [BsonElement("status")]
     public string Status { get; set; } = "Broadcasted";
 
-    // delivery timestamp (UTC)
     [BsonElement("delivered_at")]
     public DateTime DeliveredAt { get; set; } = DateTime.UtcNow;
 
-    // delivery channel (Email, SMS, Push)
     [BsonElement("delivery_method")]
     public string DeliveryMethod { get; set; } = "Email";
+
+    [BsonElement("is_read")]
+    public bool IsRead { get; set; } = false;
+
+    [BsonElement("read_at")]
+    [BsonIgnoreIfNull]
+    public DateTime? ReadAt { get; set; } = null;
 }
 
 /*
-
-{
-  "DeliveryId": "67119a42e4b0b0bdf8700a2b",
-  "NotificationId": "671197b7e4b0b0bdf8700a21",
-  "Status": "Broadcasted",
-  "DeliveredAt": "2025-10-08T09:31:00Z",
-  "DeliveryMethod": "Email"
-},
+Example new doc:
 {
   "DeliveryId": "67119a59e4b0b0bdf8700a2d",
   "NotificationId": "6711984ee4b0b0bdf8700a28",
+  "RecipientEmail": "vathanas1ou@uniwa.gr",
   "Status": "Delivered",
   "DeliveredAt": "2025-10-08T10:06:00Z",
-  "DeliveryMethod": "Email"
+  "DeliveryMethod": "Email",
+  "IsRead": true,
+  "ReadAt": "2025-10-08T12:02:00Z"
 }
 */

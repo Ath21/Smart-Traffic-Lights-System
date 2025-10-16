@@ -1,7 +1,6 @@
 using AutoMapper;
 using NotificationData.Collections;
 using NotificationStore.Models.Dtos;
-using NotificationStore.Models.Requests;
 using NotificationStore.Models.Responses;
 
 namespace NotificationStore;
@@ -10,27 +9,43 @@ public class NotificationStoreProfile : Profile
 {
     public NotificationStoreProfile()
     {
-        // Collections <-> DTOs
-        CreateMap<Notification, NotificationDto>().ReverseMap();
-        CreateMap<DeliveryLog, DeliveryLogDto>().ReverseMap();
+        CreateMap<NotificationCollection, NotificationResponse>()
+            .ForMember(dest => dest.NotificationId, opt => opt.MapFrom(src => src.NotificationId))
+            .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type))
+            .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title))
+            .ForMember(dest => dest.Message, opt => opt.MapFrom(src => src.Message))
+            .ForMember(dest => dest.RecipientEmail, opt => opt.MapFrom(src => src.RecipientEmail))
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+            .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
+            .ForMember(dest => dest.IsRead, opt => opt.Ignore());
 
-        // DTO -> Response
-        CreateMap<NotificationDto, NotificationResponse>();
-        CreateMap<DeliveryLogDto, DeliveryLogResponse>();
+        CreateMap<DeliveryLogCollection, DeliveryLogResponse>()
+            .ForMember(dest => dest.DeliveryId, opt => opt.MapFrom(src => src.DeliveryId))
+            .ForMember(dest => dest.NotificationId, opt => opt.MapFrom(src => src.NotificationId))
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+            .ForMember(dest => dest.DeliveryMethod, opt => opt.MapFrom(src => src.DeliveryMethod))
+            .ForMember(dest => dest.DeliveredAt, opt => opt.MapFrom(src => src.DeliveredAt));
 
-        // Requests -> DTOs
-        CreateMap<SendNotificationRequest, NotificationDto>()
-            .ForMember(dest => dest.NotificationId, opt => opt.MapFrom(_ => Guid.NewGuid()))
-            .ForMember(dest => dest.Title, opt => opt.MapFrom(src => $"{src.Type} Notification"))
-            .ForMember(dest => dest.TargetAudience, opt => opt.MapFrom(src => src.UserId.ToString()))
-            .ForMember(dest => dest.Status, opt => opt.MapFrom(_ => "Pending"))
-            .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow));
+        CreateMap<DeliveryLogCollection, NotificationResponse>()
+            .ForMember(dest => dest.NotificationId, opt => opt.MapFrom(src => src.NotificationId))
+            .ForMember(dest => dest.IsRead, opt => opt.MapFrom(src => src.IsRead))
+            .ForMember(dest => dest.ReadAt, opt => opt.MapFrom(src => src.ReadAt));
 
-        CreateMap<PublicNoticeRequest, NotificationDto>()
-            .ForMember(dest => dest.NotificationId, opt => opt.MapFrom(_ => Guid.NewGuid()))
-            .ForMember(dest => dest.RecipientEmail, opt => opt.Ignore())
-            .ForMember(dest => dest.TargetAudience, opt => opt.MapFrom(src => src.TargetAudience))
-            .ForMember(dest => dest.Status, opt => opt.MapFrom(_ => "Pending"))
-            .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow));
+
+        CreateMap<NotificationCollection, NotificationDto>()
+            .ForMember(dest => dest.NotificationId, opt => opt.MapFrom(src => src.NotificationId))
+            .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type))
+            .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title))
+            .ForMember(dest => dest.Message, opt => opt.MapFrom(src => src.Message))
+            .ForMember(dest => dest.RecipientEmail, opt => opt.MapFrom(src => src.RecipientEmail))
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+            .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
+            .ForMember(dest => dest.IsRead, opt => opt.Ignore())
+            .ForMember(dest => dest.ReadAt, opt => opt.Ignore());
+
+        CreateMap<DeliveryLogCollection, NotificationDto>()
+            .ForMember(dest => dest.NotificationId, opt => opt.MapFrom(src => src.NotificationId))
+            .ForMember(dest => dest.IsRead, opt => opt.MapFrom(src => src.IsRead))
+            .ForMember(dest => dest.ReadAt, opt => opt.MapFrom(src => src.ReadAt));
     }
 }

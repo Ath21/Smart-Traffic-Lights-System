@@ -11,7 +11,7 @@ public class EmailService : IEmailService
     private readonly EmailSettings _emailSettings;
     private readonly ILogger<EmailService> _logger;
 
-    private const string ServiceTag = "[" + nameof(EmailService) + "]";
+    private const string ServiceTag = "[BUSINESS][EMAIL]";
 
     public EmailService(IOptions<EmailSettings> emailSettings, ILogger<EmailService> logger)
     {

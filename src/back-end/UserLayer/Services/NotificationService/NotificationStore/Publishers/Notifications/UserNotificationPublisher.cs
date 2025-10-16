@@ -1,140 +1,78 @@
 using MassTransit;
-
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Messages.User;
 
 namespace NotificationStore.Publishers.Notifications;
 
-public class UserNotificationPublisher : IUserNotificationPublisher
+public class UserNotificationPublisher : INotificationPublisher
 {
     private readonly IBus _bus;
     private readonly ILogger<UserNotificationPublisher> _logger;
     private readonly string _routingPattern;
 
-    public UserNotificationPublisher(
-        IConfiguration config,
-        ILogger<UserNotificationPublisher> logger,
-        IBus bus)
+    public UserNotificationPublisher(IBus bus, IConfiguration config, ILogger<UserNotificationPublisher> logger)
     {
         _bus = bus;
         _logger = logger;
 
+        // Pattern: user.notification.{type}
         _routingPattern = config["RabbitMQ:RoutingKeys:User:Notification"]
                           ?? "user.notification.{type}";
     }
 
-    // ============================================================
-    // Publish ALERT (Traffic-related, broadcast)
-    // ============================================================
-    public async Task PublishAlertAsync(
-        string title,
-        string body,
-        string recipientEmail = "all@uniwa-stls",
-        string status = "Broadcasted",
-        int intersectionId = 0,
-        string? intersectionName = null,
-        Guid? correlationId = null)
+    public async Task PublishUserAlertAsync(int userId, string recipientEmail, string type, string message)
     {
-        await PublishAsync("alert", new UserNotificationMessage
+        var msg = new UserNotificationMessage
         {
-            NotificationType = "Alert",
-            Title = title,
-            Body = body,
-            RecipientEmail = recipientEmail,
-            Status = status,
-            IntersectionId = intersectionId,
-            IntersectionName = intersectionName,
-            SourceServices = new() { "Notification Service" },
-            DestinationServices = new() { "User Service" }
-        }, correlationId);
+            CorrelationId = Guid.NewGuid(),
+            Timestamp = DateTime.UtcNow,
 
-        _logger.LogInformation("ALERT notification published → {Title}", title);
+            SourceLayer = "User Layer",
+            DestinationLayer = new() { "User Layer" },
+
+            SourceService = "Notification Service",
+            DestinationServices = new() { "User Service" },
+
+            NotificationType = type,
+            Title = $"{type} Notification",
+            Body = message,
+            RecipientEmail = recipientEmail,
+            Status = "Sent",
+        };
+
+        var routingKey = _routingPattern.Replace("{type}", type.ToLowerInvariant());
+
+        await _bus.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
+
+        _logger.LogInformation("[PUBLISHER][USER_NOTIFICATION] Published {Type} for {Email}",
+            type, recipientEmail);
     }
 
-    // ============================================================
-    // Publish PUBLIC NOTICE (System announcements)
-    // ============================================================
-    public async Task PublishPublicNoticeAsync(
-        string title,
-        string body,
-        string recipientEmail = "all@uniwa-stls",
-        string status = "Broadcasted",
-        Guid? correlationId = null)
+    public async Task PublishPublicNoticeAsync(string notificationId, string title, string body, string audience)
     {
-        await PublishAsync("public-notice", new UserNotificationMessage
+        var msg = new UserNotificationMessage
         {
+            CorrelationId = Guid.NewGuid(),
+            Timestamp = DateTime.UtcNow,
+
+            SourceLayer = "User Layer",
+            DestinationLayer = new() { "User Layer" },
+
+            SourceService = "Notification Service",
+            DestinationServices = new() { "User Service" },
+
             NotificationType = "PublicNotice",
             Title = title,
             Body = body,
-            RecipientEmail = recipientEmail,
-            Status = status,
-            SourceServices = new() { "Notification Service" },
-            DestinationServices = new() { "User Service" }
-        }, correlationId);
+            RecipientEmail = audience,
+            Status = "Broadcasted"
+        };
 
-        _logger.LogInformation("PUBLIC NOTICE published → {Title}", title);
-    }
+        var routingKey = _routingPattern.Replace("{type}", "public-notice");
 
-    // ============================================================
-    // Publish PRIVATE MESSAGE (Directed user communication)
-    // ============================================================
-    public async Task PublishPrivateAsync(
-        string title,
-        string body,
-        string recipientEmail,
-        string status = "Sent",
-        int intersectionId = 0,
-        string? intersectionName = null,
-        Guid? correlationId = null)
-    {
-        await PublishAsync("private", new UserNotificationMessage
-        {
-            NotificationType = "Private",
-            Title = title,
-            Body = body,
-            RecipientEmail = recipientEmail,
-            Status = status,
-            IntersectionId = intersectionId,
-            IntersectionName = intersectionName,
-            SourceServices = new() { "Notification Service" },
-            DestinationServices = new() { "User Service" }
-        }, correlationId);
-
-        _logger.LogInformation("PRIVATE notification sent to {Recipient}", recipientEmail);
-    }
-
-    // ============================================================
-    // Publish REQUEST (User action request)
-    // ============================================================
-    public async Task PublishRequestAsync(
-        string title,
-        string body,
-        string recipientEmail,
-        string status = "Pending",
-        Guid? correlationId = null)
-    {
-        await PublishAsync("request", new UserNotificationMessage
-        {
-            NotificationType = "Request",
-            Title = title,
-            Body = body,
-            RecipientEmail = recipientEmail,
-            Status = status,
-            SourceServices = new() { "Notification Service" },
-            DestinationServices = new() { "User Service" }
-        }, correlationId);
-
-        _logger.LogInformation("REQUEST notification sent to {Recipient}", recipientEmail);
-    }
-
-    // ============================================================
-    // Internal Publish Logic
-    // ============================================================
-    private async Task PublishAsync(string type, UserNotificationMessage msg, Guid? correlationId)
-    {
-        msg.CorrelationId = correlationId ?? Guid.NewGuid();
-        msg.Timestamp = DateTime.UtcNow;
-
-        var routingKey = _routingPattern.Replace("{type}", type);
         await _bus.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
+
+        _logger.LogInformation("[PUBLISHER][PUBLIC_NOTICE] Published notice {Title} to {Audience}", title, audience);
     }
 }

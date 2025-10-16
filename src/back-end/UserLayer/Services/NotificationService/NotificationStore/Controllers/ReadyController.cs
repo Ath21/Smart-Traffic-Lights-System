@@ -1,4 +1,5 @@
 using MassTransit;
+using Messages.Log;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -19,7 +20,7 @@ namespace NotificationStore.Controllers
             _bus = bus;
         }
 
-        [HttpGet("/ready")]
+        [HttpGet("ready")]
         public async Task<IActionResult> Ready()
         {
             try
@@ -27,7 +28,7 @@ namespace NotificationStore.Controllers
                 if (!await _dbcontext.CanConnectAsync())
                     return StatusCode(503, new { status = "Not Ready", reason = "NotificationDB MongoDB unreachable" });
 
-                if (!_bus.Topology.TryGetPublishAddress(typeof(LogMessages.AuditLogMessage), out _))
+                if (!_bus.Topology.TryGetPublishAddress(typeof(LogMessage), out _))
                     return StatusCode(503, new { status = "Not Ready", reason = "RabbitMQ not connected" });
 
                 return Ok(new { status = "Ready", service = "Notification Service" });
