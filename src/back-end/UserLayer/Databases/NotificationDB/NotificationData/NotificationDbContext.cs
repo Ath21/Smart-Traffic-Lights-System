@@ -13,11 +13,23 @@ public class NotificationDbContext
     public NotificationDbContext(IOptions<NotificationDbSettings> dbSettings)
     {
         var settings = dbSettings.Value;
+
+        if (string.IsNullOrWhiteSpace(settings.ConnectionString))
+            throw new ArgumentNullException(nameof(settings.ConnectionString), "MongoDB connection string is missing.");
+
+        if (string.IsNullOrWhiteSpace(settings.Database))
+            throw new ArgumentNullException(nameof(settings.Database), "MongoDB database name is missing.");
+
         var client = new MongoClient(settings.ConnectionString);
         _database = client.GetDatabase(settings.Database);
 
-        Notifications = _database.GetCollection<NotificationCollection>(settings.NotificationsCollection);
-        DeliveryLogs = _database.GetCollection<DeliveryLogCollection>(settings.DeliveryLogsCollection);
+        Notifications = _database.GetCollection<NotificationCollection>(
+            settings.Collections.Notifications ?? "notifications"
+        );
+
+        DeliveryLogs = _database.GetCollection<DeliveryLogCollection>(
+            settings.Collections.DeliveryLogs ?? "delivery_logs"
+        );
     }
 
     public IMongoCollection<NotificationCollection> Notifications { get; }
@@ -32,8 +44,9 @@ public class NotificationDbContext
             await _database.RunCommandAsync<BsonDocument>(command);
             return true;
         }
-        catch
+        catch (Exception ex)
         {
+            Console.WriteLine($"[MONGO][PING] Connection failed: {ex.Message}");
             return false;
         }
     }

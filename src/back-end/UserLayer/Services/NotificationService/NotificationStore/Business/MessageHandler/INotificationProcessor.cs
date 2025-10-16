@@ -1,7 +1,7 @@
 using Messages.Traffic;
 using Messages.User;
 
-namespace NotificationStore.Business;
+namespace NotificationStore.Business.MessageHandler;
 
 public interface INotificationProcessor
 {

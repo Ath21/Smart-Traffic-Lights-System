@@ -2,7 +2,7 @@ using Messages.Traffic;
 using Messages.User;
 using NotificationStore.Business.Email;
 
-namespace NotificationStore.Business;
+namespace NotificationStore.Business.MessageHandler;
 
 public class NotificationProcessor : INotificationProcessor
 {

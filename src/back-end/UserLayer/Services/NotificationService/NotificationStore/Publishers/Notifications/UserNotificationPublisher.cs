@@ -5,7 +5,7 @@ using Messages.User;
 
 namespace NotificationStore.Publishers.Notifications;
 
-public class UserNotificationPublisher : INotificationPublisher
+public class UserNotificationPublisher : IUserNotificationPublisher
 {
     private readonly IBus _bus;
     private readonly ILogger<UserNotificationPublisher> _logger;

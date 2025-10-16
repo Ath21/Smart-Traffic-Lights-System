@@ -54,33 +54,34 @@ public class UserDbContext : DbContext
             {
                 UserId = 1,
                 Username = "vathanasiou",
-                Email = "ice1939005@gmail.com",
-                PasswordHash = HashPassword("qaz123!@#"),
+                Email = "ice19390005@gmail.com",
+                PasswordHash = "10000.vFdpYw0mEjr8PGPY7dHw1w==.nJrA50wXkN3/JRyR1xz2/6Yd4Z4RrdCC8scvkoU7U9M=", // qaz123!@#
                 Role = "Admin",
                 IsActive = true,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = new DateTime(2024, 01, 01)
             },
             new UserEntity
             {
                 UserId = 2,
                 Username = "vmamalis",
                 Email = "billath131908@gmail.com",
-                PasswordHash = HashPassword("vmamalis123!@#"),
+                PasswordHash = "10000.jT4SfxQOk2Jxvax8zGqx7A==.oO3A2oS1LQEMzPBI4Dnk6xNCDbDsKkQJzJ7yIh0V+eY=", // vmamalis123!@#
                 Role = "TrafficOperator",
                 IsActive = true,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = new DateTime(2024, 01, 01)
             },
             new UserEntity
             {
                 UserId = 3,
                 Username = "apostolos",
                 Email = "athinnovations@gmail.com",
-                PasswordHash = HashPassword("apostolos123!@#"),
+                PasswordHash = "10000.uzBGBmVpi6oLdRIfJ8wcVQ==.Zw+yGumJf7tXvTnPQ03x9obrcvQwFZcPiC64ZXe+Pp8=", // apostolos123!@#
                 Role = "User",
                 IsActive = true,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = new DateTime(2024, 01, 01)
             }
         );
+
 
         base.OnModelCreating(modelBuilder);
     }
@@ -95,25 +96,5 @@ public class UserDbContext : DbContext
         {
             return false;
         }
-    }
-
-    private string HashPassword(string password)
-    {
-        const int SaltSize = 16;
-        const int KeySize = 32;
-        const int Iterations = 10000;
-
-        using var rng = RandomNumberGenerator.Create();
-        byte[] salt = new byte[SaltSize];
-        rng.GetBytes(salt);
-
-        byte[] key = Rfc2898DeriveBytes.Pbkdf2(
-            password,
-            salt,
-            Iterations,
-            HashAlgorithmName.SHA256,
-            KeySize);
-        
-        return $"{Iterations}.{Convert.ToBase64String(salt)}.{Convert.ToBase64String(key)}";
     }
 }

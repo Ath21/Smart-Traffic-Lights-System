@@ -18,7 +18,7 @@ public class NotificationService : INotificationService
     private readonly INotificationRepository _notificationRepository;
     private readonly IDeliveryLogRepository _deliveryLogRepository;
     private readonly IEmailService _emailService;
-    private readonly INotificationPublisher _publisher;
+    private readonly IUserNotificationPublisher _publisher;
     private readonly IMapper _mapper;
     private readonly ILogger<NotificationService> _logger;
 
@@ -29,7 +29,7 @@ public class NotificationService : INotificationService
         IDeliveryLogRepository deliveryLogRepository,
         IMapper mapper,
         IEmailService emailService,
-        INotificationPublisher publisher,
+        IUserNotificationPublisher publisher,
         ILogger<NotificationService> logger)
     {
         _notificationRepository = notificationRepository;

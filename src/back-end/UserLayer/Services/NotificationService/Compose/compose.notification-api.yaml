@@ -1,6 +1,6 @@
 services:
   notification-api:
-    image: ath21/stls-service_started:notification-api
+    image: ath21/stls-services:notification-api
     container_name: notification-api-container
     networks:
       - notification-network

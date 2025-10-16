@@ -2,6 +2,7 @@ using System;
 using MassTransit;
 using Messages.Traffic;
 using NotificationStore.Business;
+using NotificationStore.Business.MessageHandler;
 
 namespace NotificationStore.Consumers;
 

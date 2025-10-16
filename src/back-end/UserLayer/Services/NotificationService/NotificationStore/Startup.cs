@@ -7,6 +7,7 @@ using NotificationData.Repositories.DeliveryLogs;
 using NotificationData.Repositories.Notifications;
 using NotificationData.Settings;
 using NotificationStore.Business.Email;
+using NotificationStore.Business.MessageHandler;
 using NotificationStore.Business.Notify;
 using NotificationStore.Consumers;
 using NotificationStore.Middleware;
@@ -63,6 +64,7 @@ public class Startup
         services.AddScoped(typeof(IEmailService), typeof(EmailService));
 
         // Notification Service
+        services.AddScoped(typeof(INotificationProcessor), typeof(NotificationProcessor));
         services.AddScoped(typeof(INotificationService), typeof(NotificationService));
 
         // ===============================
@@ -74,14 +76,12 @@ public class Startup
         // Message Layer (MassTransit with RabbitMQ)
         // ===============================
         // Publishers
-        services.AddScoped(typeof(INotificationPublisher), typeof(NotificationPublisher));
+        services.AddScoped(typeof(IUserNotificationPublisher), typeof(UserNotificationPublisher));
         services.AddScoped(typeof(INotificationLogPublisher), typeof(NotificationLogPublisher));
 
         // Consumers
-        services.AddScoped<NotificationRequestConsumer>();
-        services.AddScoped<TrafficIncidentConsumer>();
-        services.AddScoped<TrafficCongestionConsumer>();
-        services.AddScoped<TrafficSummaryConsumer>();
+        services.AddScoped<UserNotificationConsumer>();
+        services.AddScoped<TrafficAnalyticsConsumer>();
 
         // MassTransit Setup
         services.AddNotificationServiceMassTransit(_configuration);

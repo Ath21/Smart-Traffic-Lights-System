@@ -7,7 +7,7 @@ services:
       ASPNETCORE_URLS: http://+:8080
 
       # UserDB (MSSQL)
-      ConnectionStrings__MSSQLConnection: Server=user-db,1433;Database=UserDB;User Id=sa;Password=MyPass@word;TrustServerCertificate=True
+      MSSQL__ConnectionString: Server=user-db,1433;Database=UserDB;User Id=sa;Password=MyPass@word;TrustServerCertificate=True
 
       # CORS
       Cors__AllowedOrigins: http://localhost:5173,https://stls.local

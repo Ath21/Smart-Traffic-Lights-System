@@ -1,11 +1,15 @@
 using MongoDB.Driver;
+using NotificationData;
 using NotificationData.Collections;
 
 namespace NotificationData.Repositories.DeliveryLogs;
 
 public class DeliveryLogRepository : BaseRepository<DeliveryLogCollection>, IDeliveryLogRepository
 {
-    public DeliveryLogRepository(IMongoCollection<DeliveryLogCollection> collection) : base(collection) { }
+    public DeliveryLogRepository(NotificationDbContext context)
+        : base(context.DeliveryLogs)
+    {
+    }
 
     public async Task<IEnumerable<DeliveryLogCollection>> GetByStatusAsync(string status)
         => await _collection.Find(l => l.Status == status)
