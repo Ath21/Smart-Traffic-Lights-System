@@ -7,7 +7,7 @@ using TrafficAnalyticsStore.Publishers.Analytics;
 
 namespace TrafficAnalyticsStore.Aggregators;
 
-public class TrafficAnalyticsAggregator
+public class TrafficAnalyticsAggregator : ITrafficAnalyticsAggregator
 {
     private readonly IDailySummaryBusiness _summaryService;
     private readonly IAlertBusiness _alertService;

@@ -1,5 +1,5 @@
 services:
-  traffic-light-controller-api:
+  traffic-light-controller-dimitsanas-north302:
     image: ath21/stls-services:traffic-light-controller
     container_name: traffic-light-controller-dimitsanas-north302-container
     ports:

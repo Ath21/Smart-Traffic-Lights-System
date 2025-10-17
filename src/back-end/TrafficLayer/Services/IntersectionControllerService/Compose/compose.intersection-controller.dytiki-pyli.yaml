@@ -1,5 +1,5 @@
 services:
-  intersection-controller:
+  intersection-controller-dytiki-pyli:
     image: ath21/stls-services:intersection-controller
     container_name: intersection-controller-dytiki-pyli-container
     ports:

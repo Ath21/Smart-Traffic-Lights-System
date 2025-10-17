@@ -8,7 +8,7 @@ function parseJwt(token) {
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
     return JSON.parse(atob(base64))
   } catch (e) {
-    console.error("❌ Failed to decode JWT", e)
+    console.error("Failed to decode JWT", e)
     return null
   }
 }
@@ -63,9 +63,9 @@ export const useAuth = defineStore('auth', () => {
     const timeout = expiryTime - now
 
     if (timeout > 0) {
-      console.log(`⏳ Auto-logout scheduled in ${Math.round(timeout / 1000)}s`)
+      console.log(`Auto-logout scheduled in ${Math.round(timeout / 1000)}s`)
       logoutTimer = setTimeout(() => {
-        console.warn('⚠️ Token expired — auto-logout triggered')
+        console.warn('Token expired — auto-logout triggered')
         logout()
       }, timeout)
     } else {
@@ -77,7 +77,7 @@ export const useAuth = defineStore('auth', () => {
     if (token.value && !user.value) {
       const decoded = parseJwt(token.value)
       if (decoded) {
-        console.log("🔄 Bootstrap decode:", decoded)
+        console.log("Bootstrap decode:", decoded)
         user.value = {
           userId: decoded.sub,
           email: decoded.email,
@@ -108,7 +108,7 @@ export const useAuth = defineStore('auth', () => {
     })
 
     if (res.status === 401) {
-      console.warn("⚠️ Unauthorized, logging out...")
+      console.warn("Unauthorized, logging out...")
       logout()
     }
 

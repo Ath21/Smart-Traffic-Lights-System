@@ -1,5 +1,5 @@
 services:
-  intersection-controller:
+  intersection-controller-agiou-spyridonos:
     image: ath21/stls-services:intersection-controller
     container_name: intersection-controller-agiou-spyridonos-container
     ports:

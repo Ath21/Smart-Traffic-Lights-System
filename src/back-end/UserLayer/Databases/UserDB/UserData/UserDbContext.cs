@@ -55,7 +55,7 @@ public class UserDbContext : DbContext
                 UserId = 1,
                 Username = "vathanasiou",
                 Email = "ice19390005@gmail.com",
-                PasswordHash = "10000.vFdpYw0mEjr8PGPY7dHw1w==.nJrA50wXkN3/JRyR1xz2/6Yd4Z4RrdCC8scvkoU7U9M=", // qaz123!@#
+                PasswordHash = "10000.vFdpYw0mEjr8PGPY7dHw1w==.nJrA50wXkN3/JRyR1xz2/6Yd4Z4RrdCC8scvkoU7U9M=", // qaz123!@# 
                 Role = "Admin",
                 IsActive = true,
                 CreatedAt = new DateTime(2024, 01, 01)

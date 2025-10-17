@@ -40,9 +40,9 @@ public static class MassTransitSetup
                 var logExchange     = rabbit["Exchanges:Log"];
 
                 // Queues
-                var priorityDetectionQueue = rabbit["Queues:Priority:Detection:Coordinator"];
-                var priorityCountQueue     = rabbit["Queues:Priority:Count:Coordinator"];
-                var analyticsQueue         = rabbit["Queues:Traffic:Analytics:Coordinator"];
+                var priorityDetectionQueue = rabbit["Queues:Priority:Detection"];
+                var priorityCountQueue     = rabbit["Queues:Priority:Count"];
+                var analyticsQueue         = rabbit["Queues:Traffic:Analytics"];
 
                 // Routing Keys
                 var priorityDetectionKeys = rabbit.GetSection("RoutingKeys:PriorityDetection").Get<string[]>() ?? Array.Empty<string>();

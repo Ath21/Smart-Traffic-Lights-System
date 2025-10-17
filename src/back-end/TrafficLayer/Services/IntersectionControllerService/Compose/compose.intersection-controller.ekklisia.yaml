@@ -1,5 +1,5 @@
 services:
-  intersection-controller:
+  intersection-controller-ekklisia:
     image: ath21/stls-services:intersection-controller
     container_name: intersection-controller-ekklisia-container
     ports:

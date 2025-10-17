@@ -21,7 +21,7 @@ namespace TrafficLightCoordinatorStore.Publishers.Schedule
 
             // Default routing pattern (can be overridden in appsettings)
             _routingPattern = config["RabbitMQ:RoutingKeys:Traffic:LightSchedule"]
-                              ?? "traffic.light.update.{intersection}";
+                              ?? "traffic.light.schedule.{intersection}";
         }
 
         // ============================================================

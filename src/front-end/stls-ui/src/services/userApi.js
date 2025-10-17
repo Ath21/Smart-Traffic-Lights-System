@@ -37,7 +37,7 @@ export async function logoutApi(token) {
   )
 }
 
-// 🔑 Reset password API
+// Reset password API
 export async function resetPasswordApi(email, newPassword, confirmPassword) {
   const response = await api.post('/reset-password', {
     UsernameOrEmail: email,
@@ -47,7 +47,7 @@ export async function resetPasswordApi(email, newPassword, confirmPassword) {
   return response.data
 }
 
-// 📝 Update profile API
+// Update profile API
 export async function updateProfileApi(token, { email, username, password, confirmPassword, status, role }) {
   const payload = {
     Username: username,

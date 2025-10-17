@@ -6,12 +6,12 @@ namespace TrafficLightControllerStore.Business.Failover;
 public class FailoverBusiness : IFailoverBusiness
 {
     private readonly ITrafficLightCacheRepository _cache;
-    private readonly TrafficLightLogPublisher _logPublisher;
+    private readonly ITrafficLightLogPublisher _logPublisher;
     private readonly ILogger<FailoverBusiness> _logger;
 
     public FailoverBusiness(
         ITrafficLightCacheRepository cache,
-        TrafficLightLogPublisher logPublisher,
+        ITrafficLightLogPublisher logPublisher,
         ILogger<FailoverBusiness> logger)
     {
         _cache = cache;
