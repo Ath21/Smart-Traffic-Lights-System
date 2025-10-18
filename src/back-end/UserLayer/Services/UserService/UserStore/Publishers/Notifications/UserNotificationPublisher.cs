@@ -19,14 +19,12 @@ public class UserNotificationPublisher : IUserNotificationPublisher
         _bus = bus;
         _logger = logger;
 
-        _routingPattern = config["RabbitMQ:RoutingKeys:UserNotifications"]
-                          ?? "user.notification.{type}";
+        _routingPattern = config["RabbitMQ:RoutingKeys:User:NotificationRequests"]
+                        ?? "user.notification.request";
     }
 
     public async Task PublishNotificationRequestAsync(
-        string title,
-        string body,
-        string recipientEmail,
+        string username,
         string status = "Pending",
         Guid? correlationId = null,
         Dictionary<string, string>? metadata = null)
@@ -42,19 +40,17 @@ public class UserNotificationPublisher : IUserNotificationPublisher
             SourceService = "User Service",
             DestinationServices = new() { "Notification Service" },
 
-            NotificationType = "request",
-            Title = title,
-            Body = body,
-            RecipientEmail = recipientEmail,
+            NotificationType = "Request",
+            Title = $"<{correlationId}> Notification Request",
+            Body = $"User '{username}' wants to subscribe to traffic notifications.",
+            RecipientEmail = "ice19390005@gmail.com",
             Status = status,
             Metadata = metadata
         };
 
-        var routingKey = _routingPattern.Replace("{type}", "request");
-
-        await _bus.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
+        await _bus.Publish(msg, ctx => ctx.SetRoutingKey(_routingPattern));
 
         _logger.LogInformation("[PUBLISHER][NOTIFICATION] Sent '{Type}' notification to {Recipient}",
-            "request", recipientEmail);
+            "Request", "ice19390005@gmail.com");
     }
 }

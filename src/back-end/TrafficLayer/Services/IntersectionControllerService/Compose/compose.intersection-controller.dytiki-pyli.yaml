@@ -46,13 +46,13 @@ services:
       Redis__Detection__KeyPrefix__IncidentDetections: detection:{intersection}.incident_detected
 
       # CORS
-      Cors__AllowedOrigins: http://localhost:5173,https://stls.local
+      Cors__AllowedOrigins: http://localhost:5173,https://uniwa-stls.local
       Cors__AllowedMethods: GET,POST,PUT,PATCH,DELETE,OPTIONS
       Cors__AllowedHeaders: Content-Type,Authorization
 
       # JWT
-      Jwt__Issuer: http://stls_backend:8080
-      Jwt__Audience: http://stls_backend:8080
+      Jwt__Issuer: http://uniwa-stls-backend:8080
+      Jwt__Audience: http://uniwa-stls-backend:8080
       Jwt__Key: Nn7kLa8Rzv1XHt9UwMqP4YbFdJxVt2Km
 
       # RabbitMQ

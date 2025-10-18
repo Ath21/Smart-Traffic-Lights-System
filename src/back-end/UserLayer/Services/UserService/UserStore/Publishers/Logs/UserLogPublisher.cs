@@ -20,7 +20,7 @@ public class UserLogPublisher : IUserLogPublisher
         _logger = logger;
 
         _routingPattern = config["RabbitMQ:RoutingKeys:Log:User"]
-                          ?? "log.user.user-service.{type}";
+                          ?? "log.user.user.{type}";
     }
 
     public async Task PublishAuditAsync(string action, string message, Dictionary<string, string>? metadata = null)
