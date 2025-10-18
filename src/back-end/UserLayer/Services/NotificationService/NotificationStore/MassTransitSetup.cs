@@ -43,16 +43,9 @@ public static class MassTransitSetup
                 var trafficAnalyticKey   = rabbit["RoutingKeys:Traffic:Analytics"];
                 var userLogKeyPattern = rabbit["RoutingKeys:Log:User"];
 
-                cfg.Message<UserNotificationMessage>(m => m.SetEntityName(userExchange)); 
-                cfg.Publish<UserNotificationMessage>(m => m.ExchangeType = ExchangeType.Topic);
                 cfg.Message<LogMessage>(m => m.SetEntityName(logExchange));
                 cfg.Publish<LogMessage>(m => m.ExchangeType = ExchangeType.Topic);
                 
-                cfg.Message<UserNotificationRequest>(m => m.SetEntityName(userExchange));
-                cfg.Message<IncidentAnalyticsMessage>(m => m.SetEntityName(trafficExchange));
-                cfg.Message<CongestionAnalyticsMessage>(m => m.SetEntityName(trafficExchange)); 
-                cfg.Message<SummaryAnalyticsMessage>(m => m.SetEntityName(trafficExchange));
-
                 // [1] User → Notification requests
                 cfg.ReceiveEndpoint(userQueue, e =>
                 {
@@ -62,7 +55,7 @@ public static class MassTransitSetup
                     e.Bind(userExchange, s =>
                     {
                         s.ExchangeType = ExchangeType.Topic;
-                        s.RoutingKey = "user.notification.request";
+                        s.RoutingKey = userNotifKeyPattern;
                     });
 
                     e.PrefetchCount = 10;
@@ -93,6 +86,7 @@ public static class MassTransitSetup
                     e.ConfigureConsumer<IncidentAnalyticsConsumer>(context);
                     e.ConfigureConsumer<CongestionAnalyticsConsumer>(context);
                     e.ConfigureConsumer<SummaryAnalyticsConsumer>(context);
+                    
                     e.PrefetchCount = 20;
                 });
             });

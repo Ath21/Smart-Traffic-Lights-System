@@ -7,13 +7,6 @@ using UserStore.Models.Responses;
 
 namespace UserStore.Controllers;
 
-// ============================================================
-// User Layer / User Service - Identity & Profile
-//
-// Handles registration, authentication, profile management, 
-// password reset, and user-initiated notification requests.
-// ===========================================================
-
 [ApiController]
 [Route("api/users")]
 public class UserController : ControllerBase
@@ -25,15 +18,9 @@ public class UserController : ControllerBase
         _userService = userService;
     }
 
-    // ============================================================
-    // POST: /api/users/register
-    // Roles: Anonymous
-    // Purpose: Register a new user
-    // ============================================================
-    [HttpPost("register")]
+    [HttpPost]
+    [Route("register")]
     [AllowAnonymous]
-    [ProducesResponseType(typeof(UserResponse), StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<UserResponse>> Register([FromBody] RegisterUserRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Username) ||
@@ -53,29 +40,18 @@ public class UserController : ControllerBase
         return CreatedAtAction(nameof(GetProfile), new { id = result.UserId }, result);
     }
 
-    // ============================================================
-    // POST: /api/users/login
-    // Roles: Anonymous
-    // Purpose: Authenticate user and issue JWT token
-    // ============================================================
-    [HttpPost("login")]
+    [HttpPost]
+    [Route("login")]
     [AllowAnonymous]
-    [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
     {
         var result = await _userService.LoginAsync(request);
         return Ok(result);
     }
 
-    // ============================================================
-    // POST: /api/users/logout
-    // Roles: User, TrafficOperator, Admin
-    // Purpose: Invalidate JWT token
-    // ============================================================
-    [HttpPost("logout")]
-    [Authorize(Roles = "User,TrafficOperator,Admin")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [HttpPost]
+    [Route("logout")]
+    [Authorize]
     public async Task<IActionResult> Logout()
     {
         var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
@@ -83,15 +59,9 @@ public class UserController : ControllerBase
         return NoContent();
     }
 
-    // ============================================================
-    // GET: /api/users/profile
-    // Roles: User, TrafficOperator, Admin
-    // Purpose: Get current user profile
-    // ============================================================
-    [HttpGet("profile")]
-    [Authorize(Roles = "User,TrafficOperator,Admin")]
-    [ProducesResponseType(typeof(UserProfileResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [HttpGet]
+    [Route("profile")]
+    [Authorize]
     public async Task<ActionResult<UserProfileResponse>> GetProfile()
     {
         var userId = GetUserId();
@@ -99,15 +69,9 @@ public class UserController : ControllerBase
         return Ok(profile);
     }
 
-    // ============================================================
-    // PUT: /api/users/update
-    // Roles: User, TrafficOperator, Admin
-    // Purpose: Update user profile (username, email, password)
-    // ============================================================
-    [HttpPut("update")]
-    [Authorize(Roles = "User,TrafficOperator,Admin")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [HttpPut]
+    [Route("update")]
+    [Authorize]
     public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Username) ||
@@ -127,15 +91,9 @@ public class UserController : ControllerBase
         return NoContent();
     }
 
-    // ============================================================
-    // POST: /api/users/reset-password
-    // Roles: Anonymous
-    // Purpose: Reset password by entering email and new password
-    // ============================================================
-    [HttpPost("reset-password")]
+    [HttpPost]
+    [Route("reset-password")]
     [AllowAnonymous]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
     {
         if (!ModelState.IsValid)
@@ -145,27 +103,6 @@ public class UserController : ControllerBase
         return NoContent();
     }
 
-    // ============================================================
-    // POST: /api/users/send-notification-request
-    // Roles: User, TrafficOperator, Admin
-    // Purpose: Request sending a notification (delegated to Notification Service)
-    // ============================================================
-    [HttpPost("subscribe")]
-    [Authorize(Roles = "User")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> SendNotification([FromBody] NotificationRequest request)
-    {
-        if (string.IsNullOrWhiteSpace(request.Message) || string.IsNullOrWhiteSpace(request.Type))
-            return BadRequest("Message and Type are required.");
-
-        var userId = GetUserId();
-        await _userService.SendNotificationRequestAsync(userId, request.Message, request.Type);
-
-        return Ok(new { status = "sent", message = request.Message, type = request.Type });
-    }
-
-    // Helper to extract UserId from JWT Claims
     private int GetUserId()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)

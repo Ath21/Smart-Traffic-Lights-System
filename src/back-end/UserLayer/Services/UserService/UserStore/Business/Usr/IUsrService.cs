@@ -11,5 +11,4 @@ public interface IUsrService
     Task<UserProfileResponse> GetProfileAsync(int userId);
     Task<UserResponse> UpdateProfileAsync(int userId, UpdateProfileRequest request);
     Task ResetPasswordAsync(ResetPasswordRequest request);
-    Task SendNotificationRequestAsync(int userId, string message, string type);
 }

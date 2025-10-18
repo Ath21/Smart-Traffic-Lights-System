@@ -28,7 +28,6 @@ public class NotificationSubscriptionService : INotificationSubscriptionService
             UserEmail = request.UserEmail,
             Intersection = request.Intersection,
             Metric = request.Metric,
-            Type = request.Type,
             Active = true,
             SubscribedAt = DateTime.UtcNow
         };
@@ -45,7 +44,6 @@ public class NotificationSubscriptionService : INotificationSubscriptionService
             UserEmail = request.UserEmail,
             Intersection = request.Intersection,
             Metric = request.Metric,
-            Type = request.Type,
             Active = true,
             SubscribedAt = entity.SubscribedAt
         };
@@ -61,7 +59,6 @@ public class NotificationSubscriptionService : INotificationSubscriptionService
             UserEmail = s.UserEmail,
             Intersection = s.Intersection,
             Metric = s.Metric,
-            Type = s.Type,
             Active = s.Active,
             SubscribedAt = s.SubscribedAt
         });

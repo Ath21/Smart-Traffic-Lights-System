@@ -13,7 +13,6 @@ using NotificationStore.Consumers;
 using NotificationStore.Middleware;
 using NotificationStore.Models;
 using NotificationStore.Publishers.Logs;
-using NotificationStore.Publishers.Notifications;
 
 namespace NotificationStore;
 
@@ -71,7 +70,6 @@ public class Startup
         // Message Layer (MassTransit with RabbitMQ)
         // ===============================
         // Publishers
-        services.AddScoped(typeof(INotificationPublisher), typeof(NotificationPublisher));
         services.AddScoped(typeof(ILogPublisher), typeof(LogPublisher));
 
         // Consumers

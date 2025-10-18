@@ -21,9 +21,6 @@ public class NotificationCollection
     [BsonElement("metric")]
     public string Metric { get; set; } = null!;
 
-    [BsonElement("type")]
-    public string Type { get; set; } = "public";
-
     [BsonElement("active")]
     public bool Active { get; set; } = true;
 

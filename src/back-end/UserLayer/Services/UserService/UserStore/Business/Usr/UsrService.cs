@@ -71,9 +71,14 @@ public class UsrService : IUsrService
         });
 
         await _logPublisher.PublishAuditAsync(
-            "REGISTER",
-            $"{ServiceTag} User '{user.Username}' registered.",
-            new Dictionary<string, string> { { "UserId", user.UserId.ToString() } });
+            source: "user-api",
+            messageText: $"{ServiceTag} User '{user.Username}' registered.",
+            category: "REGISTER",
+            data: new Dictionary<string, object>
+            {
+                ["UserId"] = user.UserId,
+                ["Email"] = user.Email
+            });
 
         return _mapper.Map<UserResponse>(user);
     }
@@ -107,9 +112,15 @@ public class UsrService : IUsrService
         });
 
         await _logPublisher.PublishAuditAsync(
-            "LOGIN",
-            $"{ServiceTag} User '{user.Username}' logged in.",
-            new Dictionary<string, string> { { "UserId", user.UserId.ToString() } });
+            source: "user-api",
+            messageText: $"{ServiceTag} User '{user.Username}' logged in.",
+            category: "LOGIN",
+            data: new Dictionary<string, object>
+            {
+                ["UserId"] = user.UserId,
+                ["Email"] = user.Email,
+                ["SessionId"] = session.Session
+            });
 
         return new LoginResponse
         {
@@ -135,9 +146,14 @@ public class UsrService : IUsrService
         });
 
         await _logPublisher.PublishAuditAsync(
-            "LOGOUT",
-            $"{ServiceTag} User {session.UserId} logged out.",
-            new Dictionary<string, string> { { "UserId", session.UserId.ToString() } });
+            source: "user-api",
+            messageText: $"{ServiceTag} User {session.UserId} logged out.",
+            category: "LOGOUT",
+            data: new Dictionary<string, object>
+            {
+                ["UserId"] = session.UserId,
+                ["Session"] = session.Session
+            });
     }
 
     // [GET] /api/users/profile
@@ -150,6 +166,17 @@ public class UsrService : IUsrService
         var profile = _mapper.Map<UserProfileResponse>(user);
         profile.Status = user.IsActive ? "Active" : "Inactive";
         profile.UpdatedAt = DateTime.UtcNow;
+
+        await _logPublisher.PublishAuditAsync(
+            source: "user-api",
+            messageText: $"{ServiceTag} Retrieved profile for '{user.Username}'.",
+            category: "GET_PROFILE",
+            data: new Dictionary<string, object>
+            {
+                ["UserId"] = user.UserId,
+                ["Email"] = user.Email
+            });
+
         return profile;
     }
 
@@ -181,9 +208,14 @@ public class UsrService : IUsrService
         });
 
         await _logPublisher.PublishAuditAsync(
-            "UPDATE_PROFILE",
-            $"{ServiceTag} User '{user.Username}' updated profile.",
-            new Dictionary<string, string> { { "UserId", user.UserId.ToString() } });
+            source: "user-api",
+            messageText: $"{ServiceTag} User '{user.Username}' updated profile.",
+            category: "UPDATE_PROFILE",
+            data: new Dictionary<string, object>
+            {
+                ["UserId"] = user.UserId,
+                ["Email"] = user.Email
+            });
 
         return _mapper.Map<UserResponse>(user);
     }
@@ -211,44 +243,13 @@ public class UsrService : IUsrService
         });
 
         await _logPublisher.PublishAuditAsync(
-            "RESET_PASSWORD",
-            $"{ServiceTag} User '{user.Username}' reset password.",
-            new Dictionary<string, string> { { "UserId", user.UserId.ToString() } });
-    }
-
-    // [POST] /api/users/send-notification-request
-    public async Task SendNotificationRequestAsync(int userId, string message, string type)
-    {
-        var user = await _userRepository.GetByIdAsync(userId);
-        if (user == null)
-            throw new KeyNotFoundException("User not found.");
-
-        await _notificationPublisher.PublishNotificationRequestAsync(
-            user.Username,
-            "Pending",
-            null,
-            new Dictionary<string, string>
+            source: "user-api",
+            messageText: $"{ServiceTag} User '{user.Username}' reset password.",
+            category: "RESET_PASSWORD",
+            data: new Dictionary<string, object>
             {
-                { "Message", message },
-                { "Type", type }
-            }
-        );
-
-        await _auditRepository.InsertAsync(new UserAuditEntity
-        {
-            UserId = user.UserId,
-            Action = "SEND_NOTIFICATION",
-            Details = $"{ServiceTag} Sent notification ({type}) to '{user.Email}'.",
-            Timestamp = DateTime.UtcNow
-        });
-
-        await _logPublisher.PublishAuditAsync(
-            "SEND_NOTIFICATION",
-            $"{ServiceTag} Sent notification ({type}) to '{user.Email}'.",
-            new Dictionary<string, string>
-            {
-                { "UserId", user.UserId.ToString() },
-                { "Type", type }
+                ["UserId"] = user.UserId,
+                ["Email"] = user.Email
             });
     }
 }

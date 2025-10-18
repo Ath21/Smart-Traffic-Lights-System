@@ -7,67 +7,71 @@ namespace UserStore.Publishers.Logs;
 
 public class UserLogPublisher : IUserLogPublisher
 {
-    private readonly IBus _bus;
+    private readonly IPublishEndpoint _publisher;
     private readonly ILogger<UserLogPublisher> _logger;
     private readonly string _routingPattern;
+    private readonly string _exchangeName;
 
-    public UserLogPublisher(
-        IBus bus,
-        IConfiguration config,
-        ILogger<UserLogPublisher> logger)
+    private const string Tag = "[PUBLISHER][LOG]";
+
+    public UserLogPublisher(IPublishEndpoint publisher, IConfiguration configuration, ILogger<UserLogPublisher> logger)
     {
-        _bus = bus;
+        _publisher = publisher;
         _logger = logger;
 
-        _routingPattern = config["RabbitMQ:RoutingKeys:Log:User"]
-                          ?? "log.user.user-api.{type}";
+        _exchangeName = configuration["RabbitMQ:Exchanges:Log"] ?? "LOG.EXCHANGE";
+        _routingPattern = configuration["RabbitMQ:RoutingKeys:Log:User"] ?? "log.user.user-api.{type}";
     }
 
-    public async Task PublishAuditAsync(string action, string message, Dictionary<string, string>? metadata = null)
-        => await PublishAsync("audit", "Audit", action, message, metadata);
-
-    public async Task PublishErrorAsync(string action, string message, Exception? ex = null, Dictionary<string, string>? metadata = null)
+    public async Task PublishAuditAsync(string source, string messageText, string? category = null, Dictionary<string, object>? data = null, string level = "info")
     {
-        if (ex != null)
-        {
-            metadata ??= new();
-            metadata["exception_type"] = ex.GetType().Name;
-            metadata["exception_message"] = ex.Message;
-        }
+        var routingKey = _routingPattern.Replace("{type}", "audit");
 
-        await PublishAsync("error", "Error", action, message, metadata);
-    }
-
-    public async Task PublishFailoverAsync(string action, string message, Dictionary<string, string>? metadata = null)
-        => await PublishAsync("failover", "Failover", action, message, metadata);
-
-    private async Task PublishAsync(
-        string routingSuffix,
-        string logType,
-        string action,
-        string message,
-        Dictionary<string, string>? metadata)
-    {
         var msg = new LogMessage
         {
-            CorrelationId = Guid.NewGuid(),
+            Source = source,
+            Type = "audit",
+            Message = messageText,
+            Category = category,
+            Level = level,
             Timestamp = DateTime.UtcNow,
-
-            SourceLayer = "User Layer",
-            DestinationLayer = new() { "Log Layer" },
-
-            SourceService = "User Service",
-            DestinationServices = new() { "Log Service" },
-
-            LogType = logType,
-            Action = action,
-            Message = message,
-            Metadata = metadata
+            Data = data
         };
 
-        var routingKey = _routingPattern.Replace("{type}", routingSuffix);
-        await _bus.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
+        try
+        {
+            await _publisher.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
+            _logger.LogInformation("{Tag} Published audit log: {Message}", Tag, messageText);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "{Tag} Failed to publish audit log: {Message}", Tag, ex.Message);
+        }
+    }
 
-        _logger.LogInformation("[PUBLISHER][LOG][{Type}] {Action} - {Message}", logType, action, message);
+    public async Task PublishErrorAsync(string source, string messageText, Dictionary<string, object>? data = null)
+    {
+        var routingKey = _routingPattern.Replace("{type}", "error");
+
+        var msg = new LogMessage
+        {
+            Source = source,
+            Type = "error",
+            Message = messageText,
+            Category = "Error",
+            Level = "error",
+            Timestamp = DateTime.UtcNow,
+            Data = data
+        };
+
+        try
+        {
+            await _publisher.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
+            _logger.LogWarning("{Tag} Published error log: {Message}", Tag, messageText);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "{Tag} Failed to publish error log: {Message}", Tag, ex.Message);
+        }
     }
 }

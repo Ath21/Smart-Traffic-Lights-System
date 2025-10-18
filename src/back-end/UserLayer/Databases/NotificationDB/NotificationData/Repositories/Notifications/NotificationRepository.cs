@@ -29,7 +29,6 @@ public class NotificationRepository : INotificationRepository
 
         var update = Builders<NotificationCollection>.Update
             .Set(n => n.Active, true)
-            .Set(n => n.Type, subscription.Type)
             .Set(n => n.SubscribedAt, DateTime.UtcNow);
 
         await _context.Notifications.UpdateOneAsync(filter, update, new UpdateOptions { IsUpsert = true });

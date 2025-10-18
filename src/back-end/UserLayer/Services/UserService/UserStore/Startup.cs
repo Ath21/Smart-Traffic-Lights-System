@@ -14,7 +14,8 @@ using UserStore.Business.Usr;
 using UserStore.Middleware;
 using UserStore.Publishers.Logs;
 using UserStore.Publishers.Notifications;
-using UserStore.Consumers;
+using UserStore.Business.Subscribe;
+
 namespace UserStore;
 
 public class Startup
@@ -51,6 +52,7 @@ public class Startup
         services.AddScoped(typeof(IPasswordHasher), typeof(PasswordHasher));
         services.AddScoped(typeof(ITokenService), typeof(TokenService));
         services.AddScoped(typeof(IUsrService), typeof(UsrService));
+        services.AddScoped(typeof(IUserSubscriptionService), typeof(UserSubscriptionService));
 
         // ===============================
         // AutoMapper
@@ -85,9 +87,6 @@ public class Startup
         // Publishers
         services.AddScoped(typeof(IUserLogPublisher), typeof(UserLogPublisher));
         services.AddScoped(typeof(IUserNotificationPublisher), typeof(UserNotificationPublisher));
-
-        // Consumers
-        services.AddScoped<UserNotificationConsumer>();
 
         // MassTransit Setup
         services.AddUserServiceMassTransit(_configuration);

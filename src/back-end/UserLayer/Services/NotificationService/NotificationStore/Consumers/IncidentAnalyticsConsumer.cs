@@ -1,35 +1,27 @@
 using MassTransit;
-using Microsoft.Extensions.Logging;
-using Messages.Traffic;
-using Messages.User;
-using NotificationData.Repositories;
 using Messages.Traffic.Analytics;
-using NotificationData.Repositories.Notifications;
 using NotificationData.Repositories.DeliveryLogs;
-using NotificationStore.Publishers.Logs;
+using NotificationData.Repositories.Notifications;
 using NotificationStore.Business.Email;
-using NotificationStore.Publishers.Notifications;
+using NotificationStore.Publishers.Logs;
 
 namespace NotificationStore.Consumers;
 
 public class IncidentAnalyticsConsumer : IConsumer<IncidentAnalyticsMessage>
 {
     private readonly INotificationRepository _repo;
-    private readonly DeliveryLogRepository _logRepo;
-    private readonly INotificationPublisher _publisher;
+    private readonly IDeliveryLogRepository _logRepo;
     private readonly ILogPublisher _logPublisher;
     private readonly IEmailService _emailService;
 
     public IncidentAnalyticsConsumer(
         INotificationRepository repo,
-        DeliveryLogRepository logRepo,
-        INotificationPublisher publisher,
+        IDeliveryLogRepository logRepo,
         ILogPublisher logPublisher,
         IEmailService emailService)
     {
         _repo = repo;
         _logRepo = logRepo;
-        _publisher = publisher;
         _logPublisher = logPublisher;
         _emailService = emailService;
     }
@@ -46,34 +38,24 @@ public class IncidentAnalyticsConsumer : IConsumer<IncidentAnalyticsMessage>
 
         foreach (var sub in subs)
         {
-            var notif = new UserNotificationMessage
-            {
-                UserId = sub.UserId,
-                UserEmail = sub.UserEmail,
-                Title = $"Incident at {msg.Intersection}",
-                Body = $"{msg.IncidentType.ToUpper()} ({msg.Severity}) reported at {msg.Timestamp:t}",
-                Type = "alert"
-            };
+            var subject = $"Incident at {msg.Intersection}";
+            var body = $"{msg.IncidentType.ToUpper()} ({msg.Severity}) reported at {msg.Timestamp:t}";
 
             try
             {
-                await _publisher.PublishNotificationAsync(notif, "user.notification.{type}");
+                await _emailService.SendEmailAsync(sub.UserEmail, subject, body);
                 await _logRepo.LogDeliveryAsync(sub.UserId, sub.UserEmail, $"{msg.Intersection}.incident", "Success");
-
-                // send email alert
-                await _emailService.SendEmailAsync(sub.UserEmail, notif.Title, notif.Body);
 
                 await _logPublisher.PublishAuditAsync(
                     "Consumer",
-                    $"[CONSUMER][INCIDENT] Delivered to {sub.UserId} ({sub.UserEmail})");
+                    $"[CONSUMER][INCIDENT] Email sent to {sub.UserEmail}");
             }
             catch (Exception ex)
             {
                 await _logRepo.LogDeliveryAsync(sub.UserId, sub.UserEmail, $"{msg.Intersection}.incident", "Failed");
-
                 await _logPublisher.PublishErrorAsync(
                     "Consumer",
-                    $"[CONSUMER][INCIDENT] Failed delivery for {sub.UserId} ({sub.UserEmail}): {ex.Message}");
+                    $"[CONSUMER][INCIDENT] Failed to send to {sub.UserEmail}: {ex.Message}");
             }
         }
     }
