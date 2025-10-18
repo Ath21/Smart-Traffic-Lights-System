@@ -125,7 +125,7 @@ public class Startup
             {
                 Title = "User Service",
                 Version = "v3.0",
-                Description = "Cloud-level user management service responsible for authentication, session tracking, and role-based access across the UNIWA STLS ecosystem."
+                Description = "Cloud-level user management service responsible for authentication, session tracking, and role-based access across the UNIWA STLS."
             });
 
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme

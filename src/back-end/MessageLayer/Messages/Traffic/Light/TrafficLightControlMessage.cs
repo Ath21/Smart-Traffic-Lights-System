@@ -9,9 +9,9 @@
 //
 // Published by : Intersection Controller Service, User Service
 // Consumed by  : Traffic Light Controller Service
-namespace Messages.Traffic;
+namespace Messages.Traffic.Light;
 
-public class TrafficLightControlMessage : BaseMessage
+public class TrafficLightControlMessage 
 {
     public int IntersectionId { get; set; }
     public string? IntersectionName { get; set; }

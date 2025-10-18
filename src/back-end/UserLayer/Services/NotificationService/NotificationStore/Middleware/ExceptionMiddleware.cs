@@ -7,8 +7,8 @@ using MailKit;
 using MongoDB.Driver;
 using RabbitMQ.Client.Exceptions;
 using AutoMapper;
-using NotificationStore.Publishers.Logs;
 using MassTransit;
+using NotificationStore.Publishers.Logs;
 
 namespace NotificationStore.Middleware;
 
@@ -34,167 +34,122 @@ public class ExceptionMiddleware
         {
             await _next(context);
         }
-
-        // ============================
-        // AUTH / SECURITY
-        // ============================
-        catch (UnauthorizedAccessException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.Unauthorized, "Unauthorized access", "AUTH_ERROR", ex);
-        }
-        catch (SecurityTokenException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.Unauthorized, "Invalid or expired token", "TOKEN_ERROR", ex);
-        }
-        catch (AuthenticationException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.Unauthorized, "Authentication failed", "AUTHENTICATION_ERROR", ex);
-        }
-
-        // ============================
-        // CLIENT / VALIDATION
-        // ============================
-        catch (KeyNotFoundException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.NotFound, "Resource not found", "NOT_FOUND", ex);
-        }
-        catch (InvalidOperationException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid operation", "INVALID_OPERATION", ex);
-        }
-        catch (ArgumentNullException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Missing required parameter", "ARGUMENT_NULL", ex);
-        }
-        catch (ArgumentException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid argument", "ARGUMENT_ERROR", ex);
-        }
-        catch (FormatException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid data format", "FORMAT_ERROR", ex);
-        }
-        catch (JsonException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.BadRequest, "Invalid JSON payload", "JSON_ERROR", ex);
-        }
-        catch (AutoMapperMappingException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.InternalServerError, "Mapping error occurred", "MAPPING_ERROR", ex);
-        }
-
-        // ============================
-        // EMAIL / SMTP (MailKit)
-        // ============================
-        catch (SmtpCommandException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.BadGateway, "SMTP command failed", "SMTP_COMMAND_ERROR", ex);
-        }
-        catch (SmtpProtocolException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.BadGateway, "SMTP protocol error", "SMTP_PROTOCOL_ERROR", ex);
-        }
-        catch (MessageNotFoundException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.NotFound, "Email message not found", "EMAIL_NOT_FOUND", ex);
-        }
-
-        // ============================
-        // DATABASE (MongoDB)
-        // ============================
-        catch (MongoAuthenticationException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.Unauthorized, "MongoDB authentication failed", "DB_AUTH_ERROR", ex);
-        }
-        catch (MongoConnectionException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.ServiceUnavailable, "MongoDB connection failure", "DB_CONN_ERROR", ex);
-        }
-        catch (MongoWriteException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.Conflict, "MongoDB write conflict", "DB_WRITE_ERROR", ex);
-        }
-        catch (MongoException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.InternalServerError, "MongoDB error", "DB_ERROR", ex);
-        }
-
-        // ============================
-        // BROKER / NETWORK
-        // ============================
-        catch (TimeoutException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.RequestTimeout, "Operation timed out", "TIMEOUT", ex);
-        }
-        catch (RequestTimeoutException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.GatewayTimeout, "RabbitMQ request timeout", "BROKER_TIMEOUT", ex);
-        }
-        catch (BrokerUnreachableException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.BadGateway, "RabbitMQ unreachable", "BROKER_UNREACHABLE", ex);
-        }
-        catch (OperationInterruptedException ex)
-        {
-            await HandleErrorAsync(context, HttpStatusCode.ServiceUnavailable, "RabbitMQ operation interrupted", "BROKER_INTERRUPTED", ex);
-        }
-
-        // ============================
-        // FALLBACK
-        // ============================
         catch (Exception ex)
         {
-            await HandleErrorAsync(context, HttpStatusCode.InternalServerError, "Unexpected error occurred", "UNEXPECTED", ex);
+            // ============================================================
+            // Unified Exception Classification (tuple switch)
+            // ============================================================
+            var (statusCode, userMessage, errorType) = ex switch
+            {
+                // ============================
+                // AUTH / SECURITY
+                // ============================
+                UnauthorizedAccessException   => (HttpStatusCode.Unauthorized, "Unauthorized access", "AUTH_ERROR"),
+                SecurityTokenException        => (HttpStatusCode.Unauthorized, "Invalid or expired token", "TOKEN_ERROR"),
+                AuthenticationException       => (HttpStatusCode.Unauthorized, "Authentication failed", "AUTHENTICATION_ERROR"),
+
+                // ============================
+                // CLIENT / VALIDATION
+                // ============================
+                KeyNotFoundException          => (HttpStatusCode.NotFound, "Resource not found", "NOT_FOUND"),
+                InvalidOperationException     => (HttpStatusCode.BadRequest, "Invalid operation", "INVALID_OPERATION"),
+                ArgumentNullException         => (HttpStatusCode.BadRequest, "Missing required parameter", "ARGUMENT_NULL"),
+                ArgumentException             => (HttpStatusCode.BadRequest, "Invalid argument", "ARGUMENT_ERROR"),
+                FormatException               => (HttpStatusCode.BadRequest, "Invalid data format", "FORMAT_ERROR"),
+                JsonException                 => (HttpStatusCode.BadRequest, "Invalid JSON payload", "JSON_ERROR"),
+                AutoMapperMappingException    => (HttpStatusCode.InternalServerError, "Mapping error occurred", "MAPPING_ERROR"),
+
+                // ============================
+                // EMAIL / SMTP (MailKit)
+                // ============================
+                SmtpCommandException          => (HttpStatusCode.BadGateway, "SMTP command failed", "SMTP_COMMAND_ERROR"),
+                SmtpProtocolException         => (HttpStatusCode.BadGateway, "SMTP protocol error", "SMTP_PROTOCOL_ERROR"),
+                MessageNotFoundException      => (HttpStatusCode.NotFound, "Email message not found", "EMAIL_NOT_FOUND"),
+
+                // ============================
+                // DATABASE (MongoDB)
+                // ============================
+                MongoAuthenticationException  => (HttpStatusCode.Unauthorized, "MongoDB authentication failed", "DB_AUTH_ERROR"),
+                MongoConnectionException      => (HttpStatusCode.ServiceUnavailable, "MongoDB connection failure", "DB_CONN_ERROR"),
+                MongoWriteException           => (HttpStatusCode.Conflict, "MongoDB write conflict", "DB_WRITE_ERROR"),
+                MongoException                => (HttpStatusCode.InternalServerError, "MongoDB error", "DB_ERROR"),
+
+                // ============================
+                // BROKER / NETWORK
+                // ============================
+                TimeoutException              => (HttpStatusCode.RequestTimeout, "Operation timed out", "TIMEOUT"),
+                RequestTimeoutException       => (HttpStatusCode.GatewayTimeout, "RabbitMQ request timeout", "BROKER_TIMEOUT"),
+                BrokerUnreachableException    => (HttpStatusCode.BadGateway, "RabbitMQ unreachable", "BROKER_UNREACHABLE"),
+                OperationInterruptedException => (HttpStatusCode.ServiceUnavailable, "RabbitMQ operation interrupted", "BROKER_INTERRUPTED"),
+
+                // ============================
+                // FALLBACK
+                // ============================
+                _                             => (HttpStatusCode.InternalServerError, "Unexpected error occurred", "UNEXPECTED")
+            };
+
+            await HandleErrorAsync(context, statusCode, userMessage, errorType, ex);
         }
     }
 
     private async Task HandleErrorAsync(
         HttpContext context,
-        HttpStatusCode status,
+        HttpStatusCode statusCode,
         string userMessage,
         string errorType,
         Exception ex)
     {
-        var correlationId = context.Request.Headers.ContainsKey("X-Correlation-ID")
+        _logger.LogError(ex, "[EXCEPTION] {ErrorType} - {Message}", errorType, userMessage);
+
+        // Generate or reuse correlation ID
+        string correlationId = context.Request.Headers.ContainsKey("X-Correlation-ID")
             ? context.Request.Headers["X-Correlation-ID"].ToString()
             : Guid.NewGuid().ToString();
 
-        _logger.LogError(ex, "[EXCEPTION] {ErrorType} - {Message}", errorType, userMessage);
-
-        using var scope = _scopeFactory.CreateScope();
-        var logPublisher = scope.ServiceProvider.GetRequiredService<INotificationLogPublisher>();
-
-        var metadata = new Dictionary<string, string>
+        // Enrich metadata for audit/error log
+        var metadata = new Dictionary<string, object>
         {
             ["path"] = context.Request.Path,
             ["method"] = context.Request.Method,
             ["trace_id"] = context.TraceIdentifier,
             ["correlation_id"] = correlationId,
-            ["exception_type"] = ex.GetType().Name,
-            ["exception_message"] = ex.Message
+            ["exception_type"] = ex.GetType().FullName ?? "Unknown",
+            ["exception_message"] = ex.Message,
+            ["stack_trace"] = ex.StackTrace ?? string.Empty
         };
 
+        // Publish error log via RabbitMQ (LOG.EXCHANGE)
         try
         {
+            using var scope = _scopeFactory.CreateScope();
+            var logPublisher = scope.ServiceProvider.GetRequiredService<ILogPublisher>();
+
             await logPublisher.PublishErrorAsync(
-            action: errorType,
-            message: $"[EXCEPTION] {ex.Message}",
-            metadata: metadata);
+                category: "Middleware",
+                message: $"[{errorType}] {userMessage}: {ex.Message}",
+                correlationId: correlationId,
+                data: metadata);
+
+            _logger.LogInformation("[EXCEPTION] Published error log ({ErrorType}) via RabbitMQ", errorType);
         }
         catch (Exception pubEx)
         {
-            _logger.LogError(pubEx, "[EXCEPTION] Failed to publish error log");
+            _logger.LogError(pubEx, "[EXCEPTION] Failed to publish log to RabbitMQ");
         }
 
-        context.Response.StatusCode = (int)status;
+        // Build and send HTTP response
+        context.Response.StatusCode = (int)statusCode;
         context.Response.ContentType = "application/json";
 
-        await context.Response.WriteAsJsonAsync(new
+        var response = new
         {
             error = userMessage,
             details = ex.Message,
+            type = errorType,
             traceId = context.TraceIdentifier,
             correlationId
-        });
+        };
+
+        await context.Response.WriteAsync(JsonSerializer.Serialize(response));
     }
 }

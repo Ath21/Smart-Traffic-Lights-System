@@ -6,9 +6,9 @@ using NotificationData;
 using NotificationData.Repositories.DeliveryLogs;
 using NotificationData.Repositories.Notifications;
 using NotificationData.Settings;
+using NotificationStore.Business.Delivery;
 using NotificationStore.Business.Email;
-using NotificationStore.Business.MessageHandler;
-using NotificationStore.Business.Notify;
+using NotificationStore.Business.Subscription;
 using NotificationStore.Consumers;
 using NotificationStore.Middleware;
 using NotificationStore.Models;
@@ -64,24 +64,21 @@ public class Startup
         services.AddScoped(typeof(IEmailService), typeof(EmailService));
 
         // Notification Service
-        services.AddScoped(typeof(INotificationProcessor), typeof(NotificationProcessor));
-        services.AddScoped(typeof(INotificationService), typeof(NotificationService));
-
-        // ===============================
-        // AutoMapper
-        // ===============================
-        services.AddAutoMapper(typeof(NotificationStoreProfile));
+        services.AddScoped(typeof(INotificationSubscriptionService), typeof(NotificationSubscriptionService));
+        services.AddScoped(typeof(INotificationDeliveryService), typeof(NotificationDeliveryService));
 
         // ===============================
         // Message Layer (MassTransit with RabbitMQ)
         // ===============================
         // Publishers
-        services.AddScoped(typeof(IUserNotificationPublisher), typeof(UserNotificationPublisher));
-        services.AddScoped(typeof(INotificationLogPublisher), typeof(NotificationLogPublisher));
+        services.AddScoped(typeof(INotificationPublisher), typeof(NotificationPublisher));
+        services.AddScoped(typeof(ILogPublisher), typeof(LogPublisher));
 
         // Consumers
-        services.AddScoped<UserNotificationConsumer>();
-        services.AddScoped<TrafficAnalyticsConsumer>();
+        services.AddScoped<UserNotificationRequestConsumer>();
+        services.AddScoped<IncidentAnalyticsConsumer>();
+        services.AddScoped<CongestionAnalyticsConsumer>();
+        services.AddScoped<SummaryAnalyticsConsumer>();
 
         // MassTransit Setup
         services.AddNotificationServiceMassTransit(_configuration);
@@ -141,7 +138,7 @@ public class Startup
             {
                 Title = "Notification Service",
                 Version = "v3.0",
-                Description = "Centralized cloud service for broadcasting alerts, notifications, and email updates across the UNIWA STLS ecosystem."
+                Description = "Centralized cloud service for broadcasting alerts, notifications, and email updates across the UNIWA STLS."
             });
 
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme

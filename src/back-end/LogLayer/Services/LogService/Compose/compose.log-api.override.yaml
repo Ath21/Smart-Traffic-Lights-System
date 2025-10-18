@@ -3,15 +3,9 @@ services:
     ports:
       - '5005:8080'
     environment:
+      # ASP.NET Core
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
-
-      # LogDB (MongoDB)
-      Mongo__ConnectionString: mongodb://mongo:mongo123@log-db:27017/
-      Mongo__Database: LogDB
-      Mongo__Collections__AuditLogs: audit_logs
-      Mongo__Collections__ErrorLogs: error_logs
-      Mongo__Collections__FailoverLogs: failover_logs
 
       # CORS
       Cors__AllowedOrigins: http://localhost:5173,https://uniwa-stls.local
@@ -23,7 +17,15 @@ services:
       Jwt__Audience: http://uniwa-stls-backend:8080
       Jwt__Key: Nn7kLa8Rzv1XHt9UwMqP4YbFdJxVt2Km
 
-      # RabbitMQ
+      # Databases
+      ## LogDB
+      Mongo__ConnectionString__Log: "mongodb://mongo:mongo123@log-db:27017/"
+      Mongo__Database__Log: "LogDB"
+      Mongo__Collections__AuditLogs: "audit_logs"
+      Mongo__Collections__ErrorLogs: "error_logs"
+      Mongo__Collections__FailoverLogs: "failover_logs"
+
+      # Message Broker
       ## Configuration
       RabbitMQ__Host: rabbitmq
       RabbitMQ__VirtualHost: /
@@ -31,12 +33,18 @@ services:
       RabbitMQ__Username: rabbitmq
       RabbitMQ__Password: rabbitmq123
 
-      ## Exchanges, Queues, Routing Keys
-      RabbitMQ__Exchanges__Log: LOG.EXCHANGE
-      RabbitMQ__Queues__Log: services-2-log.queue
-      RabbitMQ__RoutingKeys__Log__0: log.sensor.#
-      RabbitMQ__RoutingKeys__Log__1: log.traffic.#
-      RabbitMQ__RoutingKeys__Log__2: log.user.#
+      ## Exchanges
+      RabbitMQ__Exchanges__Log: "LOG.EXCHANGE"
+
+      ## Queues
+      RabbitMQ__Queues__Log__User: "user-2-log.queue"
+      RabbitMQ__Queues__Log__Traffic: "traffic-2-log.queue"
+      RabbitMQ__Queues__Log__Sensor: "sensor-2-log.queue"
+
+      ## Routing Keys
+      RabbitMQ__RoutingKeys__Log__User: "log.user.{service}.{type}"
+      RabbitMQ__RoutingKeys__Log__Traffic: "log.traffic.{service}.{type}"
+      RabbitMQ__RoutingKeys__Log__Sensor: "log.sensor.{service}.{type}"
 
     depends_on:
       log-db:

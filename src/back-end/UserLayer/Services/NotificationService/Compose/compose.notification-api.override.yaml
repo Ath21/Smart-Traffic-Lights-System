@@ -3,14 +3,9 @@ services:
     ports:
       - '5087:8080'
     environment:
+      # ASP.NET Core
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
-
-      # NotificationDB (MongoDB)
-      Mongo__ConnectionString: mongodb://mongo:mongo123@notification-db:27017
-      Mongo__Database: NotificationDB
-      Mongo__NotificationsCollection: notifications
-      Mongo__DeliveryLogsCollection: delivery_logs
 
       # CORS
       Cors__AllowedOrigins: http://localhost:5173,https://uniwa-stls.local
@@ -30,7 +25,14 @@ services:
       Email__Username: ice19390005@gmail.com
       Email__Password: waqr ilfj fxpu banq
 
-      # RabbitMQ
+      # Databases
+      ## NotificationDB
+      Mongo__ConnectionString: "mongodb://mongo:mongo123@notification-db:27017"
+      Mongo__Database: "NotificationDB"
+      Mongo__NotificationsCollection: "notifications"
+      Mongo__DeliveryLogsCollection: "delivery_logs" 
+
+      # Message Broker
       ## Configuration
       RabbitMQ__Host: rabbitmq
       RabbitMQ__VirtualHost: /
@@ -38,23 +40,18 @@ services:
       RabbitMQ__Username: rabbitmq
       RabbitMQ__Password: rabbitmq123
 
-      ## Exchanges & Routing Keys
-      ### User
-      RabbitMQ__Exchanges__User: USER.EXCHANGE
+      ## Exchanges
+      RabbitMQ__Exchanges__User: "USER.EXCHANGE"
+      RabbitMQ__Exchanges__Log: "LOG.EXCHANGE"
 
-      RabbitMQ__Queues__User__Notification: user-2-notification.queue
-      RabbitMQ__RoutingKeys__UserNotifications: user.notification.{type}
+      ## Queues
+      RabbitMQ__Queues__User__NotificationRequests: "requests-2-notification.queue"
+      RabbitMQ__Queues__Traffic__Analytics: "analytics-2-notification.queue"
 
-      ## Traffic
-      RabbitMQ__Exchanges__Traffic: TRAFFIC.EXCHANGE
-
-      RabbitMQ__Queues__Traffic__Analytics: analytics-2-notification.queue
-      RabbitMQ__RoutingKeys__TrafficAnalytics: traffic.analytics.{intersection}.{metric}
-
-      ### Log
-      RabbitMQ__Exchanges__Log: LOG.EXCHANGE
-
-      RabbitMQ__RoutingKeys__Log__Notification: log.user.notification-api.{type}
+      ## Routing Keys
+      RabbitMQ__RoutingKeys__User__Notifications: "user.notification.{type}"
+      RabbitMQ__RoutingKeys__Traffic__Analytics: "traffic.analytics.{intersection}.{metric}"
+      RabbitMQ__RoutingKeys__Log__User: "log.user.notification-api.{type}"
 
     depends_on:
       notification-db:

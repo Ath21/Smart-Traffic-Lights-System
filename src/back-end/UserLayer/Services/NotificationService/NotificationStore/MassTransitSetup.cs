@@ -1,9 +1,9 @@
 using MassTransit;
 using RabbitMQ.Client;
-using Messages.Log;
-using Messages.User;
-using Messages.Traffic;
 using NotificationStore.Consumers;
+using Messages.User;
+using Messages.Traffic.Analytics;
+using Messages.Log;
 
 namespace NotificationStore;
 
@@ -13,174 +13,91 @@ public static class MassTransitSetup
     {
         services.AddMassTransit(x =>
         {
-            // =====================================================
-            // Register Consumers
-            // =====================================================
-            x.AddConsumer<UserNotificationConsumer>();
-            x.AddConsumer<TrafficAnalyticsConsumer>();
+            x.AddConsumer<UserNotificationRequestConsumer>();
+            x.AddConsumer<IncidentAnalyticsConsumer>();
+            x.AddConsumer<CongestionAnalyticsConsumer>();
+            x.AddConsumer<SummaryAnalyticsConsumer>();
 
             x.UsingRabbitMq((context, cfg) =>
             {
                 var rabbit = configuration.GetSection("RabbitMQ");
 
-                // =====================================================
-                // RabbitMQ Connection
-                // =====================================================
+                // Core connection
                 cfg.Host(rabbit["Host"], rabbit["VirtualHost"] ?? "/", h =>
                 {
                     h.Username(rabbit["Username"]);
                     h.Password(rabbit["Password"]);
                 });
 
-                // =====================================================
-                // Exchanges, Queues, and Routing Keys
-                // =====================================================
                 // Exchanges
-                var userExchange = rabbit["Exchanges:User"];
+                var userExchange   = rabbit["Exchanges:User"];
+                var logExchange    = rabbit["Exchanges:Log"];
                 var trafficExchange = rabbit["Exchanges:Traffic"];
-                var logExchange = rabbit["Exchanges:Log"];
 
                 // Queues
-                var userQueue = rabbit["Queues:User:Notification"];
-                var trafficQueue = rabbit["Queues:Traffic:Analytics"];
+                var userQueue          = rabbit["Queues:User:NotificationRequests"];
+                var trafficAnalyticsQ  = rabbit["Queues:Traffic:Analytics"];
 
-                // Routing Keys
-                var userRequestKeys = rabbit.GetSection("RoutingKeys:UserNotifications").Get<string[]>() ?? Array.Empty<string>();
-                var trafficMetricsKeys = rabbit.GetSection("RoutingKeys:TrafficAnalytics").Get<string[]>() ?? Array.Empty<string>();
+                // Routing keys
+                var userNotifKeyPattern  = rabbit["RoutingKeys:User:Notifications"];
+                var trafficAnalyticKey   = rabbit["RoutingKeys:Traffic:Analytics"];
+                var userLogKeyPattern = rabbit["RoutingKeys:Log:User"];
 
-                // =====================================================
-                // [PUBLISH] USER NOTIFICATIONS
-                // =====================================================
-                //
-                // Topic pattern : user.notification.{type}
-                // Example key   : user.notification.alert
-                //
-                cfg.Message<UserNotificationMessage>(m =>
-                {
-                    m.SetEntityName(userExchange);
-                });
-                cfg.Publish<UserNotificationMessage>(m =>
-                {
-                    m.ExchangeType = ExchangeType.Topic;
-                });
+                cfg.Message<UserNotificationMessage>(m => m.SetEntityName(userExchange)); 
+                cfg.Publish<UserNotificationMessage>(m => m.ExchangeType = ExchangeType.Topic);
+                cfg.Message<LogMessage>(m => m.SetEntityName(logExchange));
+                cfg.Publish<LogMessage>(m => m.ExchangeType = ExchangeType.Topic);
+                
+                cfg.Message<UserNotificationRequest>(m => m.SetEntityName(userExchange));
+                cfg.Message<IncidentAnalyticsMessage>(m => m.SetEntityName(trafficExchange));
+                cfg.Message<CongestionAnalyticsMessage>(m => m.SetEntityName(trafficExchange)); 
+                cfg.Message<SummaryAnalyticsMessage>(m => m.SetEntityName(trafficExchange));
 
-                // =====================================================
-                // [PUBLISH] LOGS
-                // =====================================================
-                //
-                // Topic pattern : log.user.notification.{type}
-                // Example key   : log.user.notification.audit
-                //
-                cfg.Message<LogMessage>(m =>
-                {
-                    m.SetEntityName(logExchange);
-                });
-                cfg.Publish<LogMessage>(m =>
-                {
-                    m.ExchangeType = ExchangeType.Topic;
-                });
-
-                // =====================================================
-                // [CONSUME] USER NOTIFICATION REQUESTS
-                // =====================================================
-                //
-                // Topic pattern : user.notification.{type}
-                // Example key   : user.notification.request
-                //
+                // [1] User → Notification requests
                 cfg.ReceiveEndpoint(userQueue, e =>
                 {
                     e.ConfigureConsumeTopology = false;
+                    e.ConfigureConsumer<UserNotificationRequestConsumer>(context);
 
-                    foreach (var key in userRequestKeys)
+                    e.Bind(userExchange, s =>
                     {
-                        e.Bind(userExchange, s =>
-                        {
-                            s.RoutingKey = key;
-                            s.ExchangeType = ExchangeType.Topic;
-                        });
-                    }
+                        s.ExchangeType = ExchangeType.Topic;
+                        s.RoutingKey = "user.notification.request";
+                    });
 
-                    e.ConfigureConsumer<UserNotificationConsumer>(context);
                     e.PrefetchCount = 10;
-                    e.ConcurrentMessageLimit = 5;
                 });
 
-                // =====================================================
-                // [CONSUME] TRAFFIC ANALYTICS METRICS
-                // =====================================================
-                //
-                // Topic pattern : traffic.analytics.{intersection}.{metric}
-                // Example key   : traffic.analytics.agiou-spyridonos.congestion
-                //
-                cfg.ReceiveEndpoint(trafficQueue, e =>
+                // [2] Traffic → Analytics (Incident, Congestion, Summary)
+                cfg.ReceiveEndpoint(trafficAnalyticsQ, e =>
                 {
                     e.ConfigureConsumeTopology = false;
 
-                    foreach (var key in trafficMetricsKeys)
+                    // Bind to analytics patterns dynamically (incident/congestion/summary)
+                    var routingPatterns = new[]
+                    {
+                        trafficAnalyticKey.Replace("{intersection}", "*").Replace("{metric}", "incident"),
+                        trafficAnalyticKey.Replace("{intersection}", "*").Replace("{metric}", "congestion"),
+                        trafficAnalyticKey.Replace("{intersection}", "*").Replace("{metric}", "summary")
+                    };
+
+                    foreach (var key in routingPatterns)
                     {
                         e.Bind(trafficExchange, s =>
                         {
-                            s.RoutingKey = key;
                             s.ExchangeType = ExchangeType.Topic;
+                            s.RoutingKey = key;
                         });
                     }
 
-                    e.ConfigureConsumer<TrafficAnalyticsConsumer>(context);
-                    e.PrefetchCount = 10;
-                    e.ConcurrentMessageLimit = 5;
+                    e.ConfigureConsumer<IncidentAnalyticsConsumer>(context);
+                    e.ConfigureConsumer<CongestionAnalyticsConsumer>(context);
+                    e.ConfigureConsumer<SummaryAnalyticsConsumer>(context);
+                    e.PrefetchCount = 20;
                 });
-
-                // =====================================================
-                // Finalize Configuration
-                // =====================================================
-                cfg.ConfigureEndpoints(context);
             });
         });
 
         return services;
     }
 }
-
-/*
-
-{
-  "RabbitMQ": {
-
-    "Host": "rabbitmq",
-    "VirtualHost": "/",
-    "Username": "stls_user",
-    "Password": "stls_pass",
-
-    "Exchanges": {
-      "User": "user.exchange",
-      "Traffic": "traffic.exchange",
-      "Log": "log.exchange"
-    },
-
-    "Queues": {
-      "User": {
-        "NotificationRequest": "user-notification-request-queue"
-      },
-      "Traffic": {
-        "Analytics": {
-          "Notification": "traffic-analytics-notification-queue"
-        }
-      }
-    },
-
-    "RoutingKeys": {
-
-      "UserRequests": [
-        "user.notification.request.*"
-      ],
-
-      "TrafficAnalytics": [
-        "traffic.analytics.*.congestion",
-        "traffic.analytics.*.summary",
-        "traffic.analytics.*.incident"
-      ]
-    }
-  }
-}
-
-*/

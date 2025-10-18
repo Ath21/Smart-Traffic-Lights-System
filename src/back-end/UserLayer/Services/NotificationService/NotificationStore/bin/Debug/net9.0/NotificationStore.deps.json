@@ -9,19 +9,17 @@
       "NotificationStore/1.0.0": {
         "dependencies": {
           "AutoMapper.Extensions.Microsoft.DependencyInjection": "12.0.1",
-          "LogMessages": "1.0.0",
           "MailKit": "4.12.1",
           "MassTransit": "8.5.0",
           "MassTransit.RabbitMQ": "8.5.0",
+          "Messages": "1.0.0",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "9.0.8",
           "Microsoft.AspNetCore.OpenApi": "9.0.6",
           "MimeKit": "4.12.0",
           "MongoDB.Driver": "3.4.0",
           "NotificationData": "1.0.0",
           "RabbitMQ.Client": "7.1.2",
-          "Swashbuckle.AspNetCore": "9.0.1",
-          "TrafficMessages": "1.0.0",
-          "UserMessages": "1.0.0"
+          "Swashbuckle.AspNetCore": "9.0.1"
         },
         "runtime": {
           "NotificationStore.dll": {}
@@ -428,9 +426,9 @@
           }
         }
       },
-      "LogMessages/1.0.0": {
+      "Messages/1.0.0": {
         "runtime": {
-          "LogMessages.dll": {
+          "Messages.dll": {
             "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
@@ -438,27 +436,12 @@
       },
       "NotificationData/1.0.0": {
         "dependencies": {
+          "Microsoft.Extensions.Diagnostics.HealthChecks": "9.0.0",
           "Microsoft.Extensions.Options": "9.0.6",
           "MongoDB.Driver": "3.4.0"
         },
         "runtime": {
           "NotificationData.dll": {
-            "assemblyVersion": "1.0.0.0",
-            "fileVersion": "1.0.0.0"
-          }
-        }
-      },
-      "TrafficMessages/1.0.0": {
-        "runtime": {
-          "TrafficMessages.dll": {
-            "assemblyVersion": "1.0.0.0",
-            "fileVersion": "1.0.0.0"
-          }
-        }
-      },
-      "UserMessages/1.0.0": {
-        "runtime": {
-          "UserMessages.dll": {
             "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
@@ -836,22 +819,12 @@
       "path": "zstdsharp.port/0.7.3",
       "hashPath": "zstdsharp.port.0.7.3.nupkg.sha512"
     },
-    "LogMessages/1.0.0": {
+    "Messages/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
     },
     "NotificationData/1.0.0": {
-      "type": "project",
-      "serviceable": false,
-      "sha512": ""
-    },
-    "TrafficMessages/1.0.0": {
-      "type": "project",
-      "serviceable": false,
-      "sha512": ""
-    },
-    "UserMessages/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

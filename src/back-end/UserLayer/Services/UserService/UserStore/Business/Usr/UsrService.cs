@@ -224,9 +224,14 @@ public class UsrService : IUsrService
             throw new KeyNotFoundException("User not found.");
 
         await _notificationPublisher.PublishNotificationRequestAsync(
-            title: $"UNIWA STLS {type} notification",
-            body: message,
-            recipientEmail: user.Email!
+            user.Username,
+            "Pending",
+            null,
+            new Dictionary<string, string>
+            {
+                { "Message", message },
+                { "Type", type }
+            }
         );
 
         await _auditRepository.InsertAsync(new UserAuditEntity

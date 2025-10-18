@@ -7,7 +7,7 @@
 // Consumed by  : Intersection Controller Service, Traffic Light Analytics Service
 namespace Messages.Sensor;
 
-public class DetectionEventMessage : BaseMessage
+public class DetectionEventMessage 
 {
   public int IntersectionId { get; set; }
   public string? IntersectionName { get; set; }

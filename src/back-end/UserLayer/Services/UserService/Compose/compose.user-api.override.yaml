@@ -17,7 +17,8 @@ services:
       Jwt__Audience: http://uniwa-stls-backend:8080
       Jwt__Key: Nn7kLa8Rzv1XHt9UwMqP4YbFdJxVt2Km
 
-      # Database
+      # Databases
+      ## UserDB
       MSSQL__ConnectionString: Server=user-db,1433;Database=UserDB;User Id=sa;Password=MyPass@word;TrustServerCertificate=True
 
       # Message Broker
@@ -37,7 +38,7 @@ services:
 
       ## Routing Keys
       RabbitMQ__RoutingKeys__User__NotificationRequests: "user.notification.request"
-      RabbitMQ__RoutingKeys__Log__User: "log.user.user.{type}"
+      RabbitMQ__RoutingKeys__Log__User: "log.user.user-api.{type}"
 
     depends_on:
       user-db:

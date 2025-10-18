@@ -1,6 +1,8 @@
 using MassTransit;
 using RabbitMQ.Client;
 using LogStore.Consumers;
+using Messages;
+using Messages.Log;
 
 namespace LogStore;
 
@@ -10,63 +12,63 @@ public static class MassTransitSetup
     {
         services.AddMassTransit(x =>
         {
-            // =====================================================
-            // Register Consumers
-            // =====================================================
             x.AddConsumer<LogConsumer>();
 
             x.UsingRabbitMq((context, cfg) =>
             {
                 var rabbit = configuration.GetSection("RabbitMQ");
+                cfg.Host(rabbit["Host"], rabbit["VirtualHost"] ?? "/", h => { h.Username(rabbit["Username"]); h.Password(rabbit["Password"]); });
 
-                // ===============================
-                // RabbitMQ Connection
-                // ===============================
-                cfg.Host(rabbit["Host"], rabbit["VirtualHost"] ?? "/", h =>
-                {
-                    h.Username(rabbit["Username"]);
-                    h.Password(rabbit["Password"]);
-                });
+                var logExchange     = rabbit["Exchanges:Log"];
+                var logUserQueue    = rabbit["Queues:Log:User"];
+                var logTrafficQueue = rabbit["Queues:Log:Traffic"];
+                var logSensorQueue  = rabbit["Queues:Log:Sensor"];
+                var rkUser          = rabbit["RoutingKeys:Log:User"];
+                var rkTraffic       = rabbit["RoutingKeys:Log:Traffic"];
+                var rkSensor        = rabbit["RoutingKeys:Log:Sensor"];
 
-                // ===============================
-                // Exchanges, Queues, Routing Keys
-                // ===============================
-                var logExchange = rabbit["Exchanges:Log"];
-                var logQueue = rabbit["Queues:Log"];
-                var routingKeys = rabbit.GetSection("RoutingKeys:Log").Get<string[]>() ?? Array.Empty<string>();
+                cfg.Publish<BaseMessage>(m => m.Exclude = true);
+                cfg.Message<LogMessage>(m => m.SetEntityName(logExchange));
+                cfg.Publish<LogMessage>(m => m.ExchangeType = ExchangeType.Topic);
 
-                // ===============================
-                // Unified Consumer: Log Service
-                // ===============================
-                // Topic pattern: log.{layer}.{service}.{type}
-                // Example keys: log.sensor.detection-service.audit
-                //               log.traffic.intersection-controller.error
-                //               log.user.notification-service.failover
-                // ===============================
-                cfg.ReceiveEndpoint(logQueue, e =>
+                cfg.ReceiveEndpoint(logUserQueue, e =>
                 {
                     e.ConfigureConsumeTopology = false;
-
-                    // Bind all unified routing keys to one queue
-                    foreach (var key in routingKeys)
+                    e.Bind(logExchange, s =>
                     {
-                        e.Bind(logExchange, s =>
-                        {
-                            s.ExchangeType = ExchangeType.Topic;
-                            s.RoutingKey = key;
-                        });
-                    }
-
-                    // Configure consumer and concurrency
+                        s.RoutingKey = rkUser;
+                        s.ExchangeType = ExchangeType.Topic;
+                    });
                     e.ConfigureConsumer<LogConsumer>(context);
                     e.PrefetchCount = 10;
                     e.ConcurrentMessageLimit = 5;
                 });
-
-                cfg.ConfigureEndpoints(context);
+                cfg.ReceiveEndpoint(logTrafficQueue, e =>
+                {
+                    e.ConfigureConsumeTopology = false;
+                    e.Bind(logExchange, s =>
+                    {
+                        s.RoutingKey = rkTraffic;
+                        s.ExchangeType = ExchangeType.Topic;
+                    });
+                    e.ConfigureConsumer<LogConsumer>(context);
+                    e.PrefetchCount = 10;
+                    e.ConcurrentMessageLimit = 5;
+                });
+                cfg.ReceiveEndpoint(logSensorQueue, e =>
+                {
+                    e.ConfigureConsumeTopology = false;
+                    e.Bind(logExchange, s =>
+                    {
+                        s.RoutingKey = rkSensor;
+                        s.ExchangeType = ExchangeType.Topic;
+                    });
+                    e.ConfigureConsumer<LogConsumer>(context);
+                    e.PrefetchCount = 10;
+                    e.ConcurrentMessageLimit = 5;
+                });
             });
         });
-
         return services;
     }
 }

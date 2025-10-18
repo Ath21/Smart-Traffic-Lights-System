@@ -1,7 +1,9 @@
 namespace NotificationStore.Publishers.Logs;
 
-public interface INotificationLogPublisher
+public interface ILogPublisher
 {
-    Task PublishAuditAsync(string action, string message, Dictionary<string, string>? metadata = null);
-    Task PublishErrorAsync(string action, string message, Dictionary<string, string>? metadata = null);
+    Task PublishAsync(string type, string category, string message, string? correlationId = null, Dictionary<string, object>? data = null);
+    Task PublishAuditAsync(string category, string message, string? correlationId = null, Dictionary<string, object>? data = null);
+    Task PublishErrorAsync(string category, string message, string? correlationId = null, Dictionary<string, object>? data = null);
+    Task PublishFailoverAsync(string category, string message, string? correlationId = null, Dictionary<string, object>? data = null);
 }

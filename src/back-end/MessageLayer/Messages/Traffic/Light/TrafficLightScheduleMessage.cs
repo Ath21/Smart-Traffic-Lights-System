@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 
-namespace Messages.Traffic;
+namespace Messages.Traffic.Light;
 
-public class TrafficLightScheduleMessage : BaseMessage
+public class TrafficLightScheduleMessage 
 {
     public int IntersectionId { get; set; }
     public string? IntersectionName { get; set; }

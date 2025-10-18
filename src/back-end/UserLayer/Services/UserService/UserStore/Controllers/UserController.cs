@@ -150,7 +150,7 @@ public class UserController : ControllerBase
     // Roles: User, TrafficOperator, Admin
     // Purpose: Request sending a notification (delegated to Notification Service)
     // ============================================================
-    [HttpPost("send-notification-request")]
+    [HttpPost("subscribe")]
     [Authorize(Roles = "User")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

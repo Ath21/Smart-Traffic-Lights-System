@@ -3,49 +3,26 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace NotificationData.Collections;
 
-// Updated by : Notification Service
-// Read by    : Notification Service
-[BsonDiscriminator("delivery_logs")]
-[BsonIgnoreExtraElements]
 public class DeliveryLogCollection
 {
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
-    public string DeliveryId { get; set; } = string.Empty;
+    public string Id { get; set; } = null!;
 
-    [BsonElement("notification_id")]
-    public string NotificationId { get; set; } = string.Empty;
+    [BsonElement("userId")]
+    public string UserId { get; set; } = null!;
+    [BsonElement("userEmail")]
+    public string UserEmail { get; set; } = null!;
 
-    [BsonElement("recipient_email")]
-    public string RecipientEmail { get; set; } = string.Empty;
+    [BsonElement("messageId")]
+    public string MessageId { get; set; } = null!;
 
-    [BsonElement("status")]
-    public string Status { get; set; } = "Broadcasted";
-
-    [BsonElement("delivered_at")]
+    [BsonElement("deliveredAt")]
     public DateTime DeliveredAt { get; set; } = DateTime.UtcNow;
 
-    [BsonElement("delivery_method")]
-    public string DeliveryMethod { get; set; } = "Email";
+    [BsonElement("status")]
+    public string Status { get; set; } = "Success";
 
-    [BsonElement("is_read")]
-    public bool IsRead { get; set; } = false;
-
-    [BsonElement("read_at")]
-    [BsonIgnoreIfNull]
-    public DateTime? ReadAt { get; set; } = null;
+    [BsonElement("retryCount")]
+    public int RetryCount { get; set; } = 0;
 }
-
-/*
-Example new doc:
-{
-  "DeliveryId": "67119a59e4b0b0bdf8700a2d",
-  "NotificationId": "6711984ee4b0b0bdf8700a28",
-  "RecipientEmail": "vathanas1ou@uniwa.gr",
-  "Status": "Delivered",
-  "DeliveredAt": "2025-10-08T10:06:00Z",
-  "DeliveryMethod": "Email",
-  "IsRead": true,
-  "ReadAt": "2025-10-08T12:02:00Z"
-}
-*/

@@ -1,10 +1,11 @@
 namespace Messages.User;
 
-public class UserNotificationMessage : BaseMessage
+public class UserNotificationMessage
 {
-  public string? NotificationType { get; set; }
-  public string? Title { get; set; }
-  public string? Body { get; set; } 
-  public string? RecipientEmail { get; set; } 
-  public string? Status { get; set; } 
+    public string UserId { get; set; } = null!;
+    public string UserEmail { get; set; } = null!;
+    public string Title { get; set; } = null!;
+    public string Body { get; set; } = null!;
+    public string Type { get; set; } = "public";  // public | private | alert
+    public DateTime SentAt { get; set; } = DateTime.UtcNow;
 }

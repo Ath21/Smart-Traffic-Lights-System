@@ -119,13 +119,7 @@
 /home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Services/NotificationService/NotificationStore/bin/Debug/net9.0/Swashbuckle.AspNetCore.SwaggerUI.dll
 /home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Services/NotificationService/NotificationStore/bin/Debug/net9.0/System.IdentityModel.Tokens.Jwt.dll
 /home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Services/NotificationService/NotificationStore/bin/Debug/net9.0/ZstdSharp.dll
-/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Services/NotificationService/NotificationStore/bin/Debug/net9.0/LogMessages.dll
 /home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Services/NotificationService/NotificationStore/bin/Debug/net9.0/NotificationData.dll
-/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Services/NotificationService/NotificationStore/bin/Debug/net9.0/TrafficMessages.dll
-/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Services/NotificationService/NotificationStore/bin/Debug/net9.0/UserMessages.dll
-/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Services/NotificationService/NotificationStore/bin/Debug/net9.0/LogMessages.pdb
-/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Services/NotificationService/NotificationStore/bin/Debug/net9.0/TrafficMessages.pdb
-/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Services/NotificationService/NotificationStore/bin/Debug/net9.0/UserMessages.pdb
 /home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Services/NotificationService/NotificationStore/bin/Debug/net9.0/NotificationData.pdb
 /home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Services/NotificationService/NotificationStore/obj/Debug/net9.0/rjimswa.dswa.cache.json
 /home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Services/NotificationService/NotificationStore/obj/Debug/net9.0/rjsmrazor.dswa.cache.json
@@ -138,3 +132,5 @@
 /home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Services/NotificationService/NotificationStore/obj/Debug/net9.0/Notifica.E4955636.Up2Date
 /home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Services/NotificationService/NotificationStore/obj/Debug/net9.0/NotificationStore.genruntimeconfig.cache
 /home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Services/NotificationService/NotificationStore/obj/Debug/net9.0/ref/NotificationStore.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Services/NotificationService/NotificationStore/bin/Debug/net9.0/Messages.dll
+/home/ath/Smart-Traffic-Lights-System/src/back-end/UserLayer/Services/NotificationService/NotificationStore/bin/Debug/net9.0/Messages.pdb

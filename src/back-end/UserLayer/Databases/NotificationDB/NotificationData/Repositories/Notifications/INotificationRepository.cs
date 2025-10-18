@@ -5,9 +5,8 @@ namespace NotificationData.Repositories.Notifications;
 
 public interface INotificationRepository
 {
-    Task<IEnumerable<NotificationCollection>> GetPendingAsync();
-    Task<IEnumerable<NotificationCollection>> GetBroadcastedAsync();
-    Task<NotificationCollection?> GetByIdAsync(string id);
-    Task InsertAsync(NotificationCollection notification);
-    Task UpdateStatusAsync(string notificationId, string newStatus);
+    Task AddOrUpdateSubscriptionAsync(NotificationCollection subscription);
+    Task<IEnumerable<NotificationCollection>> GetSubscribersAsync(string intersection, string metric);
+    Task<IEnumerable<NotificationCollection>> GetUserSubscriptionsAsync(string userId);
+    Task DeactivateSubscriptionAsync(string userId, string userEmail, string intersection, string metric);
 }

@@ -1,73 +1,75 @@
 using MassTransit;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Messages.Log;
 
 namespace NotificationStore.Publishers.Logs;
 
-public class NotificationLogPublisher : INotificationLogPublisher
+public class LogPublisher : ILogPublisher
 {
-    private readonly IBus _bus;
-    private readonly ILogger<NotificationLogPublisher> _logger;
-    private readonly string _routingPattern;
+    private readonly IPublishEndpoint _publisher;
+    private readonly ILogger<LogPublisher> _logger;
+    private readonly string _routingKeyPattern;
+    private readonly string _source;
 
-    public NotificationLogPublisher(IBus bus, IConfiguration config, ILogger<NotificationLogPublisher> logger)
+    public LogPublisher(IPublishEndpoint publisher, IConfiguration configuration, ILogger<LogPublisher> logger)
     {
-        _bus = bus;
+        _publisher = publisher;
         _logger = logger;
 
-        // Pattern: log.user.notification.{type}
-        _routingPattern = config["RabbitMQ:RoutingKeys:Log:Notification"]
-                          ?? "log.user.notification-service.{type}";
+        _routingKeyPattern = configuration["RabbitMQ:RoutingKeys:Log:User"]
+            ?? "log.user.notification-api.{type}";
     }
 
-    public async Task PublishAuditAsync(string action, string message, Dictionary<string, string>? metadata = null)
+    // -------------------------------------------------------------------
+    // Core publisher
+    // -------------------------------------------------------------------
+    public async Task PublishAsync(
+        string type,
+        string category,
+        string message,
+        string? correlationId = null,
+        Dictionary<string, object>? data = null)
     {
-        var msg = new LogMessage
+        try
         {
-            CorrelationId = Guid.NewGuid(),
-            Timestamp = DateTime.UtcNow,
+            var routingKey = _routingKeyPattern.Replace("{type}", type);
+            var log = new LogMessage
+            {
+                Source = _source,
+                Type = type,
+                Category = category,
+                Level = type == "error" ? "error" :
+                        type == "failover" ? "critical" : "info",
+                Message = message,
+                CorrelationId = correlationId,
+                Data = data,
+                Timestamp = DateTime.UtcNow
+            };
 
-            SourceLayer = "User Layer",
-            DestinationLayer = new() { "Log Layer" },
+            await _publisher.Publish(log, ctx =>
+            {
+                ctx.SetRoutingKey(routingKey);
+            });
 
-            SourceService = "Notification Service",
-            DestinationServices = new() { "Log Service" },
-
-            LogType = "Audit",
-            Action = action,
-            Message = message,
-            Metadata = metadata
-        };
-
-        var routingKey = _routingPattern.Replace("{type}", "audit");
-
-        await _bus.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
-
-        _logger.LogInformation("[PUBLISHER][LOG][AUDIT] Action={Action}, Msg={Message}", action, message);
+            _logger.LogInformation("[LOG][PUBLISHER] [{Type}] {Message}", type.ToUpper(), message);
+        }
+        catch (Exception ex)
+        {
+            // Local fallback log
+            _logger.LogError(ex, "[LOG][PUBLISHER] Failed to publish log: {Message}", message);
+        }
     }
 
-    public async Task PublishErrorAsync(string action, string message, Dictionary<string, string>? metadata = null)
-    {
-        var msg = new LogMessage
-        {
-            CorrelationId = Guid.NewGuid(),
-            Timestamp = DateTime.UtcNow,
+    // -------------------------------------------------------------------
+    // Helper wrappers
+    // -------------------------------------------------------------------
+    public Task PublishAuditAsync(string category, string message, string? correlationId = null, Dictionary<string, object>? data = null)
+        => PublishAsync("audit", category, message, correlationId, data);
 
-            SourceLayer = "User Layer",
-            DestinationLayer = new() { "Log Layer" },
+    public Task PublishErrorAsync(string category, string message, string? correlationId = null, Dictionary<string, object>? data = null)
+        => PublishAsync("error", category, message, correlationId, data);
 
-            SourceService = "Notification Service",
-            DestinationServices = new() { "Log Service" },
-
-            LogType = "Error",
-            Action = action,
-            Message = message,
-            Metadata = metadata
-        };
-
-        var routingKey = _routingPattern.Replace("{type}", "error");
-
-        await _bus.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
-
-        _logger.LogWarning("[PUBLISHER][LOG][ERROR] Action={Action}, Msg={Message}", action, message);
-    }
+    public Task PublishFailoverAsync(string category, string message, string? correlationId = null, Dictionary<string, object>? data = null)
+        => PublishAsync("failover", category, message, correlationId, data);
 }
