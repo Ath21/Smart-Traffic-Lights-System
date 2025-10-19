@@ -6,6 +6,9 @@ services:
       # ASP.NET Core
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
+      SERVICE_LAYER: Log Layer
+      SERVICE_LEVEL: Cloud
+      SERVICE_NAME: Log Service
 
       # CORS
       Cors__AllowedOrigins: http://localhost:5173,https://uniwa-stls.local
@@ -19,11 +22,11 @@ services:
 
       # Databases
       ## LogDB
-      Mongo__ConnectionString__Log: "mongodb://mongo:mongo123@log-db:27017/"
-      Mongo__Database__Log: "LogDB"
-      Mongo__Collections__AuditLogs: "audit_logs"
-      Mongo__Collections__ErrorLogs: "error_logs"
-      Mongo__Collections__FailoverLogs: "failover_logs"
+      Mongo__ConnectionString__Log: mongodb://mongo:mongo123@log-db:27017/
+      Mongo__Database__Log: LogDB
+      Mongo__Collections__AuditLogs: audit_logs
+      Mongo__Collections__ErrorLogs: error_logs
+      Mongo__Collections__FailoverLogs: failover_logs
 
       # Message Broker
       ## Configuration
@@ -34,17 +37,17 @@ services:
       RabbitMQ__Password: rabbitmq123
 
       ## Exchanges
-      RabbitMQ__Exchanges__Log: "LOG.EXCHANGE"
+      RabbitMQ__Exchanges__Log: LOG.EXCHANGE
 
       ## Queues
-      RabbitMQ__Queues__Log__User: "user-2-log.queue"
-      RabbitMQ__Queues__Log__Traffic: "traffic-2-log.queue"
-      RabbitMQ__Queues__Log__Sensor: "sensor-2-log.queue"
+      RabbitMQ__Queues__Log__User: user-2-log.queue
+      RabbitMQ__Queues__Log__Traffic: traffic-2-log.queue
+      RabbitMQ__Queues__Log__Sensor: sensor-2-log.queue
 
       ## Routing Keys
-      RabbitMQ__RoutingKeys__Log__User: "log.user.{service}.{type}"
-      RabbitMQ__RoutingKeys__Log__Traffic: "log.traffic.{service}.{type}"
-      RabbitMQ__RoutingKeys__Log__Sensor: "log.sensor.{service}.{type}"
+      RabbitMQ__RoutingKeys__Log__User: log.user.{service}.{type}
+      RabbitMQ__RoutingKeys__Log__Traffic: log.traffic.{service}.{type}
+      RabbitMQ__RoutingKeys__Log__Sensor: log.sensor.{service}.{type}
 
     depends_on:
       log-db:

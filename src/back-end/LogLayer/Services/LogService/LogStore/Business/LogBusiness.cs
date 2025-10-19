@@ -1,22 +1,27 @@
 using System.Text;
-using System.Globalization;
 using LogStore.Models.Responses;
 using LogData.Repositories.Search;
+using LogData.Repositories.Audit;
 using LogData.Collections;
 using LogData.Extensions;
+using Microsoft.Extensions.Logging;
+using MongoDB.Bson;
 
 namespace LogStore.Business;
 
 public class LogBusiness : ILogBusiness
 {
     private readonly ISearchLogRepository _searchRepo;
+    private readonly IAuditLogRepository _auditRepo;
     private readonly ILogger<LogBusiness> _logger;
 
     public LogBusiness(
         ISearchLogRepository searchRepo,
+        IAuditLogRepository auditRepo,
         ILogger<LogBusiness> logger)
     {
         _searchRepo = searchRepo;
+        _auditRepo = auditRepo;
         _logger = logger;
     }
 
@@ -31,11 +36,11 @@ public class LogBusiness : ILogBusiness
         DateTime? to)
     {
         _logger.LogInformation(
-            "[BUSINESS] SearchLogsAsync called with layer={Layer}, service={Service}, type={Type}, from={From}, to={To}",
+            "[BUSINESS][LOG] SearchLogsAsync called with layer={Layer}, service={Service}, type={Type}, from={From}, to={To}",
             layer, service, type, from, to);
 
         var results = await _searchRepo.SearchAsync(layer, service, type, from, to);
-        _logger.LogInformation("[BUSINESS] Retrieved {Count} logs from repository", results.Count());
+        _logger.LogInformation("[BUSINESS][LOG] Retrieved {Count} logs from repository", results.Count());
 
         var responses = new List<SearchLogResponse>();
 
@@ -57,84 +62,172 @@ public class LogBusiness : ILogBusiness
             }
         }
 
-        _logger.LogInformation("[BUSINESS] Mapped {Count} results to SearchLogResponse", responses.Count);
+        _logger.LogInformation("[BUSINESS][LOG] Mapped {Count} results to SearchLogResponse", responses.Count);
+
+        // ------------------------------------------------------------
+        // AUDIT: record business operation
+        // ------------------------------------------------------------
+        var auditEntry = new AuditLogCollection
+        {
+            AuditId = ObjectId.GenerateNewId().ToString(),
+            CorrelationId = Guid.NewGuid(),
+            Timestamp = DateTime.UtcNow,
+            SourceLayer = "Log",
+            SourceLevel = "Cloud",
+            SourceService = "Log Service",
+            SourceDomain = "[BUSINESS][SEARCH]",
+            Type = "audit",
+            Category = "Business",
+            Message = $"Executed search query (layer={layer}, service={service}, type={type}, from={from}, to={to})",
+            Operation = "SearchLogsAsync",
+            EntityId = Environment.MachineName,
+            Hostname = Environment.MachineName,
+            ContainerIp = Environment.GetEnvironmentVariable("CONTAINER_IP") ?? "unknown",
+            Environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "prod",
+            Data = new BsonDocument
+            {
+                { "results_count", responses.Count },
+                { "timestamp", DateTime.UtcNow }
+            }
+        };
+
+        await _auditRepo.InsertAsync(auditEntry);
+        _logger.LogInformation("[BUSINESS][LOG][AUDIT] Stored business search audit entry ({AuditId})", auditEntry.AuditId);
+
         return responses;
     }
 
     // ============================================================
-    // EXPORT: CSV
+    // EXPORT: CSV (Unified Format)
     // ============================================================
     public async Task<byte[]> ExportLogsToCsvAsync(IEnumerable<object> logs)
     {
+        _logger.LogInformation("[BUSINESS][LOG] ExportLogsToCsvAsync called with {Count} items", logs.Count());
+
         var sb = new StringBuilder();
-        sb.AppendLine("Timestamp,Layer,Service,Type,Message");
+        sb.AppendLine("Timestamp,SourceLayer,SourceLevel,SourceService,SourceDomain,Type,Category,Operation,Message,Environment");
 
         foreach (var log in logs)
         {
             var timestamp = log.GetType().GetProperty("Timestamp")?.GetValue(log)?.ToString() ?? "";
-            var layer = log.GetType().GetProperty("Layer")?.GetValue(log)?.ToString() ?? "";
-            var service = log.GetType().GetProperty("Service")?.GetValue(log)?.ToString() ?? "";
-            var type = log.GetType().Name.Replace("Collection", "");
+            var sourceLayer = log.GetType().GetProperty("SourceLayer")?.GetValue(log)?.ToString() ?? "";
+            var sourceLevel = log.GetType().GetProperty("SourceLevel")?.GetValue(log)?.ToString() ?? "";
+            var sourceService = log.GetType().GetProperty("SourceService")?.GetValue(log)?.ToString() ?? "";
+            var sourceDomain = log.GetType().GetProperty("SourceDomain")?.GetValue(log)?.ToString() ?? "";
+            var type = log.GetType().GetProperty("Type")?.GetValue(log)?.ToString() ?? "";
+            var category = log.GetType().GetProperty("Category")?.GetValue(log)?.ToString() ?? "";
+            var operation = log.GetType().GetProperty("Operation")?.GetValue(log)?.ToString() ?? "";
             var message = log.GetType().GetProperty("Message")?.GetValue(log)?.ToString()?.Replace(",", " ") ?? "";
+            var environment = log.GetType().GetProperty("Environment")?.GetValue(log)?.ToString() ?? "";
 
-            sb.AppendLine($"{timestamp},{layer},{service},{type},\"{message}\"");
+            sb.AppendLine($"{timestamp},{sourceLayer},{sourceLevel},{sourceService},{sourceDomain},{type},{category},{operation},\"{message}\",{environment}");
         }
 
-        return await Task.FromResult(Encoding.UTF8.GetBytes(sb.ToString()));
+        var csvBytes = Encoding.UTF8.GetBytes(sb.ToString());
+
+        // ------------------------------------------------------------
+        // AUDIT: record CSV export operation
+        // ------------------------------------------------------------
+        var auditEntry = new AuditLogCollection
+        {
+            AuditId = ObjectId.GenerateNewId().ToString(),
+            CorrelationId = Guid.NewGuid(),
+            Timestamp = DateTime.UtcNow,
+            SourceLayer = "Log",
+            SourceLevel = "Cloud",
+            SourceService = "Log Service",
+            SourceDomain = "[BUSINESS][EXPORT]",
+            Type = "audit",
+            Category = "Business",
+            Message = $"Exported logs to CSV with {logs.Count()} records",
+            Operation = "ExportLogsToCsvAsync",
+            EntityId = Environment.MachineName,
+            Hostname = Environment.MachineName,
+            ContainerIp = Environment.GetEnvironmentVariable("CONTAINER_IP") ?? "unknown",
+            Environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "prod",
+            Data = new BsonDocument
+            {
+                { "record_count", logs.Count() },
+                { "timestamp", DateTime.UtcNow }
+            }
+        };
+
+        await _auditRepo.InsertAsync(auditEntry);
+        _logger.LogInformation("[BUSINESS][LOG][AUDIT] Stored CSV export audit entry ({AuditId})", auditEntry.AuditId);
+
+        return await Task.FromResult(csvBytes);
     }
 
     // ============================================================
-    // MANUAL MAPPERS
+    // MAPPERS (1:1 with new schema)
     // ============================================================
 
     private static SearchLogResponse MapAuditLog(AuditLogCollection log)
     {
-        var response = new SearchLogResponse
+        return new SearchLogResponse
         {
             LogType = "Audit",
             CorrelationId = log.CorrelationId,
             Timestamp = log.Timestamp,
-            Layer = log.Layer ?? string.Empty,
-            Service = log.Service ?? string.Empty,
-            Action = log.Action,
-            Message = log.Message,
-            Metadata = BsonExtensions.ToDictionary(log.Metadata)
+            Layer = log.SourceLayer ?? string.Empty,
+            Level = log.SourceLevel ?? string.Empty,
+            Service = log.SourceService ?? string.Empty,
+            Domain = log.SourceDomain ?? string.Empty,
+            Type = log.Type ?? string.Empty,
+            Category = log.Category ?? string.Empty,
+            Operation = log.Operation ?? string.Empty,
+            Message = log.Message ?? string.Empty,
+            EntityId = log.EntityId ?? string.Empty,
+            Hostname = log.Hostname ?? string.Empty,
+            ContainerIp = log.ContainerIp ?? string.Empty,
+            Environment = log.Environment ?? string.Empty,
+            Data = BsonExtensions.ToDictionary(log.Data)
         };
-
-        return response;
     }
 
     private static SearchLogResponse MapErrorLog(ErrorLogCollection log)
     {
-        var response = new SearchLogResponse
+        return new SearchLogResponse
         {
             LogType = "Error",
             CorrelationId = log.CorrelationId,
             Timestamp = log.Timestamp,
-            Layer = log.Layer ?? string.Empty,
-            Service = log.Service ?? string.Empty,
-            Action = log.Action,
-            Message = log.Message,
-            Metadata = BsonExtensions.ToDictionary(log.Metadata)
+            Layer = log.SourceLayer ?? string.Empty,
+            Level = log.SourceLevel ?? string.Empty,
+            Service = log.SourceService ?? string.Empty,
+            Domain = log.SourceDomain ?? string.Empty,
+            Type = log.Type ?? string.Empty,
+            Category = log.Category ?? string.Empty,
+            Operation = log.Operation ?? string.Empty,
+            Message = log.Message ?? string.Empty,
+            EntityId = log.EntityId ?? string.Empty,
+            Hostname = log.Hostname ?? string.Empty,
+            ContainerIp = log.ContainerIp ?? string.Empty,
+            Environment = log.Environment ?? string.Empty,
+            Data = BsonExtensions.ToDictionary(log.Data)
         };
-
-        return response;
     }
 
     private static SearchLogResponse MapFailoverLog(FailoverLogCollection log)
     {
-        var response = new SearchLogResponse
+        return new SearchLogResponse
         {
             LogType = "Failover",
             CorrelationId = log.CorrelationId,
             Timestamp = log.Timestamp,
-            Layer = log.Layer ?? string.Empty,
-            Service = log.Service ?? string.Empty,
-            Action = log.Action,
-            Message = log.Message,
-            Metadata = BsonExtensions.ToDictionary(log.Metadata)
+            Layer = log.SourceLayer ?? string.Empty,
+            Level = log.SourceLevel ?? string.Empty,
+            Service = log.SourceService ?? string.Empty,
+            Domain = log.SourceDomain ?? string.Empty,
+            Type = log.Type ?? string.Empty,
+            Category = log.Category ?? string.Empty,
+            Operation = log.Operation ?? string.Empty,
+            Message = log.Message ?? string.Empty,
+            EntityId = log.EntityId ?? string.Empty,
+            Hostname = log.Hostname ?? string.Empty,
+            ContainerIp = log.ContainerIp ?? string.Empty,
+            Environment = log.Environment ?? string.Empty,
+            Data = BsonExtensions.ToDictionary(log.Data)
         };
-
-        return response;
     }
 }

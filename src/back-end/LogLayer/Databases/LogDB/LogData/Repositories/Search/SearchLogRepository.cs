@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using LogData.Collections;
 using MongoDB.Driver;
 
@@ -32,19 +28,13 @@ public class SearchLogRepository : ISearchLogRepository
 
         // Apply optional type filtering
         if (string.IsNullOrEmpty(type) || type.Equals("audit", StringComparison.OrdinalIgnoreCase))
-        {
             results.AddRange(await _context.AuditLogs.Find(auditFilter).ToListAsync());
-        }
 
         if (string.IsNullOrEmpty(type) || type.Equals("error", StringComparison.OrdinalIgnoreCase))
-        {
             results.AddRange(await _context.ErrorLogs.Find(errorFilter).ToListAsync());
-        }
 
         if (string.IsNullOrEmpty(type) || type.Equals("failover", StringComparison.OrdinalIgnoreCase))
-        {
             results.AddRange(await _context.FailoverLogs.Find(failoverFilter).ToListAsync());
-        }
 
         // Unified ordered response (descending by timestamp)
         return results.OrderByDescending(x => x.Timestamp);
@@ -62,10 +52,10 @@ public class SearchLogRepository : ISearchLogRepository
         var filters = new List<FilterDefinition<T>>();
 
         if (!string.IsNullOrWhiteSpace(layer))
-            filters.Add(builder.Eq(x => x.Layer, layer));
+            filters.Add(builder.Eq(x => x.SourceLayer, layer));
 
         if (!string.IsNullOrWhiteSpace(service))
-            filters.Add(builder.Eq(x => x.Service, service));
+            filters.Add(builder.Eq(x => x.SourceService, service));
 
         if (from.HasValue)
             filters.Add(builder.Gte(x => x.Timestamp, from.Value));

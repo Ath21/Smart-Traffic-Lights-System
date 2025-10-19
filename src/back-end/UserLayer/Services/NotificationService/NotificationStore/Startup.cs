@@ -70,7 +70,7 @@ public class Startup
         // Message Layer (MassTransit with RabbitMQ)
         // ===============================
         // Publishers
-        services.AddScoped(typeof(ILogPublisher), typeof(LogPublisher));
+        services.AddScoped(typeof(INotificationLogPublisher), typeof(NotificationLogPublisher));
 
         // Consumers
         services.AddScoped<UserNotificationRequestConsumer>();

@@ -4,8 +4,8 @@ using MongoDB.Driver;
 using RabbitMQ.Client.Exceptions;
 using LogData.Collections;
 using LogData.Repositories.Error;
-using MassTransit;
 using MongoDB.Bson;
+using MassTransit;
 
 namespace LogStore.Middleware;
 
@@ -28,7 +28,9 @@ public class ExceptionMiddleware
         }
         catch (Exception ex)
         {
-            // Classify and handle
+            // =====================================================
+            // Classification and Mapping
+            // =====================================================
             var (statusCode, userMessage, errorType) = ex switch
             {
                 UnauthorizedAccessException      => (HttpStatusCode.Unauthorized, "Unauthorized access", "AUTH_ERROR"),
@@ -64,56 +66,71 @@ public class ExceptionMiddleware
         string errorType,
         Exception ex)
     {
-        _logger.LogError(ex, "[EXCEPTION] {Message}", userMessage);
+        _logger.LogError(ex, "[MIDDLEWARE][EXCEPTION] {ErrorType}: {UserMessage}", errorType, userMessage);
 
-        try
+        // ============================================================
+        // Structured error payload (for MongoDB)
+        // ============================================================
+        var data = new BsonDocument
         {
-            // Create structured error document
-            var metadata = new BsonDocument
-            {
-                { "Path", context.Request.Path.Value ?? "Unknown" },
-                { "Method", context.Request.Method },
-                { "TraceId", context.TraceIdentifier },
-                { "ErrorType", errorType },
-                { "ExceptionType", ex.GetType().FullName ?? "Unknown" },
-                { "Message", ex.Message },
-                { "StackTrace", ex.StackTrace ?? string.Empty },
-                { "InnerException", ex.InnerException?.Message ?? string.Empty },
-                { "Timestamp", DateTime.UtcNow }
-            };
+            { "path", context.Request.Path.Value ?? "Unknown" },
+            { "method", context.Request.Method },
+            { "trace_id", context.TraceIdentifier },
+            { "error_type", errorType },
+            { "exception_type", ex.GetType().FullName ?? "Unknown" },
+            { "exception_message", ex.Message },
+            { "stack_trace", ex.StackTrace ?? string.Empty },
+            { "inner_exception", ex.InnerException?.Message ?? string.Empty },
+            { "timestamp", DateTime.UtcNow }
+        };
 
-            var errorLog = new ErrorLogCollection
-            {
-                CorrelationId = Guid.NewGuid(),
-                Timestamp = DateTime.UtcNow,
-                Layer = "Log",
-                Service = "Log Service",
-                Action = context.Request.Path,
-                Message = $"{userMessage}: {ex.Message}",
-                Metadata = metadata
-            };
-
-            await errorRepo.InsertAsync(errorLog);
-
-            _logger.LogInformation("[EXCEPTION] Stored error log ({ErrorType}) in MongoDB", errorType);
-        }
-        catch (Exception dbEx)
+        // ============================================================
+        // Create error log document using new schema
+        // ============================================================
+        var errorEntry = new ErrorLogCollection
         {
-            _logger.LogError(dbEx, "[EXCEPTION] Failed to write exception log to MongoDB");
-        }
+            ErrorId = ObjectId.GenerateNewId().ToString(),
+            CorrelationId = Guid.NewGuid(),
+            Timestamp = DateTime.UtcNow,
+            SourceLayer = "Log",
+            SourceLevel = "Cloud",
+            SourceService = "Log Service",
+            SourceDomain = "[MIDDLEWARE][EXCEPTION]",
+            Type = "error",
+            Category = "Middleware",
+            Message = $"{userMessage}: {ex.Message}",
+            Operation = context.Request.Path,
+            EntityId = context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            Hostname = Environment.MachineName,
+            ContainerIp = Environment.GetEnvironmentVariable("CONTAINER_IP") ?? "unknown",
+            Environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "prod",
+            Data = data
+        };
 
-        // Response payload
+        _logger.LogInformation("[MIDDLEWARE][EXCEPTION] Writing error log entry to MongoDB ({ErrorType})", errorType);
+        await errorRepo.InsertAsync(errorEntry);
+        _logger.LogInformation("[MIDDLEWARE][EXCEPTION] Stored error log successfully with Id={ErrorId}", errorEntry.ErrorId);
+
+        // ============================================================
+        // API Response
+        // ============================================================
         context.Response.StatusCode = (int)statusCode;
         context.Response.ContentType = "application/json";
 
         var responseBody = new
         {
             error = userMessage,
-            details = ex.Message,
             type = errorType,
+            details = ex.Message,
             traceId = context.TraceIdentifier
         };
 
-        await context.Response.WriteAsync(JsonSerializer.Serialize(responseBody));
+        var json = JsonSerializer.Serialize(responseBody, new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            WriteIndented = false
+        });
+
+        await context.Response.WriteAsync(json);
     }
 }

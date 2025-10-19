@@ -45,7 +45,6 @@ public class UsrService : IUsrService
         _notificationPublisher = notificationPublisher;
     }
 
-    // [POST] /api/users/register
     public async Task<UserResponse> RegisterAsync(RegisterUserRequest request)
     {
         if (await _userRepository.ExistsAsync(request.Username, request.Email))
@@ -71,19 +70,19 @@ public class UsrService : IUsrService
         });
 
         await _logPublisher.PublishAuditAsync(
-            source: "user-api",
+            domain: "[BUSINESS][REGISTER]",
             messageText: $"{ServiceTag} User '{user.Username}' registered.",
             category: "REGISTER",
             data: new Dictionary<string, object>
             {
                 ["UserId"] = user.UserId,
                 ["Email"] = user.Email
-            });
+            },
+            operation: "RegisterAsync");
 
         return _mapper.Map<UserResponse>(user);
     }
 
-    // [POST] /api/users/login
     public async Task<LoginResponse> LoginAsync(LoginRequest request)
     {
         var user = await _userRepository.GetByEmailAsync(request.Email)
@@ -112,7 +111,7 @@ public class UsrService : IUsrService
         });
 
         await _logPublisher.PublishAuditAsync(
-            source: "user-api",
+            domain: "[BUSINESS][LOGIN]",
             messageText: $"{ServiceTag} User '{user.Username}' logged in.",
             category: "LOGIN",
             data: new Dictionary<string, object>
@@ -120,7 +119,8 @@ public class UsrService : IUsrService
                 ["UserId"] = user.UserId,
                 ["Email"] = user.Email,
                 ["SessionId"] = session.Session
-            });
+            },
+            operation: "LoginAsync");
 
         return new LoginResponse
         {
@@ -129,7 +129,6 @@ public class UsrService : IUsrService
         };
     }
 
-    // [POST] /api/users/logout
     public async Task LogoutAsync(string token)
     {
         var session = await _sessionRepository.GetByTokenAsync(token);
@@ -146,17 +145,17 @@ public class UsrService : IUsrService
         });
 
         await _logPublisher.PublishAuditAsync(
-            source: "user-api",
+            domain: "[BUSINESS][LOGOUT]",
             messageText: $"{ServiceTag} User {session.UserId} logged out.",
             category: "LOGOUT",
             data: new Dictionary<string, object>
             {
                 ["UserId"] = session.UserId,
                 ["Session"] = session.Session
-            });
+            },
+            operation: "LogoutAsync");
     }
 
-    // [GET] /api/users/profile
     public async Task<UserProfileResponse> GetProfileAsync(int userId)
     {
         var user = await _userRepository.GetByIdAsync(userId);
@@ -168,19 +167,19 @@ public class UsrService : IUsrService
         profile.UpdatedAt = DateTime.UtcNow;
 
         await _logPublisher.PublishAuditAsync(
-            source: "user-api",
+            domain: "[BUSINESS][GET_PROFILE]",
             messageText: $"{ServiceTag} Retrieved profile for '{user.Username}'.",
             category: "GET_PROFILE",
             data: new Dictionary<string, object>
             {
                 ["UserId"] = user.UserId,
                 ["Email"] = user.Email
-            });
+            },
+            operation: "GetProfileAsync");
 
         return profile;
     }
 
-    // [PUT] /api/users/update
     public async Task<UserResponse> UpdateProfileAsync(int userId, UpdateProfileRequest request)
     {
         var user = await _userRepository.GetByIdAsync(userId);
@@ -208,19 +207,19 @@ public class UsrService : IUsrService
         });
 
         await _logPublisher.PublishAuditAsync(
-            source: "user-api",
+            domain: "[BUSINESS][UPDATE_PROFILE]",
             messageText: $"{ServiceTag} User '{user.Username}' updated profile.",
             category: "UPDATE_PROFILE",
             data: new Dictionary<string, object>
             {
                 ["UserId"] = user.UserId,
                 ["Email"] = user.Email
-            });
+            },
+            operation: "UpdateProfileAsync");
 
         return _mapper.Map<UserResponse>(user);
     }
 
-    // [POST] /api/users/reset-password
     public async Task ResetPasswordAsync(ResetPasswordRequest request)
     {
         var user = await _userRepository.GetByEmailAsync(request.Email)
@@ -243,13 +242,14 @@ public class UsrService : IUsrService
         });
 
         await _logPublisher.PublishAuditAsync(
-            source: "user-api",
+            domain: "[BUSINESS][RESET_PASSWORD]",
             messageText: $"{ServiceTag} User '{user.Username}' reset password.",
             category: "RESET_PASSWORD",
             data: new Dictionary<string, object>
             {
                 ["UserId"] = user.UserId,
                 ["Email"] = user.Email
-            });
+            },
+            operation: "ResetPasswordAsync");
     }
 }

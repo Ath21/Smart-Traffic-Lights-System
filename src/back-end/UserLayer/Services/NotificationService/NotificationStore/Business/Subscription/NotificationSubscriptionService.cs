@@ -4,17 +4,18 @@ using NotificationStore.Models.Requests;
 using NotificationStore.Models.Responses;
 using NotificationStore.Publishers.Logs;
 
-
 namespace NotificationStore.Business.Subscription;
 
 public class NotificationSubscriptionService : INotificationSubscriptionService
 {
     private readonly INotificationRepository _repo;
-    private readonly ILogPublisher _logPublisher;
+    private readonly INotificationLogPublisher _logPublisher;
+
+    private const string Domain = "[BUSINESS][SUBSCRIPTION]";
 
     public NotificationSubscriptionService(
         INotificationRepository repo,
-        ILogPublisher logPublisher)
+        INotificationLogPublisher logPublisher)
     {
         _repo = repo;
         _logPublisher = logPublisher;
@@ -35,8 +36,17 @@ public class NotificationSubscriptionService : INotificationSubscriptionService
         await _repo.AddOrUpdateSubscriptionAsync(entity);
 
         await _logPublisher.PublishAuditAsync(
-            "Business",
-            $"[BUSINESS][SUBSCRIPTION] Stored subscription for {request.UserId} ({request.UserEmail}) -> {request.Intersection}/{request.Metric}");
+            domain: Domain,
+            messageText: $"{Domain} Stored subscription for {request.UserEmail} → {request.Intersection}/{request.Metric}",
+            category: "SUBSCRIPTION",
+            operation: "SubscribeAsync",
+            data: new Dictionary<string, object>
+            {
+                ["UserId"] = request.UserId,
+                ["Email"] = request.UserEmail,
+                ["Intersection"] = request.Intersection,
+                ["Metric"] = request.Metric
+            });
 
         return new SubscriptionResponse
         {
@@ -52,6 +62,13 @@ public class NotificationSubscriptionService : INotificationSubscriptionService
     public async Task<IEnumerable<SubscriptionResponse>> GetUserSubscriptionsAsync(string userId)
     {
         var subs = await _repo.GetUserSubscriptionsAsync(userId);
+
+        await _logPublisher.PublishAuditAsync(
+            domain: Domain,
+            messageText: $"{Domain} Retrieved subscriptions for {userId}",
+            category: "SUBSCRIPTION",
+            operation: "GetUserSubscriptionsAsync",
+            data: new Dictionary<string, object> { ["UserId"] = userId, ["Count"] = subs.Count() });
 
         return subs.Select(s => new SubscriptionResponse
         {
@@ -79,7 +96,16 @@ public class NotificationSubscriptionService : INotificationSubscriptionService
         }
 
         await _logPublisher.PublishAuditAsync(
-            "Business",
-            $"[BUSINESS][SUBSCRIPTION] {request.UserId} ({request.UserEmail}) unsubscribed from {request.Intersection ?? "all"}/{request.Metric ?? "all"}");
+            domain: Domain,
+            messageText: $"{Domain} {request.UserEmail} unsubscribed from {request.Intersection ?? "all"}/{request.Metric ?? "all"}",
+            category: "SUBSCRIPTION",
+            operation: "UnsubscribeAsync",
+            data: new Dictionary<string, object>
+            {
+                ["UserId"] = request.UserId,
+                ["Email"] = request.UserEmail,
+                ["Intersection"] = request.Intersection ?? "all",
+                ["Metric"] = request.Metric ?? "all"
+            });
     }
 }

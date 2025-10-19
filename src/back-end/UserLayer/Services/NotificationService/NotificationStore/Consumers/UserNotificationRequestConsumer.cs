@@ -11,13 +11,15 @@ public class UserNotificationRequestConsumer : IConsumer<UserNotificationRequest
 {
     private readonly INotificationRepository _repo;
     private readonly IDeliveryLogRepository _logRepo;
-    private readonly ILogPublisher _logPublisher;
+    private readonly INotificationLogPublisher _logPublisher;
     private readonly IEmailService _emailService;
+
+    private const string Domain = "[CONSUMER][USER_REQUEST]";
 
     public UserNotificationRequestConsumer(
         INotificationRepository repo,
         IDeliveryLogRepository logRepo,
-        ILogPublisher logPublisher,
+        INotificationLogPublisher logPublisher,
         IEmailService emailService)
     {
         _repo = repo;
@@ -31,8 +33,17 @@ public class UserNotificationRequestConsumer : IConsumer<UserNotificationRequest
         var msg = context.Message;
 
         await _logPublisher.PublishAuditAsync(
-            "Consumer",
-            $"[CONSUMER][USER_REQUEST] Subscription from {msg.UserEmail} for {msg.Intersection}/{msg.Metric}");
+            domain: Domain,
+            messageText: $"{Domain} Subscription from {msg.UserEmail} for {msg.Intersection}/{msg.Metric}",
+            category: "USER_REQUEST",
+            operation: "Consume",
+            data: new Dictionary<string, object>
+            {
+                ["UserId"] = msg.UserId,
+                ["Email"] = msg.UserEmail,
+                ["Intersection"] = msg.Intersection,
+                ["Metric"] = msg.Metric
+            });
 
         var entity = new NotificationData.Collections.NotificationCollection
         {
@@ -46,9 +57,7 @@ public class UserNotificationRequestConsumer : IConsumer<UserNotificationRequest
 
         await _repo.AddOrUpdateSubscriptionAsync(entity);
 
-        // -----------------------------------------------------
-        // Send verification email to the user
-        // -----------------------------------------------------
+        // Send verification email
         var subject = $"Subscription Verification - {msg.Intersection}";
         var body =
             $"Hello {msg.UserEmail},\n\n" +
@@ -63,20 +72,44 @@ public class UserNotificationRequestConsumer : IConsumer<UserNotificationRequest
             await _logRepo.LogDeliveryAsync(msg.UserId, msg.UserEmail, $"{msg.Intersection}.{msg.Metric}.verification", "Success");
 
             await _logPublisher.PublishAuditAsync(
-                "Consumer",
-                $"[CONSUMER][USER_REQUEST] Verification email sent to {msg.UserEmail}");
+                domain: Domain,
+                messageText: $"{Domain} Verification email sent to {msg.UserEmail}",
+                category: "EMAIL",
+                operation: "SendEmail",
+                data: new Dictionary<string, object>
+                {
+                    ["UserEmail"] = msg.UserEmail,
+                    ["Intersection"] = msg.Intersection,
+                    ["Metric"] = msg.Metric
+                });
         }
         catch (Exception ex)
         {
             await _logRepo.LogDeliveryAsync(msg.UserId, msg.UserEmail, $"{msg.Intersection}.{msg.Metric}.verification", "Failed");
 
             await _logPublisher.PublishErrorAsync(
-                "Consumer",
-                $"[CONSUMER][USER_REQUEST] Verification email failed for {msg.UserEmail}: {ex.Message}");
+                domain: Domain,
+                messageText: $"{Domain} Verification email failed for {msg.UserEmail}: {ex.Message}",
+                operation: "SendEmail",
+                data: new Dictionary<string, object>
+                {
+                    ["UserEmail"] = msg.UserEmail,
+                    ["Intersection"] = msg.Intersection,
+                    ["Metric"] = msg.Metric,
+                    ["Error"] = ex.Message
+                });
         }
 
         await _logPublisher.PublishAuditAsync(
-            "Consumer",
-            $"[CONSUMER][USER_REQUEST] Subscription saved for {msg.UserEmail}");
+            domain: Domain,
+            messageText: $"{Domain} Subscription saved for {msg.UserEmail}",
+            category: "USER_REQUEST",
+            operation: "Consume",
+            data: new Dictionary<string, object>
+            {
+                ["UserEmail"] = msg.UserEmail,
+                ["Intersection"] = msg.Intersection,
+                ["Metric"] = msg.Metric
+            });
     }
 }

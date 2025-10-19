@@ -10,14 +10,11 @@ namespace NotificationStore.Controllers;
 public class SubscriptionController : ControllerBase
 {
     private readonly INotificationSubscriptionService _subscriptionService;
-    private readonly ILogPublisher _logPublisher;
 
     public SubscriptionController(
-        INotificationSubscriptionService subscriptionService,
-        ILogPublisher logPublisher)
+        INotificationSubscriptionService subscriptionService)
     {
         _subscriptionService = subscriptionService;
-        _logPublisher = logPublisher;
     }
 
     [HttpPost]
@@ -28,10 +25,6 @@ public class SubscriptionController : ControllerBase
             return BadRequest("UserId and UserEmail are required.");
 
         var result = await _subscriptionService.SubscribeAsync(request);
-
-        await _logPublisher.PublishAuditAsync(
-            "Controller",
-            $"[API][SUBSCRIPTION] {request.UserId} ({request.UserEmail}) subscribed to {request.Intersection}/{request.Metric}");
 
         return Ok(result);
     }
@@ -52,10 +45,6 @@ public class SubscriptionController : ControllerBase
             return BadRequest("UserEmail is required.");
 
         await _subscriptionService.UnsubscribeAsync(request);
-
-        await _logPublisher.PublishAuditAsync(
-            "Controller",
-            $"[API][SUBSCRIPTION] {request.UserId} ({request.UserEmail}) unsubscribed from {request.Intersection ?? "all"}/{request.Metric ?? "all"}");
 
         return NoContent();
     }

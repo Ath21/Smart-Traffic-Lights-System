@@ -1,32 +1,47 @@
 using System;
+using System.Collections.Generic;
 
 namespace LogStore.Models.Responses;
 
 public class SearchLogResponse
 {
-    public string LogType { get; set; } = string.Empty;  // "Audit" | "Error" | "Failover"
+    // ============================================================
+    // Classification
+    // ============================================================
+    public string LogType { get; set; } = string.Empty;   // "Audit" | "Error" | "Failover"
 
+    // ============================================================
+    // Core Identification
+    // ============================================================
     public Guid CorrelationId { get; set; }
     public DateTime Timestamp { get; set; }
 
-    public string Layer { get; set; } = string.Empty;
-    public string Service { get; set; } = string.Empty;
+    // ============================================================
+    // Source Hierarchy
+    // ============================================================
+    public string Layer { get; set; } = string.Empty;         // e.g. "Traffic", "User", "Notification"
+    public string Level { get; set; } = string.Empty;         // e.g. "Edge", "Fog", "Cloud"
+    public string Service { get; set; } = string.Empty;       // e.g. "TrafficLightController"
+    public string Domain { get; set; } = string.Empty;        // e.g. "[CONSUMER][USER_REQUEST]"
 
-    public int IntersectionId { get; set; }
-    public string IntersectionName { get; set; } = string.Empty;
+    // ============================================================
+    // Log Content
+    // ============================================================
+    public string Type { get; set; } = string.Empty;          // audit | error | failover
+    public string Category { get; set; } = string.Empty;      // API | Controller | Consumer | Auth | DataProcessing
+    public string? Operation { get; set; }                    // e.g. "ProcessSensorData"
+    public string? Message { get; set; }                      // Main log message
 
-    public List<int>? LightId { get; set; }
-    public List<string>? TrafficLight { get; set; }
+    // ============================================================
+    // Context & Runtime
+    // ============================================================
+    public string? EntityId { get; set; }                     // userId | intersectionId | containerIp
+    public string? Hostname { get; set; }                     // Docker container name
+    public string? ContainerIp { get; set; }                  // Container IP
+    public string? Environment { get; set; }                  // prod | dev | local
 
-    // Common fields
-    public string? Action { get; set; }
-    public string? Message { get; set; }
-
-    // Type-specific fields
-    public string? ErrorType { get; set; }  // For Error logs
-    public string? Context { get; set; }    // For Failover logs
-    public string? Reason { get; set; }     // For Failover logs
-    public string? Mode { get; set; }       // For Failover logs
-
-    public Dictionary<string, string>? Metadata { get; set; }
+    // ============================================================
+    // Flexible Data Payload
+    // ============================================================
+    public Dictionary<string, object>? Data { get; set; }     // Structured, service-specific info (intersection, counts, etc.)
 }

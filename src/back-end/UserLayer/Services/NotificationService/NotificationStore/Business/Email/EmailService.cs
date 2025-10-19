@@ -11,14 +11,14 @@ public class EmailService : IEmailService
 {
     private readonly EmailSettings _emailSettings;
     private readonly ILogger<EmailService> _logger;
-    private readonly ILogPublisher _logPublisher;
+    private readonly INotificationLogPublisher _logPublisher;
 
-    private const string ServiceTag = "[BUSINESS][EMAIL]";
+    private const string Domain = "[BUSINESS][EMAIL]";
 
     public EmailService(
         IOptions<EmailSettings> emailSettings,
         ILogger<EmailService> logger,
-        ILogPublisher logPublisher)
+        INotificationLogPublisher logPublisher)
     {
         _emailSettings = emailSettings.Value;
         _logger = logger;
@@ -29,16 +29,17 @@ public class EmailService : IEmailService
     {
         if (string.IsNullOrWhiteSpace(recipientEmail))
         {
-            _logger.LogWarning("{Tag} No recipient email provided, skipping email send.", ServiceTag);
+            _logger.LogWarning("{Domain} Missing recipient email, skipping send.", Domain);
             await _logPublisher.PublishAuditAsync(
-                category: "Email",
-                message: $"{ServiceTag} Skipped email send (missing recipient).");
+                domain: Domain,
+                messageText: $"{Domain} Skipped email send (no recipient provided).",
+                category: "EMAIL",
+                operation: "SendEmailAsync");
             return;
         }
 
         try
         {
-            // Build email message
             var message = new MimeMessage();
             message.From.Add(new MailboxAddress(_emailSettings.SenderName, _emailSettings.SenderEmail));
             message.To.Add(new MailboxAddress("", recipientEmail));
@@ -47,43 +48,42 @@ public class EmailService : IEmailService
             var builder = new BodyBuilder { HtmlBody = body };
             message.Body = builder.ToMessageBody();
 
-            // Send via SMTP
             using var client = new SmtpClient();
             await client.ConnectAsync(_emailSettings.SmtpServer, _emailSettings.Port, SecureSocketOptions.StartTls);
             await client.AuthenticateAsync(_emailSettings.Username, _emailSettings.Password);
             await client.SendAsync(message);
             await client.DisconnectAsync(true);
 
-            _logger.LogInformation("{Tag} Email sent successfully to {Recipient}, Subject: {Subject}",
-                ServiceTag, recipientEmail, subject);
+            _logger.LogInformation("{Domain} Email sent successfully to {Recipient} | Subject: {Subject}", Domain, recipientEmail, subject);
 
             await _logPublisher.PublishAuditAsync(
-                category: "Email",
-                message: $"{ServiceTag} Email sent successfully",
-                data: new()
+                domain: Domain,
+                messageText: $"{Domain} Email sent successfully.",
+                category: "EMAIL",
+                operation: "SendEmailAsync",
+                data: new Dictionary<string, object>
                 {
-                    { "recipient", recipientEmail },
-                    { "subject", subject }
+                    ["Recipient"] = recipientEmail,
+                    ["Subject"] = subject
                 });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "{Tag} Failed to send email to {Recipient}, Subject: {Subject}",
-                ServiceTag, recipientEmail, subject);
+            _logger.LogError(ex, "{Domain} Failed to send email to {Recipient} | Subject: {Subject}", Domain, recipientEmail, subject);
 
             await _logPublisher.PublishErrorAsync(
-                category: "Email",
-                message: $"{ServiceTag} Failed to send email to {recipientEmail}: {ex.Message}",
-                data: new()
+                domain: Domain,
+                messageText: $"{Domain} Failed to send email: {ex.Message}",
+                operation: "SendEmailAsync",
+                data: new Dictionary<string, object>
                 {
-                    { "recipient", recipientEmail },
-                    { "subject", subject },
-                    { "exception", ex.Message },
-                    { "stack_trace", ex.StackTrace ?? string.Empty }
+                    ["Recipient"] = recipientEmail,
+                    ["Subject"] = subject,
+                    ["Exception"] = ex.Message,
+                    ["StackTrace"] = ex.StackTrace ?? string.Empty
                 });
 
-            // Rethrow to let ExceptionMiddleware handle the HTTP response
-            throw;
+            throw; // rethrow to middleware
         }
     }
 }

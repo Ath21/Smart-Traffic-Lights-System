@@ -11,13 +11,15 @@ public class CongestionAnalyticsConsumer : IConsumer<CongestionAnalyticsMessage>
 {
     private readonly INotificationRepository _repo;
     private readonly IDeliveryLogRepository _logRepo;
-    private readonly ILogPublisher _logPublisher;
+    private readonly INotificationLogPublisher _logPublisher;
     private readonly IEmailService _emailService;
+
+    private const string Domain = "[CONSUMER][ANALYTICS][CONGESTION]";
 
     public CongestionAnalyticsConsumer(
         INotificationRepository repo,
         IDeliveryLogRepository logRepo,
-        ILogPublisher logPublisher,
+        INotificationLogPublisher logPublisher,
         IEmailService emailService)
     {
         _repo = repo;
@@ -31,8 +33,16 @@ public class CongestionAnalyticsConsumer : IConsumer<CongestionAnalyticsMessage>
         var msg = context.Message;
 
         await _logPublisher.PublishAuditAsync(
-            "Consumer",
-            $"[CONSUMER][CONGESTION] {msg.Intersection}: {msg.Status} ({msg.CongestionLevel:P1})");
+            domain: Domain,
+            messageText: $"{Domain} Received update for {msg.Intersection}: {msg.Status} ({msg.CongestionLevel:P1})",
+            category: "ANALYTICS",
+            operation: "Consume",
+            data: new Dictionary<string, object>
+            {
+                ["Intersection"] = msg.Intersection,
+                ["Status"] = msg.Status,
+                ["Level"] = msg.CongestionLevel
+            });
 
         var subs = await _repo.GetSubscribersAsync(msg.Intersection, "congestion");
 
@@ -45,13 +55,32 @@ public class CongestionAnalyticsConsumer : IConsumer<CongestionAnalyticsMessage>
             {
                 await _emailService.SendEmailAsync(sub.UserEmail, subject, body);
                 await _logRepo.LogDeliveryAsync(sub.UserId, sub.UserEmail, $"{msg.Intersection}.congestion", "Success");
+
+                await _logPublisher.PublishAuditAsync(
+                    domain: Domain,
+                    messageText: $"{Domain} Email delivered to {sub.UserEmail}",
+                    category: "EMAIL",
+                    operation: "SendEmail",
+                    data: new Dictionary<string, object>
+                    {
+                        ["UserEmail"] = sub.UserEmail,
+                        ["Intersection"] = msg.Intersection
+                    });
             }
             catch (Exception ex)
             {
                 await _logRepo.LogDeliveryAsync(sub.UserId, sub.UserEmail, $"{msg.Intersection}.congestion", "Failed");
+
                 await _logPublisher.PublishErrorAsync(
-                    "Consumer",
-                    $"[CONSUMER][CONGESTION] Email failed for {sub.UserEmail}: {ex.Message}");
+                    domain: Domain,
+                    messageText: $"{Domain} Email failed for {sub.UserEmail}: {ex.Message}",
+                    operation: "SendEmail",
+                    data: new Dictionary<string, object>
+                    {
+                        ["UserEmail"] = sub.UserEmail,
+                        ["Intersection"] = msg.Intersection,
+                        ["Error"] = ex.Message
+                    });
             }
         }
     }

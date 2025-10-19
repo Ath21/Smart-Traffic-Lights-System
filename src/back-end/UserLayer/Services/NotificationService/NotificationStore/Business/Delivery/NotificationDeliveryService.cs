@@ -1,4 +1,3 @@
-using System;
 using NotificationData.Repositories.DeliveryLogs;
 using NotificationStore.Models.Requests;
 using NotificationStore.Models.Responses;
@@ -9,11 +8,13 @@ namespace NotificationStore.Business.Delivery;
 public class NotificationDeliveryService : INotificationDeliveryService
 {
     private readonly IDeliveryLogRepository _logRepo;
-    private readonly ILogPublisher _logPublisher;
+    private readonly INotificationLogPublisher _logPublisher;
+
+    private const string Domain = "[BUSINESS][DELIVERY]";
 
     public NotificationDeliveryService(
         IDeliveryLogRepository logRepo,
-        ILogPublisher logPublisher)
+        INotificationLogPublisher logPublisher)
     {
         _logRepo = logRepo;
         _logPublisher = logPublisher;
@@ -24,8 +25,16 @@ public class NotificationDeliveryService : INotificationDeliveryService
         var logs = await _logRepo.GetUserDeliveriesAsync(userId, unreadOnly);
 
         await _logPublisher.PublishAuditAsync(
-            "Business",
-            $"[BUSINESS][DELIVERY] Fetched {(unreadOnly ? "unread" : "all")} deliveries for {userId}");
+            domain: Domain,
+            messageText: $"{Domain} Retrieved {(unreadOnly ? "unread" : "all")} deliveries for user {userId}",
+            category: "DELIVERY",
+            operation: "GetUserDeliveriesAsync",
+            data: new Dictionary<string, object>
+            {
+                ["UserId"] = userId,
+                ["UnreadOnly"] = unreadOnly,
+                ["Count"] = logs.Count()
+            });
 
         return logs.Select(l => new DeliveryResponse
         {
@@ -44,7 +53,15 @@ public class NotificationDeliveryService : INotificationDeliveryService
         await _logRepo.MarkAsReadAsync(request.UserId, request.UserEmail, request.DeliveryId);
 
         await _logPublisher.PublishAuditAsync(
-            "Business",
-            $"[BUSINESS][DELIVERY] Marked {request.DeliveryId} as read for {request.UserId} ({request.UserEmail})");
+            domain: Domain,
+            messageText: $"{Domain} Marked delivery {request.DeliveryId} as read for {request.UserEmail}",
+            category: "DELIVERY",
+            operation: "MarkAsReadAsync",
+            data: new Dictionary<string, object>
+            {
+                ["UserId"] = request.UserId,
+                ["UserEmail"] = request.UserEmail,
+                ["DeliveryId"] = request.DeliveryId
+            });
     }
 }

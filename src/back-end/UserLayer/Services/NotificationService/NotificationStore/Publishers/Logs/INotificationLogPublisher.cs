@@ -1,9 +1,10 @@
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
 namespace NotificationStore.Publishers.Logs;
 
-public interface ILogPublisher
+public interface INotificationLogPublisher
 {
-    Task PublishAsync(string type, string category, string message, string? correlationId = null, Dictionary<string, object>? data = null);
-    Task PublishAuditAsync(string category, string message, string? correlationId = null, Dictionary<string, object>? data = null);
-    Task PublishErrorAsync(string category, string message, string? correlationId = null, Dictionary<string, object>? data = null);
-    Task PublishFailoverAsync(string category, string message, string? correlationId = null, Dictionary<string, object>? data = null);
+    Task PublishAuditAsync(string domain, string messageText, string? category = "system", Dictionary<string, object>? data = null, string? operation = null);
+    Task PublishErrorAsync(string domain, string messageText, Dictionary<string, object>? data = null, string? operation = null);
 }

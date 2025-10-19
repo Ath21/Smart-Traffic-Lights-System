@@ -18,6 +18,8 @@ public class ExceptionMiddleware
     private readonly ILogger<ExceptionMiddleware> _logger;
     private readonly IServiceScopeFactory _scopeFactory;
 
+    private const string Domain = "[MIDDLEWARE][EXCEPTION]";
+
     public ExceptionMiddleware(
         RequestDelegate next,
         ILogger<ExceptionMiddleware> logger,
@@ -36,9 +38,6 @@ public class ExceptionMiddleware
         }
         catch (Exception ex)
         {
-            // ============================================================
-            // Unified Exception Classification (tuple switch)
-            // ============================================================
             var (statusCode, userMessage, errorType) = ex switch
             {
                 // ============================
@@ -60,7 +59,7 @@ public class ExceptionMiddleware
                 AutoMapperMappingException    => (HttpStatusCode.InternalServerError, "Mapping error occurred", "MAPPING_ERROR"),
 
                 // ============================
-                // EMAIL / SMTP (MailKit)
+                // EMAIL / SMTP
                 // ============================
                 SmtpCommandException          => (HttpStatusCode.BadGateway, "SMTP command failed", "SMTP_COMMAND_ERROR"),
                 SmtpProtocolException         => (HttpStatusCode.BadGateway, "SMTP protocol error", "SMTP_PROTOCOL_ERROR"),
@@ -99,14 +98,13 @@ public class ExceptionMiddleware
         string errorType,
         Exception ex)
     {
-        _logger.LogError(ex, "[EXCEPTION] {ErrorType} - {Message}", errorType, userMessage);
+        _logger.LogError(ex, "{Domain} {ErrorType} - {Message}", Domain, errorType, userMessage);
 
-        // Generate or reuse correlation ID
+        // Correlation / trace context
         string correlationId = context.Request.Headers.ContainsKey("X-Correlation-ID")
             ? context.Request.Headers["X-Correlation-ID"].ToString()
             : Guid.NewGuid().ToString();
 
-        // Enrich metadata for audit/error log
         var metadata = new Dictionary<string, object>
         {
             ["path"] = context.Request.Path,
@@ -115,33 +113,32 @@ public class ExceptionMiddleware
             ["correlation_id"] = correlationId,
             ["exception_type"] = ex.GetType().FullName ?? "Unknown",
             ["exception_message"] = ex.Message,
-            ["stack_trace"] = ex.StackTrace ?? string.Empty
+            ["stack_trace"] = ex.StackTrace ?? string.Empty,
+            ["timestamp"] = DateTime.UtcNow
         };
 
-        // Publish error log via RabbitMQ (LOG.EXCHANGE)
         try
         {
             using var scope = _scopeFactory.CreateScope();
-            var logPublisher = scope.ServiceProvider.GetRequiredService<ILogPublisher>();
+            var logPublisher = scope.ServiceProvider.GetRequiredService<INotificationLogPublisher>();
 
             await logPublisher.PublishErrorAsync(
-                category: "Middleware",
-                message: $"[{errorType}] {userMessage}: {ex.Message}",
-                correlationId: correlationId,
-                data: metadata);
+                domain: Domain,
+                messageText: $"[{errorType}] {userMessage}: {ex.Message}",
+                data: metadata,
+                operation: "HandleErrorAsync");
 
-            _logger.LogInformation("[EXCEPTION] Published error log ({ErrorType}) via RabbitMQ", errorType);
+            _logger.LogInformation("{Domain} Published error log ({ErrorType}) via RabbitMQ", Domain, errorType);
         }
         catch (Exception pubEx)
         {
-            _logger.LogError(pubEx, "[EXCEPTION] Failed to publish log to RabbitMQ");
+            _logger.LogError(pubEx, "{Domain} Failed to publish structured log to RabbitMQ", Domain);
         }
 
-        // Build and send HTTP response
         context.Response.StatusCode = (int)statusCode;
         context.Response.ContentType = "application/json";
 
-        var response = new
+        var responseBody = new
         {
             error = userMessage,
             details = ex.Message,
@@ -150,6 +147,6 @@ public class ExceptionMiddleware
             correlationId
         };
 
-        await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+        await context.Response.WriteAsync(JsonSerializer.Serialize(responseBody));
     }
 }

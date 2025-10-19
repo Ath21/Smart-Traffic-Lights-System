@@ -39,12 +39,13 @@ public class UserSubscriptionService : IUserSubscriptionService
         {
             await _notificationPublisher.PublishSubscriptionRequestAsync(message);
 
-            _logger.LogInformation("{Tag} Published subscription request for {UserId} ({Email}) → {Intersection}/{Metric}",
+            _logger.LogInformation(
+                "{Tag} Published subscription request for {UserId} ({Email}) → {Intersection}/{Metric}",
                 ServiceTag, userId, email, request.Intersection, request.Metric);
 
             await _logPublisher.PublishAuditAsync(
-                source: "user-api",
-                messageText: $"{ServiceTag} Subscription request published successfully.",
+                domain: "[BUSINESS][SUBSCRIBE]",
+                messageText: $"{ServiceTag} Subscription request published successfully for {email}.",
                 category: "SUBSCRIBE",
                 data: new Dictionary<string, object>
                 {
@@ -52,7 +53,8 @@ public class UserSubscriptionService : IUserSubscriptionService
                     ["Email"] = email,
                     ["Intersection"] = request.Intersection,
                     ["Metric"] = request.Metric
-                });
+                },
+                operation: "SubscribeAsync");
 
             return new SubscriptionResponse
             {
@@ -65,10 +67,12 @@ public class UserSubscriptionService : IUserSubscriptionService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "{Tag} Failed to publish subscription request for {UserId} ({Email})", ServiceTag, userId, email);
+            _logger.LogError(ex,
+                "{Tag} Failed to publish subscription request for {UserId} ({Email}) → {Intersection}/{Metric}",
+                ServiceTag, userId, email, request.Intersection, request.Metric);
 
             await _logPublisher.PublishErrorAsync(
-                source: "user-api",
+                domain: "[BUSINESS][SUBSCRIBE]",
                 messageText: $"{ServiceTag} Failed to publish subscription request: {ex.Message}",
                 data: new Dictionary<string, object>
                 {
@@ -77,7 +81,8 @@ public class UserSubscriptionService : IUserSubscriptionService
                     ["Intersection"] = request.Intersection,
                     ["Metric"] = request.Metric,
                     ["Exception"] = ex.Message
-                });
+                },
+                operation: "SubscribeAsync");
 
             throw;
         }

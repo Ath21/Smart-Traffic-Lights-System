@@ -10,14 +10,11 @@ namespace NotificationStore.Controllers;
 public class DeliveryController : ControllerBase
 {
     private readonly INotificationDeliveryService _deliveryService;
-    private readonly ILogPublisher _logPublisher;
 
     public DeliveryController(
-        INotificationDeliveryService deliveryService,
-        ILogPublisher logPublisher)
+        INotificationDeliveryService deliveryService)
     {
         _deliveryService = deliveryService;
-        _logPublisher = logPublisher;
     }
 
     [HttpGet]
@@ -25,10 +22,6 @@ public class DeliveryController : ControllerBase
     public async Task<IActionResult> GetDeliveries(string userId, [FromQuery] bool unreadOnly = false)
     {
         var logs = await _deliveryService.GetUserDeliveriesAsync(userId, unreadOnly);
-
-        await _logPublisher.PublishAuditAsync(
-            "Controller",
-            $"[API][DELIVERY] GET deliveries for {userId} (UnreadOnly={unreadOnly})");
 
         return Ok(logs);
     }
@@ -41,10 +34,6 @@ public class DeliveryController : ControllerBase
             return BadRequest("UserId and UserEmail are required.");
 
         await _deliveryService.MarkAsReadAsync(request);
-
-        await _logPublisher.PublishAuditAsync(
-            "Controller",
-            $"[API][DELIVERY] Marked {request.DeliveryId} as read for {request.UserId} ({request.UserEmail})");
 
         return Ok(new { status = "read", request.DeliveryId });
     }

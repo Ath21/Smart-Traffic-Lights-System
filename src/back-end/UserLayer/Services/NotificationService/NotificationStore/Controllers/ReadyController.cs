@@ -1,23 +1,35 @@
+using System.Net;
+using System.Net.Sockets;
 using MassTransit;
 using Messages.Log;
 using Microsoft.AspNetCore.Mvc;
-using MongoDB.Bson;
-using MongoDB.Driver;
 using NotificationData;
 
 namespace NotificationStore.Controllers
 {
     [ApiController]
-    [Route("notification_service")]
+    [Route("notification-service")]
     public class ReadyController : ControllerBase
     {
-        private readonly NotificationDbContext _dbcontext;
+        private readonly NotificationDbContext _dbContext;
         private readonly IBusControl _bus;
 
-        public ReadyController(NotificationDbContext dbcontext, IBusControl bus)
+        private readonly string _service;
+        private readonly string _environment;
+        private readonly string _hostname;
+        private readonly string _containerIp;
+
+        public ReadyController(NotificationDbContext dbContext, IBusControl bus)
         {
-            _dbcontext = dbcontext;
+            _dbContext = dbContext;
             _bus = bus;
+
+            _service = Environment.GetEnvironmentVariable("SERVICE_NAME") ?? "Notification Service";
+            _environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
+            _hostname = Environment.MachineName;
+            _containerIp = Dns.GetHostAddresses(Dns.GetHostName())
+                .FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork)
+                ?.ToString() ?? "unknown";
         }
 
         [HttpGet("ready")]
@@ -25,17 +37,54 @@ namespace NotificationStore.Controllers
         {
             try
             {
-                if (!await _dbcontext.CanConnectAsync())
-                    return StatusCode(503, new { status = "Not Ready", reason = "NotificationDB MongoDB unreachable" });
+                var mongoOk = await _dbContext.CanConnectAsync();
+                if (!mongoOk)
+                {
+                    return StatusCode(503, new
+                    {
+                        status = "Not Ready",
+                        reason = "NotificationDB (MongoDB) unreachable",
+                        service = _service,
+                        environment = _environment,
+                        hostname = _hostname,
+                        container_ip = _containerIp
+                    });
+                }
 
                 if (!_bus.Topology.TryGetPublishAddress(typeof(LogMessage), out _))
-                    return StatusCode(503, new { status = "Not Ready", reason = "RabbitMQ not connected" });
+                {
+                    return StatusCode(503, new
+                    {
+                        status = "Not Ready",
+                        reason = "RabbitMQ broker unreachable or topology not established",
+                        service = _service,
+                        environment = _environment,
+                        hostname = _hostname,
+                        container_ip = _containerIp
+                    });
+                }
 
-                return Ok(new { status = "Ready", service = "Notification Service" });
+                return Ok(new
+                {
+                    status = "Ready",
+                    service = _service,
+                    environment = _environment,
+                    hostname = _hostname,
+                    container_ip = _containerIp,
+                    timestamp = DateTime.UtcNow.ToString("u")
+                });
             }
             catch (Exception ex)
             {
-                return StatusCode(503, new { status = "Not Ready", error = ex.Message });
+                return StatusCode(503, new
+                {
+                    status = "Not Ready",
+                    error = ex.Message,
+                    service = _service,
+                    environment = _environment,
+                    hostname = _hostname,
+                    container_ip = _containerIp
+                });
             }
         }
     }

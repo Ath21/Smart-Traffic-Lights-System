@@ -37,15 +37,14 @@ public class ExceptionMiddleware
         }
         catch (Exception ex)
         {
-            // ============================
-            // Exception classification
-            // ============================
             var (status, message, errorType) = ex switch
             {
-                // AUTH / SECURITY / IDENTITY
+                // AUTH / SECURITY
                 UnauthorizedAccessException => (HttpStatusCode.Unauthorized, "Unauthorized access", "AUTH_ERROR"),
                 SecurityTokenException => (HttpStatusCode.Unauthorized, "Invalid or expired token", "TOKEN_ERROR"),
                 AuthenticationException => (HttpStatusCode.Unauthorized, "Authentication failed", "AUTHENTICATION_ERROR"),
+
+                // USER / IDENTITY
                 InvalidOperationException ioe when ioe.Message.Contains("UserManager") => (HttpStatusCode.BadRequest, "User management error", "IDENTITY_ERROR"),
                 InvalidOperationException ioe when ioe.Message.Contains("lockout") => (HttpStatusCode.Forbidden, "User account locked", "USER_LOCKOUT"),
 
@@ -57,11 +56,11 @@ public class ExceptionMiddleware
                 JsonException => (HttpStatusCode.BadRequest, "Invalid JSON payload", "JSON_ERROR"),
                 AutoMapperMappingException => (HttpStatusCode.InternalServerError, "Mapping error occurred", "MAPPING_ERROR"),
 
-                // DATABASE (EF Core / SQL Server)
+                // DATABASE
                 DbUpdateConcurrencyException => (HttpStatusCode.Conflict, "Database concurrency conflict", "DB_CONCURRENCY_ERROR"),
                 DbUpdateException => (HttpStatusCode.Conflict, "Database update failed", "DB_UPDATE_ERROR"),
 
-                // BROKER / NETWORK (RabbitMQ)
+                // BROKER / NETWORK
                 RequestTimeoutException => (HttpStatusCode.GatewayTimeout, "RabbitMQ request timeout", "BROKER_TIMEOUT"),
                 BrokerUnreachableException => (HttpStatusCode.BadGateway, "RabbitMQ unreachable", "BROKER_UNREACHABLE"),
                 OperationInterruptedException => (HttpStatusCode.ServiceUnavailable, "RabbitMQ operation interrupted", "BROKER_INTERRUPTED"),
@@ -84,32 +83,33 @@ public class ExceptionMiddleware
     {
         _logger.LogError(ex, "{Tag} {ErrorType} - {Message}", Tag, errorType, userMessage);
 
-        // Correlation ID
-        string correlationId = context.Request.Headers.ContainsKey("X-Correlation-ID")
+        var correlationId = context.Request.Headers.ContainsKey("X-Correlation-ID")
             ? context.Request.Headers["X-Correlation-ID"].ToString()
             : Guid.NewGuid().ToString();
 
+        // Structured metadata with PascalCase keys
         var metadata = new Dictionary<string, object>
         {
-            ["path"] = context.Request.Path,
-            ["method"] = context.Request.Method,
-            ["trace_id"] = context.TraceIdentifier,
-            ["correlation_id"] = correlationId,
-            ["exception_type"] = ex.GetType().FullName ?? "Unknown",
-            ["exception_message"] = ex.Message,
-            ["stack_trace"] = ex.StackTrace ?? string.Empty
+            ["Path"] = context.Request.Path,
+            ["Method"] = context.Request.Method,
+            ["TraceId"] = context.TraceIdentifier,
+            ["CorrelationId"] = correlationId,
+            ["ExceptionType"] = ex.GetType().FullName ?? "Unknown",
+            ["ExceptionMessage"] = ex.Message,
+            ["StackTrace"] = ex.StackTrace ?? string.Empty
         };
 
-        // Try publishing structured error log to LOG.EXCHANGE
+        // Publish structured error log
         try
         {
             using var scope = _scopeFactory.CreateScope();
             var logPublisher = scope.ServiceProvider.GetRequiredService<IUserLogPublisher>();
 
             await logPublisher.PublishErrorAsync(
-                source: "user-api",
+                domain: "[MIDDLEWARE][EXCEPTION]",
                 messageText: $"[{errorType}] {userMessage}: {ex.Message}",
-                data: metadata);
+                data: metadata,
+                operation: "HandleErrorAsync");
 
             _logger.LogInformation("{Tag} Published error log ({ErrorType}) via RabbitMQ", Tag, errorType);
         }
@@ -118,7 +118,7 @@ public class ExceptionMiddleware
             _logger.LogError(pubEx, "{Tag} Failed to publish error log to RabbitMQ", Tag);
         }
 
-        // Build and send HTTP response
+        // Build and send response
         context.Response.StatusCode = (int)status;
         context.Response.ContentType = "application/json";
 

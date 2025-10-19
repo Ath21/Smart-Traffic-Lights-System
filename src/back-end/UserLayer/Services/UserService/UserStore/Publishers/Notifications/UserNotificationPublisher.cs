@@ -25,7 +25,8 @@ public class UserNotificationPublisher : IUserNotificationPublisher
         _logger = logger;
         _logPublisher = logPublisher;
 
-        _routingKey = configuration["RabbitMQ:RoutingKeys:User:NotificationRequests"] ?? "user.notification.request";
+        _routingKey = configuration["RabbitMQ:RoutingKeys:User:NotificationRequests"]
+                      ?? "user.notification.request";
     }
 
     public async Task PublishSubscriptionRequestAsync(UserNotificationRequest message)
@@ -34,36 +35,44 @@ public class UserNotificationPublisher : IUserNotificationPublisher
         {
             await _publisher.Publish(message, ctx => ctx.SetRoutingKey(_routingKey));
 
-            _logger.LogInformation("{Tag} Published subscription request for {UserId} ({Email}) → {Intersection}/{Metric}",
+            _logger.LogInformation(
+                "{Tag} Published subscription request for {UserId} ({Email}) → {Intersection}/{Metric}",
                 Tag, message.UserId, message.UserEmail, message.Intersection, message.Metric);
 
             await _logPublisher.PublishAuditAsync(
-                source: "user-api",
-                messageText: $"{Tag} Sent subscription request to Notification Service",
-                category: "Publish",
+                domain: "[PUBLISHER][USER_NOTIFICATION]",
+                messageText: $"{Tag} Subscription request sent to Notification Service successfully.",
+                category: "SUBSCRIBE",
                 data: new Dictionary<string, object>
                 {
-                    ["userId"] = message.UserId,
-                    ["email"] = message.UserEmail,
-                    ["intersection"] = message.Intersection,
-                    ["metric"] = message.Metric
-                });
+                    ["UserId"] = message.UserId,
+                    ["Email"] = message.UserEmail,
+                    ["Intersection"] = message.Intersection,
+                    ["Metric"] = message.Metric
+                },
+                operation: "PublishSubscriptionRequestAsync");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "{Tag} Failed to publish subscription for {UserId} ({Email})",
-                Tag, message.UserId, message.UserEmail);
+            _logger.LogError(ex,
+                "{Tag} Failed to publish subscription request for {UserId} ({Email}) → {Intersection}/{Metric}",
+                Tag, message.UserId, message.UserEmail, message.Intersection, message.Metric);
 
             await _logPublisher.PublishErrorAsync(
-                source: "user-api",
+                domain: "[PUBLISHER][USER_NOTIFICATION]",
                 messageText: $"{Tag} Failed to publish subscription request: {ex.Message}",
                 data: new Dictionary<string, object>
                 {
-                    ["exception"] = ex.Message,
-                    ["stackTrace"] = ex.StackTrace ?? string.Empty,
-                    ["userId"] = message.UserId,
-                    ["email"] = message.UserEmail
-                });
+                    ["UserId"] = message.UserId,
+                    ["Email"] = message.UserEmail,
+                    ["Intersection"] = message.Intersection,
+                    ["Metric"] = message.Metric,
+                    ["Exception"] = ex.Message,
+                    ["StackTrace"] = ex.StackTrace ?? string.Empty
+                },
+                operation: "PublishSubscriptionRequestAsync");
+
+            throw;
         }
     }
 }

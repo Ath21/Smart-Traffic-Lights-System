@@ -1,17 +1,46 @@
-using Microsoft.AspNetCore.Http;
+using System.Net;
+using System.Net.Sockets;
 using Microsoft.AspNetCore.Mvc;
-
 
 namespace UserStore.Controllers
 {
     [ApiController]
-    [Route("user_service")]
+    [Route("user-service")]
     public class HealthController : ControllerBase
     {
+        private readonly string _layer;
+        private readonly string _level;
+        private readonly string _service;
+        private readonly string _environment;
+        private readonly string _hostname;
+        private readonly string _containerIp;
+
+        public HealthController()
+        {
+            _layer = Environment.GetEnvironmentVariable("SERVICE_LAYER") ?? "User";
+            _level = Environment.GetEnvironmentVariable("SERVICE_LEVEL") ?? "Cloud";
+            _service = Environment.GetEnvironmentVariable("SERVICE_NAME") ?? "User Service";
+            _environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
+            _hostname = Environment.MachineName;
+            _containerIp = Dns.GetHostAddresses(Dns.GetHostName())
+                .FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork)
+                ?.ToString() ?? "unknown";
+        }
+
         [HttpGet("health")]
         public IActionResult Health()
         {
-            return Ok(new { status = "Healthy", service = "User Service" });
+            return Ok(new
+            {
+                status = "Healthy",
+                service = _service,
+                environment = _environment,
+                layer = _layer,
+                level = _level,
+                hostname = _hostname,
+                container_ip = _containerIp,
+                timestamp = DateTime.UtcNow.ToString("u")
+            });
         }
     }
 }

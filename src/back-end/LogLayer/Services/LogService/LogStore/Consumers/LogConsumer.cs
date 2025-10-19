@@ -1,11 +1,10 @@
 using MassTransit;
 using Messages.Log;
 using LogData.Collections;
+using MongoDB.Bson;
 using LogData.Repositories.Audit;
 using LogData.Repositories.Error;
 using LogData.Repositories.Failover;
-using MongoDB.Bson;
-using LogData.Extensions;
 
 namespace LogStore.Consumers;
 
@@ -31,91 +30,134 @@ public class LogConsumer : IConsumer<LogMessage>
     public async Task Consume(ConsumeContext<LogMessage> context)
     {
         var msg = context.Message;
+        var correlationId = Guid.TryParse(msg.CorrelationId, out var cid) ? cid : Guid.NewGuid();
 
-        if (string.IsNullOrWhiteSpace(msg.LogType))
+        _logger.LogInformation(
+            "[CONSUMER][LOG] Received log message from {Service} ({Layer}@{Level}) Type={Type}, CorrelationId={CorrelationId}",
+            msg.Service, msg.Layer, msg.Level, msg.Type, correlationId);
+
+        var bsonData = msg.Data is not null ? msg.Data.ToBsonDocument() : new BsonDocument();
+
+        switch (msg.Type.ToLowerInvariant())
         {
-            _logger.LogWarning(
-                "[CONSUMER] Skipping log message without LogType (CorrelationId={CorrelationId})",
-                msg.CorrelationId);
-            return;
-        }
-
-        // Convert metadata dictionary (if any)
-        var metadataDoc = BsonExtensions.ToBsonDocument(msg.Metadata ?? new());
-
-        switch (msg.LogType.ToLowerInvariant())
-        {
+            // =====================================================
+            // AUDIT
+            // =====================================================
             case "audit":
-                var audit = new AuditLogCollection
+                var auditEntry = new AuditLogCollection
                 {
-                    CorrelationId = msg.CorrelationId,
-                    Timestamp = msg.Timestamp,
-
-                    Layer = msg.SourceLayer,
-                    Service = msg.SourceService,
-
-                    Action = msg.Action,
+                    AuditId = ObjectId.GenerateNewId().ToString(),
+                    CorrelationId = correlationId,
+                    Timestamp = msg.Timestamp.ToUniversalTime(),
+                    SourceLayer = msg.Layer,
+                    SourceLevel = msg.Level,
+                    SourceService = msg.Service,
+                    SourceDomain = msg.Domain,
+                    Type = msg.Type,
+                    Category = msg.Category,
                     Message = msg.Message,
-
-                    Metadata = metadataDoc
+                    Operation = msg.Operation,
+                    EntityId = msg.EntityId,
+                    Hostname = msg.Hostname,
+                    ContainerIp = msg.ContainerIp,
+                    Environment = msg.Environment,
+                    Data = bsonData
                 };
 
-                await _auditRepo.InsertAsync(audit);
-                _logger.LogInformation(
-                    "[CONSUMER] Stored AUDIT log from {Service} ({Layer}) | CorrelationId={CorrelationId}",
-                    audit.Service, audit.Layer, audit.CorrelationId);
+                _logger.LogInformation("[CONSUMER][LOG][AUDIT] Inserting AuditLog entry for {Service}", msg.Service);
+                await _auditRepo.InsertAsync(auditEntry);
+                _logger.LogInformation("[CONSUMER][LOG][AUDIT] Inserted AuditLog with Id={AuditId}", auditEntry.AuditId);
                 break;
 
+            // =====================================================
+            // ERROR
+            // =====================================================
             case "error":
-                var error = new ErrorLogCollection
+                var errorEntry = new ErrorLogCollection
                 {
-                    CorrelationId = msg.CorrelationId,
-                    Timestamp = msg.Timestamp,
-
-                    Layer = msg.SourceLayer,
-                    Service = msg.SourceService,
-
-                    Action = msg.Action,
+                    ErrorId = ObjectId.GenerateNewId().ToString(),
+                    CorrelationId = correlationId,
+                    Timestamp = msg.Timestamp.ToUniversalTime(),
+                    SourceLayer = msg.Layer,
+                    SourceLevel = msg.Level,
+                    SourceService = msg.Service,
+                    SourceDomain = msg.Domain,
+                    Type = msg.Type,
+                    Category = msg.Category,
                     Message = msg.Message,
-
-                    Metadata = metadataDoc
+                    Operation = msg.Operation,
+                    EntityId = msg.EntityId,
+                    Hostname = msg.Hostname,
+                    ContainerIp = msg.ContainerIp,
+                    Environment = msg.Environment,
+                    Data = bsonData
                 };
 
-                await _errorRepo.InsertAsync(error);
-                _logger.LogInformation(
-                    "[CONSUMER] Stored ERROR log from {Service} ({Layer}) | CorrelationId={CorrelationId}",
-                    error.Service, error.Layer, error.CorrelationId);
+                _logger.LogWarning("[CONSUMER][LOG][ERROR] Inserting ErrorLog entry for {Service}", msg.Service);
+                await _errorRepo.InsertAsync(errorEntry);
+                _logger.LogWarning("[CONSUMER][LOG][ERROR] Inserted ErrorLog with Id={ErrorId}", errorEntry.ErrorId);
                 break;
 
+            // =====================================================
+            // FAILOVER
+            // =====================================================
             case "failover":
-                var failover = new FailoverLogCollection
+                var failoverEntry = new FailoverLogCollection
                 {
-                    CorrelationId = msg.CorrelationId,
-                    Timestamp = msg.Timestamp,
-
-                    Layer = msg.SourceLayer,
-                    Service = msg.SourceService,
-
-                    Action = msg.Action,
+                    FailoverId = ObjectId.GenerateNewId().ToString(),
+                    CorrelationId = correlationId,
+                    Timestamp = msg.Timestamp.ToUniversalTime(),
+                    SourceLayer = msg.Layer,
+                    SourceLevel = msg.Level,
+                    SourceService = msg.Service,
+                    SourceDomain = msg.Domain,
+                    Type = msg.Type,
+                    Category = msg.Category,
                     Message = msg.Message,
-
-                    Metadata = metadataDoc
+                    Operation = msg.Operation,
+                    EntityId = msg.EntityId,
+                    Hostname = msg.Hostname,
+                    ContainerIp = msg.ContainerIp,
+                    Environment = msg.Environment,
+                    Data = bsonData
                 };
 
-                await _failoverRepo.InsertAsync(failover);
-                _logger.LogInformation(
-                    "[CONSUMER] Stored FAILOVER log from {Service} ({Layer}) | CorrelationId={CorrelationId}",
-                    failover.Service, failover.Layer, failover.CorrelationId);
+                _logger.LogInformation("[CONSUMER][LOG][FAILOVER] Inserting FailoverLog entry for {Service}", msg.Service);
+                await _failoverRepo.InsertAsync(failoverEntry);
+                _logger.LogInformation("[CONSUMER][LOG][FAILOVER] Inserted FailoverLog with Id={FailoverId}", failoverEntry.FailoverId);
                 break;
-                
+
+            // =====================================================
+            // DEFAULT → AUDIT
+            // =====================================================
             default:
-                _logger.LogWarning(
-                    "[CONSUMER] Unknown log type '{Type}' from {Service} ({Layer}) | CorrelationId={CorrelationId}",
-                    msg.LogType,
-                    msg.SourceService,
-                    msg.SourceLayer,
-                    msg.CorrelationId);
+                var defaultEntry = new AuditLogCollection
+                {
+                    AuditId = ObjectId.GenerateNewId().ToString(),
+                    CorrelationId = correlationId,
+                    Timestamp = msg.Timestamp.ToUniversalTime(),
+                    SourceLayer = msg.Layer,
+                    SourceLevel = msg.Level,
+                    SourceService = msg.Service,
+                    SourceDomain = msg.Domain,
+                    Type = msg.Type,
+                    Category = msg.Category,
+                    Message = msg.Message,
+                    Operation = msg.Operation,
+                    EntityId = msg.EntityId,
+                    Hostname = msg.Hostname,
+                    ContainerIp = msg.ContainerIp,
+                    Environment = msg.Environment,
+                    Data = bsonData
+                };
+
+                _logger.LogInformation("[CONSUMER][LOG][DEFAULT] No matching type; saving as AuditLog for {Service}", msg.Service);
+                await _auditRepo.InsertAsync(defaultEntry);
+                _logger.LogInformation("[CONSUMER][LOG][DEFAULT] Inserted fallback AuditLog with Id={AuditId}", defaultEntry.AuditId);
                 break;
         }
+
+        _logger.LogInformation("[CONSUMER][LOG] Stored {Type} log from {Service} ({Layer}@{Level}) successfully",
+            msg.Type, msg.Service, msg.Layer, msg.Level);
     }
 }

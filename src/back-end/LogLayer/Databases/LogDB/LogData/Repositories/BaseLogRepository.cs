@@ -15,11 +15,17 @@ public class BaseLogRepository<T> : IBaseLogRepository<T> where T : BaseLogColle
         _collection = collection;
     }
 
+    // ------------------------------------------------------------
+    // Insert
+    // ------------------------------------------------------------
     public async Task InsertAsync(T log)
     {
         await _collection.InsertOneAsync(log);
     }
 
+    // ------------------------------------------------------------
+    // Basic retrievals
+    // ------------------------------------------------------------
     public async Task<IEnumerable<T>> GetAllAsync()
     {
         return await _collection.Find(Builders<T>.Filter.Empty).ToListAsync();
@@ -31,18 +37,30 @@ public class BaseLogRepository<T> : IBaseLogRepository<T> where T : BaseLogColle
         return await _collection.Find(filter).FirstOrDefaultAsync();
     }
 
-    public async Task<IEnumerable<T>> GetByLayerAsync(string layer)
+    // ------------------------------------------------------------
+    // Search by source metadata
+    // ------------------------------------------------------------
+    public async Task<IEnumerable<T>> GetByLayerAsync(string sourceLayer)
     {
-        var filter = Builders<T>.Filter.Eq(l => l.Layer, layer);
+        var filter = Builders<T>.Filter.Eq(l => l.SourceLayer, sourceLayer);
         return await _collection.Find(filter).ToListAsync();
     }
 
-    public async Task<IEnumerable<T>> GetByServiceAsync(string service)
+    public async Task<IEnumerable<T>> GetByServiceAsync(string sourceService)
     {
-        var filter = Builders<T>.Filter.Eq(l => l.Service, service);
+        var filter = Builders<T>.Filter.Eq(l => l.SourceService, sourceService);
         return await _collection.Find(filter).ToListAsync();
     }
 
+    public async Task<IEnumerable<T>> GetByLevelAsync(string sourceLevel)
+    {
+        var filter = Builders<T>.Filter.Eq(l => l.SourceLevel, sourceLevel);
+        return await _collection.Find(filter).ToListAsync();
+    }
+
+    // ------------------------------------------------------------
+    // Range queries
+    // ------------------------------------------------------------
     public async Task<IEnumerable<T>> GetByDateRangeAsync(DateTime from, DateTime to)
     {
         var filter = Builders<T>.Filter.And(
