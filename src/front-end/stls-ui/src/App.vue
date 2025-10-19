@@ -13,10 +13,9 @@ import Topbar from './components/TopBar.vue'
 
 const route = useRoute()
 
-// Pages where Topbar should be visible
+// Show Topbar on all main user-facing pages
 const topbarPages = [
-  '/',                // viewer home
-  '/stls',             // user home
+  '/',               // redirect to profile
   '/login',
   '/register',
   '/reset-password',
@@ -25,5 +24,6 @@ const topbarPages = [
   '/notifications'
 ]
 
+// Determine if current route should show Topbar
 const showTopbar = computed(() => topbarPages.includes(route.path))
 </script>

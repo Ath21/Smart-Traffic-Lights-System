@@ -51,7 +51,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useAuth } from '../../stores/users'
+import { useAuth } from '../../stores/userStore'
 import { updateProfileApi } from "../../services/userApi"
 import '../../assets/update-profile.css'
 
@@ -69,9 +69,8 @@ const form = ref({
 const error = ref('') // ✅ error state
 
 async function submit() {
-  error.value = '' // reset error
+  error.value = ''
 
-  // client-side validation
   if (form.value.password && form.value.password !== form.value.confirmPassword) {
     error.value = "Passwords do not match!"
     return
@@ -79,7 +78,6 @@ async function submit() {
 
   try {
     await updateProfileApi(auth.token, form.value)
-
     auth.user = {
       ...auth.user,
       email: form.value.email,
@@ -87,11 +85,11 @@ async function submit() {
       role: form.value.role,
       status: form.value.status
     }
-
-    error.value = '' // clear if success
+    error.value = ''
   } catch (err) {
     console.error(err)
-    error.value = "Failed to update profile ❌"
+    error.value = "❌ Failed to update profile."
   }
 }
+
 </script>

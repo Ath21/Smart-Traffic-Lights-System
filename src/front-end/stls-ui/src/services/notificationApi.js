@@ -1,54 +1,49 @@
-// src/services/notificationApi.js
-import axios from 'axios'
+import axios from "axios";
 
-const notificationApi = axios.create({
-  baseURL: 'http://localhost:5087/api/notifications',
-})
+const NOTIF_API = import.meta.env.VITE_NOTIFICATION_API || "http://localhost:5087";
 
-// 🚨 Send User Notification
-export async function sendNotificationApi(token, { userId, recipientEmail, message, type }) {
-  const response = await notificationApi.post(
-    'send',
-    { UserId: userId, RecipientEmail: recipientEmail, Message: message, Type: type },
-    { headers: { Authorization: `Bearer ${token}` } }
-  )
-  return response.data
+const api = axios.create({
+  baseURL: NOTIF_API,
+  headers: { "Content-Type": "application/json" }
+});
+
+api.interceptors.request.use(config => {
+  const token = localStorage.getItem("stls_token");
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
+// FETCH user notifications
+export async function getNotifications(userId, unreadOnly = false) {
+  const { data } = await api.get(`/api/notifications/deliveries/${userId}`, {
+    params: { unreadOnly }
+  });
+  return data;
 }
 
-// 📜 Get user notification history
-export async function getUserNotificationsApi(token, email) {
-  const response = await notificationApi.get(`recipient/${email}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-  return response.data
+// MARK a single delivery as read
+export async function markAsRead(userId, email, deliveryId) {
+  await api.patch("/api/notifications/deliveries/read", {
+    UserId: userId,
+    UserEmail: email,
+    DeliveryId: deliveryId
+  });
 }
 
-// ✅ Mark one as read
-export async function markAsReadApi(token, notificationId) {
-  const response = await notificationApi.patch(
-    `${notificationId}/read`, // ✅ no leading slash
-    {},
-    { headers: { Authorization: `Bearer ${token}` } }
-  )
-  return response.data
+// GET subscriptions for a user
+export async function getSubscriptions(userId) {
+  const { data } = await api.get(`/api/notifications/subscriptions/${userId}`);
+  return data;
 }
 
-// ✅ Mark all as read
-export async function markAllAsReadApi(token) {
-  const response = await notificationApi.patch(
-    'read-all', // ✅ no leading slash
-    {},
-    { headers: { Authorization: `Bearer ${token}` } }
-  )
-  return response.data
-}
-
-// 📢 Send public notice
-export async function sendPublicNoticeApi(token, { title, message, targetAudience }) {
-  const response = await notificationApi.post(
-    'public-notice',
-    { Title: title, Message: message, TargetAudience: targetAudience },
-    { headers: { Authorization: `Bearer ${token}` } }
-  )
-  return response.data
+// UNSUBSCRIBE
+export async function unsubscribe(userId, email, intersection, metric) {
+  await api.delete("/api/notifications/subscriptions/unsubscribe", {
+    params: {
+      UserId: userId,
+      UserEmail: email,
+      Intersection: intersection,
+      Metric: metric
+    }
+  });
 }

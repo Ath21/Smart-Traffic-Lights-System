@@ -91,11 +91,10 @@
 
 <script setup>
 import { ref } from 'vue'
-import { loginApi } from '../services/userApi'
-import { useAuth } from '../stores/users'
+import { loginApi } from '../../services/userApi'
+import { useAuth } from '../../stores/userStore'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
-import '../assets/login.css'
+import '../../assets/login.css'
 
 const email = ref('')
 const password = ref('')
@@ -125,13 +124,13 @@ async function submit() {
   try {
     const { token, expiresAt } = await loginApi({
       email: email.value,
-      password: password.value,
+      password: password.value
     })
     auth.login(token, expiresAt)
+    message.value = "✅ Login successful!"
     isSuccess.value = true
     isError.value = false
-    message.value = "✅ Login successful!"
-    router.push('/app')
+    router.push('/profile') // or your main /app route
   } catch (err) {
     const details = err.response?.data?.details || err.response?.data?.error || err.message
     message.value = "❌ " + details
@@ -139,29 +138,6 @@ async function submit() {
     isSuccess.value = false
   } finally {
     loading.value = false
-  }
-}
-
-
-// Forgot password
-async function forgotPassword() {
-  if (!email.value) {
-    message.value = "⚠ Please enter your email first."
-    isError.value = true
-    isSuccess.value = false
-    return
-  }
-  try {
-    await axios.post('http://localhost:5055/api/users/forgot-password', {
-      email: email.value
-    })
-    message.value = "📧 Password reset instructions have been sent to your email."
-    isSuccess.value = true
-    isError.value = false
-  } catch (err) {
-    message.value = "❌ Failed to send reset email: " + (err.response?.data?.message || err.message)
-    isError.value = true
-    isSuccess.value = false
   }
 }
 </script>

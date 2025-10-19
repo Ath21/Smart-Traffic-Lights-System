@@ -28,21 +28,16 @@ const error = ref(null)
 
 async function fetchUser() {
   try {
-    const res = await auth.apiFetch('http://localhost:5055/api/users/profile')
-    if (!res.ok) throw new Error(`HTTP error ${res.status}`)
-    const data = await res.json()
-
-  user.value = {
-    userId: data.userId,
-    username: data.username,
-    email: data.email,
-    role: data.role,
-    status: data.status,
-    createdAt: data.createdAt,
-    updatedAt: data.updatedAt
-  }
-
-
+    const data = await getProfileApi()
+    user.value = {
+      userId: data.UserId,
+      username: data.Username,
+      email: data.Email,
+      role: data.Role,
+      status: data.Status,
+      createdAt: data.CreatedAt,
+      updatedAt: data.UpdatedAt
+    }
   } catch (err) {
     error.value = err.message
   } finally {

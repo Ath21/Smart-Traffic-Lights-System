@@ -1,24 +1,16 @@
 <template>
-  <div class="login-page">
+  <div class="register-page">
     <div class="overlay"></div>
 
-    <div class="login-card">
+    <div class="register-card">
       <div class="card-content">
         <!-- Title -->
-        <h1 class="title">
-          UNIWA STLS
-        </h1>
+        <h1 class="title">UNIWA STLS</h1>
 
         <!-- Form -->
         <form class="form" @submit.prevent="submit">
-          <!-- Email input -->
-          <input
-            v-model="email"
-            type="email"
-            required
-            placeholder="Email"
-            class="input"
-          />
+          <input v-model="email" type="email" required placeholder="Email" class="input" />
+          <input v-model="username" type="text" required placeholder="Username" class="input" />
 
           <!-- Password Wrapper -->
           <div class="password-wrapper">
@@ -31,9 +23,9 @@
               @keydown="checkCapsLock"
               @keyup="checkCapsLock"
             />
-
             <!-- Eye toggle -->
             <span class="toggle-eye" @click="toggleShowPassword">
+              <!-- Hidden -->
               <svg v-if="!showPassword" xmlns="http://www.w3.org/2000/svg" fill="none"
                    viewBox="0 0 24 24" stroke="currentColor" class="eye-icon">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -45,6 +37,7 @@
                          01-4.132 5.411M15 12a3 3 0 
                          11-6 0 3 3 0 016 0zM3 3l18 18" />
               </svg>
+              <!-- Visible -->
               <svg v-else xmlns="http://www.w3.org/2000/svg" fill="none"
                    viewBox="0 0 24 24" stroke="currentColor" class="eye-icon">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -59,18 +52,26 @@
             </span>
           </div>
 
+          <!-- Confirm Password -->
+          <div class="password-wrapper">
+            <input
+              v-model="confirmPassword"
+              :type="showPassword ? 'text' : 'password'"
+              required
+              placeholder="Confirm Password"
+              class="input password-input"
+              @keydown="checkCapsLock"
+              @keyup="checkCapsLock"
+            />
+          </div>
+
           <!-- Caps Lock warning -->
           <transition name="fade">
             <p v-if="capsLockOn" class="caps-warning">⚠ Caps Lock is ON</p>
           </transition>
 
-          <!-- Forgot password link -->
-          <router-link to="/reset-password" class="forgot-link">
-            Forgot password?
-          </router-link>
-
           <button :disabled="loading" class="submit-btn">
-            {{ loading ? 'Logging in…' : 'LOGIN' }}
+            {{ loading ? 'Registering…' : 'REGISTER' }}
           </button>
         </form>
 
@@ -81,8 +82,8 @@
 
         <!-- Footer link -->
         <p class="footer-text">
-          Don’t have an account?
-          <RouterLink to="/register" class="register-link">Register</RouterLink>
+          Have an account?
+          <RouterLink to="/login" class="login-link">Log in</RouterLink>
         </p>
       </div>
     </div>
@@ -91,21 +92,23 @@
 
 <script setup>
 import { ref } from 'vue'
-import { loginApi } from '../../services/userApi'
-import { useAuth } from '../../stores/users'
+import { registerApi } from '../../services/userApi'
+import { useAuth } from '../../stores/userStore'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
-import '../../assets/login.css'
+import '../../assets/register.css'
 
 const email = ref('')
+const username = ref('')
 const password = ref('')
+const confirmPassword = ref('')
 const loading = ref(false)
-const showPassword = ref(false)
-const capsLockOn = ref(false)
 
 const message = ref('')
 const isError = ref(false)
 const isSuccess = ref(false)
+
+const showPassword = ref(false)
+const capsLockOn = ref(false)
 
 const auth = useAuth()
 const router = useRouter()
@@ -120,18 +123,26 @@ function checkCapsLock(event) {
 
 async function submit() {
   if (loading.value) return
+
+  if (password.value !== confirmPassword.value) {
+    message.value = "❌ Passwords do not match!"
+    isError.value = true
+    isSuccess.value = false
+    return
+  }
+
   loading.value = true
-  message.value = ''
   try {
-    const { token, expiresAt } = await loginApi({
+    await registerApi({
       email: email.value,
+      username: username.value,
       password: password.value,
+      confirmPassword: confirmPassword.value
     })
-    auth.login(token, expiresAt)
+    message.value = "✅ Registration successful!"
     isSuccess.value = true
     isError.value = false
-    message.value = "✅ Login successful!"
-    router.push('/stls')
+    router.push('/login')
   } catch (err) {
     const details = err.response?.data?.details || err.response?.data?.error || err.message
     message.value = "❌ " + details
@@ -143,25 +154,4 @@ async function submit() {
 }
 
 
-// Forgot password
-async function forgotPassword() {
-  if (!email.value) {
-    message.value = "⚠ Please enter your email first."
-    isError.value = true
-    isSuccess.value = false
-    return
-  }
-  try {
-    await axios.post('http://localhost:5055/api/users/forgot-password', {
-      email: email.value
-    })
-    message.value = "📧 Password reset instructions have been sent to your email."
-    isSuccess.value = true
-    isError.value = false
-  } catch (err) {
-    message.value = "❌ Failed to send reset email: " + (err.response?.data?.message || err.message)
-    isError.value = true
-    isSuccess.value = false
-  }
-}
 </script>
