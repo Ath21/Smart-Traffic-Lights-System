@@ -100,10 +100,9 @@ public class ExceptionMiddleware
             Category = "Middleware",
             Message = $"{userMessage}: {ex.Message}",
             Operation = context.Request.Path,
-            EntityId = context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
             Hostname = Environment.MachineName,
             ContainerIp = Environment.GetEnvironmentVariable("CONTAINER_IP") ?? "unknown",
-            Environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "prod",
+            Environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development",
             Data = data
         };
 

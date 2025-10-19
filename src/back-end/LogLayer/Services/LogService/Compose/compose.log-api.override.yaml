@@ -22,8 +22,8 @@ services:
 
       # Databases
       ## LogDB
-      Mongo__ConnectionString__Log: mongodb://mongo:mongo123@log-db:27017/
-      Mongo__Database__Log: LogDB
+      Mongo__ConnectionString: mongodb://mongo:mongo123@log-db:27017/
+      Mongo__Database: LogDB
       Mongo__Collections__AuditLogs: audit_logs
       Mongo__Collections__ErrorLogs: error_logs
       Mongo__Collections__FailoverLogs: failover_logs
@@ -45,9 +45,9 @@ services:
       RabbitMQ__Queues__Log__Sensor: sensor-2-log.queue
 
       ## Routing Keys
-      RabbitMQ__RoutingKeys__Log__User: log.user.{service}.{type}
-      RabbitMQ__RoutingKeys__Log__Traffic: log.traffic.{service}.{type}
-      RabbitMQ__RoutingKeys__Log__Sensor: log.sensor.{service}.{type}
+      RabbitMQ__RoutingKeys__Log__User: log.user.#
+      RabbitMQ__RoutingKeys__Log__Traffic: log.traffic.#
+      RabbitMQ__RoutingKeys__Log__Sensor: log.sensor.#
 
     depends_on:
       log-db:

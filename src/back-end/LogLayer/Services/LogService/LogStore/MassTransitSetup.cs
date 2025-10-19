@@ -1,7 +1,6 @@
 using MassTransit;
 using RabbitMQ.Client;
 using LogStore.Consumers;
-using Messages;
 using Messages.Log;
 
 namespace LogStore;
@@ -17,58 +16,72 @@ public static class MassTransitSetup
             x.UsingRabbitMq((context, cfg) =>
             {
                 var rabbit = configuration.GetSection("RabbitMQ");
-                cfg.Host(rabbit["Host"], rabbit["VirtualHost"] ?? "/", h => { h.Username(rabbit["Username"]); h.Password(rabbit["Password"]); });
+                cfg.Host(rabbit["Host"], rabbit["VirtualHost"] ?? "/", h =>
+                {
+                    h.Username(rabbit["Username"]);
+                    h.Password(rabbit["Password"]);
+                });
 
                 var logExchange     = rabbit["Exchanges:Log"];
                 var logUserQueue    = rabbit["Queues:Log:User"];
                 var logTrafficQueue = rabbit["Queues:Log:Traffic"];
                 var logSensorQueue  = rabbit["Queues:Log:Sensor"];
-                var rkUser          = rabbit["RoutingKeys:Log:User"];
-                var rkTraffic       = rabbit["RoutingKeys:Log:Traffic"];
-                var rkSensor        = rabbit["RoutingKeys:Log:Sensor"];
 
-                cfg.Publish<BaseMessage>(m => m.Exclude = true);
+                // Dynamic routing patterns
+                var rkUserPattern    = rabbit["RoutingKeys:Log:User"];
+                var rkTrafficPattern = rabbit["RoutingKeys:Log:Traffic"];
+                var rkSensorPattern  = rabbit["RoutingKeys:Log:Sensor"];
+
                 cfg.Message<LogMessage>(m => m.SetEntityName(logExchange));
                 cfg.Publish<LogMessage>(m => m.ExchangeType = ExchangeType.Topic);
 
+                // -----------------------------
+                // USER Logs Queue
+                // -----------------------------
                 cfg.ReceiveEndpoint(logUserQueue, e =>
                 {
                     e.ConfigureConsumeTopology = false;
                     e.Bind(logExchange, s =>
                     {
-                        s.RoutingKey = rkUser;
+                        s.RoutingKey = rkUserPattern;
                         s.ExchangeType = ExchangeType.Topic;
                     });
                     e.ConfigureConsumer<LogConsumer>(context);
                     e.PrefetchCount = 10;
-                    e.ConcurrentMessageLimit = 5;
                 });
+
+                // -----------------------------
+                // TRAFFIC Logs Queue
+                // -----------------------------
                 cfg.ReceiveEndpoint(logTrafficQueue, e =>
                 {
                     e.ConfigureConsumeTopology = false;
                     e.Bind(logExchange, s =>
                     {
-                        s.RoutingKey = rkTraffic;
+                        s.RoutingKey = rkTrafficPattern;
                         s.ExchangeType = ExchangeType.Topic;
                     });
                     e.ConfigureConsumer<LogConsumer>(context);
                     e.PrefetchCount = 10;
-                    e.ConcurrentMessageLimit = 5;
                 });
+
+                // -----------------------------
+                // SENSOR Logs Queue
+                // -----------------------------
                 cfg.ReceiveEndpoint(logSensorQueue, e =>
                 {
                     e.ConfigureConsumeTopology = false;
                     e.Bind(logExchange, s =>
                     {
-                        s.RoutingKey = rkSensor;
+                        s.RoutingKey = rkSensorPattern;
                         s.ExchangeType = ExchangeType.Topic;
                     });
                     e.ConfigureConsumer<LogConsumer>(context);
                     e.PrefetchCount = 10;
-                    e.ConcurrentMessageLimit = 5;
                 });
             });
         });
+
         return services;
     }
 }

@@ -136,7 +136,18 @@ public class Startup
             {
                 Title = "Notification Service",
                 Version = "v3.0",
-                Description = "Centralized cloud service for broadcasting alerts, notifications, and email updates across the UNIWA STLS."
+                Description = "Centralized cloud service for broadcasting alerts, notifications, and email updates across the UNIWA STLS.",
+                Contact = new OpenApiContact
+                {
+                    Name = "Vasileios Evangelos Athanasiou",
+                    Email = "ice19390005@uniwa.gr",
+                    Url = new Uri("https://github.com/Ath21")
+                },
+                License = new OpenApiLicense
+                {
+                    Name = "Academic License – University of West Attica",
+                    Url = new Uri("https://www.uniwa.gr")
+                }
             });
 
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme

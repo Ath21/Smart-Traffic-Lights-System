@@ -18,7 +18,6 @@ public class LogMessage
     // Correlation & Context
     // ============================================================
     public string? CorrelationId { get; set; }
-    public string? EntityId { get; set; }                 // userId, intersectionId, or container IP
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
     // ============================================================

@@ -59,12 +59,21 @@ public class UserNotificationRequestConsumer : IConsumer<UserNotificationRequest
 
         // Send verification email
         var subject = $"Subscription Verification - {msg.Intersection}";
-        var body =
-            $"Hello {msg.UserEmail},\n\n" +
-            $"Your subscription for updates on *{msg.Intersection}* ({msg.Metric}) has been successfully created.\n\n" +
-            "You will now receive notifications when new data or alerts are available for this metric.\n\n" +
-            "Thank you for using UNIWA STLS.\n\n" +
-            "— Notification Service";
+        var body = $@"
+        <html>
+        <body style='font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;background-color:#f9fafb;color:#222;padding:24px;'>
+            <div style='max-width:600px;margin:auto;background:#ffffff;border-radius:8px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.1);'>
+            <h2 style='color:#1e3a8a;'>UNIWA STLS Subscription Verification</h2>
+            <p>Hello <strong>{msg.UserEmail}</strong>,</p>
+            <p>
+                Your subscription for updates on <b>{msg.Intersection}</b> (<i>{msg.Metric}</i>)
+                has been successfully created.
+            </p>
+            <p>You will now receive notifications when new data or alerts are available for this metric.</p>
+            <p style='margin-top:24px;font-size:13px;color:#6b7280;'>Thank you for using UNIWA STLS.<br/>- Notification Service</p>
+            </div>
+        </body>
+        </html>";
 
         try
         {

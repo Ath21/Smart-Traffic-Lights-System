@@ -46,9 +46,6 @@ public abstract class BaseLogCollection
     // ============================================================
     // Runtime & Context Info
     // ============================================================
-    [BsonElement("entity_id")]
-    public string? EntityId { get; set; }   // userId, intersectionId, or container IP
-
     [BsonElement("hostname")]
     public string? Hostname { get; set; } // container name (Docker hostname)
 

@@ -49,7 +49,19 @@ public class CongestionAnalyticsConsumer : IConsumer<CongestionAnalyticsMessage>
         foreach (var sub in subs)
         {
             var subject = $"Traffic Update: {msg.Intersection}";
-            var body = $"Current congestion: {msg.CongestionLevel:P1} ({msg.Status})";
+            var body = $@"
+            <html>
+            <body style='font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;background-color:#f9fafb;padding:24px;color:#222;'>
+                <div style='max-width:600px;margin:auto;background:#ffffff;border-radius:8px;padding:24px;'>
+                <h2 style='color:#dc2626;'>Traffic Congestion Alert</h2>
+                <p><strong>Intersection:</strong> {msg.Intersection}</p>
+                <p><strong>Status:</strong> {msg.Status}</p>
+                <p><strong>Congestion Level:</strong> {msg.CongestionLevel * 100:F1}%</p>
+                <p>Stay alert for delays and choose alternative routes if possible.</p>
+                <p style='margin-top:24px;font-size:13px;color:#6b7280;'>UNIWA STLS Notification Service</p>
+                </div>
+            </body>
+            </html>";
 
             try
             {

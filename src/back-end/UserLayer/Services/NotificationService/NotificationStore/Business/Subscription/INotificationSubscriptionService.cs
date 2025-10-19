@@ -7,7 +7,6 @@ namespace NotificationStore.Business.Subscription;
 
 public interface INotificationSubscriptionService
 {
-    Task<SubscriptionResponse> SubscribeAsync(CreateSubscriptionRequest request);
     Task<IEnumerable<SubscriptionResponse>> GetUserSubscriptionsAsync(string userId);
     Task UnsubscribeAsync(UnsubscribeRequest request);
 }

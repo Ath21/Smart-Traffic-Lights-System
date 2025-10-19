@@ -15,6 +15,8 @@ namespace NotificationStore.Controllers
         private readonly IBusControl _bus;
 
         private readonly string _service;
+        private readonly string _layer;
+        private readonly string _level;
         private readonly string _environment;
         private readonly string _hostname;
         private readonly string _containerIp;
@@ -25,6 +27,8 @@ namespace NotificationStore.Controllers
             _bus = bus;
 
             _service = Environment.GetEnvironmentVariable("SERVICE_NAME") ?? "Notification Service";
+            _layer = Environment.GetEnvironmentVariable("SERVICE_LAYER") ?? "User Layer";
+            _level = Environment.GetEnvironmentVariable("SERVICE_LEVEL") ?? "Cloud";
             _environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
             _hostname = Environment.MachineName;
             _containerIp = Dns.GetHostAddresses(Dns.GetHostName())
@@ -35,56 +39,50 @@ namespace NotificationStore.Controllers
         [HttpGet("ready")]
         public async Task<IActionResult> Ready()
         {
+            var status = new Dictionary<string, object?>
+            {
+                ["status"] = "Ready",
+                ["service"] = _service,
+                ["layer"] = _layer,
+                ["level"] = _level,
+                ["environment"] = _environment,
+                ["hostname"] = _hostname,
+                ["container_ip"] = _containerIp,
+                ["timestamp"] = DateTime.UtcNow.ToString("u")
+            };
+
             try
             {
-                var mongoOk = await _dbContext.CanConnectAsync();
-                if (!mongoOk)
+                // ===== MongoDB Connectivity =====
+                bool dbConnected = await _dbContext.CanConnectAsync();
+                status["database"] = new { name = "NotificationDB (MongoDB)", reachable = dbConnected };
+
+                if (!dbConnected)
                 {
-                    return StatusCode(503, new
-                    {
-                        status = "Not Ready",
-                        reason = "NotificationDB (MongoDB) unreachable",
-                        service = _service,
-                        environment = _environment,
-                        hostname = _hostname,
-                        container_ip = _containerIp
-                    });
+                    status["status"] = "Not Ready";
+                    status["reason"] = "MongoDB unreachable";
+                    return StatusCode(503, status);
                 }
 
-                if (!_bus.Topology.TryGetPublishAddress(typeof(LogMessage), out _))
+                // ===== RabbitMQ Connectivity =====
+                bool brokerConnected = _bus.Topology.TryGetPublishAddress(typeof(LogMessage), out _);
+                status["message_broker"] = new { name = "RabbitMQ", reachable = brokerConnected };
+
+                if (!brokerConnected)
                 {
-                    return StatusCode(503, new
-                    {
-                        status = "Not Ready",
-                        reason = "RabbitMQ broker unreachable or topology not established",
-                        service = _service,
-                        environment = _environment,
-                        hostname = _hostname,
-                        container_ip = _containerIp
-                    });
+                    status["status"] = "Not Ready";
+                    status["reason"] = "RabbitMQ unreachable or topology not established";
+                    return StatusCode(503, status);
                 }
 
-                return Ok(new
-                {
-                    status = "Ready",
-                    service = _service,
-                    environment = _environment,
-                    hostname = _hostname,
-                    container_ip = _containerIp,
-                    timestamp = DateTime.UtcNow.ToString("u")
-                });
+                // ===== OK =====
+                return Ok(status);
             }
             catch (Exception ex)
             {
-                return StatusCode(503, new
-                {
-                    status = "Not Ready",
-                    error = ex.Message,
-                    service = _service,
-                    environment = _environment,
-                    hostname = _hostname,
-                    container_ip = _containerIp
-                });
+                status["status"] = "Not Ready";
+                status["error"] = ex.Message;
+                return StatusCode(503, status);
             }
         }
     }

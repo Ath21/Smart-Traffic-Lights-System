@@ -17,18 +17,6 @@ public class SubscriptionController : ControllerBase
         _subscriptionService = subscriptionService;
     }
 
-    [HttpPost]
-    [Route("subscribe")]
-    public async Task<IActionResult> Subscribe([FromBody] CreateSubscriptionRequest request)
-    {
-        if (string.IsNullOrEmpty(request.UserId) || string.IsNullOrEmpty(request.UserEmail))
-            return BadRequest("UserId and UserEmail are required.");
-
-        var result = await _subscriptionService.SubscribeAsync(request);
-
-        return Ok(result);
-    }
-
     [HttpGet]
     [Route("{userId}")]
     public async Task<IActionResult> GetSubscriptions(string userId)

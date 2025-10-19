@@ -113,7 +113,24 @@ public class Startup
         // ===============================
         services.AddSwaggerGen(c =>
         {
-            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Log Service", Version = "v3.0" });
+            c.SwaggerDoc("v1", new OpenApiInfo
+            {
+                Title = "Log Service",
+                Version = "v3.0",
+                Description = "Centralized logging microservice within UNIWA STLS responsible for the collection, indexing, and retrieval of Audit, Error, and Failover events across all layers (Cloud, Fog, Edge).",
+                Contact = new OpenApiContact
+                {
+                    Name = "Vasileios Evangelos Athanasiou",
+                    Email = "ice19390005@uniwa.gr",
+                    Url = new Uri("https://github.com/Ath21")
+                },
+                License = new OpenApiLicense
+                {
+                    Name = "Academic License – University of West Attica",
+                    Url = new Uri("https://www.uniwa.gr")
+                }
+            });
+
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 In = ParameterLocation.Header,

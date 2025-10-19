@@ -124,7 +124,18 @@ public class Startup
             {
                 Title = "User Service",
                 Version = "v3.0",
-                Description = "Cloud-level user management service responsible for authentication, session tracking, and role-based access across the UNIWA STLS."
+                Description = "Cloud-level user management service responsible for authentication, session tracking, and role-based access across the UNIWA STLS.",
+                Contact = new OpenApiContact
+                {
+                    Name = "Vasileios Evangelos Athanasiou",
+                    Email = "ice19390005@uniwa.gr",
+                    Url = new Uri("https://github.com/Ath21")
+                },
+                License = new OpenApiLicense
+                {
+                    Name = "Academic License – University of West Attica",
+                    Url = new Uri("https://www.uniwa.gr")
+                }
             });
 
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
