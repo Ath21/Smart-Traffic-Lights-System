@@ -40,7 +40,7 @@ public class UserLogPublisher : IUserLogPublisher
         // ============================================================
         _layer = Environment.GetEnvironmentVariable("SERVICE_LAYER") ?? "User";
         _level = Environment.GetEnvironmentVariable("SERVICE_LEVEL") ?? "Cloud";
-        _service = Environment.GetEnvironmentVariable("SERVICE_NAME") ?? "User Service";
+        _service = Environment.GetEnvironmentVariable("SERVICE_NAME") ?? "User";
         _environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
         _hostname = Environment.MachineName;
         _containerIp = Dns.GetHostAddresses(Dns.GetHostName())

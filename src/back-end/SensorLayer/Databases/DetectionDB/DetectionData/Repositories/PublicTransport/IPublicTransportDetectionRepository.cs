@@ -5,6 +5,6 @@ namespace DetectionData.Repositories.PublicTransport;
 
 public interface IPublicTransportDetectionRepository
 {
-    Task<IEnumerable<PublicTransportDetectionCollection>> GetByLineAsync(string lineName);
+    Task<IEnumerable<PublicTransportDetectionCollection>> GetRecentPublicTransportsAsync(int intersectionId, int limit = 50);
     Task InsertAsync(PublicTransportDetectionCollection entity);
 }

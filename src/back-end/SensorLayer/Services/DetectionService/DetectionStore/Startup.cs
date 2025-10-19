@@ -176,7 +176,18 @@ public class Startup
             {
                 Title = $"Detection Service – {intersectionName}",
                 Version = "v3.0",
-                Description = $"Virtual detectors that publish detection data (emergency vehicles, public transport, incidents) for intersection '{intersectionName}'."
+                Description = $"Virtual detectors that publish detection data (emergency vehicles, public transport, incidents) for intersection '{intersectionName}'.",
+                Contact = new OpenApiContact
+                {
+                    Name = "Vasileios Evangelos Athanasiou",
+                    Email = "ice19390005@uniwa.gr",
+                    Url = new Uri("https://github.com/Ath21")
+                },
+                License = new OpenApiLicense
+                {
+                    Name = "Academic License – University of West Attica",
+                    Url = new Uri("https://www.uniwa.gr")
+                }
             });
 
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme

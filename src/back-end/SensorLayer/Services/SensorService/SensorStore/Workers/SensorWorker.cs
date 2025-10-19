@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -9,196 +5,153 @@ using SensorStore.Domain;
 using SensorStore.Business;
 using SensorStore.Publishers.Count;
 using SensorStore.Publishers.Logs;
-using Messages.Sensor;
-using Messages.Log;
+using Messages.Sensor.Count;
 
-namespace SensorStore.Workers
+namespace SensorStore.Workers;
+
+public class SensorWorker : BackgroundService
 {
-    // ============================================================
-    // Sensor Worker (Fog Layer)
-    // ------------------------------------------------------------
-    // Simulates real-time traffic flow measurements for a given
-    // intersection. Publishes count data (vehicle, pedestrian,
-    // cyclist) via RabbitMQ and persists them via SensorBusiness.
-    // ------------------------------------------------------------
-    // Publishes: sensor.count.{intersection}.{type}
-    // Logs:      log.sensor.sensor-service.{type}
-    // ============================================================
+    private readonly IServiceScopeFactory _scopeFactory;
+    private readonly ILogger<SensorWorker> _logger;
+    private readonly IntersectionContext _intersection;
+    private readonly Random _rand = new();
 
-    public class SensorWorker : BackgroundService
+    public SensorWorker(IServiceScopeFactory scopeFactory, ILogger<SensorWorker> logger, IntersectionContext intersection)
     {
-        private readonly IServiceScopeFactory _scopeFactory;
-        private readonly ILogger<SensorWorker> _logger;
-        private readonly IntersectionContext _intersection;
-        private readonly Random _rand = new();
+        _scopeFactory = scopeFactory;
+        _logger = logger;
+        _intersection = intersection;
+    }
 
-        public SensorWorker(
-            IServiceScopeFactory scopeFactory,
-            ILogger<SensorWorker> logger,
-            IntersectionContext intersection)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        _logger.LogInformation("[WORKER][SENSOR] Started for {Intersection} (Id={Id})", _intersection.Name, _intersection.Id);
+
+        while (!stoppingToken.IsCancellationRequested)
         {
-            _scopeFactory = scopeFactory;
-            _logger = logger;
-            _intersection = intersection;
-        }
-
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            _logger.LogInformation(
-                "[WORKER][SENSOR] Started for {IntersectionName} (Id={IntersectionId})",
-                _intersection.Name, _intersection.Id);
-
-            while (!stoppingToken.IsCancellationRequested)
+            try
             {
-                try
+                using var scope = _scopeFactory.CreateScope();
+                var business = scope.ServiceProvider.GetRequiredService<ISensorBusiness>();
+                var countPublisher = scope.ServiceProvider.GetRequiredService<ISensorCountPublisher>();
+                var logPublisher = scope.ServiceProvider.GetRequiredService<ISensorLogPublisher>();
+
+                var (vehicles, avgSpeed, avgWait, flowRate, breakdown, pedestrians, cyclists) = GenerateRealisticTrafficData();
+
+                // VEHICLE
+                var vMsg = new VehicleCountMessage
                 {
-                    using var scope = _scopeFactory.CreateScope();
+                    CorrelationId = Guid.NewGuid().ToString(),
+                    Timestamp = DateTime.UtcNow,
+                    IntersectionId = _intersection.Id,
+                    Intersection = _intersection.Name,
+                    CountTotal = vehicles,
+                    AverageSpeedKmh = avgSpeed,
+                    AverageWaitTimeSec = avgWait,
+                    FlowRate = flowRate,
+                    VehicleBreakdown = breakdown
+                };
 
-                    var business = scope.ServiceProvider.GetRequiredService<ISensorBusiness>();
-                    var countPublisher = scope.ServiceProvider.GetRequiredService<ISensorCountPublisher>();
-                    var logPublisher = scope.ServiceProvider.GetRequiredService<ISensorLogPublisher>();
+                await countPublisher.PublishVehicleCountAsync(vMsg);
+                await business.ProcessVehicleCountAsync(vMsg);
+                await logPublisher.PublishAuditAsync(
+                    "[WORKER][SENSOR]",
+                    $"Vehicle count ({vehicles}) published for {_intersection.Name}",
+                    "system",
+                    new() { ["CountType"] = "Vehicle", ["IntersectionName"] = _intersection.Name },
+                    "VehicleCountPublished");
 
-                    // ============================================================
-                    // VEHICLE COUNT
-                    // ============================================================
-                    var vehicleCount = _rand.Next(10, 120);
-                    var avgSpeed = Math.Round(_rand.NextDouble() * 40 + 20, 1);
-                    var avgWait = Math.Round(_rand.NextDouble() * 20, 1);
-                    var flowRate = Math.Round(vehicleCount / (avgWait + 1), 2);
-                    var breakdown = new Dictionary<string, int>
-                    {
-                        ["car"] = _rand.Next(10, 80),
-                        ["bus"] = _rand.Next(0, 10),
-                        ["truck"] = _rand.Next(0, 8),
-                        ["motorcycle"] = _rand.Next(0, 15)
-                    };
-
-                    var correlationId = Guid.NewGuid();
-
-                    await countPublisher.PublishVehicleCountAsync(
-                        vehicleCount, avgSpeed, avgWait, flowRate, breakdown, correlationId);
-
-                    var vehicleLogMeta = new Dictionary<string, string>
-                    {
-                        ["service_layer"] = "Fog",
-                        ["intersection_id"] = _intersection.Id.ToString(),
-                        ["intersection_name"] = _intersection.Name,
-                        ["count_type"] = "vehicle"
-                    };
-
-                    await logPublisher.PublishAuditAsync(
-                        "VehicleCountPublished",
-                        $"Vehicle count ({vehicleCount}) published for {_intersection.Name}",
-                        vehicleLogMeta,
-                        correlationId);
-
-                    await business.ProcessSensorAsync(new SensorCountMessage
-                    {
-                        CorrelationId = correlationId,
-                        Timestamp = DateTime.UtcNow,
-                        SourceLayer = "Sensor Layer",
-                        DestinationLayer = new() { "Traffic Layer" },
-                        SourceService = "Sensor Service",
-                        DestinationServices = new() { "Intersection Controller Service", "Traffic Analytics Service" },
-                        IntersectionId = _intersection.Id,
-                        IntersectionName = _intersection.Name,
-                        CountType = "Vehicle",
-                        Count = vehicleCount,
-                        AverageSpeedKmh = avgSpeed,
-                        AverageWaitTimeSec = avgWait,
-                        FlowRate = flowRate,
-                        Breakdown = breakdown
-                    });
-
-                    // ============================================================
-                    // PEDESTRIAN COUNT
-                    // ============================================================
-                    var pedestrianCount = _rand.Next(5, 80);
-                    correlationId = Guid.NewGuid();
-
-                    await countPublisher.PublishPedestrianCountAsync(pedestrianCount, correlationId);
-
-                    var pedLogMeta = new Dictionary<string, string>
-                    {
-                        ["service_layer"] = "Fog",
-                        ["intersection_id"] = _intersection.Id.ToString(),
-                        ["intersection_name"] = _intersection.Name,
-                        ["count_type"] = "pedestrian"
-                    };
-
-                    await logPublisher.PublishAuditAsync(
-                        "PedestrianCountPublished",
-                        $"Pedestrian count ({pedestrianCount}) published for {_intersection.Name}",
-                        pedLogMeta,
-                        correlationId);
-
-                    await business.ProcessSensorAsync(new SensorCountMessage
-                    {
-                        CorrelationId = correlationId,
-                        Timestamp = DateTime.UtcNow,
-                        SourceLayer = "Sensor Layer",
-                        DestinationLayer = new() { "Traffic Layer" },
-                        SourceService = "Sensor Service",
-                        DestinationServices = new() { "Intersection Controller Service", "Traffic Analytics Service" },
-                        IntersectionId = _intersection.Id,
-                        IntersectionName = _intersection.Name,
-                        CountType = "Pedestrian",
-                        Count = pedestrianCount,
-                        AverageSpeedKmh = 0,
-                        AverageWaitTimeSec = 0,
-                        FlowRate = 0
-                    });
-
-                    // ============================================================
-                    // CYCLIST COUNT
-                    // ============================================================
-                    var cyclistCount = _rand.Next(0, 20);
-                    correlationId = Guid.NewGuid();
-
-                    await countPublisher.PublishCyclistCountAsync(cyclistCount, correlationId);
-
-                    var cycLogMeta = new Dictionary<string, string>
-                    {
-                        ["service_layer"] = "Fog",
-                        ["intersection_id"] = _intersection.Id.ToString(),
-                        ["intersection_name"] = _intersection.Name,
-                        ["count_type"] = "cyclist"
-                    };
-
-                    await logPublisher.PublishAuditAsync(
-                        "CyclistCountPublished",
-                        $"Cyclist count ({cyclistCount}) published for {_intersection.Name}",
-                        cycLogMeta,
-                        correlationId);
-
-                    await business.ProcessSensorAsync(new SensorCountMessage
-                    {
-                        CorrelationId = correlationId,
-                        Timestamp = DateTime.UtcNow,
-                        SourceLayer = "Sensor Layer",
-                        DestinationLayer = new() { "Traffic Layer" },
-                        SourceService = "Sensor Service",
-                        DestinationServices = new() { "Intersection Controller Service", "Traffic Analytics Service" },
-                        IntersectionId = _intersection.Id,
-                        IntersectionName = _intersection.Name,
-                        CountType = "Cyclist",
-                        Count = cyclistCount,
-                        AverageSpeedKmh = 0,
-                        AverageWaitTimeSec = 0,
-                        FlowRate = Math.Round(cyclistCount / 30.0, 2)
-                    });
-                }
-                catch (Exception ex)
+                // PEDESTRIAN
+                var pMsg = new PedestrianCountMessage
                 {
-                    _logger.LogError(ex,
-                        "[WORKER][SENSOR] Error in SensorWorker loop for {IntersectionName}",
-                        _intersection.Name);
-                }
+                    CorrelationId = Guid.NewGuid().ToString(),
+                    Timestamp = DateTime.UtcNow,
+                    IntersectionId = _intersection.Id,
+                    Intersection = _intersection.Name,
+                    Count = pedestrians
+                };
 
-                await Task.Delay(TimeSpan.FromSeconds(20), stoppingToken);
+                await countPublisher.PublishPedestrianCountAsync(pMsg);
+                await business.ProcessPedestrianCountAsync(pMsg);
+                await logPublisher.PublishAuditAsync(
+                    "[WORKER][SENSOR]",
+                    $"Pedestrian count ({pedestrians}) published for {_intersection.Name}",
+                    "system",
+                    new() { ["CountType"] = "Pedestrian", ["IntersectionName"] = _intersection.Name },
+                    "PedestrianCountPublished");
+
+                // CYCLIST
+                var cMsg = new CyclistCountMessage
+                {
+                    CorrelationId = Guid.NewGuid().ToString(),
+                    Timestamp = DateTime.UtcNow,
+                    IntersectionId = _intersection.Id,
+                    Intersection = _intersection.Name,
+                    Count = cyclists
+                };
+
+                await countPublisher.PublishCyclistCountAsync(cMsg);
+                await business.ProcessCyclistCountAsync(cMsg);
+                await logPublisher.PublishAuditAsync(
+                    "[WORKER][SENSOR]",
+                    $"Cyclist count ({cyclists}) published for {_intersection.Name}",
+                    "system",
+                    new() { ["CountType"] = "Cyclist", ["IntersectionName"] = _intersection.Name },
+                    "CyclistCountPublished");
+
+                var delay = DateTime.Now.Hour is >= 7 and < 9 or >= 17 and < 19 ? 10 : 25;
+                await Task.Delay(TimeSpan.FromSeconds(delay), stoppingToken);
             }
-
-            _logger.LogInformation("[WORKER][SENSOR] Stopped for {IntersectionName}", _intersection.Name);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[WORKER][SENSOR] Loop error at {Intersection}", _intersection.Name);
+                await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+            }
         }
+
+        _logger.LogInformation("[WORKER][SENSOR] Stopped for {Intersection}", _intersection.Name);
+    }
+
+    private (int, double, double, double, Dictionary<string, int>, int, int) GenerateRealisticTrafficData()
+    {
+        var now = DateTime.Now;
+        var hourFactor = now.Hour switch
+        {
+            >= 7 and < 9 => 1.4,
+            >= 13 and < 15 => 1.2,
+            >= 17 and < 19 => 1.5,
+            _ => 0.7
+        };
+
+        double baseVeh = 40, basePed = 15, baseCyc = 5;
+        switch (_intersection.Name)
+        {
+            case "Agiou Spyridonos": baseVeh = 70; basePed = 25; baseCyc = 5; break;
+            case "Kentriki Pyli": baseVeh = 45; basePed = 40; baseCyc = 6; break;
+            case "Anatoliki Pyli": baseVeh = 55; basePed = 20; baseCyc = 4; break;
+            case "Dytiki Pyli": baseVeh = 30; basePed = 15; baseCyc = 3; break;
+            case "Ekklisia / Edessis": baseVeh = 20; basePed = 10; baseCyc = 2; break;
+        }
+
+        var noiseVeh = _rand.NextDouble() * 0.25 + 0.85;
+        var noisePed = _rand.NextDouble() * 0.3 + 0.85;
+        var noiseCyc = _rand.NextDouble() * 0.4 + 0.8;
+
+        var vehicleCount = (int)(baseVeh * hourFactor * noiseVeh);
+        var pedestrianCount = (int)(basePed * hourFactor * noisePed);
+        var cyclistCount = (int)(baseCyc * hourFactor * noiseCyc);
+        var avgSpeed = Math.Round(25 + _rand.NextDouble() * 25, 1);
+        var avgWait = Math.Round(Math.Max(5, 25 - avgSpeed / 2), 1);
+        var flowRate = Math.Round(vehicleCount / (avgWait + 1), 2);
+
+        var breakdown = new Dictionary<string, int>
+        {
+            ["car"] = (int)(vehicleCount * 0.75),
+            ["bus"] = (int)(vehicleCount * 0.05),
+            ["truck"] = (int)(vehicleCount * 0.05),
+            ["motorcycle"] = (int)(vehicleCount * 0.15)
+        };
+
+        return (vehicleCount, avgSpeed, avgWait, flowRate, breakdown, pedestrianCount, cyclistCount);
     }
 }

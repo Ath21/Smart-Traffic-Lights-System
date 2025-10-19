@@ -176,7 +176,18 @@ public class Startup
             {
                 Title = $"Sensor Service – {intersectionName}",
                 Version = "v3.0",
-                Description = $"Virtual traffic sensors that publish flow data (vehicle, pedestrian, cyclist) for intersection '{intersectionName}'."
+                Description = $"Virtual traffic sensors that publish flow data (vehicle, pedestrian, cyclist) for intersection '{intersectionName}'.",
+                Contact = new OpenApiContact
+                {
+                    Name = "Vasileios Evangelos Athanasiou",
+                    Email = "ice19390005@uniwa.gr",
+                    Url = new Uri("https://github.com/Ath21")
+                },
+                License = new OpenApiLicense
+                {
+                    Name = "Academic License – University of West Attica",
+                    Url = new Uri("https://www.uniwa.gr")
+                }
             });
 
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme

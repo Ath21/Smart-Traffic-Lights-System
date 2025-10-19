@@ -4,21 +4,10 @@ using DetectionData.Collections.Count;
 using DetectionData.Repositories.Vehicle;
 using DetectionData.Repositories.Pedestrian;
 using DetectionData.Repositories.Cyclist;
-using SensorStore.Models.Requests;
+using Messages.Sensor.Count;
 using SensorStore.Models.Responses;
-using Messages.Sensor;
 
 namespace SensorStore.Business;
-
-// ============================================================
-// Business Layer: Sensor Service
-// ------------------------------------------------------------
-// Handles traffic count persistence (vehicles, pedestrians,
-// cyclists) to MongoDB and cache synchronization to Redis.
-// ------------------------------------------------------------
-// Updated by : Sensor Service
-// Consumed by : Sensor API, Sensor Worker
-// ============================================================
 
 public class SensorBusiness : ISensorBusiness
 {
@@ -46,86 +35,74 @@ public class SensorBusiness : ISensorBusiness
     }
 
     // ============================================================
-    // PROCESS SENSOR COUNT MESSAGE (from worker or event)
+    // VEHICLE COUNT
     // ============================================================
-    public async Task ProcessSensorAsync(SensorCountMessage sensorMsg)
+    public async Task ProcessVehicleCountAsync(VehicleCountMessage msg)
     {
-        switch (sensorMsg.CountType?.ToLowerInvariant())
+        var document = new VehicleCountCollection
         {
-            // ============================================================
-            // VEHICLE COUNT
-            // ============================================================
-            case "vehicle":
-                var vehicleDoc = new VehicleCountCollection
-                {
-                    IntersectionId = sensorMsg.IntersectionId,
-                    Intersection = sensorMsg.IntersectionName,
-                    Timestamp = sensorMsg.Timestamp,
-                    CountTotal = sensorMsg.Count,
-                    AverageSpeedKmh = sensorMsg.AverageSpeedKmh,
-                    AverageWaitTimeSec = sensorMsg.AverageWaitTimeSec,
-                    FlowRate = sensorMsg.FlowRate,
-                    VehicleBreakdown = sensorMsg.Breakdown
-                };
+            IntersectionId = msg.IntersectionId,
+            Intersection = msg.Intersection,
+            Timestamp = msg.Timestamp,
+            CountTotal = msg.CountTotal,
+            AverageSpeedKmh = msg.AverageSpeedKmh,
+            AverageWaitTimeSec = msg.AverageWaitTimeSec,
+            FlowRate = msg.FlowRate,
+            VehicleBreakdown = msg.VehicleBreakdown
+        };
 
-                await _vehicleRepo.InsertAsync(vehicleDoc);
-                await _cacheRepo.SetVehicleCountAsync(sensorMsg.IntersectionId, sensorMsg.Count);
+        await _vehicleRepo.InsertAsync(document);
+        await _cacheRepo.SetVehicleCountAsync(msg.IntersectionId, msg.CountTotal);
 
-                _logger.LogInformation(
-                    "[BUSINESS] Vehicle count persisted at {Intersection} | Total={Total}, FlowRate={FlowRate}",
-                    sensorMsg.IntersectionName, sensorMsg.Count, sensorMsg.FlowRate);
-                break;
-
-            // ============================================================
-            // PEDESTRIAN COUNT
-            // ============================================================
-            case "pedestrian":
-                var pedDoc = new PedestrianCountCollection
-                {
-                    IntersectionId = sensorMsg.IntersectionId,
-                    Intersection = sensorMsg.IntersectionName,
-                    Timestamp = sensorMsg.Timestamp,
-                    Count = sensorMsg.Count
-                };
-
-                await _pedestrianRepo.InsertAsync(pedDoc);
-                await _cacheRepo.SetPedestrianCountAsync(sensorMsg.IntersectionId, sensorMsg.Count);
-
-                _logger.LogInformation(
-                    "[BUSINESS] Pedestrian count persisted at {Intersection} | Count={Count}",
-                    sensorMsg.IntersectionName, sensorMsg.Count);
-                break;
-
-            // ============================================================
-            // CYCLIST COUNT
-            // ============================================================
-            case "cyclist":
-                var cycDoc = new CyclistCountCollection
-                {
-                    IntersectionId = sensorMsg.IntersectionId,
-                    Intersection = sensorMsg.IntersectionName,
-                    Timestamp = sensorMsg.Timestamp,
-                    Count = sensorMsg.Count
-                };
-
-                await _cyclistRepo.InsertAsync(cycDoc);
-                await _cacheRepo.SetCyclistCountAsync(sensorMsg.IntersectionId, sensorMsg.Count);
-
-                _logger.LogInformation(
-                    "[BUSINESS] Cyclist count persisted at {Intersection} | Count={Count}",
-                    sensorMsg.IntersectionName, sensorMsg.Count);
-                break;
-
-            default:
-                _logger.LogWarning(
-                    "[BUSINESS] Unknown sensor count type: {Type} (Intersection={Intersection})",
-                    sensorMsg.CountType, sensorMsg.IntersectionName);
-                break;
-        }
+        _logger.LogInformation(
+            "[BUSINESS][SENSOR] Vehicle count persisted for {Intersection} | Total={Total}, FlowRate={FlowRate:F2}",
+            msg.Intersection, msg.CountTotal, msg.FlowRate);
     }
 
     // ============================================================
-    // VEHICLE COUNTS
+    // PEDESTRIAN COUNT
+    // ============================================================
+    public async Task ProcessPedestrianCountAsync(PedestrianCountMessage msg)
+    {
+        var document = new PedestrianCountCollection
+        {
+            IntersectionId = msg.IntersectionId,
+            Intersection = msg.Intersection,
+            Timestamp = msg.Timestamp,
+            Count = msg.Count
+        };
+
+        await _pedestrianRepo.InsertAsync(document);
+        await _cacheRepo.SetPedestrianCountAsync(msg.IntersectionId, msg.Count);
+
+        _logger.LogInformation(
+            "[BUSINESS][SENSOR] Pedestrian count persisted for {Intersection} | Count={Count}",
+            msg.Intersection, msg.Count);
+    }
+
+    // ============================================================
+    // CYCLIST COUNT
+    // ============================================================
+    public async Task ProcessCyclistCountAsync(CyclistCountMessage msg)
+    {
+        var document = new CyclistCountCollection
+        {
+            IntersectionId = msg.IntersectionId,
+            Intersection = msg.Intersection,
+            Timestamp = msg.Timestamp,
+            Count = msg.Count
+        };
+
+        await _cyclistRepo.InsertAsync(document);
+        await _cacheRepo.SetCyclistCountAsync(msg.IntersectionId, msg.Count);
+
+        _logger.LogInformation(
+            "[BUSINESS][SENSOR] Cyclist count persisted for {Intersection} | Count={Count}",
+            msg.Intersection, msg.Count);
+    }
+
+    // ============================================================
+    // VEHICLE COUNT HISTORY
     // ============================================================
     public async Task<IEnumerable<VehicleCountResponse>> GetRecentVehicleCountsAsync(int intersectionId)
     {
@@ -133,14 +110,14 @@ public class SensorBusiness : ISensorBusiness
         var mapped = _mapper.Map<IEnumerable<VehicleCountResponse>>(data);
 
         _logger.LogInformation(
-            "[BUSINESS] Retrieved {Count} vehicle count records for intersection {Id}",
+            "[BUSINESS][SENSOR] Retrieved {Count} vehicle count records for intersection {Id}",
             mapped.Count(), intersectionId);
 
         return mapped;
     }
 
     // ============================================================
-    // PEDESTRIAN COUNTS
+    // PEDESTRIAN COUNT HISTORY
     // ============================================================
     public async Task<IEnumerable<PedestrianCountResponse>> GetRecentPedestrianCountsAsync(int intersectionId)
     {
@@ -148,14 +125,14 @@ public class SensorBusiness : ISensorBusiness
         var mapped = _mapper.Map<IEnumerable<PedestrianCountResponse>>(data);
 
         _logger.LogInformation(
-            "[BUSINESS] Retrieved {Count} pedestrian count records for intersection {Id}",
+            "[BUSINESS][SENSOR] Retrieved {Count} pedestrian count records for intersection {Id}",
             mapped.Count(), intersectionId);
 
         return mapped;
     }
 
     // ============================================================
-    // CYCLIST COUNTS
+    // CYCLIST COUNT HISTORY
     // ============================================================
     public async Task<IEnumerable<CyclistCountResponse>> GetRecentCyclistCountsAsync(int intersectionId)
     {
@@ -163,7 +140,7 @@ public class SensorBusiness : ISensorBusiness
         var mapped = _mapper.Map<IEnumerable<CyclistCountResponse>>(data);
 
         _logger.LogInformation(
-            "[BUSINESS] Retrieved {Count} cyclist count records for intersection {Id}",
+            "[BUSINESS][SENSOR] Retrieved {Count} cyclist count records for intersection {Id}",
             mapped.Count(), intersectionId);
 
         return mapped;

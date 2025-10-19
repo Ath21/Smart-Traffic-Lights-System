@@ -4,20 +4,22 @@ namespace DetectionStore.Publishers.Logs;
 
 public interface IDetectionLogPublisher
 {
-    Task<LogMessage> PublishAuditAsync(
-        string action,
-        string message,
-        Dictionary<string, string>? metadata = null,
-        Guid? correlationId = null);
-    Task<LogMessage> PublishErrorAsync(
-        string action,
-        string errorMessage,
-        Exception? ex = null,
-        Dictionary<string, string>? metadata = null,
-        Guid? correlationId = null);    
-    Task<LogMessage> PublishFailoverAsync(
-        string action,
-        string message,
-        Dictionary<string, string>? metadata = null,
-        Guid? correlationId = null);
+    Task PublishAuditAsync(
+        string domain,
+        string messageText,
+        string? category = "system",
+        Dictionary<string, object>? data = null,
+        string? operation = null);
+
+    Task PublishErrorAsync(
+        string domain,
+        string messageText,
+        Dictionary<string, object>? data = null,
+        string? operation = null);
+
+    Task PublishFailoverAsync(
+        string domain,
+        string messageText,
+        Dictionary<string, object>? data = null,
+        string? operation = null);
 }

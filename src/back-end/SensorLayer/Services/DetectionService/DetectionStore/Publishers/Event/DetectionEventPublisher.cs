@@ -1,8 +1,8 @@
 using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using DetectionStore.Domain;
-using Messages.Sensor;
+using Messages.Sensor.Detection;
+using DetectionStore.Domain; 
 
 namespace DetectionStore.Publishers.Event;
 
@@ -14,132 +14,58 @@ public class DetectionEventPublisher : IDetectionEventPublisher
     private readonly string _routingPattern;
 
     public DetectionEventPublisher(
+        IBus bus,
         IConfiguration config,
         ILogger<DetectionEventPublisher> logger,
-        IBus bus,
         IntersectionContext intersection)
     {
         _bus = bus;
         _logger = logger;
         _intersection = intersection;
-
-        _routingPattern = config["RabbitMQ:RoutingKeys:Detection:Event"]
+        _routingPattern = config["RabbitMQ:RoutingKeys:Sensor:Detection"]
                           ?? "sensor.detection.{intersection}.{event}";
     }
 
-    public async Task<DetectionEventMessage> PublishEmergencyVehicleAsync(
-        string vehicleType,
-        string direction,
-        Guid? correlationId = null,
-        Dictionary<string, string>? metadata = null)
+    public async Task PublishEmergencyVehicleDetectedAsync(EmergencyVehicleDetectedMessage message)
     {
-        var msg = new DetectionEventMessage
-        {
-            CorrelationId = correlationId ?? Guid.Empty,
-            Timestamp = DateTime.UtcNow,
+        var routingKey = BuildRoutingKey("emergency");
+        message.CorrelationId ??= Guid.NewGuid().ToString();
+        message.DetectedAt = DateTime.UtcNow;
+        message.IntersectionId = _intersection.Id;
+        message.Intersection = _intersection.Name;
 
-            SourceLayer = "Sensor Layer",
-            DestinationLayer = new() { "Traffic Layer" },
-
-            SourceService = "Detection Service",
-            DestinationServices = new() { "Intersection Controller Service", "Traffic Analytics Service" },
-
-            IntersectionId = _intersection.Id,
-            IntersectionName = _intersection.Name,
-
-            EventType = "Emergency Vehicle",
-            VehicleType = vehicleType,
-            Direction = direction,
-
-            Metadata = metadata
-        };
-
-        await PublishAsync("emergency-vehicle", msg);
-
-        _logger.LogInformation("[PUBLISHER][EVENT][{Intersection}] EMERGENCY VEHICLE published ({VehicleType}, Dir={Direction}",
-            _intersection.Name, vehicleType, direction);
-
-        return msg;
+        await _bus.Publish(message, ctx => ctx.SetRoutingKey(routingKey));
+        _logger.LogInformation("[PUBLISHER][DETECTION] Emergency vehicle detected at {Intersection} ({Type})",
+            _intersection.Name, message.EmergencyVehicleType);
     }
 
-    public async Task<DetectionEventMessage> PublishPublicTransportAsync(
-        string vehicleType,
-        string direction,
-        Guid? correlationId = null,
-        Dictionary<string, string>? metadata = null)
+    public async Task PublishPublicTransportDetectedAsync(PublicTransportDetectedMessage message)
     {
-        var msg = new DetectionEventMessage
-        {
-            CorrelationId = correlationId ?? Guid.Empty,
-            Timestamp = DateTime.UtcNow,
+        var routingKey = BuildRoutingKey("public-transport");
+        message.CorrelationId ??= Guid.NewGuid().ToString();
+        message.DetectedAt = DateTime.UtcNow;
+        message.IntersectionId = _intersection.Id;
+        message.IntersectionName = _intersection.Name;
 
-            SourceLayer = "Sensor Layer",
-            DestinationLayer = new() { "Traffic Layer" },
-
-            SourceService = "Detection Service",
-            DestinationServices = new() { "Intersection Controller Service", "Traffic Analytics Service" },
-
-            IntersectionId = _intersection.Id,
-            IntersectionName = _intersection.Name,
-
-            EventType = "Public Transport",
-            VehicleType = vehicleType,
-            Direction = direction,
-
-            Metadata = metadata
-        };
-
-        await PublishAsync("public-transport", msg);
-
-        _logger.LogInformation("[PUBLISHER][EVENT][{Intersection}] PUBLIC TRANSPORT published ({VehicleType}, Dir={Direction}",
-            _intersection.Name, vehicleType, direction);
-    
-        return msg;
+        await _bus.Publish(message, ctx => ctx.SetRoutingKey(routingKey));
+        _logger.LogInformation("[PUBLISHER][DETECTION] Public transport detected at {Intersection} (Line={Line})",
+            _intersection.Name, message.LineName);
     }
 
-    public async Task<DetectionEventMessage> PublishIncidentAsync(
-        string vehicleType,
-        string direction,
-        Guid? correlationId = null,
-        Dictionary<string, string>? metadata = null)
+    public async Task PublishIncidentDetectedAsync(IncidentDetectedMessage message)
     {
-        var msg = new DetectionEventMessage
-        {
-            CorrelationId = correlationId ?? Guid.Empty,
-            Timestamp = DateTime.UtcNow,
+        var routingKey = BuildRoutingKey("incident");
+        message.CorrelationId ??= Guid.NewGuid().ToString();
+        message.ReportedAt = DateTime.UtcNow;
+        message.IntersectionId = _intersection.Id;
+        message.Intersection = _intersection.Name;
 
-            SourceLayer = "Sensor Layer",
-            DestinationLayer = new() { "Traffic Layer" },
-
-            SourceService = "Detection Service",
-            DestinationServices = new() { "Intersection Controller Service", "Traffic Analytics Service" },
-
-            IntersectionId = _intersection.Id,
-            IntersectionName = _intersection.Name,
-
-            EventType = "Incident",
-            VehicleType = vehicleType,
-            Direction = direction,
-
-            Metadata = metadata
-        };
-
-        await PublishAsync("incident", msg);
-
-        _logger.LogInformation("[PUBLISHER][EVENT][{Intersection}] INCIDENT published ({VehicleType}, Dir={Direction}",
-            _intersection.Name, vehicleType, direction);
-
-        return msg;
+        await _bus.Publish(message, ctx => ctx.SetRoutingKey(routingKey));
+        _logger.LogInformation("[PUBLISHER][DETECTION] Incident detected at {Intersection}: {Description}",
+            _intersection.Name, message.Description);
     }
-    private async Task PublishAsync(string eventKey, DetectionEventMessage msg)
-    {
-        msg.CorrelationId = msg.CorrelationId == Guid.Empty ? Guid.NewGuid() : msg.CorrelationId;
-        msg.Timestamp = DateTime.UtcNow;
 
-        var routingKey = _routingPattern
-            .Replace("{intersection}", _intersection.Name.ToLower().Replace(' ', '-'))
-            .Replace("{event}", eventKey);
-
-        await _bus.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
-    }
+    private string BuildRoutingKey(string eventType)
+        => _routingPattern.Replace("{intersection}", _intersection.Name.ToLower().Replace(' ', '-'))
+                          .Replace("{event}", eventType);
 }

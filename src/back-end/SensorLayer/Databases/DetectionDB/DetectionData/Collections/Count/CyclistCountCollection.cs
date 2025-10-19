@@ -4,8 +4,6 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace DetectionData.Collections.Count;
 
-// Updated by : Sensor Service
-// Read by    : Sensor Service, Detection Service, Traffic Analytics Service
 [BsonDiscriminator("cyclist_count")]
 [BsonIgnoreExtraElements]
 public class CyclistCountCollection
@@ -27,13 +25,3 @@ public class CyclistCountCollection
     public int Count { get; set; }
 }
 
-/*
-
-{
-  "intersection_id": 5,
-  "intersection": "Kentriki Pyli",
-  "timestamp": "2025-10-07T13:52:10Z",
-  "count": 6
-}
-
-*/

@@ -5,13 +5,11 @@ using DetectionData.Extensions;
 using DetectionData.Repositories.EmergencyVehicle;
 using DetectionData.Repositories.Incident;
 using DetectionData.Repositories.PublicTransport;
-using DetectionStore.Models.Requests;
 using DetectionStore.Models.Responses;
 using DetectionStore.Publishers.Event;
 using DetectionStore.Publishers.Logs;
-using Messages.Log;
-using Messages.Sensor;
-using Microsoft.Extensions.Logging;
+using Messages.Sensor.Detection;
+using MongoDB.Bson;
 
 namespace DetectionStore.Business;
 
@@ -19,16 +17,14 @@ public class DetectionBusiness : IDetectionBusiness
 {
     private readonly IMapper _mapper;
     private readonly ILogger<DetectionBusiness> _logger;
-
-    // Data Repositories
     private readonly IEmergencyVehicleDetectionRepository _emergencyRepo;
     private readonly IPublicTransportDetectionRepository _publicRepo;
     private readonly IIncidentDetectionRepository _incidentRepo;
     private readonly IDetectionCacheRepository _cacheRepo;
-
-    // Messaging Publishers
     private readonly IDetectionEventPublisher _eventPublisher;
     private readonly IDetectionLogPublisher _logPublisher;
+
+    private const string Domain = "[BUSINESS][DETECTION]";
 
     public DetectionBusiness(
         IMapper mapper,
@@ -50,78 +46,122 @@ public class DetectionBusiness : IDetectionBusiness
         _logPublisher = logPublisher;
     }
 
-    public async Task ProcessDetectionAsync(DetectionEventMessage detectionMsg)
+    // ============================================================
+    // EMERGENCY VEHICLE DETECTED
+    // ============================================================
+    public async Task ProcessEmergencyVehicleAsync(EmergencyVehicleDetectedMessage msg)
     {
-        switch (detectionMsg.EventType?.ToLowerInvariant())
+        var document = new EmergencyVehicleDetectionCollection
         {
-            // ============================================================
-            // EMERGENCY VEHICLE
-            // ============================================================
-            case "emergency vehicle":
-                await _emergencyRepo.InsertAsync(new EmergencyVehicleDetectionCollection
-                {
-                    IntersectionId = detectionMsg.IntersectionId,
-                    Intersection = detectionMsg.IntersectionName,
-                    Direction = detectionMsg.Direction,
-                    EmergencyVehicleType = detectionMsg.VehicleType,
-                    DetectedAt = detectionMsg.Timestamp,
-                    Metadata = BsonExtensions.ToBsonDocument(detectionMsg.Metadata)
-                });
+            IntersectionId = msg.IntersectionId,
+            Intersection = msg.Intersection,
+            Direction = msg.Direction,
+            EmergencyVehicleType = msg.EmergencyVehicleType,
+            DetectedAt = msg.DetectedAt,
+            Metadata = BsonExtensions.ToBsonDocument(msg.Metadata)
+        };
 
-                await _cacheRepo.SetEmergencyDetectedAsync(detectionMsg.IntersectionId, true);
-                _logger.LogInformation("[BUSINESS] Emergency event persisted at {Intersection}", detectionMsg.IntersectionName);
-                break;
+        await _emergencyRepo.InsertAsync(document);
+        await _cacheRepo.SetEmergencyDetectedAsync(msg.IntersectionId, true);
+        await _eventPublisher.PublishEmergencyVehicleDetectedAsync(msg);
 
-            // ============================================================
-            // PUBLIC TRANSPORT
-            // ============================================================
-            case "public transport":
-                await _publicRepo.InsertAsync(new PublicTransportDetectionCollection
-                {
-                    IntersectionId = detectionMsg.IntersectionId,
-                    IntersectionName = detectionMsg.IntersectionName,
-                    LineName = detectionMsg.VehicleType, 
-                    DetectedAt = detectionMsg.Timestamp,
-                    Metadata = BsonExtensions.ToBsonDocument(detectionMsg.Metadata)
-                });
+        await _logPublisher.PublishAuditAsync(
+            Domain,
+            $"Emergency vehicle ({msg.EmergencyVehicleType}) detected at {msg.Intersection}",
+            "system",
+            new()
+            {
+                ["IntersectionId"] = msg.IntersectionId,
+                ["IntersectionName"] = msg.Intersection,
+                ["Direction"] = msg.Direction ?? "N/A",
+                ["Type"] = msg.EmergencyVehicleType ?? "Unknown"
+            },
+            "ProcessEmergencyVehicleAsync"
+        );
 
-                await _cacheRepo.SetPublicTransportDetectedAsync(detectionMsg.IntersectionId, true);
-                _logger.LogInformation("[BUSINESS] Public transport event persisted at {Intersection}", detectionMsg.IntersectionName);
-                break;
-
-            // ============================================================
-            // INCIDENT
-            // ============================================================
-            case "incident":
-                await _incidentRepo.InsertAsync(new IncidentDetectionCollection
-                {
-                    IntersectionId = detectionMsg.IntersectionId,
-                    Intersection = detectionMsg.IntersectionName,
-                    Description = "Incident " + (detectionMsg.Metadata?["incident_type"] ?? "unknown") + " reported",
-                    ReportedAt = detectionMsg.Timestamp,    
-                    Metadata = BsonExtensions.ToBsonDocument(detectionMsg.Metadata)
-                });
-
-                await _cacheRepo.SetIncidentDetectedAsync(detectionMsg.IntersectionId, true);
-                _logger.LogWarning("[BUSINESS] Incident event persisted at {Intersection}", detectionMsg.IntersectionName);
-                break;
-
-            default:
-                _logger.LogWarning("[BUSINESS] Unknown detection type: {Type}", detectionMsg.EventType);
-                break;
-        }
-
+        _logger.LogInformation("{Domain} Emergency vehicle persisted at {Intersection}", Domain, msg.Intersection);
     }
 
+    // ============================================================
+    // PUBLIC TRANSPORT DETECTED
+    // ============================================================
+    public async Task ProcessPublicTransportAsync(PublicTransportDetectedMessage msg)
+    {
+        var document = new PublicTransportDetectionCollection
+        {
+            IntersectionId = msg.IntersectionId,
+            IntersectionName = msg.IntersectionName,
+            LineName = msg.LineName,
+            DetectedAt = msg.DetectedAt,
+            Metadata = BsonExtensions.ToBsonDocument(msg.Metadata)
+        };
+
+        await _publicRepo.InsertAsync(document);
+        await _cacheRepo.SetPublicTransportDetectedAsync(msg.IntersectionId, true);
+        await _eventPublisher.PublishPublicTransportDetectedAsync(msg);
+
+        await _logPublisher.PublishAuditAsync(
+            Domain,
+            $"Public transport (Line={msg.LineName}) detected at {msg.IntersectionName}",
+            "system",
+            new()
+            {
+                ["IntersectionId"] = msg.IntersectionId,
+                ["IntersectionName"] = msg.IntersectionName,
+                ["LineName"] = msg.LineName ?? "Unknown"
+            },
+            "ProcessPublicTransportAsync"
+        );
+
+        _logger.LogInformation("{Domain} Public transport persisted at {Intersection}", Domain, msg.IntersectionName);
+    }
+
+    // ============================================================
+    // INCIDENT DETECTED
+    // ============================================================
+    public async Task ProcessIncidentAsync(IncidentDetectedMessage msg)
+    {
+        var document = new IncidentDetectionCollection
+        {
+            IntersectionId = msg.IntersectionId,
+            Intersection = msg.Intersection,
+            Description = msg.Description,
+            ReportedAt = msg.ReportedAt,
+            Metadata = BsonExtensions.ToBsonDocument(msg.Metadata)
+        };
+
+        await _incidentRepo.InsertAsync(document);
+        await _cacheRepo.SetIncidentDetectedAsync(msg.IntersectionId, true);
+        await _eventPublisher.PublishIncidentDetectedAsync(msg);
+
+        await _logPublisher.PublishAuditAsync(
+            Domain,
+            $"Incident reported at {msg.Intersection}: {msg.Description}",
+            "system",
+            new()
+            {
+                ["IntersectionId"] = msg.IntersectionId,
+                ["IntersectionName"] = msg.Intersection,
+                ["Description"] = msg.Description ?? "N/A"
+            },
+            "ProcessIncidentAsync"
+        );
+
+        _logger.LogWarning("{Domain} Incident persisted at {Intersection}", Domain, msg.Intersection);
+    }
+
+    // ============================================================
+    // QUERY METHODS
+    // ============================================================
     public async Task<IEnumerable<EmergencyVehicleDetectionResponse>> GetRecentEmergenciesAsync(int intersectionId)
     {
         var data = await _emergencyRepo.GetRecentEmergenciesAsync(intersectionId);
         return _mapper.Map<IEnumerable<EmergencyVehicleDetectionResponse>>(data);
     }
 
-    public async Task<IEnumerable<PublicTransportDetectionResponse>> GetPublicTransportsAsync(int intersectionId)
+    public async Task<IEnumerable<PublicTransportDetectionResponse>> GetRecentPublicTransportsAsync(int intersectionId)
     {
-        var data = await _publicRepo.GetByLineAsync(""); // optional filter later
+        var data = await _publicRepo.GetRecentPublicTransportsAsync(intersectionId);
         return _mapper.Map<IEnumerable<PublicTransportDetectionResponse>>(data);
     }
 

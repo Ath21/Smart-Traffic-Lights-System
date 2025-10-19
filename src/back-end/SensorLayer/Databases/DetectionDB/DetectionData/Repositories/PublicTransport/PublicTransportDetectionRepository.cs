@@ -1,4 +1,3 @@
-using System;
 using DetectionData;
 using DetectionData.Collections.Detection;
 using MongoDB.Driver;
@@ -10,9 +9,13 @@ public class PublicTransportDetectionRepository : BaseRepository<PublicTransport
     public PublicTransportDetectionRepository(DetectionDbContext context)
         : base(context.PublicTransportDetections) { }
 
-    public async Task<IEnumerable<PublicTransportDetectionCollection>> GetByLineAsync(string lineName)
+    public async Task<IEnumerable<PublicTransportDetectionCollection>> GetRecentPublicTransportsAsync(int intersectionId, int limit = 50)
     {
-        var filter = Builders<PublicTransportDetectionCollection>.Filter.Eq(x => x.LineName, lineName);
-        return await _collection.Find(filter).SortByDescending(x => x.DetectedAt).ToListAsync();
+        var filter = Builders<PublicTransportDetectionCollection>.Filter.Eq(x => x.IntersectionId, intersectionId);
+
+        return await _collection.Find(filter)
+            .SortByDescending(x => x.DetectedAt)
+            .Limit(limit)
+            .ToListAsync();
     }
 }

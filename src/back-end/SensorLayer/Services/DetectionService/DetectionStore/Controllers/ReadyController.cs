@@ -1,3 +1,5 @@
+using System.Net;
+using System.Net.Sockets;
 using DetectionCacheData;
 using DetectionData;
 using DetectionStore.Domain;
@@ -16,6 +18,13 @@ namespace DetectionStore.Controllers
         private readonly IBusControl _bus;
         private readonly IntersectionContext _intersection;
 
+        private readonly string _service;
+        private readonly string _layer;
+        private readonly string _level;
+        private readonly string _environment;
+        private readonly string _hostname;
+        private readonly string _containerIp;
+
         public ReadyController(
             DetectionDbContext detectionDbContext,
             DetectionCacheDbContext detectionCacheDbContext,
@@ -26,56 +35,73 @@ namespace DetectionStore.Controllers
             _detectionCacheDbContext = detectionCacheDbContext;
             _bus = bus;
             _intersection = intersection;
+
+            _service = Environment.GetEnvironmentVariable("SERVICE_NAME") ?? "Detection Service";
+            _layer = Environment.GetEnvironmentVariable("SERVICE_LAYER") ?? "Detection Layer";
+            _level = Environment.GetEnvironmentVariable("SERVICE_LEVEL") ?? "Fog";
+            _environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
+            _hostname = Environment.MachineName;
+            _containerIp = Dns.GetHostAddresses(Dns.GetHostName())
+                .FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork)
+                ?.ToString() ?? "unknown";
         }
 
         [HttpGet("ready")]
         public async Task<IActionResult> Ready()
         {
+            var status = new Dictionary<string, object?>
+            {
+                ["status"] = "Ready",
+                ["service"] = _service,
+                ["layer"] = _layer,
+                ["level"] = _level,
+                ["environment"] = _environment,
+                ["hostname"] = _hostname,
+                ["container_ip"] = _containerIp,
+                ["intersection"] = new { _intersection.Id, _intersection.Name },
+                ["timestamp"] = DateTime.UtcNow.ToString("u")
+            };
+
             try
             {
-                if (!await _detectionDbContext.CanConnectAsync())
-                    return StatusCode(503, new
-                    {
-                        status = "Not Ready",
-                        reason = "DetectionDB (MongoDB) unreachable",
-                        intersection = _intersection
-                    });
-
-                if (!await _detectionCacheDbContext.CanConnectAsync())
-                    return StatusCode(503, new
-                    {
-                        status = "Not Ready",
-                        reason = "DetectionCacheDB (Redis) unreachable",
-                        intersection = _intersection
-                    });
-
-                if (!_bus.Topology.TryGetPublishAddress(typeof(LogMessage), out _))
-                    return StatusCode(503, new
-                    {
-                        status = "Not Ready",
-                        reason = "RabbitMQ not connected",
-                        intersection = _intersection
-                    });
-
-                return Ok(new
+                // ---- MongoDB Check ----
+                bool mongoOk = await _detectionDbContext.CanConnectAsync();
+                status["mongodb"] = new { name = "DetectionDB (MongoDB)", reachable = mongoOk };
+                if (!mongoOk)
                 {
-                    status = "Ready",
-                    service = "Detection Service",
-                    intersection = new
-                    {
-                        id = _intersection.Id,
-                        name = _intersection.Name
-                    }
-                });
+                    status["status"] = "Not Ready";
+                    status["reason"] = "DetectionDB unreachable";
+                    return StatusCode(503, status);
+                }
+
+                // ---- Redis Check ----
+                bool redisOk = await _detectionCacheDbContext.CanConnectAsync();
+                status["redis"] = new { name = "DetectionCacheDB (Redis)", reachable = redisOk };
+                if (!redisOk)
+                {
+                    status["status"] = "Not Ready";
+                    status["reason"] = "Redis unreachable";
+                    return StatusCode(503, status);
+                }
+
+                // ---- RabbitMQ Check ----
+                bool brokerOk = _bus.Topology.TryGetPublishAddress(typeof(LogMessage), out _);
+                status["message_broker"] = new { name = "RabbitMQ", reachable = brokerOk };
+                if (!brokerOk)
+                {
+                    status["status"] = "Not Ready";
+                    status["reason"] = "RabbitMQ unreachable or topology not established";
+                    return StatusCode(503, status);
+                }
+
+                // All checks OK
+                return Ok(status);
             }
             catch (Exception ex)
             {
-                return StatusCode(503, new
-                {
-                    status = "Not Ready",
-                    error = ex.Message,
-                    intersection = _intersection
-                });
+                status["status"] = "Not Ready";
+                status["error"] = ex.Message;
+                return StatusCode(503, status);
             }
         }
     }

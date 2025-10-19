@@ -4,8 +4,6 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace DetectionData.Collections.Detection;
 
-// Updated by : Detection Service
-// Read by    : Sensor Service, Detection Service, Traffic Analytics Service
 [BsonDiscriminator("emergency_vehicle_detections")]
 [BsonIgnoreExtraElements]
 public class EmergencyVehicleDetectionCollection
@@ -32,14 +30,3 @@ public class EmergencyVehicleDetectionCollection
     public BsonDocument? Metadata { get; set; }
 }
 
-/*
-
-{
-  "intersection_id": 2,
-  "intersection": "Agiou Spyridonos",
-  "detectedAt": "2025-10-07T14:10:22Z",
-  "direction": "north",
-  "emergency_vehicle_type": "ambulance"
-}
-
-*/

@@ -2,6 +2,7 @@ using MassTransit;
 using Messages;
 using Messages.Log;
 using Messages.Sensor;
+using Messages.Sensor.Detection;
 using RabbitMQ.Client;
 
 namespace DetectionStore;
@@ -15,60 +16,20 @@ public static class MassTransitSetup
             x.UsingRabbitMq((context, cfg) =>
             {
                 var rabbit = configuration.GetSection("RabbitMQ");
+                cfg.Host(rabbit["Host"], rabbit["VirtualHost"] ?? "/", h => { h.Username(rabbit["Username"]); h.Password(rabbit["Password"]); });
 
-                // =====================================
-                // Connection with RabbitMQ
-                // =====================================
-                cfg.Host(rabbit["Host"], rabbit["VirtualHost"] ?? "/", h =>
-                {
-                    h.Username(rabbit["Username"]);
-                    h.Password(rabbit["Password"]);
-                });
-
-                // =====================================
-                // Exchanges
-                // =====================================
                 var sensorExchange = rabbit["Exchanges:Sensor"];
                 var logExchange = rabbit["Exchanges:Log"];
 
-                // =====================================
-                // Exclude abstract base type from topology
-                // =====================================
-                cfg.Publish<BaseMessage>(m => m.Exclude = true);    
+                cfg.Message<EmergencyVehicleDetectedMessage>(m => m.SetEntityName(sensorExchange));
+                cfg.Message<PublicTransportDetectedMessage>(m => m.SetEntityName(sensorExchange));
+                cfg.Message<IncidentDetectedMessage>(m => m.SetEntityName(sensorExchange));
+                cfg.Message<LogMessage>(m => m.SetEntityName(logExchange));
 
-                // =====================================
-                // [PUBLISH] SENSOR DETECTION (Emergency Vehicle, Public Transport, Incident)
-                // =====================================
-                //
-                // Topic pattern : sensor.detection.{intersection}.{event}
-                // Example key   : sensor.detection.agiou-spyridonos.emergency-vehicle
-                //
-                cfg.Message<DetectionEventMessage>(m =>
-                {
-                    m.SetEntityName(sensorExchange);
-                });
-
-                cfg.Publish<DetectionEventMessage>(m =>
-                {
-                    m.ExchangeType = ExchangeType.Topic;
-                });
-
-                // =====================================
-                // [PUBLISH] LOGS (Audit, Error, Failover)
-                // =====================================
-                //
-                // Topic pattern : log.{layer}.{service}.{type}
-                // Example key   : log.sensor.detection.audit
-                //
-                cfg.Message<LogMessage>(m =>
-                {
-                    m.SetEntityName(logExchange);
-                });
-
-                cfg.Publish<LogMessage>(m =>
-                {
-                    m.ExchangeType = ExchangeType.Topic;
-                });
+                cfg.Publish<EmergencyVehicleDetectedMessage>(m => m.ExchangeType = ExchangeType.Topic);
+                cfg.Publish<PublicTransportDetectedMessage>(m => m.ExchangeType = ExchangeType.Topic);
+                cfg.Publish<IncidentDetectedMessage>(m => m.ExchangeType = ExchangeType.Topic);
+                cfg.Publish<LogMessage>(m => m.ExchangeType = ExchangeType.Topic);
 
                 cfg.ConfigureEndpoints(context);
             });
@@ -77,20 +38,3 @@ public static class MassTransitSetup
         return services;
     }
 }
-
-/*
-
-{
-  "RabbitMQ": {
-    "Host": "rabbitmq",
-    "VirtualHost": "/",
-    "Username": "stls_user",
-    "Password": "stls_pass",
-    "Exchanges": {
-      "Sensor": "sensor.exchange",
-      "Log": "log.exchange"
-    }
-  }
-}
-
-*/

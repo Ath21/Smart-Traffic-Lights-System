@@ -1,88 +1,69 @@
 using Microsoft.AspNetCore.Mvc;
 using DetectionStore.Business;
-using DetectionStore.Models.Requests;
-using DetectionStore.Models.Responses;
+using DetectionStore.Domain;
 
 namespace DetectionStore.Controllers;
-
-// ============================================================
-// Detection Service (Sensor Layer)
-// Handles: Emergency Vehicle, Public Transport, and Incident Detections
-// ------------------------------------------------------------
-// Consumed by: Intersection Controller Service, Traffic Analytics Service
-// Publishes via RabbitMQ topics: sensor.detection.{intersection}.{event}
-// ============================================================
 
 [ApiController]
 [Route("api/detections")]
 public class DetectionController : ControllerBase
 {
-    private readonly IDetectionBusiness _service;
+    private readonly IDetectionBusiness _business;
     private readonly ILogger<DetectionController> _logger;
+    private readonly IntersectionContext _intersection;
 
-    public DetectionController(IDetectionBusiness service, ILogger<DetectionController> logger)
+    public DetectionController(
+        IDetectionBusiness business,
+        ILogger<DetectionController> logger,
+        IntersectionContext intersection)
     {
-        _service = service;
+        _business = business;
         _logger = logger;
+        _intersection = intersection;
     }
 
-    // ============================================================
-    // EMERGENCY VEHICLE DETECTIONS
-    // ============================================================
-    [HttpGet("emergency/{intersectionId:int}")]
-    [ProducesResponseType(typeof(IEnumerable<EmergencyVehicleDetectionResponse>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetRecentEmergencies(int intersectionId)
+    [HttpGet]
+    [Route("emergency")]
+    public async Task<IActionResult> GetRecentEmergencies()
     {
-        var detections = await _service.GetRecentEmergenciesAsync(intersectionId);
-        if (detections == null || !detections.Any())
+        var data = await _business.GetRecentEmergenciesAsync(_intersection.Id);
+        if (!data.Any())
         {
-            _logger.LogWarning("[CONTROLLER] No emergency detections found for intersection {Id}", intersectionId);
+            _logger.LogWarning("[CONTROLLER][DETECTION] No emergency detections found for {Intersection}", _intersection.Name);
             return NotFound();
         }
 
-        _logger.LogInformation("[CONTROLLER] {Count} emergency detections returned for intersection {Id}",
-            detections.Count(), intersectionId);
-        return Ok(detections);
+        _logger.LogInformation("[CONTROLLER][DETECTION] {Count} emergency detections returned for {Intersection}", data.Count(), _intersection.Name);
+        return Ok(data);
     }
 
-    // ============================================================
-    // PUBLIC TRANSPORT DETECTIONS
-    // ============================================================
-    [HttpGet("public-transport/{intersectionId:int}")]
-    [ProducesResponseType(typeof(IEnumerable<PublicTransportDetectionResponse>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetPublicTransports(int intersectionId)
+    [HttpGet]
+    [Route("public-transport")]
+    public async Task<IActionResult> GetPublicTransports()
     {
-        var detections = await _service.GetPublicTransportsAsync(intersectionId);
-        if (detections == null || !detections.Any())
+        var data = await _business.GetRecentPublicTransportsAsync(_intersection.Id);
+        if (!data.Any())
         {
-            _logger.LogWarning("[CONTROLLER] No public transport detections found for intersection {Id}", intersectionId);
+            _logger.LogWarning("[CONTROLLER][DETECTION] No public transport detections found for {Intersection}", _intersection.Name);
             return NotFound();
         }
 
-        _logger.LogInformation("[CONTROLLER] {Count} public transport detections returned for intersection {Id}",
-            detections.Count(), intersectionId);
-        return Ok(detections);
+        _logger.LogInformation("[CONTROLLER][DETECTION] {Count} public transport detections returned for {Intersection}", data.Count(), _intersection.Name);
+        return Ok(data);
     }
 
-    // ============================================================
-    // INCIDENT DETECTIONS
-    // ============================================================
-    [HttpGet("incident/{intersectionId:int}")]
-    [ProducesResponseType(typeof(IEnumerable<IncidentDetectionResponse>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetIncidents(int intersectionId)
+    [HttpGet]
+    [Route("incident")]
+    public async Task<IActionResult> GetRecentIncidents()
     {
-        var detections = await _service.GetRecentIncidentsAsync(intersectionId);
-        if (detections == null || !detections.Any())
+        var data = await _business.GetRecentIncidentsAsync(_intersection.Id);
+        if (!data.Any())
         {
-            _logger.LogWarning("[CONTROLLER] No incident detections found for intersection {Id}", intersectionId);
+            _logger.LogWarning("[CONTROLLER][DETECTION] No incident detections found for {Intersection}", _intersection.Name);
             return NotFound();
         }
 
-        _logger.LogInformation("[CONTROLLER] {Count} incident detections returned for intersection {Id}",
-            detections.Count(), intersectionId);
-        return Ok(detections);
+        _logger.LogInformation("[CONTROLLER][DETECTION] {Count} incident detections returned for {Intersection}", data.Count(), _intersection.Name);
+        return Ok(data);
     }
 }

@@ -1,10 +1,8 @@
 using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Messages.Sensor;
+using Messages.Sensor.Count;
 using SensorStore.Domain;
-using SensorStore.Publishers.Count;
-using System.Reflection.Metadata.Ecma335;
 
 namespace SensorStore.Publishers.Count;
 
@@ -26,140 +24,73 @@ public class SensorCountPublisher : ISensorCountPublisher
         _intersection = intersection;
 
         _routingPattern = config["RabbitMQ:RoutingKeys:Sensor:Count"]
-                          ?? "sensor.count.{intersection}.{type}";
+                          ?? "sensor.count.{intersection}.{count}";
     }
 
     // ============================================================
     // VEHICLE COUNT
     // ============================================================
-    public async Task PublishVehicleCountAsync(
-        int count,
-        double avgSpeed,
-        double avgWait,
-        double flowRate,
-        Dictionary<string, int>? breakdown = null,
-        Guid? correlationId = null,
-        Dictionary<string, string>? metadata = null)
+    public async Task PublishVehicleCountAsync(VehicleCountMessage message)
     {
-        var msg = new SensorCountMessage
-        {
-            CorrelationId = correlationId ?? Guid.Empty,
-            Timestamp = DateTime.UtcNow,
+        var routingKey = BuildRoutingKey("vehicle");
 
-            SourceLayer = "Sensor Layer",
-            DestinationLayer = new() { "Traffic Layer" },
+        message.CorrelationId ??= Guid.NewGuid().ToString();
+        message.Timestamp = DateTime.UtcNow;
+        message.Intersection = _intersection.Name;
+        message.IntersectionId = _intersection.Id;
 
-            SourceService = "Sensor Service",
-            DestinationServices = new() { "Intersection Controller Service", "Traffic Analytics Service" },
-
-            IntersectionId = _intersection.Id,
-            IntersectionName = _intersection.Name,
-
-            CountType = "Vehicle",
-            Count = count,
-            AverageSpeedKmh = avgSpeed,
-            AverageWaitTimeSec = avgWait,
-            FlowRate = flowRate,
-            Breakdown = breakdown,
-
-            Metadata = metadata
-        };
-
-        await PublishAsync("vehicle", msg);
+        await _bus.Publish(message, ctx => ctx.SetRoutingKey(routingKey));
 
         _logger.LogInformation(
             "[PUBLISHER][COUNT][{Intersection}] VEHICLE count published: {Count} (Speed={Speed:F1} km/h, Wait={Wait:F1}s, Flow={Flow:F2}/s)",
-            _intersection.Name, count, avgSpeed, avgWait, flowRate);
+            _intersection.Name, message.CountTotal, message.AverageSpeedKmh, message.AverageWaitTimeSec, message.FlowRate);
     }
 
     // ============================================================
     // PEDESTRIAN COUNT
     // ============================================================
-    public async Task PublishPedestrianCountAsync(
-        int count,
-        Guid? correlationId = null,
-        Dictionary<string, string>? metadata = null)
+    public async Task PublishPedestrianCountAsync(PedestrianCountMessage message)
     {
-        var msg = new SensorCountMessage
-        {
-            CorrelationId = correlationId ?? Guid.Empty,
-            Timestamp = DateTime.UtcNow,
+        var routingKey = BuildRoutingKey("pedestrian");
 
-            SourceLayer = "Sensor Layer",
-            DestinationLayer = new() { "Traffic Layer" },
+        message.CorrelationId ??= Guid.NewGuid().ToString();
+        message.Timestamp = DateTime.UtcNow;
+        message.Intersection = _intersection.Name;
+        message.IntersectionId = _intersection.Id;
 
-            SourceService = "Sensor Service",
-            DestinationServices = new() { "Intersection Controller Service", "Traffic Analytics Service" },
-
-            IntersectionId = _intersection.Id,
-            IntersectionName = _intersection.Name,
-
-            CountType = "Pedestrian",
-            Count = count,
-            AverageSpeedKmh = 0,
-            AverageWaitTimeSec = 0,
-            FlowRate = 0,
-            Breakdown = null,
-
-            Metadata = metadata
-        };
-
-        await PublishAsync("pedestrian", msg);
+        await _bus.Publish(message, ctx => ctx.SetRoutingKey(routingKey));
 
         _logger.LogInformation(
-            "[PUBLISHER][COUNT][{Intersection}] PEDESTRIAN count published: {Count}", _intersection.Name, count);
+            "[PUBLISHER][COUNT][{Intersection}] PEDESTRIAN count published: {Count}",
+            _intersection.Name, message.Count);
     }
 
     // ============================================================
     // CYCLIST COUNT
     // ============================================================
-    public async Task PublishCyclistCountAsync(
-        int count,
-        Guid? correlationId = null,
-        Dictionary<string, string>? metadata = null)
+    public async Task PublishCyclistCountAsync(CyclistCountMessage message)
     {
-        var msg = new SensorCountMessage
-        {
-            CorrelationId = correlationId ?? Guid.Empty,
-            Timestamp = DateTime.UtcNow,
+        var routingKey = BuildRoutingKey("cyclist");
 
-            SourceLayer = "Sensor Layer",
-            DestinationLayer = new() { "Traffic Layer" },
+        message.CorrelationId ??= Guid.NewGuid().ToString();
+        message.Timestamp = DateTime.UtcNow;
+        message.Intersection = _intersection.Name;
+        message.IntersectionId = _intersection.Id;
 
-            SourceService = "Sensor Service",
-            DestinationServices = new() { "Intersection Controller Service", "Traffic Analytics Service" },
-
-            IntersectionId = _intersection.Id,
-            IntersectionName = _intersection.Name,
-
-            CountType = "Cyclist",
-            Count = count,
-            AverageSpeedKmh = 0,
-            AverageWaitTimeSec = 0,
-            FlowRate = 0,
-            Breakdown = null,
-
-            Metadata = metadata
-        };
-
-        await PublishAsync("cyclist", msg);
+        await _bus.Publish(message, ctx => ctx.SetRoutingKey(routingKey));
 
         _logger.LogInformation(
-            "[PUBLISHER][COUNT][{Intersection}] CYCLIST count published: {Count}", _intersection.Name, count);
+            "[PUBLISHER][COUNT][{Intersection}] CYCLIST count published: {Count}",
+            _intersection.Name, message.Count);
     }
 
     // ============================================================
-    // Internal publish logic
+    // Helper: Build routing key for intersection/type
     // ============================================================
-    private async Task PublishAsync(string typeKey, SensorCountMessage msg)
+    private string BuildRoutingKey(string typeKey)
     {
-        msg.CorrelationId = msg.CorrelationId == Guid.Empty ? Guid.NewGuid() : msg.CorrelationId;
-        msg.Timestamp = DateTime.UtcNow;
-
-        var routingKey = _routingPattern
+        return _routingPattern
             .Replace("{intersection}", _intersection.Name.ToLower().Replace(' ', '-'))
-            .Replace("{type}", typeKey);
-
-        await _bus.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
+            .Replace("{count}", typeKey);
     }
 }

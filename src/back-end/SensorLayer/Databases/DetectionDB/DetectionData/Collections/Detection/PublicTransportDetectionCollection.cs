@@ -4,8 +4,6 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace DetectionData.Collections.Detection;
 
-// Updated by : Detection Service
-// Read by    : Sensor Service, Detection Service, Traffic Analytics Service
 [BsonDiscriminator("public_transport_detections")]
 [BsonIgnoreExtraElements]
 public class PublicTransportDetectionCollection
@@ -30,14 +28,4 @@ public class PublicTransportDetectionCollection
     public BsonDocument? Metadata { get; set; }
 }
 
-/*
 
-{
-  "intersection_id": 5,
-  "intersection_name": "Kentriki Pyli",
-  "line_name": "Bus829",
-  "detectedAt": "2025-10-07T14:12:40Z",
-  "line": "Bus829"
-}
-
-*/

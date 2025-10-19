@@ -48,7 +48,7 @@ public class DetectionCacheRepository : IDetectionCacheRepository
     }
 
     // ===============================
-    // Emergency / Incident Flags
+    // Emergency Flags
     // ===============================
     public async Task SetEmergencyDetectedAsync(int intersectionId, bool detected)
         => await _context.SetValueAsync(DetectionCacheKeys.EmergencyDetected(intersectionId), detected.ToString());
@@ -59,6 +59,9 @@ public class DetectionCacheRepository : IDetectionCacheRepository
         return bool.TryParse(value, out var result) && result;
     }
 
+    // ===============================
+    // Incident Flags
+    // ===============================
     public async Task SetIncidentDetectedAsync(int intersectionId, bool detected)
         => await _context.SetValueAsync(DetectionCacheKeys.IncidentDetected(intersectionId), detected.ToString());
 
@@ -68,6 +71,9 @@ public class DetectionCacheRepository : IDetectionCacheRepository
         return bool.TryParse(value, out var result) && result;
     }
 
+    // ===============================
+    // Public Transport Flags
+    // ===============================
     public async Task SetPublicTransportDetectedAsync(int intersectionId, bool detected)
         => await _context.SetValueAsync(DetectionCacheKeys.PublicTransportDetected(intersectionId), detected.ToString());
 

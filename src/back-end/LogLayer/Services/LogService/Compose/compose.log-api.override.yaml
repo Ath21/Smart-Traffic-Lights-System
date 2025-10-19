@@ -6,9 +6,9 @@ services:
       # ASP.NET Core
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
-      SERVICE_LAYER: Log Layer
+      SERVICE_LAYER: Log 
       SERVICE_LEVEL: Cloud
-      SERVICE_NAME: Log Service
+      SERVICE_NAME: Log
 
       # CORS
       Cors__AllowedOrigins: http://localhost:5173,https://uniwa-stls.local

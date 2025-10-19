@@ -1,18 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using SensorStore.Business;
-using SensorStore.Models.Requests;
+using SensorStore.Domain;
 using SensorStore.Models.Responses;
 
 namespace SensorStore.Controllers;
-
-// ============================================================
-// Sensor Service (Fog Layer)
-// ------------------------------------------------------------
-// Handles: Vehicle, Pedestrian, and Cyclist count measurements
-// Persists to MongoDB and synchronizes to Redis cache
-// ------------------------------------------------------------
-// Consumed by: Detection Service, Traffic Analytics Service
-// ============================================================
 
 [ApiController]
 [Route("api/sensors")]
@@ -20,75 +11,65 @@ public class SensorController : ControllerBase
 {
     private readonly ISensorBusiness _business;
     private readonly ILogger<SensorController> _logger;
+    private readonly IntersectionContext _intersection;
 
-    public SensorController(ISensorBusiness business, ILogger<SensorController> logger)
+    public SensorController(
+        ISensorBusiness business,
+        ILogger<SensorController> logger,
+        IntersectionContext intersection)
     {
         _business = business;
         _logger = logger;
+        _intersection = intersection;
     }
 
-    // ============================================================
-    // VEHICLE COUNTS
-    // ============================================================
-    [HttpGet("vehicle/{intersectionId:int}")]
-    [ProducesResponseType(typeof(IEnumerable<VehicleCountResponse>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetVehicleCounts(int intersectionId)
+    [HttpGet]
+    [Route("vehicle")]
+    public async Task<IActionResult> GetVehicleCounts()
     {
-        var data = await _business.GetRecentVehicleCountsAsync(intersectionId);
-
+        var data = await _business.GetRecentVehicleCountsAsync(_intersection.Id);
         if (!data.Any())
         {
-            _logger.LogWarning("[CONTROLLER] No vehicle counts found for intersection {Id}", intersectionId);
+            _logger.LogWarning("[CONTROLLER][SENSOR] No vehicle counts found for intersection {Name}", _intersection.Name);
             return NotFound();
         }
 
-        _logger.LogInformation("[CONTROLLER] {Count} vehicle count records returned for intersection {Id}",
-            data.Count(), intersectionId);
+        _logger.LogInformation("[CONTROLLER][SENSOR] {Count} vehicle records returned for {Intersection}",
+            data.Count(), _intersection.Name);
 
         return Ok(data);
     }
 
-    // ============================================================
-    // PEDESTRIAN COUNTS
-    // ============================================================
-    [HttpGet("pedestrian/{intersectionId:int}")]
-    [ProducesResponseType(typeof(IEnumerable<PedestrianCountResponse>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetPedestrianCounts(int intersectionId)
+    [HttpGet]
+    [Route("pedestrian")]
+    public async Task<IActionResult> GetPedestrianCounts()
     {
-        var data = await _business.GetRecentPedestrianCountsAsync(intersectionId);
-
+        var data = await _business.GetRecentPedestrianCountsAsync(_intersection.Id);
         if (!data.Any())
         {
-            _logger.LogWarning("[CONTROLLER] No pedestrian counts found for intersection {Id}", intersectionId);
+            _logger.LogWarning("[CONTROLLER][SENSOR] No pedestrian counts found for intersection {Name}", _intersection.Name);
             return NotFound();
         }
 
-        _logger.LogInformation("[CONTROLLER] {Count} pedestrian count records returned for intersection {Id}",
-            data.Count(), intersectionId);
+        _logger.LogInformation("[CONTROLLER][SENSOR] {Count} pedestrian records returned for {Intersection}",
+            data.Count(), _intersection.Name);
 
         return Ok(data);
     }
 
-    // ============================================================
-    // CYCLIST COUNTS
-    // ============================================================
-    [HttpGet("cyclist/{intersectionId:int}")]
-    [ProducesResponseType(typeof(IEnumerable<CyclistCountResponse>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetCyclistCounts(int intersectionId)
+    [HttpGet]
+    [Route("cyclist")]
+    public async Task<IActionResult> GetCyclistCounts()
     {
-        var data = await _business.GetRecentCyclistCountsAsync(intersectionId);
-
+        var data = await _business.GetRecentCyclistCountsAsync(_intersection.Id);
         if (!data.Any())
         {
-            _logger.LogWarning("[CONTROLLER] No cyclist counts found for intersection {Id}", intersectionId);
+            _logger.LogWarning("[CONTROLLER][SENSOR] No cyclist counts found for intersection {Name}", _intersection.Name);
             return NotFound();
         }
 
-        _logger.LogInformation("[CONTROLLER] {Count} cyclist count records returned for intersection {Id}",
-            data.Count(), intersectionId);
+        _logger.LogInformation("[CONTROLLER][SENSOR] {Count} cyclist records returned for {Intersection}",
+            data.Count(), _intersection.Name);
 
         return Ok(data);
     }

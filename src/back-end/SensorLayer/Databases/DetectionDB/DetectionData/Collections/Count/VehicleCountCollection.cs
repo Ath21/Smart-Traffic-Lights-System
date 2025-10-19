@@ -5,8 +5,6 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace DetectionData.Collections.Count;
 
-// Updated by : Sensor Service
-// Read by    : Sensor Service, Detection Service, Traffic Analytics Service
 [BsonDiscriminator("vehicle_count")]
 [BsonIgnoreExtraElements]
 public class VehicleCountCollection
@@ -40,29 +38,5 @@ public class VehicleCountCollection
     public Dictionary<string, int>? VehicleBreakdown { get; set; } // e.g., car, truck, bus, motorcycle   
 }
 
-/*
-
-{
-  "intersection_id": 2,
-  "intersection": "Agiou Spyridonos",
-  "timestamp": "2025-10-07T13:50:21Z",
-  "count_total": 48,
-  "average_speed_kmh": 39.4,
-  "average_wait_time_sec": 14.2,
-  "count_by_direction": {
-    "north": 0,
-    "south": 34,
-    "east": 14,
-    "west": 0
-  },
-  "vehicle_breakdown": {
-    "car": 38,
-    "bus": 4,
-    "truck": 2,
-    "motorcycle": 4
-  }
-}
-
-*/
 
 
