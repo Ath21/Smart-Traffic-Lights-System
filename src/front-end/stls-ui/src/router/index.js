@@ -1,38 +1,34 @@
+// src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuth } from '../stores/userStore'
 
 // === Pages ===
-
-// Auth
+const MapView = () => import('../components/MapView.vue')
 const Login = () => import('../pages/User/Login.vue')
 const Register = () => import('../pages/User/Register.vue')
 const ResetPassword = () => import('../pages/User/ResetPassword.vue')
-
-// User area
 const Profile = () => import('../pages/User/Profile.vue')
 const UpdateProfile = () => import('../pages/User/UpdateProfile.vue')
 const Notifications = () => import('../pages/User/Notifications.vue')
 
-// Role hierarchy (guest < user < traffic_operator < admin)
-const ROLE_ORDER = ['guest', 'user', 'traffic_operator', 'admin']
-function canAccess(requiredRole, userRole) {
-  return ROLE_ORDER.indexOf(userRole) >= ROLE_ORDER.indexOf(requiredRole)
-}
-
+// === Routes ===
 const routes = [
-  // Public auth routes
+  // Public Home (Map)
+  { path: '/', name: 'home', component: MapView, meta: { public: true } },
+
+  // Auth routes
   { path: '/login', name: 'login', component: Login, meta: { public: true } },
   { path: '/register', name: 'register', component: Register, meta: { public: true } },
   { path: '/reset-password', name: 'reset-password', component: ResetPassword, meta: { public: true } },
 
-  // Core user routes
-  { path: '/', redirect: '/profile' },
-  { path: '/profile', name: 'profile', component: Profile, meta: { role: 'user' } },
-  { path: '/update', name: 'update', component: UpdateProfile, meta: { role: 'user' } },
-  { path: '/notifications', name: 'notifications', component: Notifications, meta: { role: 'user' } },
+  // Authenticated User routes
+  { path: '/stls', name: 'stls', component: MapView, meta: { role: 'user' } },
+  { path: '/stls/profile', name: 'profile', component: Profile, meta: { role: 'user' } },
+  { path: '/stls/update', name: 'update', component: UpdateProfile, meta: { role: 'user' } },
+  { path: '/stls/notifications', name: 'notifications', component: Notifications, meta: { role: 'user' } },
 
-  // Catch-all fallback
-  { path: '/:pathMatch(.*)*', redirect: '/login' }
+  // Fallback
+  { path: '/:pathMatch(.*)*', redirect: '/' }
 ]
 
 const router = createRouter({
@@ -40,28 +36,34 @@ const router = createRouter({
   routes
 })
 
-// === Global auth guard ===
+// === Navigation Guard ===
 router.beforeEach(async (to) => {
   const auth = useAuth()
 
-  // Initialize store if needed
-  if (!auth.user && !auth.token && auth.bootstrap) {
+  // Initialize once
+  if (!auth.isInitialized) {
     await auth.bootstrap()
+    auth.isInitialized = true
   }
 
-  // Public route? allow
-  if (to.meta?.public) return true
-
-  // Determine access
-  const required = to.meta?.role || 'guest'
+  const isAuthenticated = !!auth.token
   const role = auth.user?.role?.toLowerCase() || 'guest'
 
-  if (!canAccess(required, role)) {
-    return auth.token
-      ? { name: 'profile' } // logged in but not enough rights
-      : { name: 'login', query: { redirect: to.fullPath } }
+  // Public route logic
+  if (to.meta?.public) {
+    // Avoid redirect loop
+    if (isAuthenticated && ['home', 'login', 'register', 'reset-password'].includes(to.name)) {
+      return { name: 'stls' }
+    }
+    return true
   }
 
+  // Protected route
+  if (!isAuthenticated) {
+    return { name: 'login', query: { redirect: to.fullPath } }
+  }
+
+  // Everything else allowed
   return true
 })
 

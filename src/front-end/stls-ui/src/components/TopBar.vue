@@ -1,89 +1,90 @@
 <template>
   <header class="topbar">
-    <BrandBlock />
-
-    <WelcomeMsg v-if="auth.isAuthenticated" :username="username" />
-
-    <div class="flex items-center gap-3 relative right-nav">
-      <AuthLinks
-        :is-login-or-register="isLoginOrRegister"
-        :is-authenticated="auth.isAuthenticated"
-        :home-path="homePath"
+    <!-- === Left side: PADA + UNIWA STLS + STLS emblem === -->
+    <div class="left">
+      <img
+        src="/PADA.png"
+        alt="PADA"
+        class="pada-logo"
       />
-
-<UserMenu
-  :is-authenticated="auth.isAuthenticated"
-  :username="username"
-  :home-path="homePath"
-  :notification-count="unreadCount"
-  @logout="logout"
-  @alert="alertMe"
-
-
+      <h1 class="title">
+        UNIWA <span class="highlight">STLS</span>
+      </h1>
+      <img
+        src="/STLS-Logo-TopBar.png"
+        alt="UNIWA STLS"
+        class="stls-logo"
       />
+    </div>
+
+    <!-- === Right side: Buttons / Role-based === -->
+    <div class="right-nav">
+      <!-- Unauthenticated users -->
+      <template v-if="!auth.isAuthenticated">
+        <!-- On auth pages show Home button -->
+        <template v-if="['/login', '/register', '/reset-password'].includes(router.currentRoute.value.path)">
+          <RouterLink to="/" class="home-btn">Home</RouterLink>
+        </template>
+
+        <!-- On other public pages show Login / Register -->
+        <template v-else>
+          <RouterLink to="/login" class="home-btn">Login</RouterLink>
+          <RouterLink to="/register" class="home-btn register-btn">Register</RouterLink>
+        </template>
+      </template>
+
+      <!-- Authenticated users -->
+      <template v-else>
+        <span class="user-info">👋 {{ auth.user?.username || auth.user?.email }}</span>
+
+        <RouterLink
+          v-if="auth.user?.role === 'User'"
+          to="/stls/profile"
+          class="home-btn"
+        >
+          Profile
+        </RouterLink>
+
+        <RouterLink
+          v-if="auth.user?.role === 'User'"
+          to="/stls/notifications"
+          class="home-btn"
+        >
+          🔔
+        </RouterLink>
+
+        <RouterLink
+          v-if="auth.user?.role === 'TrafficOperator'"
+          to="/stls/operator"
+          class="home-btn operator-btn"
+        >
+          Operator
+        </RouterLink>
+
+        <RouterLink
+          v-if="auth.user?.role === 'Admin'"
+          to="/stls/admin"
+          class="home-btn admin-btn"
+        >
+          Admin
+        </RouterLink>
+
+        <button @click="logout" class="home-btn logout-btn">Logout</button>
+      </template>
     </div>
   </header>
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { useAuth } from '../stores/userStore'
-import { useRoute, useRouter } from 'vue-router'
-import { useNotifications } from '../stores/notificationStore'
-import { storeToRefs } from 'pinia'
+import "../assets/topbar.css";
+import { useAuth } from "../stores/userStore";
+import { useRouter } from "vue-router";
 
-import BrandBlock from './BrandBlock.vue'
-import WelcomeMsg from './WelcomeMsg.vue'
-import AuthLinks from './AuthLinks.vue'
-import UserMenu from './UserMenu.vue'
-
-import '../assets/topbar.css'
-
-const auth = useAuth()
-const router = useRouter()
-const route = useRoute()
-const notificationsStore = useNotifications()
-const { unreadCount } = storeToRefs(notificationsStore) // ✅ use unread count
-
-const isLoginOrRegister = computed(() =>
-  ['/login', '/register', '/reset-password'].includes(route.path)
-)
-
-const homePath = computed(() => {
-  const role = auth.user?.role?.toLowerCase()
-  if (role === 'user') return '/app'
-  if (role === 'operator') return '/operator'
-  if (role === 'admin') return '/admin'
-  return '/'
-})
-
-const username = computed(() => {
-  if (auth.user?.username) return auth.user.username
-  if (auth.user?.email) return auth.user.email.split('@')[0]
-  return 'Guest'
-})
-
-async function alertMe() {
-  try {
-    const res = await auth.apiFetch("http://localhost:5055/api/users/send-notification-request", {
-      method: "POST",
-      body: JSON.stringify({
-        Message: "User subscribed to traffic alerts",
-        Type: "Traffic"
-      })
-    })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const data = await res.json()
-    alert(`✅ Notification request sent! (${data.type})`)
-  } catch (err) {
-    console.error("❌ Failed to send alert:", err)
-    alert("❌ Failed to send notification")
-  }
-}
+const auth = useAuth();
+const router = useRouter();
 
 function logout() {
-  auth.logout()
-  notificationsStore.stopPolling()
-  router.push('/login')
+  auth.logout();
+  router.push("/");
 }
 </script>
