@@ -51,16 +51,22 @@ router.beforeEach(async (to) => {
 
   // Public route logic
   if (to.meta?.public) {
-    // Avoid redirect loop
+    // Redirect authenticated users away from login/register pages
     if (isAuthenticated && ['home', 'login', 'register', 'reset-password'].includes(to.name)) {
-      return { name: 'stls' }
+      return { path: '/stls' } // use path to guarantee /stls
     }
     return true
   }
 
-  // Protected route
+  // Protected route logic
   if (!isAuthenticated) {
-    return { name: 'login', query: { redirect: to.fullPath } }
+    return { path: '/login', query: { redirect: to.fullPath } }
+  }
+
+  // Role check (optional)
+  if (to.meta?.role && to.meta.role.toLowerCase() !== role) {
+    // Redirect to default dashboard if role mismatch
+    return { path: '/stls' }
   }
 
   // Everything else allowed

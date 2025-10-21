@@ -1,63 +1,61 @@
 <template>
   <div v-if="isAuthenticated" class="flex items-center gap-3 relative">
-    <!-- Alert Me -->
-    <button class="alert-btn" @click="$emit('alert')">
-      Alert Me
+    <!-- Human Icon Button -->
+    <button class="user-btn" @click="toggleMenu">
+      <div class="icon-circle">
+        <component :is="iconComponent" class="icon-svg" />
+      </div>
+      <NotificationBadge v-if="notificationCount" :count="notificationCount" />
     </button>
 
     <!-- Dropdown -->
-    <div class="relative" ref="menuRef">
-      <button class="user-btn" @click="toggleMenu">
-        <svg xmlns="http://www.w3.org/2000/svg"
-             class="h-6 w-6 text-gray-200"
-             fill="currentColor"
-             viewBox="0 0 20 20">
-          <path d="M10 10a4 4 0 100-8 4 4 0 000 8zm-7 8a7 7 0 1114 0H3z" />
-        </svg>
-        <NotificationBadge :count="notificationCount" />
+    <div v-if="showMenu" class="dropdown">
+      <div class="dropdown-header">{{ username }}</div>
+      <RouterLink :to="homePath" class="dropdown-item">Home</RouterLink>
+      <RouterLink to="/stls/profile" class="dropdown-item">Profile</RouterLink>
+      <RouterLink to="/stls/notifications" class="dropdown-item">
+        Notifications
+        <NotificationBadge :count="notificationCount" inline />
+      </RouterLink>
+      <RouterLink to="/stls/update" class="dropdown-item">Update Profile</RouterLink>
+      <button @click="$emit('logout')" class="dropdown-item logout">
+        Logout
       </button>
-
-      <div v-if="showMenu" class="dropdown">
-        <div class="dropdown-header">{{ username }}</div>
-        <RouterLink :to="homePath" class="dropdown-item">Home</RouterLink>
-        <RouterLink to="/profile" class="dropdown-item">Profile</RouterLink>
-        <RouterLink to="/notifications" class="dropdown-item">
-          Notifications
-          <NotificationBadge :count="notificationCount" inline />
-        </RouterLink>
-        <RouterLink to="/update" class="dropdown-item">Update Profile</RouterLink>
-        <button @click="$emit('logout')" class="dropdown-item logout">
-          Logout
-        </button>
-      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { RouterLink } from 'vue-router'
 import NotificationBadge from './NotificationBadge.vue'
-
+import { UserIcon, Cog6ToothIcon, ShieldCheckIcon } from '@heroicons/vue/24/solid'
 import '../assets/user-menu.css'
 
-defineProps({
-  username: { type: String, required: true },
-  homePath: { type: String, required: true },
-  notificationCount: { type: Number, default: 0 },
-  isAuthenticated: { type: Boolean, default: false } // ✅ new
+const props = defineProps({
+  username: String,
+  homePath: String,
+  notificationCount: Number,
+  isAuthenticated: Boolean,
+  icon: String // 'user', 'traffic-light', 'admin'
+})
+const emit = defineEmits(['logout'])
+const showMenu = ref(false)
+const toggleMenu = () => (showMenu.value = !showMenu.value)
+
+const iconComponent = computed(() => {
+  switch (props.icon) {
+    case 'traffic-light': return Cog6ToothIcon
+    case 'admin': return ShieldCheckIcon
+    default: return UserIcon
+  }
 })
 
-const emit = defineEmits(['logout', 'alert'])
-
-const showMenu = ref(false)
-const menuRef = ref(null)
-
-function toggleMenu() {
-  showMenu.value = !showMenu.value
-}
+// Close dropdown if clicked outside
 function handleClickOutside(e) {
-  if (menuRef.value && !menuRef.value.contains(e.target)) {
+  const dropdown = document.querySelector('.dropdown')
+  const btn = document.querySelector('.user-btn')
+  if (dropdown && btn && !dropdown.contains(e.target) && !btn.contains(e.target)) {
     showMenu.value = false
   }
 }

@@ -1,16 +1,81 @@
-/* map.css */
+/* ===============================
+   Legend Box
+   =============================== */
 .legend-box {
   position: absolute;
-  bottom: 90px;
-  left: 16px;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 10px;
-  padding: 10px 14px;       /* increased padding */
-  font-size: 14px;
-  line-height: 1.6;         /* taller rows */
+  bottom: 20px;
+  left: 20px;
+  background: rgba(18, 43, 61, 0.9);
+  border: 1px solid rgba(0, 180, 255, 0.25);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  color: #f8f9fa;
+  z-index: 7000;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
 }
 
-.legend-box .traffic-light {
-  width: 20px;
-  height: 20px;
+/* Ensure legend text always visible */
+.legend-box div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #f8f9fa;
+  font-weight: 500;
+}
+
+/* ===============================
+   Traffic Lights in Legend
+   =============================== */
+.traffic-light {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: inline-block;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+.traffic-light.red {
+  background-color: #ff4d4d;
+}
+
+.traffic-light.yellow {
+  background-color: #ffeb3b;
+}
+
+.traffic-light.green {
+  background-color: #4caf50;
+}
+
+.traffic-light.orange {
+  background-color: #ff9800; /* orange */
+}
+
+/* ===============================
+   Intersection Congestion Icons
+   =============================== */
+.legend-icon {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  display: inline-block;
+  border: 1px solid rgba(255,255,255,0.2);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+}
+
+.legend-icon.low {
+  background-color: rgba(51, 153, 255, 0.85); /* blue */
+}
+
+.legend-icon.medium {
+  background-color: rgba(255, 165, 0, 0.85); /* orange */
+}
+
+.legend-icon.high {
+  background-color: rgba(255, 77, 77, 0.85); /* red */
+  box-shadow: 0 0 8px rgba(255, 77, 77, 0.6);
+  animation: pulseGlow 2s infinite ease-in-out;
 }

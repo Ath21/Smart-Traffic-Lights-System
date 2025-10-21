@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@heroicons/vue": "^2.2.0",
     "@mdi/font": "^7.4.47",
     "@tailwindcss/vite": "^4.1.12",
     "axios": "^1.12.2",

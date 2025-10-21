@@ -4,36 +4,32 @@
     <div ref="mapEl" class="leaflet-wrapper"></div>
 
     <!-- === Legend (Bottom Left) === -->
-    <div class="legend-box">
-      <div class="flex items-center gap-2">
-        <span class="traffic-light red"></span> Stop
-      </div>
-      <div class="flex items-center gap-2">
-        <span class="traffic-light yellow"></span> Prepare
-      </div>
-      <div class="flex items-center gap-2">
-        <span class="traffic-light green"></span> Go
-      </div>
-    </div>
+<div class="legend-box">
+  <div><span class="traffic-light red"></span> Stop</div>
+  <div><span class="traffic-light yellow"></span> Caution</div>
+  <div><span class="traffic-light green"></span> Go</div>
+  <div><span class="traffic-light orange"></span> Out of Service</div>
+  <hr class="border-t border-gray-500 my-1">
+  <div><span class="legend-icon low"></span> Low Congestion</div>
+  <div><span class="legend-icon medium"></span> Medium Congestion</div>
+  <div><span class="legend-icon high"></span> High Congestion</div>
+</div>
   </div>
+
+  
 </template>
 
 <script setup>
 import { onMounted, onBeforeUnmount, ref } from "vue";
 import L from "leaflet";
-import { useAuth } from "../stores/userStore";
-import { useRouter } from "vue-router";
 import "../assets/map.css";
 import "../assets/legend-lights.css";
-
-const auth = useAuth();
-const router = useRouter();
 
 const mapEl = ref(null);
 let map, group, intervalId;
 
 // ===============================
-// Intersections
+// Intersections & lights
 // ===============================
 const intersections = [
   {
@@ -98,17 +94,30 @@ function trafficIcon(state = "red") {
   });
 }
 
+// Random next state for simulation
 function randomState(current) {
   const states = ["red", "yellow", "green"];
   const next = states[Math.floor(Math.random() * states.length)];
   return next === current ? randomState(current) : next;
 }
 
+// Determine congestion level based on lights
+function getCongestion(inter) {
+  const redCount = inter.lights.filter(l => l.state === "red").length;
+  const total = inter.lights.length;
+  const ratio = redCount / total;
+
+  if (ratio === 0) return "low";
+  if (ratio < 0.5) return "medium";
+  return "high";
+}
+
+// Render map with dynamic labels
 function renderMap() {
   group.clearLayers();
 
-  intersections.forEach((inter) => {
-    inter.lights.forEach((light) => {
+  intersections.forEach(inter => {
+    inter.lights.forEach(light => {
       L.marker(light.coords, { icon: trafficIcon(light.state) })
         .addTo(group)
         .bindPopup(
@@ -118,6 +127,7 @@ function renderMap() {
         );
     });
 
+    // Circle for intersection center
     L.circle(inter.center, {
       radius: 20,
       color: "blue",
@@ -125,11 +135,13 @@ function renderMap() {
       fillOpacity: 0.1
     }).addTo(group);
 
+    // Dynamic label with congestion class
+    const congestion = getCongestion(inter);
     L.tooltip({
       permanent: true,
       direction: "top",
       offset: [0, -25],
-      className: "intersection-label"
+      className: `intersection-label ${congestion}`
     })
       .setContent(`<b>[${inter.id}] ${inter.name}</b>`)
       .setLatLng(inter.center)
@@ -142,8 +154,8 @@ function renderMap() {
 // ===============================
 function startSimulation() {
   intervalId = setInterval(() => {
-    intersections.forEach((inter) => {
-      inter.lights.forEach((light) => {
+    intersections.forEach(inter => {
+      inter.lights.forEach(light => {
         light.state = randomState(light.state);
       });
     });
@@ -168,9 +180,8 @@ onMounted(() => {
 
   group = L.featureGroup().addTo(map);
   renderMap();
-  map.fitBounds(L.latLngBounds(intersections.map((i) => i.center)), { padding: [40, 40] });
+  map.fitBounds(L.latLngBounds(intersections.map(i => i.center)), { padding: [40, 40] });
 
-  // ensure map resizes correctly after layout paint
   setTimeout(() => map.invalidateSize(), 400);
 
   startSimulation();

@@ -1,6 +1,6 @@
 <template>
   <header class="topbar">
-    <!-- === Left side: PADA + UNIWA STLS + STLS emblem === -->
+    <!-- Left side: Logos & Title -->
     <div class="left">
       <img src="/PADA.png" alt="PADA" class="pada-logo" />
       <h1 class="title">
@@ -9,32 +9,56 @@
       <img src="/STLS-Logo-TopBar.png" alt="UNIWA STLS" class="stls-logo" />
     </div>
 
-    <!-- === Right side: User Menu / Auth Buttons === -->
+    <!-- Right side: Role-based Buttons / User Menu -->
     <div class="right-nav">
-      <!-- Show User Menu if logged in -->
-      <UserMenu
-        v-if="auth.isAuthenticated"
-        :username="auth.user?.username || auth.user?.email"
-        :isAuthenticated="auth.isAuthenticated"
-        :notification-count="notificationCount"
-        home-path="/stls"
-        @logout="handleLogout"
-        @alert="handleAlert"
-      />
+      <!-- Guest -->
+      <template v-if="!auth.isAuthenticated">
+        <RouterLink to="/" class="btn">Home</RouterLink>
+        <RouterLink to="/login" class="btn-outline">Login</RouterLink>
+        <RouterLink to="/register" class="btn-primary">Register</RouterLink>
+      </template>
 
-      <!-- Show Login / Register / Home when not authenticated -->
+      <!-- Authenticated User -->
       <template v-else>
-        <RouterLink
-          v-if="['/login', '/register', '/reset-password'].includes(router.currentRoute.value.path)"
-          to="/"
-          class="home-btn"
-        >
-          Home
-        </RouterLink>
+        <template v-if="auth.user.role === 'User'">
+          <RouterLink to="/stls" class="btn">Home</RouterLink>
+          <RouterLink to="/stls/subscribe" class="btn-outline">Alert Me</RouterLink>
+          <UserMenu
+            :username="auth.user.username || auth.user.email"
+            :home-path="'/stls'"
+            :notification-count="notificationCount"
+            :isAuthenticated="auth.isAuthenticated"
+            icon="user"
+            @logout="handleLogout"
+          />
+        </template>
 
-        <template v-else>
-          <RouterLink to="/login" class="home-btn">Login</RouterLink>
-          <RouterLink to="/register" class="home-btn register-btn">Register</RouterLink>
+        <template v-else-if="auth.user.role === 'TrafficOperator'">
+          <RouterLink to="/stls" class="btn">Home</RouterLink>
+          <RouterLink to="/stls/analytics" class="btn-outline">Analytics</RouterLink>
+          <RouterLink to="/stls/operator" class="btn-outline">Operator</RouterLink>
+          <UserMenu
+            :username="auth.user.username || auth.user.email"
+            :home-path="'/stls'"
+            :notification-count="notificationCount"
+            :isAuthenticated="auth.isAuthenticated"
+            icon="traffic-light"
+            @logout="handleLogout"
+          />
+        </template>
+
+        <template v-else-if="auth.user.role === 'Admin'">
+          <RouterLink to="/stls" class="btn">Home</RouterLink>
+          <RouterLink to="/stls/logs" class="btn-outline">Logs</RouterLink>
+          <RouterLink to="/stls/dashboard" class="btn-outline">Admin</RouterLink>
+          <UserMenu
+            :username="auth.user.username || auth.user.email"
+            :home-path="'/stls'"
+            :notification-count="notificationCount"
+            :isAuthenticated="auth.isAuthenticated"
+            icon="admin"
+            @logout="handleLogout"
+          />
         </template>
       </template>
     </div>
@@ -42,27 +66,18 @@
 </template>
 
 <script setup>
-import "../assets/topbar.css";
-import UserMenu from "./UserMenu.vue";
-import { useAuth } from "../stores/userStore";
-import { useRouter } from "vue-router";
-import { ref } from "vue";
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuth } from '../stores/userStore'
+import UserMenu from './UserMenu.vue'
+import '../assets/topbar.css'
 
-const auth = useAuth();
-const router = useRouter();
+const auth = useAuth()
+const router = useRouter()
+const notificationCount = ref(0)
 
-// === Notification Badge Count ===
-// (You can later fetch this from Notification API)
-const notificationCount = ref(0);
-
-// === Methods ===
 function handleLogout() {
-  auth.logout();
-  router.push("/");
-}
-
-function handleAlert() {
-  // Later connect to NotificationService or local modal
-  alert("🚦 Public Alert: Notification triggered!");
+  auth.logout()
+  router.push('/')
 }
 </script>

@@ -7,15 +7,16 @@ header.topbar {
   left: 0;
   right: 0;
   height: 64px;
-  background: #0b1d2a;
+  background: linear-gradient(90deg, #0b1d2a 0%, #0f2f45 100%);
   color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 1rem;
-  z-index: 5000; /* above map */
-  overflow: visible; /* allow dropdowns */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  z-index: 5000;
+  overflow: visible;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(6px);
 }
 
 /* === Left side === */
@@ -25,14 +26,15 @@ header.topbar {
   gap: 10px;
 }
 
-.pada-logo {
+.pada-logo,
+.stls-logo {
   height: 40px;
   width: auto;
 }
 
 .title {
   font-size: 1.4rem;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.5px;
 }
 
@@ -40,33 +42,73 @@ header.topbar {
   color: #00b4ff;
 }
 
-.stls-logo {
-  height: 40px;
-  width: auto;
-}
-
-/* === Right side === */
+/* === Right navigation === */
 .right-nav {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+/* === Base button design === */
+.right-nav .btn,
+.right-nav .btn-outline,
+.right-nav .btn-primary,
+.user-btn {
+  box-sizing: border-box;
+  height: 36px;
+  line-height: 36px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.25s ease-in-out;
+  border: 1px solid transparent;
   position: relative;
-  overflow: visible;
-}
-
-.home-btn,
-.register-btn {
-  color: #fff;
-  background: transparent;
-  border: 1px solid #00b4ff;
-  border-radius: 6px;
-  padding: 6px 12px;
   text-decoration: none;
-  transition: background 0.2s;
 }
 
-.home-btn:hover,
-.register-btn:hover {
-  background: #00b4ff;
+/* === Hover animation base === */
+.right-nav .btn:hover,
+.right-nav .btn-outline:hover,
+.right-nav .btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(0, 180, 255, 0.45);
+}
+
+/* === Home button === */
+.right-nav .btn {
+  color: #ffffff;
+  background: linear-gradient(90deg, #00324a, #004c6b);
+  border: 1px solid #00b4ff40;
+}
+.right-nav .btn:hover {
+  background: linear-gradient(90deg, #00b4ff, #1ec8ff);
   color: #0b1d2a;
+}
+
+/* === Outline button (Alert Me, Analytics, Logs, etc.) === */
+.right-nav .btn-outline {
+  color: #00b4ff;
+  background: rgba(0, 180, 255, 0.08);
+  border: 1px solid #00b4ff80;
+}
+.right-nav .btn-outline:hover {
+  background: linear-gradient(90deg, #00b4ff, #1ec8ff);
+  color: #0b1d2a;
+}
+
+/* === Primary button (Register, CTA) === */
+.right-nav .btn-primary {
+  color: #0b1d2a;
+  background: linear-gradient(90deg, #00b4ff, #1ec8ff);
+  border: 1px solid #00b4ff;
+}
+.right-nav .btn-primary:hover {
+  background: linear-gradient(90deg, #1ec8ff, #47dcff);
+  box-shadow: 0 3px 12px rgba(30, 200, 255, 0.55);
 }
