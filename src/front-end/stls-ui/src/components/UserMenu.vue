@@ -13,8 +13,8 @@
       <div class="dropdown-header">{{ username }}</div>
       <RouterLink :to="homePath" class="dropdown-item">Home</RouterLink>
       <RouterLink to="/stls/profile" class="dropdown-item">Profile</RouterLink>
-      <RouterLink to="/stls/notifications" class="dropdown-item">
-        Notifications
+      <RouterLink to="/stls/subscriptions" class="dropdown-item">
+        Subscriptions
         <NotificationBadge :count="notificationCount" inline />
       </RouterLink>
       <RouterLink to="/stls/update" class="dropdown-item">Update Profile</RouterLink>

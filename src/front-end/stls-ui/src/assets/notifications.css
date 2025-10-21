@@ -1,61 +1,77 @@
-/* === Notifications Page Styles === */
-
-.notifications-page {
-  padding: 30px;
-  max-width: 700px;
+/* ===============================
+   Subscriptions Page
+   =============================== */
+.subscriptions-page {
+  padding: 80px 20px;
+  max-width: 720px;
   margin: 0 auto;
-  background: #f9fafb;
-  min-height: calc(100vh - 60px);
+  color: #e5f7ff;
+  font-family: 'Inter', sans-serif;
+  background: #0b1d2a;
 }
 
-.notifications-page h2 {
-  font-size: 1.6rem;
-  font-weight: 700;
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.notifications-list {
+/* Subscriptions List */
+.subscriptions-list {
   list-style: none;
   padding: 0;
-  margin: 0;
-}
-
-.notifications-list li {
-  background: white;
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 12px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  cursor: pointer;
-}
-
-.notifications-list li.unread {
-  border-left: 4px solid #06b6d4;
-  background: #ecfeff;
-}
-
-.note-header {
+  margin-top: 1.5rem;
   display: flex;
-  justify-content: space-between;
-  margin-bottom: 6px;
-  font-size: 0.9rem;
-  color: #374151;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-.mark-all-btn {
-  background: #06b6d4;
-  color: white;
+/* Individual Subscription Card */
+.subscription-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: #112c42; /* slightly lighter than page bg */
+  border-radius: 10px;
+  color: #e5f7ff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.subscription-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5);
+}
+
+/* Subscription Text */
+.subscription-item span {
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: 0.2px;
+}
+
+/* Unsubscribe Button */
+.unsubscribe-btn {
+  background: linear-gradient(145deg, #ff4d4f, #e03e3e);
+  color: #fff;
   border: none;
-  padding: 8px 14px;
   border-radius: 6px;
-  margin-bottom: 12px;
+  padding: 0.35rem 0.75rem;
   cursor: pointer;
   font-weight: 600;
+  font-size: 13px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
+  transition: all 0.2s ease;
 }
 
-.mark-all-btn:hover {
-  background: #0891b2;
+.unsubscribe-btn:hover:not(:disabled) {
+  background: linear-gradient(145deg, #e03e3e, #c32c2c);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+}
+
+.unsubscribe-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Optional: Add subtle separator line for clarity */
+.subscription-item:not(:last-child) {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }

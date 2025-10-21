@@ -9,7 +9,8 @@ const Register = () => import('../pages/User/Register.vue')
 const ResetPassword = () => import('../pages/User/ResetPassword.vue')
 const Profile = () => import('../pages/User/Profile.vue')
 const UpdateProfile = () => import('../pages/User/UpdateProfile.vue')
-const Notifications = () => import('../pages/User/Notifications.vue')
+const Notifications = () => import('../pages/Notification/Notifications.vue')
+const Subscribe = () => import('../pages/Notification/Subscribe.vue') // <-- new page
 
 // === Routes ===
 const routes = [
@@ -25,7 +26,8 @@ const routes = [
   { path: '/stls', name: 'stls', component: MapView, meta: { role: 'user' } },
   { path: '/stls/profile', name: 'profile', component: Profile, meta: { role: 'user' } },
   { path: '/stls/update', name: 'update', component: UpdateProfile, meta: { role: 'user' } },
-  { path: '/stls/notifications', name: 'notifications', component: Notifications, meta: { role: 'user' } },
+  { path: '/stls/subscriptions', name: 'subscriptions', component: Notifications, meta: { role: 'user' } },
+  { path: '/stls/subscribe', name: 'subscribe', component: Subscribe, meta: { role: 'user' } }, // <-- new route
 
   // Fallback
   { path: '/:pathMatch(.*)*', redirect: '/' }
@@ -51,9 +53,8 @@ router.beforeEach(async (to) => {
 
   // Public route logic
   if (to.meta?.public) {
-    // Redirect authenticated users away from login/register pages
     if (isAuthenticated && ['home', 'login', 'register', 'reset-password'].includes(to.name)) {
-      return { path: '/stls' } // use path to guarantee /stls
+      return { path: '/stls' } // redirect logged-in users
     }
     return true
   }
@@ -63,13 +64,11 @@ router.beforeEach(async (to) => {
     return { path: '/login', query: { redirect: to.fullPath } }
   }
 
-  // Role check (optional)
+  // Role check
   if (to.meta?.role && to.meta.role.toLowerCase() !== role) {
-    // Redirect to default dashboard if role mismatch
-    return { path: '/stls' }
+    return { path: '/stls' } // redirect if role mismatch
   }
 
-  // Everything else allowed
   return true
 })
 

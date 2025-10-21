@@ -37,7 +37,8 @@ const topbarPages = [
   "/reset-password",
   "/stls/profile",
   "/stls/update",
-  "/stls/notifications"
+  "/stls/subscriptions",
+  "/stls/subscribe"
 ];
 const showTopbar = computed(() => topbarPages.includes(route.path));
 </script>

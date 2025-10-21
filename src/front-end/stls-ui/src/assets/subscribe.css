@@ -1,18 +1,18 @@
 /* ===============================
-   UPDATE PROFILE PAGE (NO TITLE)
+   SUBSCRIBE PAGE
    =============================== */
-.update-profile-page {
+.subscribe-page {
   display: flex;
   justify-content: center;
-  align-items: flex-start;  /* push card slightly from top */
-  padding: 92px 16px;       /* vertical padding */
+  align-items: flex-start;
+  padding: 82px 16px;
   background: #f3f4f6;
   min-height: 100vh;
 }
 
-.update-card {
+.subscribe-card {
   background: #ffffff;
-  padding: 20px 24px;       /* tight padding */
+  padding: 24px 28px;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   width: 100%;
@@ -25,7 +25,13 @@
   gap: 12px;
 }
 
-.input {
+label {
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 4px;
+}
+
+select {
   border: 1px solid #d1d5db;
   border-radius: 8px;
   padding: 10px 12px;
@@ -35,7 +41,7 @@
   transition: border 0.2s;
 }
 
-.input:focus {
+select:focus {
   border-color: #3b82f6;
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
@@ -47,6 +53,7 @@
   padding: 10px;
   border-radius: 8px;
   cursor: pointer;
+  margin-top: 8px;
   transition: background 0.2s, transform 0.1s;
 }
 
@@ -55,16 +62,23 @@
   transform: translateY(-1px);
 }
 
+.success-msg {
+  color: #059669;
+  font-size: 0.9rem;
+  margin-top: 8px;
+  text-align: center;
+}
+
 .error-msg {
   color: #b91c1c;
   font-size: 0.9rem;
-  margin-top: -2px;
+  margin-top: 8px;
+  text-align: center;
 }
 
 /* Responsive */
 @media (max-width: 480px) {
-  .update-card {
+  .subscribe-card {
     padding: 16px;
-    width: 100%;
   }
 }
