@@ -10,7 +10,7 @@ const ResetPassword = () => import('../pages/User/ResetPassword.vue')
 const Profile = () => import('../pages/User/Profile.vue')
 const UpdateProfile = () => import('../pages/User/UpdateProfile.vue')
 const Notifications = () => import('../pages/Notification/Notifications.vue')
-const Subscribe = () => import('../pages/Notification/Subscribe.vue') // <-- new page
+const Subscribe = () => import('../pages/Notification/Subscribe.vue')
 
 // === Routes ===
 const routes = [
@@ -23,11 +23,11 @@ const routes = [
   { path: '/reset-password', name: 'reset-password', component: ResetPassword, meta: { public: true } },
 
   // Authenticated User routes
-  { path: '/stls', name: 'stls', component: MapView, meta: { role: 'user' } },
-  { path: '/stls/profile', name: 'profile', component: Profile, meta: { role: 'user' } },
-  { path: '/stls/update', name: 'update', component: UpdateProfile, meta: { role: 'user' } },
-  { path: '/stls/subscriptions', name: 'subscriptions', component: Notifications, meta: { role: 'user' } },
-  { path: '/stls/subscribe', name: 'subscribe', component: Subscribe, meta: { role: 'user' } }, // <-- new route
+  { path: '/stls', name: 'stls', component: MapView, meta: { roles: ['user', 'admin', 'trafficoperator'] } },
+  { path: '/stls/profile', name: 'profile', component: Profile, meta: { roles: ['user', 'admin', 'trafficoperator'] } },
+  { path: '/stls/update', name: 'update', component: UpdateProfile, meta: { roles: ['user', 'admin', 'trafficoperator'] } },
+  { path: '/stls/subscriptions', name: 'subscriptions', component: Notifications, meta: { roles: ['user'] } },
+  { path: '/stls/subscribe', name: 'subscribe', component: Subscribe, meta: { roles: ['user'] } },
 
   // Fallback
   { path: '/:pathMatch(.*)*', redirect: '/' }
@@ -65,7 +65,7 @@ router.beforeEach(async (to) => {
   }
 
   // Role check
-  if (to.meta?.role && to.meta.role.toLowerCase() !== role) {
+  if (to.meta?.roles && !to.meta.roles.map(r => r.toLowerCase()).includes(role)) {
     return { path: '/stls' } // redirect if role mismatch
   }
 

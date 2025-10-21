@@ -13,10 +13,17 @@
       <div class="dropdown-header">{{ username }}</div>
       <RouterLink :to="homePath" class="dropdown-item">Home</RouterLink>
       <RouterLink to="/stls/profile" class="dropdown-item">Profile</RouterLink>
-      <RouterLink to="/stls/subscriptions" class="dropdown-item">
+      
+      <!-- Only show Subscriptions for regular users -->
+      <RouterLink
+        v-if="role === 'User'"
+        to="/stls/subscriptions"
+        class="dropdown-item"
+      >
         Subscriptions
         <NotificationBadge :count="notificationCount" inline />
       </RouterLink>
+
       <RouterLink to="/stls/update" class="dropdown-item">Update Profile</RouterLink>
       <button @click="$emit('logout')" class="dropdown-item logout">
         Logout
@@ -37,7 +44,8 @@ const props = defineProps({
   homePath: String,
   notificationCount: Number,
   isAuthenticated: Boolean,
-  icon: String // 'user', 'traffic-light', 'admin'
+  icon: String, // 'user', 'traffic-light', 'admin'
+  role: String // added prop
 })
 const emit = defineEmits(['logout'])
 const showMenu = ref(false)
