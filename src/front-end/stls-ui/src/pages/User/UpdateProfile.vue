@@ -6,21 +6,11 @@
       <form class="form" @submit.prevent="submit">
         <!-- Email -->
         <label>Email</label>
-        <input
-          v-model="form.email"
-          type="email"
-          required
-          class="input"
-        />
+        <input v-model="form.email" type="email" required class="input" />
 
         <!-- Username -->
         <label>Username</label>
-        <input
-          v-model="form.username"
-          type="text"
-          required
-          class="input"
-        />
+        <input v-model="form.username" type="text" required class="input" />
 
         <!-- Password -->
         <label>New Password</label>
@@ -42,6 +32,7 @@
 
         <!-- Error Message -->
         <p v-if="error" class="error-msg">❌ {{ error }}</p>
+        <p v-if="success" class="success-msg">✅ Profile updated successfully!</p>
 
         <button class="btn" type="submit">Save Changes</button>
       </form>
@@ -50,46 +41,48 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useAuth } from '../../stores/userStore'
-import { updateProfileApi } from "../../services/userApi"
-import '../../assets/update-profile.css'
+import { ref } from "vue";
+import { useAuth } from "../../stores/userStore";
+import { updateProfileApi } from "../../services/userApi";
+import "../../assets/update-profile.css";
 
-const auth = useAuth()
+const auth = useAuth();
 
 const form = ref({
-  email: auth.user?.email || '',
-  username: auth.user?.username || '',
-  password: '',
-  confirmPassword: '',
-  status: auth.user?.status || 'active',
-  role: auth.user?.role || 'user'
-})
+  email: auth.user?.email || "",
+  username: auth.user?.username || "",
+  password: "",
+  confirmPassword: "",
+});
 
-const error = ref('') // ✅ error state
+const error = ref("");
+const success = ref(false);
 
 async function submit() {
-  error.value = ''
+  error.value = "";
+  success.value = false;
 
   if (form.value.password && form.value.password !== form.value.confirmPassword) {
-    error.value = "Passwords do not match!"
-    return
+    error.value = "Passwords do not match!";
+    return;
   }
 
   try {
-    await updateProfileApi(auth.token, form.value)
+    await updateProfileApi(auth.token, form.value);
+
+    // Update Pinia store state
     auth.user = {
       ...auth.user,
       email: form.value.email,
       username: form.value.username,
-      role: form.value.role,
-      status: form.value.status
-    }
-    error.value = ''
+    };
+
+    success.value = true;
+    form.value.password = "";
+    form.value.confirmPassword = "";
   } catch (err) {
-    console.error(err)
-    error.value = "❌ Failed to update profile."
+    console.error("[UpdateProfile] error:", err);
+    error.value = err.response?.data?.message || "❌ Failed to update profile.";
   }
 }
-
 </script>

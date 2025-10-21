@@ -17,18 +17,21 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useAuth } from '../../stores/userStore'
-import '../../assets/profile.css'   // ✅ make sure this import is here
+import { ref, onMounted } from "vue";
+import { useAuth } from "../../stores/userStore";
+import { getProfileApi } from "../../services/userApi";
+import "../../assets/profile.css";
 
-const auth = useAuth()
-const user = ref(null)
-const loading = ref(true)
-const error = ref(null)
+const auth = useAuth();
+const user = ref(null);
+const loading = ref(true);
+const error = ref(null);
 
 async function fetchUser() {
   try {
-    const data = await getProfileApi()
+    const data = await getProfileApi();
+
+    // Adapt backend shape → front-end shape
     user.value = {
       userId: data.UserId,
       username: data.Username,
@@ -36,19 +39,23 @@ async function fetchUser() {
       role: data.Role,
       status: data.Status,
       createdAt: data.CreatedAt,
-      updatedAt: data.UpdatedAt
-    }
+      updatedAt: data.UpdatedAt,
+    };
+
+    // Sync with auth store
+    auth.user = user.value;
   } catch (err) {
-    error.value = err.message
+    console.error("[Profile] fetch error:", err);
+    error.value = err.message || "Failed to load profile.";
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 function formatDate(dateStr) {
-  if (!dateStr) return "—"
-  return new Date(dateStr).toLocaleString()
+  if (!dateStr) return "—";
+  return new Date(dateStr).toLocaleString();
 }
 
-onMounted(fetchUser)
+onMounted(fetchUser);
 </script>

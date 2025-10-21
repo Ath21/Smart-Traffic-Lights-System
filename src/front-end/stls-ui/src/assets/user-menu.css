@@ -1,85 +1,72 @@
-/* === USER BUTTON === */
-.user-btn {
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: #1e293b; /* dark gray-blue */
+/* ===============================
+   USER MENU (Dropdown)
+   =============================== */
+.alert-btn {
+  background: #00b4ff;
+  color: #0b1d2a;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-weight: 600;
   cursor: pointer;
   transition: background 0.2s;
-  position: relative;
-}
-.user-btn:hover {
-  background: #334155;
-}
-
-/* === DROPDOWN MENU === */
-.dropdown {
-  position: absolute;
-  right: 0;
-  top: 110%;
-  margin-top: 6px;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  min-width: 200px;
-  overflow: hidden;
-  z-index: 1000;
-}
-
-.dropdown-header {
-  padding: 10px 14px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: #444;
-  border-bottom: 1px solid #e5e7eb;
-  background: #f9fafb;
-}
-
-.dropdown-item {
-  display: block;
-  width: 100%;
-  padding: 10px 14px;
-  font-size: 0.9rem;
-  text-align: left;
-  color: #333;
-  background: none;
-  border: none;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.dropdown-item:hover {
-  background: #f3f4f6;
-}
-
-.dropdown-item.logout {
-  color: #dc2626; /* red */
-}
-
-/* === ALERT BUTTON === */
-.alert-btn {
-  background: #06b6d4;       /* cyan like other buttons */
-  color: white;
-  font-weight: 600;
-  padding: 6px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.85rem;
-  transition: background 0.2s, transform 0.1s;
-  margin-right: 10px;        /* ✅ move left from avatar */
-  display: flex;
-  align-items: center;
-  gap: 6px;
 }
 
 .alert-btn:hover {
-  background: #0891b2;
-  transform: scale(1.05);
+  background: #1ec8ff;
 }
 
-.alert-btn:active {
-  transform: scale(0.97);
+.user-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  position: relative;
+  z-index: 6001; /* above map and topbar */
+}
+
+/* === Dropdown === */
+.dropdown {
+  position: absolute;
+  top: 110%;
+  right: 0;
+  min-width: 180px;
+  background: #122b3d;
+  border: 1px solid #244b63;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  z-index: 6000;
+  display: flex;
+  flex-direction: column;
+  padding: 0.25rem 0;
+}
+
+.dropdown-header {
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  color: #00b4ff;
+  border-bottom: 1px solid #244b63;
+}
+
+.dropdown-item {
+  padding: 0.5rem 1rem;
+  color: #ffffff;
+  text-decoration: none;
+  text-align: left;
+  transition: background 0.2s;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+}
+
+.dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.dropdown-item.logout {
+  color: #ff4d4d;
+}
+
+.dropdown-item.logout:hover {
+  background: rgba(255, 77, 77, 0.1);
 }
