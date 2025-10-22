@@ -11,6 +11,7 @@ const Profile = () => import('../pages/User/Profile.vue')
 const UpdateProfile = () => import('../pages/User/UpdateProfile.vue')
 const Notifications = () => import('../pages/Notification/Notifications.vue')
 const Subscribe = () => import('../pages/Notification/Subscribe.vue')
+const Logs = () => import('../pages/Admin/Logs.vue') // ✅ new page for admin log viewer
 
 // === Routes ===
 const routes = [
@@ -26,8 +27,11 @@ const routes = [
   { path: '/stls', name: 'stls', component: MapView, meta: { roles: ['user', 'admin', 'trafficoperator'] } },
   { path: '/stls/profile', name: 'profile', component: Profile, meta: { roles: ['user', 'admin', 'trafficoperator'] } },
   { path: '/stls/update', name: 'update', component: UpdateProfile, meta: { roles: ['user', 'admin', 'trafficoperator'] } },
-  { path: '/stls/subscriptions', name: 'subscriptions', component: Notifications, meta: { roles: ['user'] } },
-  { path: '/stls/subscribe', name: 'subscribe', component: Subscribe, meta: { roles: ['user'] } },
+  { path: '/stls/subscriptions', name: 'subscriptions', component: Notifications, meta: { roles: ['user'] } }, // ✅ user only
+  { path: '/stls/subscribe', name: 'subscribe', component: Subscribe, meta: { roles: ['user'] } }, // ✅ user only
+
+  // Admin-only route
+  { path: '/stls/logs', name: 'logs', component: Logs, meta: { roles: ['admin'] } }, // ✅ admin-only route
 
   // Fallback
   { path: '/:pathMatch(.*)*', redirect: '/' }

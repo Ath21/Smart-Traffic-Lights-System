@@ -17,6 +17,7 @@ header.topbar {
   overflow: visible;
   box-shadow: 0 3px 12px rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(6px);
+  font-family: Arial, sans-serif; /* added */
 }
 
 /* === Left side === */
@@ -24,6 +25,7 @@ header.topbar {
   display: flex;
   align-items: center;
   gap: 10px;
+  font-family: Arial, sans-serif; /* added */
 }
 
 .pada-logo,
@@ -36,10 +38,12 @@ header.topbar {
   font-size: 1.4rem;
   font-weight: 600;
   letter-spacing: 0.5px;
+  font-family: Arial, sans-serif; /* added */
 }
 
 .highlight {
   color: #00b4ff;
+  font-family: Arial, sans-serif; /* added */
 }
 
 /* === Right navigation === */
@@ -47,6 +51,7 @@ header.topbar {
   display: flex;
   align-items: center;
   gap: 10px;
+  font-family: Arial, sans-serif; /* added */
 }
 
 /* === Base button design === */
@@ -70,6 +75,7 @@ header.topbar {
   border: 1px solid transparent;
   position: relative;
   text-decoration: none;
+  font-family: Arial, sans-serif; /* added */
 }
 
 /* === Hover animation base === */

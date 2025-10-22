@@ -8,6 +8,7 @@
   padding: 82px 16px;
   background: #f3f4f6;
   min-height: 100vh;
+  font-family: Arial, sans-serif; /* added */
 }
 
 .subscribe-card {
@@ -17,18 +18,21 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   width: 100%;
   max-width: 420px;
+  font-family: Arial, sans-serif; /* added */
 }
 
 .form {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  font-family: Arial, sans-serif; /* added */
 }
 
 label {
   font-weight: 600;
   color: #111827;
   margin-bottom: 4px;
+  font-family: Arial, sans-serif; /* added */
 }
 
 select {
@@ -39,6 +43,7 @@ select {
   color: #111827;
   outline: none;
   transition: border 0.2s;
+  font-family: Arial, sans-serif; /* added */
 }
 
 select:focus {
@@ -55,6 +60,7 @@ select:focus {
   cursor: pointer;
   margin-top: 8px;
   transition: background 0.2s, transform 0.1s;
+  font-family: Arial, sans-serif; /* added */
 }
 
 .btn:hover {
@@ -67,6 +73,7 @@ select:focus {
   font-size: 0.9rem;
   margin-top: 8px;
   text-align: center;
+  font-family: Arial, sans-serif; /* added */
 }
 
 .error-msg {
@@ -74,6 +81,7 @@ select:focus {
   font-size: 0.9rem;
   margin-top: 8px;
   text-align: center;
+  font-family: Arial, sans-serif; /* added */
 }
 
 /* Responsive */

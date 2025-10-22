@@ -1,6 +1,10 @@
 /* ===============================
    MAP LAYOUT & LAYERS (Enhanced)
    =============================== */
+body {
+  font-family: Arial, sans-serif; /* added */
+}
+
 .map-wrapper {
   position: relative;
   width: 100vw;
@@ -17,7 +21,7 @@
   position: absolute;
   inset: 0;
   z-index: 0;
-  filter: saturate(1.1) brightness(0.95); /* subtle tone */
+  filter: saturate(1.1) brightness(0.95);
 }
 
 .leaflet-pane,
@@ -29,9 +33,6 @@
 
 /* ===============================
    INTERSECTION LABELS
-   =============================== */
-/* ===============================
-   INTERSECTION LABELS (Enhanced)
    =============================== */
 .intersection-label {
   background: rgba(15, 25, 35, 0.9);
@@ -45,23 +46,24 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
   transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
   white-space: nowrap;
+  font-family: Arial, sans-serif; /* added */
 }
 
 /* Congestion levels */
 .intersection-label.low {
-  background-color: rgba(51, 153, 255, 0.85); /* blue */
+  background-color: rgba(51, 153, 255, 0.85);
   border-color: rgba(51, 153, 255, 0.5);
   box-shadow: 0 2px 10px rgba(51, 153, 255, 0.6);
 }
 
 .intersection-label.medium {
-  background-color: rgba(255, 165, 0, 0.85); /* orange */
+  background-color: rgba(255, 165, 0, 0.85);
   border-color: rgba(255, 165, 0, 0.5);
   box-shadow: 0 2px 10px rgba(255, 165, 0, 0.6);
 }
 
 .intersection-label.high {
-  background-color: rgba(255, 77, 77, 0.85); /* red */
+  background-color: rgba(255, 77, 77, 0.85);
   border-color: rgba(255, 77, 77, 0.5);
   box-shadow: 0 2px 12px rgba(255, 77, 77, 0.7);
 }
@@ -77,20 +79,7 @@
   pointer-events: none;
 }
 
-@keyframes pulseGlow {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 0.9;
-  }
-  50% {
-    transform: scale(1.05);
-    opacity: 1;
-  }
-}
-
-/* ===============================
-   TRAFFIC LIGHT DOTS
-   =============================== */
+/* Traffic light dots */
 .traffic-light {
   display: inline-block;
   width: 14px;
@@ -115,21 +104,7 @@
   box-shadow: 0 0 8px rgba(71, 209, 71, 0.8);
 }
 
-/* subtle breathing glow */
-@keyframes pulseGlow {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.15);
-    opacity: 0.9;
-  }
-}
-
-/* ===============================
-   LEGEND (Bottom Left)
-   =============================== */
+/* Legend (Bottom Left) */
 .legend-box {
   position: absolute;
   bottom: 20px;
@@ -145,6 +120,7 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   z-index: 1000;
   transition: all 0.3s ease;
+  font-family: Arial, sans-serif; /* added */
 }
 
 .legend-box:hover {
@@ -167,4 +143,5 @@
 .legend-box span {
   font-weight: 500;
   letter-spacing: 0.2px;
+  font-family: Arial, sans-serif; /* added */
 }

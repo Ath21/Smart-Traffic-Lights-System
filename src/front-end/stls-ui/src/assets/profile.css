@@ -8,6 +8,7 @@
   background: #f3f4f6;
   min-height: 100vh;
   padding: 70px;
+  font-family: Arial, sans-serif; /* added */
 }
 
 .account-page h2 {
@@ -16,6 +17,7 @@
   color: #1e40af;
   text-align: center;
   margin-bottom: 16px;
+  font-family: Arial, sans-serif; /* added */
 }
 
 .loading,
@@ -24,6 +26,7 @@
   font-size: 1rem;
   color: #6b7280;
   margin-top: 20px;
+  font-family: Arial, sans-serif; /* added */
 }
 
 .error {
@@ -42,6 +45,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px 32px;
+  font-family: Arial, sans-serif; /* added */
 }
 
 .profile-card p {
@@ -49,6 +53,7 @@
   line-height: 1.6;
   color: #374151;
   margin: 0;
+  font-family: Arial, sans-serif; /* added */
 }
 
 .profile-card strong {
@@ -56,6 +61,7 @@
   color: #111827;
   display: block;
   margin-bottom: 4px;
+  font-family: Arial, sans-serif; /* added */
 }
 
 /* Full width for certain fields */

@@ -16,7 +16,6 @@
       
       <!-- Only show Subscriptions for regular users -->
       <RouterLink
-        v-if="role === 'User'"
         to="/stls/subscriptions"
         class="dropdown-item"
       >

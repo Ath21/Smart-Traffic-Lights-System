@@ -1,7 +1,7 @@
 <template>
   <div class="update-profile-page">
     <div class="update-card">
-      <h1 class="title">Update Profile</h1>
+      <h2>Update Profile</h2>
 
       <form class="form" @submit.prevent="submit">
         <!-- Email -->
