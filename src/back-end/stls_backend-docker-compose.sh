@@ -195,6 +195,8 @@ deploy_layer() {
         -f "$ROOT_DIR/LogLayer/Databases/LogDB/Mongo/Compose/compose.log-db.override.yaml" \
         -f "$ROOT_DIR/LogLayer/Services/LogService/Compose/compose.log-api.yaml" \
         -f "$ROOT_DIR/LogLayer/Services/LogService/Compose/compose.log-api.override.yaml" \
+        -f "$ROOT_DIR/LogLayer/Services/Portainer/Compose/compose.portainer.yaml" \
+        -f "$ROOT_DIR/LogLayer/Services/Portainer/Compose/compose.portainer.override.yaml" \
         up -d
       ;;
     *)

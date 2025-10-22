@@ -75,6 +75,7 @@ push_infra_images() {
     docker pull postgres:16
     docker pull mcr.microsoft.com/mssql/server:2022-latest
     docker pull rabbitmq:3.8-management
+    docker pull portainer/portainer-ce:latest
 
     echo "Tagging and pushing database and broker images..."
 
@@ -97,6 +98,9 @@ push_infra_images() {
     # RabbitMQ
     docker tag rabbitmq:3.8-management ${DOCKER_USERNAME}/stls-broker:rabbitmq
 
+    # Portainer
+    docker tag portainer/portainer-ce:latest ${DOCKER_USERNAME}/stls-monitor:portainer
+
     # Push all images
     docker push ${DOCKER_USERNAME}/stls-databases:log-mongo
     docker push ${DOCKER_USERNAME}/stls-databases:notification-mongo
@@ -107,6 +111,7 @@ push_infra_images() {
     docker push ${DOCKER_USERNAME}/stls-databases:user-mssql
     docker push ${DOCKER_USERNAME}/stls-databases:traffic-analytics-postgres
     docker push ${DOCKER_USERNAME}/stls-broker:rabbitmq
+    docker push ${DOCKER_USERNAME}/stls-monitor:portainer
 
     echo "Infrastructure images pushed successfully."
 }

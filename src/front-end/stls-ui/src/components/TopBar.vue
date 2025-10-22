@@ -20,6 +20,7 @@
 
       <!-- Authenticated User -->
       <template v-else>
+        <!-- User -->
         <template v-if="auth.user.role === 'User'">
           <RouterLink to="/stls" class="btn">Home</RouterLink>
           <RouterLink to="/stls/subscribe" class="btn-outline">Alert Me</RouterLink>
@@ -33,6 +34,7 @@
           />
         </template>
 
+        <!-- TrafficOperator -->
         <template v-else-if="auth.user.role === 'TrafficOperator'">
           <RouterLink to="/stls" class="btn">Home</RouterLink>
           <RouterLink to="/stls/analytics" class="btn-outline">Analytics</RouterLink>
@@ -47,10 +49,20 @@
           />
         </template>
 
+        <!-- Admin -->
         <template v-else-if="auth.user.role === 'Admin'">
           <RouterLink to="/stls" class="btn">Home</RouterLink>
+
+          <!-- Admin button opens Portainer -->
+          <RouterLink
+            to="https://localhost:9443/#!/auth"
+            class="btn-outline"
+            @click.prevent="openPortainer"
+          >
+            Admin
+          </RouterLink>
+
           <RouterLink to="/stls/logs" class="btn-outline">Logs</RouterLink>
-          <RouterLink to="/stls/dashboard" class="btn-outline">Admin</RouterLink>
           <UserMenu
             :username="auth.user.username || auth.user.email"
             :home-path="'/stls'"
@@ -76,8 +88,14 @@ const auth = useAuth()
 const router = useRouter()
 const notificationCount = ref(0)
 
+// Logout handler
 function handleLogout() {
   auth.logout()
   router.push('/')
+}
+
+// Open Portainer in a new tab
+function openPortainer() {
+  window.open('https://localhost:9443/#!/auth', '_blank', 'noopener')
 }
 </script>
