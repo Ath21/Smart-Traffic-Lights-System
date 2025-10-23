@@ -81,6 +81,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '../stores/userStore'
+import { logoutApi } from '../services/userApi'
 import UserMenu from './UserMenu.vue'
 import '../assets/topbar.css'
 
@@ -88,10 +89,15 @@ const auth = useAuth()
 const router = useRouter()
 const notificationCount = ref(0)
 
-// Logout handler
 function handleLogout() {
-  auth.logout()
-  router.push('/')
+  // Call backend logout
+  logoutApi()
+    .catch(err => console.error('[Logout API] Failed:', err))
+    .finally(() => {
+      // Clear local auth state
+      auth.logout()
+      router.push('/')
+    })
 }
 
 // Open Portainer in a new tab
