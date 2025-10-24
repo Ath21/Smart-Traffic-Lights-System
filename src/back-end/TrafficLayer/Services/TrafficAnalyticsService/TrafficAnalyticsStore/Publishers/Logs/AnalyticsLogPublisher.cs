@@ -35,8 +35,8 @@ public class AnalyticsLogPublisher : IAnalyticsLogPublisher
         _logger = logger;
 
         _exchangeName = configuration["RabbitMQ:Exchanges:Log"] ?? "LOG.EXCHANGE";
-        _routingPattern = configuration["RabbitMQ:RoutingKeys:Log:Traffic"]
-                          ?? "log.traffic.traffic-analytics.{type}";
+        _routingPattern = configuration["RabbitMQ:RoutingKeys:Log:Analytics"]
+                          ?? "log.traffic.analytics.{type}";
 
         // ============================================================
         // Environment-based service identity

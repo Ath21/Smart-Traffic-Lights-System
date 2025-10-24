@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using RabbitMQ.Client.Exceptions;
 using MassTransit;
-using TrafficAnalyticsStore.Publishers.Logs;
+using TrafficAnalytics.Publishers.Logs;
 
 namespace TrafficAnalyticsStore.Middleware;
 
@@ -83,13 +83,13 @@ public class ExceptionMiddleware
         string errorType,
         Exception ex)
     {
-        _logger.LogError(ex, "[EXCEPTION] {ErrorType} - {Message}", errorType, userMessage);
+        _logger.LogError(ex, "[MIDDLEWARE][EXCEPTION] {ErrorType} - {Message}", errorType, userMessage);
 
-        string correlationId = context.Request.Headers.ContainsKey("X-Correlation-ID")
-            ? context.Request.Headers["X-Correlation-ID"].ToString()
+        string correlationId = context.Request.Headers.TryGetValue("X-Correlation-ID", out var headerId)
+            ? headerId.ToString()
             : Guid.NewGuid().ToString();
 
-        var metadata = new Dictionary<string, string>
+        var data = new Dictionary<string, object>
         {
             ["path"] = context.Request.Path,
             ["method"] = context.Request.Method,
@@ -107,17 +107,16 @@ public class ExceptionMiddleware
             var logPublisher = scope.ServiceProvider.GetRequiredService<IAnalyticsLogPublisher>();
 
             await logPublisher.PublishErrorAsync(
-                action: errorType,
-                message: $"[{errorType}] {userMessage}: {ex.Message}",
-                ex: ex,
-                metadata: metadata,
-                correlationId: Guid.Parse(correlationId));
+                domain: "[MIDDLEWARE][EXCEPTION]",
+                messageText: $"[{errorType}] {userMessage}: {ex.Message}",
+                data: data,
+                operation: "HTTP_PIPELINE");
 
-            _logger.LogInformation("[EXCEPTION] Published error log ({ErrorType}) via RabbitMQ", errorType);
+            _logger.LogInformation("[MIDDLEWARE][EXCEPTION] Published error log ({ErrorType}) via RabbitMQ", errorType);
         }
         catch (Exception pubEx)
         {
-            _logger.LogError(pubEx, "[EXCEPTION] Failed to publish log to RabbitMQ");
+            _logger.LogError(pubEx, "[MIDDLEWARE][EXCEPTION] Failed to publish log to RabbitMQ");
         }
 
         // Return HTTP response

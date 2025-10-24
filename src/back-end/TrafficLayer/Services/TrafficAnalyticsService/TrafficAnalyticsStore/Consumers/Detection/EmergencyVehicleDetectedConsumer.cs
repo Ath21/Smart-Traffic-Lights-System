@@ -9,7 +9,7 @@ using TrafficAnalyticsStore.Aggregators.Analytics;
 using TrafficAnalyticsStore.Business.Alerts;
 using Messages.Traffic.Analytics;
 
-namespace TrafficAnalyticsStore.Consumers.Sensor;
+namespace TrafficAnalyticsStore.Consumers.Detection;
 
 public class EmergencyVehicleDetectedConsumer : IConsumer<EmergencyVehicleDetectedMessage>
 {

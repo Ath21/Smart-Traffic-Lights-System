@@ -4,7 +4,7 @@ services:
     container_name: traffic-analytics-container
     networks:
       - traffic-analytics-network
-      - detection-cache-network
+      - detection-network
       - rabbitmq-network
 
 networks:
@@ -12,8 +12,8 @@ networks:
     name: traffic-analytics-network
     driver: bridge
     external: true
-  detection-cache-network:
-    name: detection-cache-network
+  detection-network:
+    name: detection-network
     driver: bridge
     external: true
   rabbitmq-network:

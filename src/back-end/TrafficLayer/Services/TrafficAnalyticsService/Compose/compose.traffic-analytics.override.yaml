@@ -3,10 +3,25 @@ services:
     ports:
       - '5208:8080'
     environment:
+      # ASP.NET Core
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
+      SERVICE_LAYER: Traffic 
+      SERVICE_LEVEL: Cloud
+      SERVICE_NAME: TrafficAnalytics 
 
-      # DetectionDB (MongoDB)
+      # CORS
+      Cors__AllowedOrigins: http://localhost:5173,https://uniwa-stls.local
+      Cors__AllowedMethods: GET,POST,PUT,PATCH,DELETE,OPTIONS
+      Cors__AllowedHeaders: Content-Type,Authorization
+
+      # JWT
+      Jwt__Issuer: http://uniwa-stls-backend:8080
+      Jwt__Audience: http://uniwa-stls-backend:8080
+      Jwt__Key: Nn7kLa8Rzv1XHt9UwMqP4YbFdJxVt2Km
+
+      # Databases
+      ## DetectionDB
       Mongo__ConnectionString: mongodb://mongo:mongo123@detection-db:27017
       Mongo__Database: DetectionDB
       Mongo__Collections__VehicleCount: vehicle_count
@@ -19,17 +34,7 @@ services:
       ## TrafficAnalyticsDB (PostgreSQL)
       ConnectionStrings__PostgreSQLConnection: Host=traffic-analytics-db;Port=5432;Database=TrafficAnalyticsDB;Username=postgres;Password=postgres123
 
-      # CORS
-      Cors__AllowedOrigins: http://localhost:5173,https://uniwa-stls.local
-      Cors__AllowedMethods: GET,POST,PUT,PATCH,DELETE,OPTIONS
-      Cors__AllowedHeaders: Content-Type,Authorization
-
-      # JWT
-      Jwt__Issuer: http://uniwa-stls-backend:8080
-      Jwt__Audience: http://uniwa-stls-backend:8080
-      Jwt__Key: Nn7kLa8Rzv1XHt9UwMqP4YbFdJxVt2Km
-
-      # RabbitMQ
+      # Message Broker
       ## Configuration
       RabbitMQ__Host: rabbitmq
       RabbitMQ__VirtualHost: /
@@ -37,24 +42,19 @@ services:
       RabbitMQ__Username: rabbitmq
       RabbitMQ__Password: rabbitmq123
 
-      ## Exchanges & Routing Keys
-      ### Sensor
+      ## Exchanges
       RabbitMQ__Exchanges__Sensor: SENSOR.EXCHANGE
-
-      RabbitMQ__Queues__Sensor__Count: sensor.2.traffic-analytics.queue
-      RabbitMQ__RoutingKeys__Sensor__Count: sensor.count.{intersection}.{type}
-
-      RabbitMQ__Queues__Detection__Event: detection.2.traffic-analytics.queue
-      RabbitMQ__RoutingKeys__Detection__Event: sensor.detection.{intersection}.{event}
-
-      ### Traffic
       RabbitMQ__Exchanges__Traffic: TRAFFIC.EXCHANGE
-
-      RabbitMQ__RoutingKeys__Analytics: traffic.analytics.{intersection}.{metric}
-      
-      ### Log
       RabbitMQ__Exchanges__Log: LOG.EXCHANGE
-      
+
+      ## Queues
+      RabbitMQ__Queues__SensorCount: sensor-2-analytics.queue
+      RabbitMQ__Queues__DetectionEvents: detection-2-analytics.queue
+
+      ## Routing Keys
+      RabbitMQ__RoutingKeys__SensorCount: sensor.count.{intersection}.{count}
+      RabbitMQ__RoutingKeys__DetectionEvents: sensor.detection.{intersection}.{event}
+      RabbitMQ__RoutingKeys__Traffic__Analytics: traffic.analytics.{intersection}.{metric}
       RabbitMQ__RoutingKeys__Log__Analytics: log.traffic.analytics.{type}
 
     depends_on:

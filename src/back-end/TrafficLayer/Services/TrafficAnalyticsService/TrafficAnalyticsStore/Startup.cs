@@ -8,7 +8,6 @@ using TrafficAnalyticsData.Repositories.Summary;
 using TrafficAnalyticsData.Repositories.Alerts;
 using TrafficAnalyticsData.Settings;
 using TrafficAnalyticsStore.Middleware;
-using TrafficAnalyticsStore.Publishers.Logs;
 using DetectionData;
 using DetectionData.Repositories.Vehicle;
 using DetectionData.Repositories.Pedestrian;
@@ -21,6 +20,10 @@ using TrafficAnalyticsStore.Consumers;
 using TrafficAnalyticsStore.Business.Alerts;
 using TrafficAnalyticsStore.Business.DailySummary;
 using TrafficAnalyticsStore.Aggregators;
+using TrafficAnalyticsStore.Aggregators.Analytics;
+using TrafficAnalytics.Publishers.Logs;
+using TrafficAnalyticsStore.Consumers.Sensor;
+using TrafficAnalyticsStore.Consumers.Detection;
 
 
 namespace TrafficAnalyticsStore;
@@ -93,8 +96,12 @@ public class Startup
         services.AddScoped(typeof(IAnalyticsLogPublisher), typeof(AnalyticsLogPublisher));
 
         // Consumers
-        services.AddScoped<DetectionEventConsumer>();
-        services.AddScoped<SensorCountConsumer>();
+        services.AddScoped<VehicleCountConsumer>();
+        services.AddScoped<PedestrianCountConsumer>();
+        services.AddScoped<CyclistCountConsumer>();
+        services.AddScoped<PublicTransportDetectedConsumer>();
+        services.AddScoped<EmergencyVehicleDetectedConsumer>();
+        services.AddScoped<IncidentDetectedConsumer>();
 
         // MassTransit Setup
         services.AddTrafficAnalyticsMassTransit(_configuration);
@@ -125,7 +132,7 @@ public class Startup
         // CORS Policy
         // ===============================
         var allowedOrigins = _configuration["Cors:AllowedOrigins"]?.Split(",") ?? Array.Empty<string>();
-        var allowedMethods = _configuration["Cors:AllowedMethods"]?.Split(",") ?? new[] { "GET", "POST", "PUT", "PATCH", "DELETE" };
+        var allowedMethods = _configuration["Cors:AllowedMethods"]?.Split(",") ?? new[] { "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS" };
         var allowedHeaders = _configuration["Cors:AllowedHeaders"]?.Split(",") ?? new[] { "Content-Type", "Authorization" };
 
         services.AddCors(options =>
@@ -155,7 +162,18 @@ public class Startup
             {
                 Title = "Traffic Analytics Service",
                 Version = "v3.0",
-                Description = "Aggregates, analyzes, and publishes traffic statistics and congestion data across all intersections."
+                Description = "Aggregates, analyzes, and publishes traffic statistics and congestion data across all intersections.",
+                Contact = new OpenApiContact
+                {
+                    Name = "Vasileios Evangelos Athanasiou",
+                    Email = "ice19390005@uniwa.gr",
+                    Url = new Uri("https://github.com/Ath21")
+                },
+                License = new OpenApiLicense
+                {
+                    Name = "Academic License – University of West Attica",
+                    Url = new Uri("https://www.uniwa.gr")
+                }
             });
 
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme

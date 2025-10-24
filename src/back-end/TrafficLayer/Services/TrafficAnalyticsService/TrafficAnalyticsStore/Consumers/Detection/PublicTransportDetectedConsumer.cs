@@ -6,7 +6,7 @@ using TrafficAnalyticsStore.Aggregators.Analytics;
 using TrafficAnalyticsStore.Business.Alerts;
 using TrafficAnalyticsStore.Publishers.Analytics;
 
-namespace TrafficAnalyticsStore.Consumers.Sensor;
+namespace TrafficAnalyticsStore.Consumers.Detection;
 
 public class PublicTransportDetectedConsumer : IConsumer<PublicTransportDetectedMessage>
 {
