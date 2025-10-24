@@ -3,8 +3,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TrafficAnalyticsData.Entities;
 
-// Updated by : Traffic Analytics Service
-// Read by    : Traffic Analytics Service
 [Table("daily_summaries")]
 public class DailySummaryEntity
 {
@@ -28,18 +26,3 @@ public class DailySummaryEntity
     public double AverageWaitTimeSec { get; set; }
 }
 
-/*
-
-{
-  "summaryId": 184,
-  "intersectionId": 2,
-  "intersection": "Agiou Spyridonos",
-  "date": "2025-10-07T00:00:00Z",
-  "totalVehicles": 1458,
-  "totalPedestrians": 242,
-  "totalCyclists": 32,
-  "averageSpeedKmh": 38.7,
-  "averageWaitTimeSec": 12.4
-}
-
-*/

@@ -1,7 +1,5 @@
 using MassTransit;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Messages.Traffic;
+using Messages.Traffic.Analytics;
 
 namespace TrafficAnalyticsStore.Publishers.Analytics;
 
@@ -18,164 +16,71 @@ public class TrafficAnalyticsPublisher : ITrafficAnalyticsPublisher
     {
         _bus = bus;
         _logger = logger;
-        _routingPattern = config["RabbitMQ:RoutingKeys:Analytics"]
+
+        _routingPattern = config["RabbitMQ:RoutingKeys:Traffic:Analytics"]
                           ?? "traffic.analytics.{intersection}.{metric}";
     }
 
     // ============================================================
-    // SUMMARY METRIC
+    // CONGESTION ANALYTICS
     // ============================================================
-    public async Task PublishSummaryAsync(
-        int intersectionId,
-        string intersectionName,
-        double avgSpeed,
-        double avgWait,
-        int vehicleCount,
-        int pedestrianCount,
-        int cyclistCount,
-        double congestionIndex,
-        Guid? correlationId = null,
-        Dictionary<string, string>? metadata = null)
+    public async Task PublishCongestionAsync(CongestionAnalyticsMessage message)
     {
-        var msg = CreateBaseMessage("Summary", correlationId, metadata);
+        var routingKey = BuildRoutingKey("congestion", message.Intersection);
 
-        msg.IntersectionId = intersectionId;
-        msg.IntersectionName = intersectionName;
+        message.Timestamp = DateTime.UtcNow;
 
-        msg.AverageSpeedKmh = avgSpeed;
-        msg.AverageWaitTimeSec = avgWait;
-        msg.TotalVehicleCount = vehicleCount;
-        msg.TotalPedestrianCount = pedestrianCount;
-        msg.TotalCyclistCount = cyclistCount;
-        msg.CongestionIndex = congestionIndex;
-        msg.Severity = 0;
-
-        await PublishAsync(intersectionName, "summary", msg);
+        await _bus.Publish(message, ctx => ctx.SetRoutingKey(routingKey));
 
         _logger.LogInformation(
-            "[PUBLISHER][ANALYTICS][{Intersection}] SUMMARY metric published (Speed={Speed:F1} km/h, Wait={Wait:F1}s, CI={CI:F2})",
-            intersectionName, avgSpeed, avgWait, congestionIndex);
+            "[PUBLISHER][ANALYTICS][{Intersection}] Congestion published: Level={Level:F2}, Status={Status}",
+            message.Intersection, message.CongestionLevel, message.Status);
     }
 
     // ============================================================
-    // CONGESTION METRIC (alert-level)
+    // INCIDENT ANALYTICS
     // ============================================================
-    public async Task PublishCongestionAsync(
-        int intersectionId,
-        string intersectionName,
-        double avgSpeed,
-        double avgWait,
-        int vehicleCount,
-        int pedestrianCount,
-        int cyclistCount,
-        double congestionIndex,
-        int severity,
-        string? alertMessage = null,
-        Guid? correlationId = null,
-        Dictionary<string, string>? metadata = null)
+    public async Task PublishIncidentAsync(IncidentAnalyticsMessage message)
     {
-        var msg = CreateBaseMessage("Congestion", correlationId, metadata);
+        var routingKey = BuildRoutingKey("incident", message.Intersection);
 
-        msg.IntersectionId = intersectionId;
-        msg.IntersectionName = intersectionName;
+        message.Timestamp = DateTime.UtcNow;
 
-        msg.AverageSpeedKmh = avgSpeed;
-        msg.AverageWaitTimeSec = avgWait;
-        msg.TotalVehicleCount = vehicleCount;
-        msg.TotalPedestrianCount = pedestrianCount;
-        msg.TotalCyclistCount = cyclistCount;
-        msg.CongestionIndex = congestionIndex;
-        msg.Severity = severity;
+        await _bus.Publish(message, ctx => ctx.SetRoutingKey(routingKey));
 
-        msg.Metadata ??= new();
-        if (!string.IsNullOrWhiteSpace(alertMessage))
-            msg.Metadata["alert"] = alertMessage;
-
-        await PublishAsync(intersectionName, "congestion", msg);
-
-        _logger.LogWarning(
-            "[PUBLISHER][ANALYTICS][{Intersection}] CONGESTION ALERT published (CI={CI:F2}, Sev={Severity})",
-            intersectionName, congestionIndex, severity);
+        _logger.LogInformation(
+            "[PUBLISHER][ANALYTICS][{Intersection}] Incident published: Type={Type}, Severity={Severity}",
+            message.Intersection, message.IncidentType, message.Severity);
     }
 
     // ============================================================
-    // INCIDENT METRIC (alert-level)
+    // SUMMARY ANALYTICS
     // ============================================================
-    public async Task PublishIncidentAsync(
-        int intersectionId,
-        string intersectionName,
-        double avgSpeed,
-        double avgWait,
-        int vehicleCount,
-        int pedestrianCount,
-        int cyclistCount,
-        double congestionIndex,
-        int severity,
-        string? alertMessage = null,
-        Guid? correlationId = null,
-        Dictionary<string, string>? metadata = null)
+    public async Task PublishSummaryAsync(SummaryAnalyticsMessage message)
     {
-        var msg = CreateBaseMessage("Incident", correlationId, metadata);
+        var routingKey = BuildRoutingKey("summary", message.Intersection);
 
-        msg.IntersectionId = intersectionId;
-        msg.IntersectionName = intersectionName;
+        message.GeneratedAt = DateTime.UtcNow;
 
-        msg.AverageSpeedKmh = avgSpeed;
-        msg.AverageWaitTimeSec = avgWait;
-        msg.TotalVehicleCount = vehicleCount;
-        msg.TotalPedestrianCount = pedestrianCount;
-        msg.TotalCyclistCount = cyclistCount;
-        msg.CongestionIndex = congestionIndex;
-        msg.Severity = severity;
+        await _bus.Publish(message, ctx => ctx.SetRoutingKey(routingKey));
 
-        msg.Metadata ??= new();
-        if (!string.IsNullOrWhiteSpace(alertMessage))
-            msg.Metadata["alert"] = alertMessage;
-
-        await PublishAsync(intersectionName, "incident", msg);
-
-        _logger.LogError(
-            "[PUBLISHER][ANALYTICS][{Intersection}] INCIDENT ALERT published (CI={CI:F2}, Sev={Severity})",
-            intersectionName, congestionIndex, severity);
+        _logger.LogInformation(
+            "[PUBLISHER][ANALYTICS][{Intersection}] Summary published: Vehicles={Vehicles}, Pedestrians={Pedestrians}, Cyclists={Cyclists}, Incidents={Incidents}, AvgCong={Cong:F2}",
+            message.Intersection,
+            message.VehicleCount,
+            message.PedestrianCount,
+            message.CyclistCount,
+            message.IncidentsDetected,
+            message.AverageCongestion);
     }
 
     // ============================================================
-    // Internal helpers
+    // Helper: Build routing key for intersection/metric
     // ============================================================
-    private TrafficAnalyticsMessage CreateBaseMessage(
-        string metricType,
-        Guid? correlationId,
-        Dictionary<string, string>? metadata)
+    private string BuildRoutingKey(string metric, string intersection)
     {
-        return new TrafficAnalyticsMessage
-        {
-            CorrelationId = correlationId ?? Guid.NewGuid(),
-            Timestamp = DateTime.UtcNow,
-
-            SourceLayer = "Traffic Layer",
-            DestinationLayer = new() { "Traffic Layer", "User Layer" },
-
-            SourceService = "Traffic Analytics Service",
-            DestinationServices = new()
-            {
-                "Traffic Light Coordinator Service",
-                "User Service",
-                "Notification Service"
-            },
-
-            MetricType = metricType,
-            Metadata = metadata
-        };
-    }
-
-    private async Task PublishAsync(string intersectionName, string metricKey, TrafficAnalyticsMessage msg)
-    {
-        msg.Timestamp = DateTime.UtcNow;
-
-        var routingKey = _routingPattern
-            .Replace("{intersection}", intersectionName.ToLower().Replace(' ', '-'))
-            .Replace("{metric}", metricKey);
-
-        await _bus.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
+        return _routingPattern
+            .Replace("{intersection}", intersection.ToLower().Replace(' ', '-'))
+            .Replace("{metric}", metric);
     }
 }

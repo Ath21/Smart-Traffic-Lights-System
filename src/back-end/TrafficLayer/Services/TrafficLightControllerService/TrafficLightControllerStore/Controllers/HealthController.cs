@@ -1,39 +1,55 @@
+using System.Net;
+using System.Net.Sockets;
 using Microsoft.AspNetCore.Mvc;
 using TrafficLightControllerStore.Domain;
 
-namespace TrafficLightControllerStore.Controllers;
-
-[ApiController]
-[Route("traffic_light_controller_service")]
-public class HealthController : ControllerBase
+namespace TrafficLightControllerStore.Controllers
 {
-    private readonly IntersectionContext _intersection;
-    private readonly TrafficLightContext _light;
-
-    public HealthController(IntersectionContext intersection, TrafficLightContext light)
+    [ApiController]
+    [Route("traffic-light-controller")]
+    public class HealthController : ControllerBase
     {
-        _intersection = intersection;
-        _light = light;
-    }
+        private readonly IntersectionContext _intersection;
+        private readonly TrafficLightContext _light;
 
-    // Liveness: Service is running (no external deps)
-    [HttpGet("health")]
-    public IActionResult Health()
-    {
-        return Ok(new
+        private readonly string _service;
+        private readonly string _layer;
+        private readonly string _level;
+        private readonly string _environment;
+        private readonly string _hostname;
+        private readonly string _containerIp;
+
+        public HealthController(IntersectionContext intersection, TrafficLightContext light)
         {
-            status = "Healthy",
-            service = "Traffic Light Controller Service",
-            intersection = new
+            _intersection = intersection;
+            _light = light;
+
+            _service = Environment.GetEnvironmentVariable("SERVICE_NAME") ?? "Traffic Light Controller";
+            _layer = Environment.GetEnvironmentVariable("SERVICE_LAYER") ?? "Traffic";
+            _level = Environment.GetEnvironmentVariable("SERVICE_LEVEL") ?? "Edge";
+            _environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
+            _hostname = Environment.MachineName;
+            _containerIp = Dns.GetHostAddresses(Dns.GetHostName())
+                .FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork)
+                ?.ToString() ?? "unknown";
+        }
+
+        [HttpGet("health")]
+        public IActionResult Health()
+        {
+            return Ok(new
             {
-                id = _intersection.Id,
-                name = _intersection.Name
-            },
-            light = new
-            {
-                id = _light.Id,
-                name = _light.Name
-            }
-        });
+                status = "Healthy",
+                service = _service,
+                layer = _layer,
+                level = _level,
+                environment = _environment,
+                hostname = _hostname,
+                container_ip = _containerIp,
+                intersection = new { _intersection.Id, _intersection.Name },
+                light = new { _light.Id, _light.Name },
+                timestamp = DateTime.UtcNow.ToString("u")
+            });
+        }
     }
 }

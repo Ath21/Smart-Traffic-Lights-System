@@ -23,6 +23,7 @@
         <!-- User -->
         <template v-if="auth.user.role === 'User'">
           <RouterLink to="/stls" class="btn">Home</RouterLink>
+          <RouterLink to="/stls/analytics" class="btn-outline">Analytics</RouterLink>
           <RouterLink to="/stls/subscribe" class="btn-outline">Alert Me</RouterLink>
           <UserMenu
             :username="auth.user.username || auth.user.email"

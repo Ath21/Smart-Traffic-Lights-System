@@ -1,13 +1,19 @@
-using System;
+using Messages.Log;
 
-namespace TrafficAnalyticsStore.Publishers.Logs;
+namespace TrafficAnalytics.Publishers.Logs;
 
 public interface IAnalyticsLogPublisher
 {
-    Task PublishAuditAsync(string action, string message,
-        Dictionary<string, string>? metadata = null, Guid? correlationId = null);
-    Task PublishErrorAsync(string action, string message,
-        Exception? ex = null, Dictionary<string, string>? metadata = null, Guid? correlationId = null);
-    Task PublishFailoverAsync(string action, string message,
-        Dictionary<string, string>? metadata = null, Guid? correlationId = null);
+    Task PublishAuditAsync(
+        string domain,
+        string messageText,
+        string? category = "system",
+        Dictionary<string, object>? data = null,
+        string? operation = null);
+
+    Task PublishErrorAsync(
+        string domain,
+        string messageText,
+        Dictionary<string, object>? data = null,
+        string? operation = null);
 }

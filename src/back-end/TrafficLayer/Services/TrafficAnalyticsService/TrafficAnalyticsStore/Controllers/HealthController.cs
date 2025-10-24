@@ -1,17 +1,47 @@
+using System.Net;
+using System.Net.Sockets;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace TrafficAnalyticsStore.Controllers
 {
     [ApiController]
-    [Route("traffic_analytics_service")]
+    [Route("traffic-analytics")]
     public class HealthController : ControllerBase
     {
-        // Liveness: Service is running (no external deps)
+        private readonly string _service;
+        private readonly string _layer;
+        private readonly string _level;
+        private readonly string _environment;
+        private readonly string _hostname;
+        private readonly string _containerIp;
+
+        public HealthController()
+        {
+            _service = Environment.GetEnvironmentVariable("SERVICE_NAME") ?? "Traffic Analytics";
+            _layer = Environment.GetEnvironmentVariable("SERVICE_LAYER") ?? "Traffic";
+            _level = Environment.GetEnvironmentVariable("SERVICE_LEVEL") ?? "Cloud";
+            _environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
+            _hostname = Environment.MachineName;
+            _containerIp = Dns.GetHostAddresses(Dns.GetHostName())
+                .FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork)
+                ?.ToString() ?? "unknown";
+        }
+
         [HttpGet("health")]
         public IActionResult Health()
         {
-            return Ok(new { status = "Healthy", service = "Traffic Analytics Service" });
+            return Ok(new
+            {
+                status = "Healthy",
+                service = _service,
+                environment = _environment,
+                layer = _layer,
+                level = _level,
+                hostname = _hostname,
+                container_ip = _containerIp,
+                timestamp = DateTime.UtcNow.ToString("u")
+            });
         }
     }
 }
