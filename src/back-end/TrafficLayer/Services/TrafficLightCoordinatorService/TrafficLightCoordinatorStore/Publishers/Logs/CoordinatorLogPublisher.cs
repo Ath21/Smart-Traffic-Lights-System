@@ -1,125 +1,97 @@
 using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using MassTransit;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Messages.Log;
 
-namespace TrafficLightCoordinatorStore.Publishers.Logs;
-
-public class CoordinatorLogPublisher : ICoordinatorLogPublisher
+namespace TrafficLightCoordinatorStore.Publishers.Logs
 {
-    private readonly IBus _bus;
-    private readonly ILogger<CoordinatorLogPublisher> _logger;
-    private readonly string _routingPattern;
-
-    public CoordinatorLogPublisher(
-        IBus bus,
-        IConfiguration config,
-        ILogger<CoordinatorLogPublisher> logger)
+    public class CoordinatorLogPublisher : ICoordinatorLogPublisher
     {
-        _bus = bus;
-        _logger = logger;
+        private readonly IBus _bus;
+        private readonly ILogger<CoordinatorLogPublisher> _logger;
+        private readonly string _routingPattern;
 
-        _routingPattern = config["RabbitMQ:RoutingKeys:Log:Coordinator"]
-                          ?? "log.traffic.light-coordinator.{type}";
-    }
-
-    public async Task PublishAuditAsync(
-        string action,
-        string message,
-        Dictionary<string, string>? metadata = null,
-        Guid? correlationId = null)
-    {
-        await PublishAsync("audit", new LogMessage
+        public CoordinatorLogPublisher(
+            IBus bus,
+            IConfiguration config,
+            ILogger<CoordinatorLogPublisher> logger)
         {
-            CorrelationId = correlationId ?? Guid.Empty,
-            Timestamp = DateTime.UtcNow,
+            _bus = bus;
+            _logger = logger;
 
-            SourceLayer = "Traffic Layer",
-            DestinationLayer = new () { "Log Layer" },
-
-            SourceService = "Traffic Light Coordinator Service",
-            DestinationServices = new() { "Log Service" },
-
-            LogType = "Audit",
-
-            Action = action,
-            Message = message,
-
-            Metadata = metadata
-        });
-
-        _logger.LogInformation("[PUBLISHER][LOG] AUDIT log published (Action={Action}) - Message={Message}", action, message);
-    }
-
-    public async Task PublishErrorAsync(
-        string action,
-        string message,
-        Exception? ex = null,
-        Dictionary<string, string>? metadata = null,
-        Guid? correlationId = null)
-    {
-        metadata ??= new();
-        if (ex != null)
-        {
-            metadata["exception_type"] = ex.GetType().Name;
-            metadata["exception_message"] = ex.Message;
+            _routingPattern = config["RabbitMQ:RoutingKeys:Log:Coordinator"]
+                              ?? "log.traffic.light-coordinator.{type}";
         }
 
-        await PublishAsync("error", new LogMessage
+        public async Task PublishAuditAsync(
+            string operation,
+            string message,
+            string domain = "[COORDINATOR]",
+            string category = "system",
+            Dictionary<string, object>? data = null)
         {
-            CorrelationId = correlationId ?? Guid.Empty,
-            Timestamp = DateTime.UtcNow,
+            await PublishAsync("audit", operation, message, domain, category, data);
+            _logger.LogInformation("[PUBLISHER][LOG][AUDIT] {Operation}: {Message}", operation, message);
+        }
 
-            SourceLayer = "Traffic Layer",
-            DestinationLayer = new () { "Log Layer" },
-
-            SourceService = "Traffic Light Coordinator Service",
-            DestinationServices = new() { "Log Service" },
-
-            LogType = "Error",
-
-            Action = action,
-            Message = message,
-
-            Metadata = metadata
-        });
-
-        _logger.LogError("[PUBLISHER][LOG] ERROR log published (Action={Action}) - Message={Message}", action, message);
-    }
-
-    public async Task PublishFailoverAsync(
-        string action,
-        string message,
-        Dictionary<string, string>? metadata = null,
-        Guid? correlationId = null)
-    {
-        await PublishAsync("failover", new LogMessage
+        public async Task PublishErrorAsync(
+            string operation,
+            string message,
+            Exception? ex = null,
+            string domain = "[COORDINATOR]",
+            string category = "system",
+            Dictionary<string, object>? data = null)
         {
-            CorrelationId = correlationId ?? Guid.Empty,
-            Timestamp = DateTime.UtcNow,
+            data ??= new();
+            if (ex != null)
+            {
+                data["exception_type"] = ex.GetType().Name;
+                data["exception_message"] = ex.Message;
+            }
 
-            SourceLayer = "Traffic Layer",
-            DestinationLayer = new () { "Log Layer" },
+            await PublishAsync("error", operation, message, domain, category, data);
+            _logger.LogError("[PUBLISHER][LOG][ERROR] {Operation}: {Message}", operation, message);
+        }
 
-            SourceService = "Traffic Light Coordinator Service",
-            DestinationServices = new() { "Log Service" },
+        public async Task PublishFailoverAsync(
+            string operation,
+            string message,
+            string domain = "[COORDINATOR]",
+            string category = "system",
+            Dictionary<string, object>? data = null)
+        {
+            await PublishAsync("failover", operation, message, domain, category, data);
+            _logger.LogWarning("[PUBLISHER][LOG][FAILOVER] {Operation}: {Message}", operation, message);
+        }
 
-            LogType = "Failover",
+        private async Task PublishAsync(
+            string type,
+            string operation,
+            string message,
+            string domain,
+            string category,
+            Dictionary<string, object>? data)
+        {
+            var msg = new LogMessage
+            {
+                Layer = "Traffic",
+                Level = "Cloud",
+                Service = "TrafficLightCoordinator",
+                Domain = domain,
+                Type = type,
+                Category = category,
+                Message = message,
+                Operation = operation,
+                CorrelationId = Guid.NewGuid().ToString(),
+                Timestamp = DateTime.UtcNow,
+                Data = data
+            };
 
-            Action = action,
-            Message = message,
-
-            Metadata = metadata
-        });
-
-        _logger.LogWarning("[PUBLISHER][LOG] FAILOVER log published (Action={Action} - Message={Message})", action, message);
-    }
-
-    private async Task PublishAsync(string logType, LogMessage msg)
-    {
-        msg.CorrelationId = msg.CorrelationId == Guid.Empty ? Guid.NewGuid() : msg.CorrelationId;
-        msg.Timestamp = DateTime.UtcNow;
-
-        var routingKey = _routingPattern.Replace("{type}", logType);
-        await _bus.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
+            var routingKey = _routingPattern.Replace("{type}", type);
+            await _bus.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
+        }
     }
 }

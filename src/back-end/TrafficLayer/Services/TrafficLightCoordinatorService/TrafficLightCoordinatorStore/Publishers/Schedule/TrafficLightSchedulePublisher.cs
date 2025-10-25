@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Messages.Traffic;
+using Messages.Traffic.Light;
 
 namespace TrafficLightCoordinatorStore.Publishers.Schedule
 {
@@ -19,7 +19,6 @@ namespace TrafficLightCoordinatorStore.Publishers.Schedule
             _bus = bus;
             _logger = logger;
 
-            // Default routing pattern (can be overridden in appsettings)
             _routingPattern = config["RabbitMQ:RoutingKeys:Traffic:LightSchedule"]
                               ?? "traffic.light.schedule.{intersection}";
         }
@@ -35,32 +34,19 @@ namespace TrafficLightCoordinatorStore.Publishers.Schedule
             Dictionary<string, int> phaseDurations,
             int cycleDurationSec,
             int globalOffsetSec,
-            string? purpose = null,
-            Guid? correlationId = null,
-            Dictionary<string, string>? metadata = null)
+            string? purpose = null)
         {
             var msg = new TrafficLightScheduleMessage
             {
-                CorrelationId = correlationId ?? Guid.NewGuid(),
-                Timestamp = DateTime.UtcNow,
-
-                SourceLayer = "Traffic Layer",
-                DestinationLayer = new() { "Traffic Layer" },
-
-                SourceService = "Traffic Light Coordinator Service",
-                DestinationServices = new() { "Intersection Controller Service" },
-
                 IntersectionId = intersectionId,
                 IntersectionName = intersectionName,
-
                 IsOperational = isOperational,
                 CurrentMode = currentMode,
                 PhaseDurations = phaseDurations,
                 CycleDurationSec = cycleDurationSec,
                 GlobalOffsetSec = globalOffsetSec,
                 Purpose = purpose,
-                LastUpdate = DateTime.UtcNow,
-                Metadata = metadata
+                LastUpdate = DateTime.UtcNow
             };
 
             var routingKey = _routingPattern
@@ -69,7 +55,7 @@ namespace TrafficLightCoordinatorStore.Publishers.Schedule
             await _bus.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
 
             _logger.LogInformation(
-                "[PUBLISHER][TRAFFIC][{Intersection}] Schedule published (Mode={Mode}, Cycle={Cycle}s, Offset={Offset}s)",
+                "[PUBLISHER][SCHEDULE][{Intersection}] Published light schedule (Mode={Mode}, Cycle={Cycle}s, Offset={Offset}s)",
                 intersectionName, currentMode, cycleDurationSec, globalOffsetSec);
         }
     }

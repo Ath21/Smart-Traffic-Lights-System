@@ -12,7 +12,5 @@ public interface ITrafficLightSchedulePublisher
         Dictionary<string, int> phaseDurations,
         int cycleDurationSec,
         int globalOffsetSec,
-        string? purpose = null,
-        Guid? correlationId = null,
-        Dictionary<string, string>? metadata = null);
+        string? purpose = null);
 }

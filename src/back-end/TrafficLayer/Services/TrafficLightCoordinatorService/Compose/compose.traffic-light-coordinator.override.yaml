@@ -3,22 +3,12 @@ services:
     ports:
       - '5020:8080'
     environment:
+      # ASP.NET Core
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
-
-      # TrafficLightDB (MSSQL)
-      ConnectionStrings__MSSQLConnection: Server=traffic-light-db,1433;Database=TrafficLightDB;User Id=sa;Password=MyPass@word;TrustServerCertificate=True;
-
-      # TrafficLightCacheDB (Redis)
-      Redis__TrafficLight__Host: traffic-light-cache-db
-      Redis__TrafficLight__Port: 6379
-      Redis__TrafficLight__Password: ""
-      Redis__TrafficLight__Database: 0
-      Redis__TrafficLight__KeyPrefix__State: traffic_light:{intersection}.{light}:state
-      Redis__TrafficLight__KeyPrefix__Duration: traffic_light:{intersection}.{light}:duration
-      Redis__TrafficLight__KeyPrefix__LastUpdate: traffic_light:{intersection}.{light}:last_update
-      Redis__TrafficLight__KeyPrefix__Priority: traffic_light:{intersection}.{light}:priority
-      Redis__TrafficLight__KeyPrefix__QueueLength: traffic_light:{intersection}.{light}:queue_length
+      SERVICE_LAYER: Traffic 
+      SERVICE_LEVEL: Cloud
+      SERVICE_NAME: TrafficLightCoordinator
 
       # CORS
       Cors__AllowedOrigins: http://localhost:5173,https://uniwa-stls.local
@@ -30,7 +20,22 @@ services:
       Jwt__Audience: http://uniwa-stls-backend:8080
       Jwt__Key: Nn7kLa8Rzv1XHt9UwMqP4YbFdJxVt2Km
 
-      # RabbitMQ
+      # Databases
+      ## TrafficLightDB (MSSQL)
+      ConnectionStrings__MSSQLConnection: Server=traffic-light-db,1433;Database=TrafficLightDB;User Id=sa;Password=MyPass@word;TrustServerCertificate=True;
+
+      ## TrafficLightCacheDB (Redis)
+      Redis__TrafficLight__Host: traffic-light-cache-db
+      Redis__TrafficLight__Port: 6379
+      Redis__TrafficLight__Password: ""
+      Redis__TrafficLight__Database: 0
+      Redis__TrafficLight__KeyPrefix__State: traffic_light:{intersection}.{light}:state
+      Redis__TrafficLight__KeyPrefix__Duration: traffic_light:{intersection}.{light}:duration
+      Redis__TrafficLight__KeyPrefix__LastUpdate: traffic_light:{intersection}.{light}:last_update
+      Redis__TrafficLight__KeyPrefix__Priority: traffic_light:{intersection}.{light}:priority
+      Redis__TrafficLight__KeyPrefix__QueueLength: traffic_light:{intersection}.{light}:queue_length
+
+      # Message Broker
       ## Configuration
       RabbitMQ__Host: rabbitmq
       RabbitMQ__VirtualHost: /
@@ -38,25 +43,21 @@ services:
       RabbitMQ__Username: rabbitmq
       RabbitMQ__Password: rabbitmq123
 
-      ## Exchanges & Routing Keys
-      ### Traffic
+      ## Exchanges
       RabbitMQ__Exchanges__Traffic: TRAFFIC.EXCHANGE
-
-      RabbitMQ__Queues__Priority__Detection: priority-detection.2.coordinator.queue
-      RabbitMQ__RoutingKeys__PriorityDetection: priority.detection.{intersection}.{event}
-
-      RabbitMQ__Queues__Priority__Count: priority-count.2.coordinator.queue
-      RabbitMQ__RoutingKeys__PriorityCount: priority.count.{intersection}.{type}
-
-      RabbitMQ__Queues__Traffic__Analytics: traffic-analytics.2.coordinator.queue
-      RabbitMQ__RoutingKeys__TrafficAnalytics: traffic.analytics.{intersection}.{metric}
-
-      RabbitMQ__RoutingKeys__Traffic__LightSchedule: traffic.light.schedule.{intersection}
-
-      ### Log
       RabbitMQ__Exchanges__Log: LOG.EXCHANGE
+
+      ## Queues
+      RabbitMQ__Queues__Priority__Count: priority-count-2-coordinator.queue
+      RabbitMQ__Queues__Priority__Detection: priority-detection-2-coordinator.queue
+      RabbitMQ__Queues__Traffic__Analytics: analytics-2-coordinator.queue
+
+      ## Routing Keys
+      RabbitMQ__RoutingKeys__Priority__Count: priority.count.{intersection}.{count}
+      RabbitMQ__RoutingKeys__Priority__Detection: priority.detection.{intersection}.{event}
+      RabbitMQ__RoutingKeys__Traffic__Analytics: traffic.analytics.{intersection}.{metric}
       
-      RabbitMQ__RoutingKeys__Log__Coordinator: log.traffic.light-coordinator.{type}
+      RabbitMQ__RoutingKeys__Log__Coordinator: log.traffic.coordinator.{type}
 
     depends_on:
       traffic-light-db:
