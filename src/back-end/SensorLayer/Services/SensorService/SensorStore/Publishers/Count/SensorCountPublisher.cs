@@ -23,7 +23,7 @@ public class SensorCountPublisher : ISensorCountPublisher
         _logger = logger;
         _intersection = intersection;
 
-        _routingPattern = config["RabbitMQ:RoutingKeys:Sensor:Count"]
+        _routingPattern = config["RabbitMQ:RoutingKeys:Sensor:SensorCount"]
                           ?? "sensor.count.{intersection}.{count}";
     }
 

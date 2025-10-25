@@ -26,7 +26,6 @@
 
   <ItemGroup>
     <ProjectReference Include="../../../../MessageLayer/Messages/Messages.csproj" />
-    <ProjectReference Include="../../../Databases/TrafficLightCacheDB/TrafficLightCacheData/TrafficLightCacheData.csproj" />
     <ProjectReference Include="../../../Databases/TrafficLightDB/TrafficLightData/TrafficLightData.csproj" />
   </ItemGroup>
 

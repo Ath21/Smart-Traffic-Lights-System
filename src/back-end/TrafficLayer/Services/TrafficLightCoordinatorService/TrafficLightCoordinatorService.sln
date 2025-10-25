@@ -5,8 +5,6 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrafficLightCoordinatorStore", "TrafficLightCoordinatorStore\TrafficLightCoordinatorStore.csproj", "{EBC861E5-8E88-4C74-99D5-70D1AC578732}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrafficLightCacheData", "..\..\Databases\TrafficLightCacheDB\TrafficLightCacheData\TrafficLightCacheData.csproj", "{9BDA1101-FE14-43C0-B43B-EA88BD1B5299}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrafficLightData", "..\..\Databases\TrafficLightDB\TrafficLightData\TrafficLightData.csproj", "{A62F539A-C6DC-4926-B807-11F9688DB710}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Messages", "..\..\..\MessageLayer\Messages\Messages.csproj", "{7D9DF914-4E96-4FAF-B6CC-2365C5B0F2D8}"
@@ -33,18 +31,6 @@ Global
 		{EBC861E5-8E88-4C74-99D5-70D1AC578732}.Release|x64.Build.0 = Release|Any CPU
 		{EBC861E5-8E88-4C74-99D5-70D1AC578732}.Release|x86.ActiveCfg = Release|Any CPU
 		{EBC861E5-8E88-4C74-99D5-70D1AC578732}.Release|x86.Build.0 = Release|Any CPU
-		{9BDA1101-FE14-43C0-B43B-EA88BD1B5299}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9BDA1101-FE14-43C0-B43B-EA88BD1B5299}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9BDA1101-FE14-43C0-B43B-EA88BD1B5299}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{9BDA1101-FE14-43C0-B43B-EA88BD1B5299}.Debug|x64.Build.0 = Debug|Any CPU
-		{9BDA1101-FE14-43C0-B43B-EA88BD1B5299}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{9BDA1101-FE14-43C0-B43B-EA88BD1B5299}.Debug|x86.Build.0 = Debug|Any CPU
-		{9BDA1101-FE14-43C0-B43B-EA88BD1B5299}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9BDA1101-FE14-43C0-B43B-EA88BD1B5299}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9BDA1101-FE14-43C0-B43B-EA88BD1B5299}.Release|x64.ActiveCfg = Release|Any CPU
-		{9BDA1101-FE14-43C0-B43B-EA88BD1B5299}.Release|x64.Build.0 = Release|Any CPU
-		{9BDA1101-FE14-43C0-B43B-EA88BD1B5299}.Release|x86.ActiveCfg = Release|Any CPU
-		{9BDA1101-FE14-43C0-B43B-EA88BD1B5299}.Release|x86.Build.0 = Release|Any CPU
 		{A62F539A-C6DC-4926-B807-11F9688DB710}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A62F539A-C6DC-4926-B807-11F9688DB710}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A62F539A-C6DC-4926-B807-11F9688DB710}.Debug|x64.ActiveCfg = Debug|Any CPU

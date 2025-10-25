@@ -4,20 +4,19 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using TrafficLightCacheData;
-using TrafficLightCacheData.Repositories;
-using TrafficLightCacheData.Settings;
 using TrafficLightData;
 using TrafficLightData.Repositories.Intersections;
 using TrafficLightData.Repositories.Light;
 using TrafficLightData.Repositories.TrafficConfig;
 using TrafficLightData.Settings;
 using TrafficLightCoordinatorStore.Middleware;
-using TrafficLightCoordinatorStore.Business;
-using TrafficLightCoordinatorStore.Engine;
 using TrafficLightCoordinatorStore.Publishers.Schedule;
 using TrafficLightCoordinatorStore.Publishers.Logs;
 using TrafficLightCoordinatorStore.Consumers;
+using TrafficLightCoordinatorStore.Business.Operator;
+using TrafficLightCoordinatorStore.Aggregators.Priority;
+using TrafficLightCoordinatorStore.Aggregators.Analytics;
+using TrafficLightCoordinatorStore.Publishers.Control;
 
 namespace TrafficLightCoordinatorStore;
 
@@ -49,50 +48,26 @@ public class Startup
         services.AddScoped(typeof(ITrafficConfigurationRepository), typeof(TrafficConfigurationRepository));
 
         // ===============================
-        // Data Layer (Redis - TrafficLightCacheDB)
-        // ===============================
-        // Db Context
-        services.Configure<TrafficLightCacheDbSettings>(options =>
-        {
-            options.Host = _configuration["Redis:Host"];
-            options.Port = int.Parse(_configuration["Redis:Port"] ?? "6379");
-            options.Password = _configuration["Redis:Password"];
-            options.Database = int.Parse(_configuration["Redis:Database"] ?? "0");
-
-            options.KeyPrefix = new KeyPrefixSettings
-            {
-                State = _configuration["Redis:KeyPrefix:State"],
-                Duration = _configuration["Redis:KeyPrefix:Duration"],
-                LastUpdate = _configuration["Redis:KeyPrefix:LastUpdate"],
-                Mode = _configuration["Redis:KeyPrefix:Mode"],
-                Priority = _configuration["Redis:KeyPrefix:Priority"],
-                FailoverActive = _configuration["Redis:KeyPrefix:FailoverActive"],
-                Heartbeat = _configuration["Redis:KeyPrefix:Heartbeat"],
-                LastCoordinatorSync = _configuration["Redis:KeyPrefix:LastCoordinatorSync"]
-            };
-        });
-        services.AddSingleton<TrafficLightCacheDbContext>();
-
-        // Repositories
-        services.AddScoped(typeof(ITrafficLightCacheRepository), typeof(TrafficLightCacheRepository));
-
-        // ===============================
         // Business Layer (Services)
         // ===============================
-        services.AddScoped(typeof(ICoordinatorBusiness), typeof(CoordinatorBusiness));
-        services.AddScoped(typeof(IDecisionEngine), typeof(DecisionEngine));
+        services.AddScoped(typeof(ITrafficOperatorBusiness), typeof(TrafficOperatorBusiness));
+        services.AddScoped(typeof(ITrafficModeAggregator), typeof(TrafficModeAggregator));
+        services.AddScoped(typeof(IAnalyticsModeAggregator), typeof(AnalyticsModeAggregator));
 
         // ===============================
         // Message Layer (MassTransit with RabbitMQ)
         // ===============================
         // Publishers
         services.AddScoped(typeof(ITrafficLightSchedulePublisher), typeof(TrafficLightSchedulePublisher));
+        services.AddScoped(typeof(ITrafficLightControlPublisher), typeof(TrafficLightControlPublisher));
         services.AddScoped(typeof(ICoordinatorLogPublisher), typeof(CoordinatorLogPublisher));
 
         // Consumers
         services.AddScoped<PriorityCountConsumer>();
         services.AddScoped<PriorityEventConsumer>();
-        services.AddScoped<TrafficAnalyticsConsumer>();
+        services.AddScoped<CongestionAnalyticsConsumer>();
+        services.AddScoped<IncidentAnalyticsConsumer>();
+        services.AddScoped<SummaryAnalyticsConsumer>();
 
         // MassTransit Setup
         services.AddTrafficCoordinatorMassTransit(_configuration);

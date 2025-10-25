@@ -35,7 +35,7 @@ public class AnalyticsLogPublisher : IAnalyticsLogPublisher
         _logger = logger;
 
         _exchangeName = configuration["RabbitMQ:Exchanges:Log"] ?? "LOG.EXCHANGE";
-        _routingPattern = configuration["RabbitMQ:RoutingKeys:Log:Analytics"]
+        _routingPattern = configuration["RabbitMQ:RoutingKeys:Log:TrafficAnalytics"]
                           ?? "log.traffic.analytics.{type}";
 
         // ============================================================

@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "WjeNlwB9Jb4=",
+  "dgSpecHash": "WKtwMflvVqo=",
   "success": true,
   "projectFilePath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/TrafficLightCoordinatorStore.csproj",
   "expectedPackageFiles": [
@@ -67,9 +67,7 @@
     "/home/ath/.nuget/packages/npgsql.entityframeworkcore.postgresql/9.0.4/npgsql.entityframeworkcore.postgresql.9.0.4.nupkg.sha512",
     "/home/ath/.nuget/packages/npgsql.entityframeworkcore.postgresql.nettopologysuite/9.0.4/npgsql.entityframeworkcore.postgresql.nettopologysuite.9.0.4.nupkg.sha512",
     "/home/ath/.nuget/packages/npgsql.nettopologysuite/9.0.3/npgsql.nettopologysuite.9.0.3.nupkg.sha512",
-    "/home/ath/.nuget/packages/pipelines.sockets.unofficial/2.2.8/pipelines.sockets.unofficial.2.2.8.nupkg.sha512",
     "/home/ath/.nuget/packages/rabbitmq.client/7.0.0/rabbitmq.client.7.0.0.nupkg.sha512",
-    "/home/ath/.nuget/packages/stackexchange.redis/2.9.11/stackexchange.redis.2.9.11.nupkg.sha512",
     "/home/ath/.nuget/packages/swashbuckle.aspnetcore/6.6.2/swashbuckle.aspnetcore.6.6.2.nupkg.sha512",
     "/home/ath/.nuget/packages/swashbuckle.aspnetcore.swagger/6.6.2/swashbuckle.aspnetcore.swagger.6.6.2.nupkg.sha512",
     "/home/ath/.nuget/packages/swashbuckle.aspnetcore.swaggergen/6.6.2/swashbuckle.aspnetcore.swaggergen.6.6.2.nupkg.sha512",

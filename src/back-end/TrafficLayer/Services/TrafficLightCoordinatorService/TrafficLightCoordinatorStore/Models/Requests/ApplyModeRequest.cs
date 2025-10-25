@@ -1,6 +1,6 @@
 using System;
 
-namespace TrafficLightCoordinatorStore.Models;
+namespace TrafficLightCoordinatorStore.Models.Requests;
 
 public class ApplyModeRequest
 {

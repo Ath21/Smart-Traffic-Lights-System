@@ -48,14 +48,14 @@ public static class MassTransitSetup
                 // =====================================================
                 // Queues
                 // =====================================================
-                var sensorQueue    = rabbit["Queues:SensorCount"]     ?? "sensor-2-analytics.queue";
-                var detectionQueue = rabbit["Queues:DetectionEvents"] ?? "detection-2-analytics.queue";
+                var sensorQueue    = rabbit["Queues:Sensor:SensorCount"]     ?? "sensor-2-analytics.queue";
+                var detectionQueue = rabbit["Queues:Sensor:DetectionEvents"] ?? "detection-2-analytics.queue";
 
                 // =====================================================
                 // Routing Keys
                 // =====================================================
-                var sensorCountPattern    = rabbit["RoutingKeys:SensorCount"]       ?? "sensor.count.{intersection}.{count}";
-                var detectionEventPattern = rabbit["RoutingKeys:DetectionEvents"]   ?? "sensor.detection.{intersection}.{event}";
+                var sensorCountPattern    = rabbit["RoutingKeys:Sensor:SensorCount"]       ?? "sensor.count.{intersection}.{count}";
+                var detectionEventPattern = rabbit["RoutingKeys:Sensor:DetectionEvents"]   ?? "sensor.detection.{intersection}.{event}";
                 var trafficAnalyticsKey   = rabbit["RoutingKeys:Traffic:Analytics"] ?? "traffic.analytics.{intersection}.{metric}";
                 var logAnalyticsKey       = rabbit["RoutingKeys:Log:Analytics"]     ?? "log.traffic.analytics.{type}";
 

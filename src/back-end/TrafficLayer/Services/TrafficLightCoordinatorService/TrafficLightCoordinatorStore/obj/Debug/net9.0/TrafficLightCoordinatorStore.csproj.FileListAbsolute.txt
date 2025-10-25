@@ -221,9 +221,7 @@
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/bin/Debug/net9.0/Npgsql.EntityFrameworkCore.PostgreSQL.dll
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/bin/Debug/net9.0/Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite.dll
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/bin/Debug/net9.0/Npgsql.NetTopologySuite.dll
-/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/bin/Debug/net9.0/Pipelines.Sockets.Unofficial.dll
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/bin/Debug/net9.0/RabbitMQ.Client.dll
-/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/bin/Debug/net9.0/StackExchange.Redis.dll
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/bin/Debug/net9.0/Swashbuckle.AspNetCore.Swagger.dll
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/bin/Debug/net9.0/Swashbuckle.AspNetCore.SwaggerGen.dll
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/bin/Debug/net9.0/Swashbuckle.AspNetCore.SwaggerUI.dll
@@ -299,8 +297,6 @@
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/bin/Debug/net9.0/tr/Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/bin/Debug/net9.0/zh-Hans/Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/bin/Debug/net9.0/zh-Hant/Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
-/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/bin/Debug/net9.0/TrafficLightCacheData.dll
-/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/bin/Debug/net9.0/TrafficLightCacheData.pdb
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/obj/Debug/net9.0/rjimswa.dswa.cache.json
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/obj/Debug/net9.0/rjsmrazor.dswa.cache.json
 /home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Services/TrafficLightCoordinatorService/TrafficLightCoordinatorStore/obj/Debug/net9.0/rjsmcshtml.dswa.cache.json

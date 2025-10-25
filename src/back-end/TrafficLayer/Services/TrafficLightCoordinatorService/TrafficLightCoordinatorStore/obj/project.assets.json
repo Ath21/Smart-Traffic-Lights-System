@@ -1308,22 +1308,6 @@
           }
         }
       },
-      "Pipelines.Sockets.Unofficial/2.2.8": {
-        "type": "package",
-        "dependencies": {
-          "System.IO.Pipelines": "5.0.1"
-        },
-        "compile": {
-          "lib/net5.0/Pipelines.Sockets.Unofficial.dll": {
-            "related": ".xml"
-          }
-        },
-        "runtime": {
-          "lib/net5.0/Pipelines.Sockets.Unofficial.dll": {
-            "related": ".xml"
-          }
-        }
-      },
       "RabbitMQ.Client/7.0.0": {
         "type": "package",
         "dependencies": {
@@ -1337,23 +1321,6 @@
         },
         "runtime": {
           "lib/net8.0/RabbitMQ.Client.dll": {
-            "related": ".xml"
-          }
-        }
-      },
-      "StackExchange.Redis/2.9.11": {
-        "type": "package",
-        "dependencies": {
-          "Microsoft.Extensions.Logging.Abstractions": "8.0.0",
-          "Pipelines.Sockets.Unofficial": "2.2.8"
-        },
-        "compile": {
-          "lib/net8.0/StackExchange.Redis.dll": {
-            "related": ".xml"
-          }
-        },
-        "runtime": {
-          "lib/net8.0/StackExchange.Redis.dll": {
             "related": ".xml"
           }
         }
@@ -2038,23 +2005,6 @@
         },
         "runtime": {
           "bin/placeholder/Messages.dll": {}
-        }
-      },
-      "TrafficLightCacheData/1.0.0": {
-        "type": "project",
-        "framework": ".NETCoreApp,Version=v9.0",
-        "dependencies": {
-          "Microsoft.Extensions.Configuration.Abstractions": "9.0.0",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.0",
-          "Microsoft.Extensions.Diagnostics.HealthChecks": "9.0.0",
-          "Microsoft.Extensions.Options": "9.0.0",
-          "StackExchange.Redis": "2.9.11"
-        },
-        "compile": {
-          "bin/placeholder/TrafficLightCacheData.dll": {}
-        },
-        "runtime": {
-          "bin/placeholder/TrafficLightCacheData.dll": {}
         }
       },
       "TrafficLightData/1.0.0": {
@@ -4553,29 +4503,6 @@
         "postgresql.png"
       ]
     },
-    "Pipelines.Sockets.Unofficial/2.2.8": {
-      "sha512": "zG2FApP5zxSx6OcdJQLbZDk2AVlN2BNQD6MorwIfV6gVj0RRxWPEp2LXAxqDGZqeNV1Zp0BNPcNaey/GXmTdvQ==",
-      "type": "package",
-      "path": "pipelines.sockets.unofficial/2.2.8",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "lib/net461/Pipelines.Sockets.Unofficial.dll",
-        "lib/net461/Pipelines.Sockets.Unofficial.xml",
-        "lib/net472/Pipelines.Sockets.Unofficial.dll",
-        "lib/net472/Pipelines.Sockets.Unofficial.xml",
-        "lib/net5.0/Pipelines.Sockets.Unofficial.dll",
-        "lib/net5.0/Pipelines.Sockets.Unofficial.xml",
-        "lib/netcoreapp3.1/Pipelines.Sockets.Unofficial.dll",
-        "lib/netcoreapp3.1/Pipelines.Sockets.Unofficial.xml",
-        "lib/netstandard2.0/Pipelines.Sockets.Unofficial.dll",
-        "lib/netstandard2.0/Pipelines.Sockets.Unofficial.xml",
-        "lib/netstandard2.1/Pipelines.Sockets.Unofficial.dll",
-        "lib/netstandard2.1/Pipelines.Sockets.Unofficial.xml",
-        "pipelines.sockets.unofficial.2.2.8.nupkg.sha512",
-        "pipelines.sockets.unofficial.nuspec"
-      ]
-    },
     "RabbitMQ.Client/7.0.0": {
       "sha512": "8YJz22mOSMtkbIVuVSz2HbJwbpKwRoXQ1uqbczDUt1w1Ds8dxFs6dkV/oZ8AlTmkErZjtQelHv+oBu52ud00WA==",
       "type": "package",
@@ -4591,30 +4518,6 @@
         "lib/netstandard2.0/RabbitMQ.Client.xml",
         "rabbitmq.client.7.0.0.nupkg.sha512",
         "rabbitmq.client.nuspec"
-      ]
-    },
-    "StackExchange.Redis/2.9.11": {
-      "sha512": "3J0qv0qFhMeCe2ZApnbbC6ZgNs/iTdmqvFyN/tIw5A0CTlABF1BJh86D3Cf03V9FoftvqeKeAnOkJAHTHpm1xA==",
-      "type": "package",
-      "path": "stackexchange.redis/2.9.11",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "README.md",
-        "lib/net461/StackExchange.Redis.dll",
-        "lib/net461/StackExchange.Redis.xml",
-        "lib/net472/StackExchange.Redis.dll",
-        "lib/net472/StackExchange.Redis.xml",
-        "lib/net6.0/StackExchange.Redis.dll",
-        "lib/net6.0/StackExchange.Redis.xml",
-        "lib/net8.0/StackExchange.Redis.dll",
-        "lib/net8.0/StackExchange.Redis.xml",
-        "lib/netcoreapp3.1/StackExchange.Redis.dll",
-        "lib/netcoreapp3.1/StackExchange.Redis.xml",
-        "lib/netstandard2.0/StackExchange.Redis.dll",
-        "lib/netstandard2.0/StackExchange.Redis.xml",
-        "stackexchange.redis.2.9.11.nupkg.sha512",
-        "stackexchange.redis.nuspec"
       ]
     },
     "Swashbuckle.AspNetCore/6.6.2": {
@@ -5781,11 +5684,6 @@
       "path": "../../../../MessageLayer/Messages/Messages.csproj",
       "msbuildProject": "../../../../MessageLayer/Messages/Messages.csproj"
     },
-    "TrafficLightCacheData/1.0.0": {
-      "type": "project",
-      "path": "../../../Databases/TrafficLightCacheDB/TrafficLightCacheData/TrafficLightCacheData.csproj",
-      "msbuildProject": "../../../Databases/TrafficLightCacheDB/TrafficLightCacheData/TrafficLightCacheData.csproj"
-    },
     "TrafficLightData/1.0.0": {
       "type": "project",
       "path": "../../../Databases/TrafficLightDB/TrafficLightData/TrafficLightData.csproj",
@@ -5807,7 +5705,6 @@
       "Npgsql.EntityFrameworkCore.PostgreSQL >= 9.0.4",
       "Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite >= 9.0.4",
       "Swashbuckle.AspNetCore >= 6.6.2",
-      "TrafficLightCacheData >= 1.0.0",
       "TrafficLightData >= 1.0.0"
     ]
   },
@@ -5838,9 +5735,6 @@
           "projectReferences": {
             "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/Messages/Messages.csproj": {
               "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/MessageLayer/Messages/Messages.csproj"
-            },
-            "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Databases/TrafficLightCacheDB/TrafficLightCacheData/TrafficLightCacheData.csproj": {
-              "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Databases/TrafficLightCacheDB/TrafficLightCacheData/TrafficLightCacheData.csproj"
             },
             "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Databases/TrafficLightDB/TrafficLightData/TrafficLightData.csproj": {
               "projectPath": "/home/ath/Smart-Traffic-Lights-System/src/back-end/TrafficLayer/Databases/TrafficLightDB/TrafficLightData/TrafficLightData.csproj"

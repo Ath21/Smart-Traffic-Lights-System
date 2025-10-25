@@ -2,7 +2,6 @@ using MassTransit;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TrafficLightData;
-using TrafficLightCacheData;
 using Messages.Log;
 using System.Net;
 using System.Net.Sockets;
@@ -14,7 +13,6 @@ namespace TrafficLightCoordinatorStore.Controllers
     public class ReadyController : ControllerBase
     {
         private readonly TrafficLightDbContext _dbContext;
-        private readonly TrafficLightCacheDbContext _cacheDbContext;
         private readonly IBusControl _bus;
 
         private readonly string _service;
@@ -26,11 +24,9 @@ namespace TrafficLightCoordinatorStore.Controllers
 
         public ReadyController(
             TrafficLightDbContext dbContext,
-            TrafficLightCacheDbContext cacheDbContext,
             IBusControl bus)
         {
             _dbContext = dbContext;
-            _cacheDbContext = cacheDbContext;
             _bus = bus;
 
             _service = Environment.GetEnvironmentVariable("SERVICE_NAME") ?? "Traffic Light Coordinator";
@@ -67,16 +63,6 @@ namespace TrafficLightCoordinatorStore.Controllers
                 {
                     status["status"] = "Not Ready";
                     status["reason"] = "TrafficLightDB MSSQL unreachable";
-                    return StatusCode(503, status);
-                }
-
-                // ---- Cache Redis ----
-                bool cacheConnected = await _cacheDbContext.CanConnectAsync();
-                status["cache_db"] = new { name = "TrafficLightCacheDB (Redis)", reachable = cacheConnected };
-                if (!cacheConnected)
-                {
-                    status["status"] = "Not Ready";
-                    status["reason"] = "TrafficLightCacheDB Redis unreachable";
                     return StatusCode(503, status);
                 }
 
