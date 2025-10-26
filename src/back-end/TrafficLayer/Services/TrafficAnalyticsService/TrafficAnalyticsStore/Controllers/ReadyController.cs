@@ -71,7 +71,7 @@ namespace TrafficAnalyticsStore.Controllers
 
                 // ---- Detection MongoDB ----
                 bool detectionDbConnected = await _detectionDbContext.CanConnectAsync();
-                status["detection- db"] = new { name = "DetectionDB (MongoDB)", reachable = detectionDbConnected };
+                status["detection-db"] = new { name = "DetectionDB (MongoDB)", reachable = detectionDbConnected };
                 if (!detectionDbConnected)
                 {
                     status["status"] = "Not Ready";

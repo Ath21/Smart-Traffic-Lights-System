@@ -45,10 +45,10 @@ public class Startup
         // Db Context
         services.Configure<TrafficAnalyticsDbSettings>(options =>
         {
-            options.ConnectionString = _configuration["Postgres:ConnectionString"];
+            options.ConnectionString = _configuration["PostgreSQL:ConnectionString"];
         });
         services.AddDbContext<TrafficAnalyticsDbContext>(options =>
-            options.UseNpgsql(_configuration["Postgres:ConnectionString"]));
+            options.UseNpgsql(_configuration["PostgreSQL:ConnectionString"]));
 
         // Repositories
         services.AddScoped(typeof(IDailySummaryRepository), typeof(DailySummaryRepository));

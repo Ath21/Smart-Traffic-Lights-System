@@ -32,7 +32,7 @@ services:
       Mongo__Collections__IncidentDetections: incident_detections
 
       ## TrafficAnalyticsDB (PostgreSQL)
-      ConnectionStrings__PostgreSQLConnection: Host=traffic-analytics-db;Port=5432;Database=TrafficAnalyticsDB;Username=postgres;Password=postgres123
+      PostgreSQL__ConnectionString: Host=traffic-analytics-db;Port=5432;Database=TrafficAnalyticsDB;Username=postgres;Password=postgres123
 
       # Message Broker
       ## Configuration

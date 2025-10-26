@@ -22,7 +22,7 @@ services:
 
       # Databases
       ## TrafficLightDB (MSSQL)
-      ConnectionStrings__MSSQLConnection: Server=traffic-light-db,1433;Database=TrafficLightDB;User Id=sa;Password=MyPass@word;TrustServerCertificate=True;
+      MSSQL__ConnectionString: Server=traffic-light-db,1433;Database=TrafficLightDB;User Id=sa;Password=MyPass@word;TrustServerCertificate=True;
 
       # Message Broker
       ## Configuration
