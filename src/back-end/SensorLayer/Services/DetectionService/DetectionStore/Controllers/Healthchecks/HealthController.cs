@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Sockets;
 using Microsoft.AspNetCore.Mvc;
 using DetectionStore.Domain;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DetectionStore.Controllers.Healthchecks
 {

@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using TrafficLightCacheData.Keys;
 
 namespace TrafficLightCacheData.Repositories;
@@ -179,10 +180,10 @@ public class TrafficLightCacheRepository : ITrafficLightCacheRepository
     public async Task SetCachedPhasesAsync(int intersectionId, int lightId, Dictionary<string, int> phases)
     {
 
-        _logger.LogInformation("{Domain} Caching phases for intersection {IntersectionId}, light {LightId}\n", domain, intersectionId, lightId); await _context.SetAsync(
+        _logger.LogInformation("{Domain} Caching phases for intersection {IntersectionId}, light {LightId}\n", domain, intersectionId, lightId); 
         await _context.SetAsync(
             TrafficLightCacheKeys.CachedPhases(intersectionId, lightId),
-            JsonSerializer.Serialize(phases)));
+            JsonSerializer.Serialize(phases));
 
     }
 

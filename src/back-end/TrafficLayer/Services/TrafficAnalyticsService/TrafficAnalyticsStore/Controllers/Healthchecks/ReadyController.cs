@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using DetectionData;
 using MassTransit;
 using Messages.Log;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TrafficAnalyticsData;
 

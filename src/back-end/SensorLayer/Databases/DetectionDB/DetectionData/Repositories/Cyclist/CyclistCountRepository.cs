@@ -1,14 +1,15 @@
 using System;
 using DetectionData;
 using DetectionData.Collections.Count;
+using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 
 namespace DetectionData.Repositories.Cyclist;
 
 public class CyclistCountRepository : BaseRepository<CyclistCountCollection>, ICyclistCountRepository
 {
-    public CyclistCountRepository(DetectionDbContext context)
-        : base(context.CyclistCount) { }
+    public CyclistCountRepository(DetectionDbContext context, ILogger<CyclistCountRepository> logger)
+        : base(context.CyclistCount, logger) { }
 
     public async Task<IEnumerable<CyclistCountCollection>> GetRecentByIntersectionAsync(int intersectionId, int limit = 100)
     {

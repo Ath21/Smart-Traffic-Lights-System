@@ -1,6 +1,7 @@
 using System;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using TrafficLightData.Entities;
 
 
@@ -24,16 +25,6 @@ public class TrafficConfigurationRepository : BaseRepository<TrafficConfiguratio
             .OrderByDescending(c => c.LastUpdated)
             .FirstOrDefaultAsync();
     }
-
-    public async Task<TrafficConfigurationEntity?> GetLatestByIntersectionAsync(int intersectionId)
-    {
-        _logger.LogInformation("{domain} Fetching latest configuration for IntersectionID: {intersectionId}\n", domain, intersectionId);
-        return await _context.TrafficConfigurations
-            .Where(c => c.IntersectionId == intersectionId)
-            .OrderByDescending(c => c.LastUpdated)
-            .FirstOrDefaultAsync();
-    }
-
     public async Task<IEnumerable<TrafficConfigurationEntity>> GetByModeAsync(string mode)
     {
         _logger.LogInformation("{domain} Fetching configurations for Mode: {mode}\n", domain, mode);

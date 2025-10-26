@@ -5,6 +5,7 @@ using TrafficLightData;
 using Messages.Log;
 using System.Net;
 using System.Net.Sockets;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TrafficLightCoordinatorStore.Controllers.Healthchecks
 {

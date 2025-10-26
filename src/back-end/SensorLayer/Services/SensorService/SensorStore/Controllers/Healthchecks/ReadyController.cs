@@ -6,6 +6,7 @@ using SensorStore.Domain;
 using MassTransit;
 using Messages.Log;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SensorStore.Controllers.Healthchecks
 {

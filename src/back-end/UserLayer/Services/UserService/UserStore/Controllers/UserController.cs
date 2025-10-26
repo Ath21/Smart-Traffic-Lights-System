@@ -53,8 +53,8 @@ public class UserController : ControllerBase
     public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
     {
         _logger.LogInformation(
-            "{Domain}[LOGIN] Login attempt for username: {Username}\n",
-            domain, request.Username);
+            "{Domain}[LOGIN] Login attempt for email: {Email}\n",
+            domain, request.Email);
 
         var result = await _userService.LoginAsync(request);
         return Ok(result);

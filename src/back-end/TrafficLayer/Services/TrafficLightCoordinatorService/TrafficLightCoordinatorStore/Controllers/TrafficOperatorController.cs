@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TrafficLightCoordinatorStore.Business.Operator;
 using TrafficLightCoordinatorStore.Models.Requests;

@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Sockets;
 using IntersectionControllerStore.Domain;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 

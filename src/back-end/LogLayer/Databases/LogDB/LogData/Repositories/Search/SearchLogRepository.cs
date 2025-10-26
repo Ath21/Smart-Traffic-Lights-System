@@ -1,4 +1,5 @@
 using LogData.Collections;
+using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 
 namespace LogData.Repositories.Search;

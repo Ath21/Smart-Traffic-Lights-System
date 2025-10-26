@@ -5,6 +5,7 @@ using DetectionData;
 using DetectionStore.Domain;
 using MassTransit;
 using Messages.Log;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DetectionStore.Controllers

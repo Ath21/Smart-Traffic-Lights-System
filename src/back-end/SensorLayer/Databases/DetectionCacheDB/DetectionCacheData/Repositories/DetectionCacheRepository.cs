@@ -1,4 +1,5 @@
 using DetectionCacheData.Keys;
+using Microsoft.Extensions.Logging;
 
 namespace DetectionCacheData.Repositories;
 

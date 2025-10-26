@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Sockets;
 using MassTransit;
 using Messages.Log;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NotificationData;
 

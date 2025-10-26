@@ -1,6 +1,7 @@
 using System;
 using DetectionData;
 using DetectionData.Collections.Count;
+using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 
 namespace DetectionData.Repositories.Vehicle;
@@ -8,8 +9,8 @@ namespace DetectionData.Repositories.Vehicle;
 
 public class VehicleCountRepository : BaseRepository<VehicleCountCollection>, IVehicleCountRepository
 {
-    public VehicleCountRepository(DetectionDbContext context)
-        : base(context.VehicleCount) { }
+    public VehicleCountRepository(DetectionDbContext context, ILogger<VehicleCountRepository> logger)
+        : base(context.VehicleCount, logger) { }
 
     public async Task<IEnumerable<VehicleCountCollection>> GetRecentByIntersectionAsync(int intersectionId, int limit = 100)
     {

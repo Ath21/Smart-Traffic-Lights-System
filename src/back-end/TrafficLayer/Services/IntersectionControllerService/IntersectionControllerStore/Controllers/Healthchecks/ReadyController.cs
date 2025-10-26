@@ -4,6 +4,7 @@ using DetectionCacheData;
 using IntersectionControllerStore.Domain;
 using MassTransit;
 using Messages.Log;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TrafficLightCacheData;

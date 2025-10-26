@@ -4,7 +4,6 @@ using TrafficLightData.Entities;
 
 namespace TrafficLightData.Repositories.TrafficConfig;
 
-
 public interface ITrafficConfigurationRepository
 {
     Task<TrafficConfigurationEntity?> GetLatestByIntersectionAsync(int configId);

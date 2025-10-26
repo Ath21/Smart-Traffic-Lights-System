@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using LogData.Collections;
+using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 
 namespace LogData.Repositories;

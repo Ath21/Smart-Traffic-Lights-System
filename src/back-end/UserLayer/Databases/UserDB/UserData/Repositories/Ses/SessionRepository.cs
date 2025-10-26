@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using UserData;
 using UserData.Entities;
 
@@ -36,7 +37,7 @@ public class SessionRepository : ISessionRepository
     public async Task<SessionEntity?> GetByTokenAsync(string token)
     {
         _logger.LogInformation("{Domain} Retrieving session by token\n", domain);
-        return await _context.Sessions.FirstOrDefaultAsync(s => s.Token == token);
+        return await _context.Sessions.FirstOrDefaultAsync(s => s.Session == token);
     }
 
     public async Task InsertAsync(SessionEntity session)

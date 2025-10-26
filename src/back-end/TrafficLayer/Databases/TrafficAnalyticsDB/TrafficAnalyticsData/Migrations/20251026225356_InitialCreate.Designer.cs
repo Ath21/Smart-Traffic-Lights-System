@@ -12,7 +12,7 @@ using TrafficAnalyticsData;
 namespace TrafficAnalyticsData.Migrations
 {
     [DbContext(typeof(TrafficAnalyticsDbContext))]
-    [Migration("20251014123938_InitialCreate")]
+    [Migration("20251026225356_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -49,6 +49,9 @@ namespace TrafficAnalyticsData.Migrations
                     b.Property<string>("Message")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
+
+                    b.Property<int>("Severity")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Type")
                         .IsRequired()

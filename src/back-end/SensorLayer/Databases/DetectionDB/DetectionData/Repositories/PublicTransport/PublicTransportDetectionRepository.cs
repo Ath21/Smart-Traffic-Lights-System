@@ -1,13 +1,14 @@
 using DetectionData;
 using DetectionData.Collections.Detection;
+using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 
 namespace DetectionData.Repositories.PublicTransport;
 
 public class PublicTransportDetectionRepository : BaseRepository<PublicTransportDetectionCollection>, IPublicTransportDetectionRepository
 {
-    public PublicTransportDetectionRepository(DetectionDbContext context)
-        : base(context.PublicTransportDetections) { }
+    public PublicTransportDetectionRepository(DetectionDbContext context, ILogger<PublicTransportDetectionRepository> logger)
+        : base(context.PublicTransportDetections, logger) { }
 
     public async Task<IEnumerable<PublicTransportDetectionCollection>> GetRecentPublicTransportsAsync(int intersectionId, int limit = 50)
     {

@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using LogData;
 using MassTransit;
 using Messages.Log;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LogStore.Controllers

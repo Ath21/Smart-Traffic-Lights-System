@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NotificationStore.Business.Subscription;
 using NotificationStore.Models.Requests;
@@ -37,8 +38,8 @@ public class SubscriptionController : ControllerBase
     [Authorize]
     public async Task<IActionResult> Unsubscribe([FromQuery] UnsubscribeRequest request)
     {
-        _logger.LogInformation("{Domain}[UNSUBSCRIBE] Unsubscribe called for UserEmail: {UserEmail}, NotificationType: {NotificationType}\n",
-            domain, request.UserEmail, request.NotificationType);
+        _logger.LogInformation("{Domain}[UNSUBSCRIBE] Unsubscribe called for UserEmail: {UserEmail}\n",
+            domain, request.UserEmail);
         
         if (string.IsNullOrEmpty(request.UserEmail))
             return BadRequest("UserEmail is required.");

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using DetectionStore.Business;
 using DetectionStore.Domain;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DetectionStore.Controllers;
 
