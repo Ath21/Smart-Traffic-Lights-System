@@ -1,37 +1,63 @@
 using System;
-using IntersectionControllerStore.Business.LightSchedule;
+using System.Threading.Tasks;
 using MassTransit;
-using Messages.Traffic;
+using Microsoft.Extensions.Logging;
+using Messages.Traffic.Light;
+using TrafficLightCacheData.Repositories;
+using IntersectionControllerStore.Aggregators.Light;
 
-namespace IntersectionControllerStore.Consumers;
+namespace IntersectionControllerStore.Consumers.Light;
 
 public class LightScheduleConsumer : IConsumer<TrafficLightScheduleMessage>
 {
-    private readonly ILightScheduleBusiness _processor;
+    private readonly ITrafficLightAggregator _aggregator;
+    private readonly ITrafficLightCacheRepository _cache;
     private readonly ILogger<LightScheduleConsumer> _logger;
 
-    public LightScheduleConsumer(ILightScheduleBusiness processor, ILogger<LightScheduleConsumer> logger)
+    public LightScheduleConsumer(
+        ITrafficLightAggregator aggregator,
+        ITrafficLightCacheRepository cache,
+        ILogger<LightScheduleConsumer> logger)
     {
-        _processor = processor;
+        _aggregator = aggregator;
+        _cache = cache;
         _logger = logger;
     }
 
     public async Task Consume(ConsumeContext<TrafficLightScheduleMessage> context)
     {
-        var msg = context.Message;
+        var schedule = context.Message;
 
         _logger.LogInformation(
-            "[CONSUMER][SCHEDULE][{Intersection}] Received update: Mode={Mode}, Cycle={Cycle}s, Offset={Offset}s, Purpose={Purpose}",
-            msg.IntersectionName, msg.CurrentMode, msg.CycleDurationSec, msg.GlobalOffsetSec, msg.Purpose);
+            "[Intersection {Id}] Received schedule from coordinator (Mode={Mode}, Cycle={Cycle}s, Offset={Offset}s)",
+            schedule.IntersectionId, schedule.CurrentMode, schedule.CycleDurationSec, schedule.GlobalOffsetSec);
 
+        await UpdateIntersectionCacheAsync(schedule);
+
+        await _aggregator.BuildLightControlAsync(schedule);
+    }
+
+    private async Task UpdateIntersectionCacheAsync(TrafficLightScheduleMessage schedule)
+    {
         try
         {
-            await _processor.ProcessScheduleAsync(msg);
+            await _cache.SetCoordinatorSyncAsync(schedule.IntersectionId);
+            await _cache.SetModeAsync(schedule.IntersectionId, 0, schedule.CurrentMode);
+            await _cache.SetCycleDurationAsync(schedule.IntersectionId, 0, schedule.CycleDurationSec);
+            await _cache.SetOffsetAsync(schedule.IntersectionId, 0, schedule.GlobalOffsetSec);
+
+            if (schedule.PhaseDurations?.Count > 0)
+                await _cache.SetCachedPhasesAsync(schedule.IntersectionId, 0, schedule.PhaseDurations);
+
+            _logger.LogDebug(
+                "[Intersection {Id}] Cache updated with mode={Mode}, cycle={Cycle}s, offset={Offset}s",
+                schedule.IntersectionId, schedule.CurrentMode, schedule.CycleDurationSec, schedule.GlobalOffsetSec);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CONSUMER][SCHEDULE][{Intersection}] Failed to apply schedule", msg.IntersectionName);
-            throw;
+            _logger.LogError(ex,
+                "[Intersection {Id}] Failed to update intersection cache during schedule sync.",
+                schedule.IntersectionId);
         }
     }
 }

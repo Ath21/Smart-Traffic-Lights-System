@@ -115,12 +115,19 @@ public class ExceptionMiddleware
             using var scope = _scopeFactory.CreateScope();
             var logPublisher = scope.ServiceProvider.GetRequiredService<IIntersectionLogPublisher>();
 
+            // convert metadata to expected Dictionary<string, object>
+            var data = new Dictionary<string, object>(metadata.Count);
+            foreach (var kvp in metadata)
+            {
+                data[kvp.Key] = kvp.Value;
+            }
+
             await logPublisher.PublishErrorAsync(
-                action: errorType,
+                operation: errorType,
                 message: $"[{errorType}] {userMessage}: {ex.Message}",
                 ex: ex,
-                metadata: metadata,
-                correlationId: Guid.Parse(correlationId));
+                data: data,
+                correlationId: correlationId);
 
             _logger.LogInformation("[EXCEPTION] Published error log ({ErrorType}) via RabbitMQ", errorType);
         }

@@ -10,13 +10,13 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using IntersectionControllerStore.Domain;
-using IntersectionControllerStore.Business.LightSchedule;
-using IntersectionControllerStore.Business.Priority;
-using IntersectionControllerStore.Business.Failover;
 using IntersectionControllerStore.Publishers.Priority;
-using IntersectionControllerStore.Publishers.LightControl;
 using IntersectionControllerStore.Publishers.Logs;
 using IntersectionControllerStore.Consumers;
+using IntersectionControllerStore.Publishers.Light;
+using IntersectionControllerStore.Consumers.Light;
+using IntersectionControllerStore.Aggregators.Light;
+using IntersectionControllerStore.Aggregators.Priority;
 
 namespace IntersectionControllerStore;
 
@@ -117,22 +117,25 @@ public class Startup
         // ===============================
         // Business Layer (Services)
         // ===============================
-        services.AddScoped(typeof(ILightScheduleBusiness), typeof(LightScheduleBusiness));
-        services.AddScoped(typeof(IPriorityBusiness), typeof(PriorityBusiness));
-        services.AddScoped(typeof(IFailoverBusiness), typeof(FailoverBusiness));
+        services.AddScoped(typeof(ITrafficLightAggregator), typeof(TrafficLightAggregator));
+        services.AddScoped(typeof(IPriorityAggregator), typeof(PriorityAggregator));
         
         // ===============================
         // Message Layer (MassTransit with RabbitMQ)
         // ===============================
         // Publishers
         services.AddScoped(typeof(IPriorityPublisher), typeof(PriorityPublisher));
-        services.AddScoped(typeof(ITrafficLightControlPublisher), typeof(TrafficLightControlPublisher));
+        services.AddScoped(typeof(ITrafficLightPublisher), typeof(TrafficLightPublisher));
         services.AddScoped(typeof(IIntersectionLogPublisher), typeof(IntersectionLogPublisher));
 
         // Consumers
         services.AddScoped<LightScheduleConsumer>();
-        services.AddScoped<SensorCountConsumer>();
-        services.AddScoped<DetectionEventConsumer>();
+        services.AddScoped<EmergencyVehicleDetectedConsumer>();
+        services.AddScoped<IncidentDetectedConsumer>();
+        services.AddScoped<PublicTransportDetectedConsumer>();
+        services.AddScoped<VehicleCountConsumer>();
+        services.AddScoped<PedestrianCountConsumer>();
+        services.AddScoped<CyclistCountConsumer>();
 
         // MassTransit Setup
         services.AddIntersectionControllerMassTransit(_configuration);
@@ -163,7 +166,7 @@ public class Startup
         // CORS Policy
         // ===============================
         var allowedOrigins = _configuration["Cors:AllowedOrigins"]?.Split(",") ?? Array.Empty<string>();
-        var allowedMethods = _configuration["Cors:AllowedMethods"]?.Split(",") ?? new[] { "GET", "POST", "PUT", "PATCH", "DELETE" };
+        var allowedMethods = _configuration["Cors:AllowedMethods"]?.Split(",") ?? new[] { "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS" };
         var allowedHeaders = _configuration["Cors:AllowedHeaders"]?.Split(",") ?? new[] { "Content-Type", "Authorization" };
 
         services.AddCors(options =>

@@ -7,6 +7,9 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
+      SERVICE_LAYER: Traffic
+      SERVICE_LEVEL: Fog
+      SERVICE_NAME: IntersectionController
 
       # Intersection Details
       Intersection__Id: 2

@@ -9,6 +9,8 @@ public class IntersectionLogPublisher : IIntersectionLogPublisher
     private readonly IBus _bus;
     private readonly ILogger<IntersectionLogPublisher> _logger;
     private readonly string _routingPattern;
+    private readonly string _hostname;
+    private readonly string _environment;
 
     public IntersectionLogPublisher(
         IBus bus,
@@ -18,114 +20,64 @@ public class IntersectionLogPublisher : IIntersectionLogPublisher
         _bus = bus;
         _logger = logger;
 
-        // Routing: log.sensor.intersection-controller-service.{type}
         _routingPattern = config["RabbitMQ:RoutingKeys:Log:Intersection"]
-                          ?? "log.traffic.intersection-controller-service.{type}";
+                          ?? "log.traffic.intersection-controller.{type}";
+
+        _hostname = Environment.MachineName;
+        _environment = config["ASPNETCORE_ENVIRONMENT"] ?? "unknown";
     }
 
-    // ============================================================
-    // AUDIT LOG
-    // ============================================================
-    public async Task PublishAuditAsync(
-        string action,
-        string message,
-        Dictionary<string, string>? metadata = null,
-        Guid? correlationId = null)
+    public async Task PublishAuditAsync(string operation, string message, Dictionary<string, object>? data = null, string? correlationId = null)
     {
-        await PublishAsync("audit", new LogMessage
-        {
-            CorrelationId = correlationId ?? Guid.NewGuid(),
-            Timestamp = DateTime.UtcNow,
-
-            SourceLayer = "Control Layer",
-            DestinationLayer = new() { "Log Layer" },
-
-            SourceService = "Intersection Controller Service",
-            DestinationServices = new() { "Log Service" },
-
-            LogType = "Audit",
-            Action = action,
-            Message = message,
-            Metadata = metadata
-        });
-
-        _logger.LogInformation("[PUBLISHER][LOG][AUDIT] {Action} - {Message}", action, message);
+        var log = CreateBaseLog("audit", "system", operation, message, data, correlationId);
+        await PublishAsync("audit", log);
+        _logger.LogInformation("[LOG][AUDIT] {Op} - {Msg}", operation, message);
     }
 
-    // ============================================================
-    // ERROR LOG
-    // ============================================================
-    public async Task PublishErrorAsync(
-        string action,
-        string message,
-        Exception? ex = null,
-        Dictionary<string, string>? metadata = null,
-        Guid? correlationId = null)
+    public async Task PublishErrorAsync(string operation, string message, Exception? ex = null, Dictionary<string, object>? data = null, string? correlationId = null)
     {
-        metadata ??= new();
+        data ??= new();
         if (ex != null)
         {
-            metadata["exception_type"] = ex.GetType().Name;
-            metadata["exception_message"] = ex.Message;
+            data["exception_type"] = ex.GetType().Name;
+            data["exception_message"] = ex.Message;
         }
 
-        await PublishAsync("error", new LogMessage
-        {
-            CorrelationId = correlationId ?? Guid.NewGuid(),
-            Timestamp = DateTime.UtcNow,
-
-            SourceLayer = "Control Layer",
-            DestinationLayer = new() { "Log Layer" },
-
-            SourceService = "Intersection Controller Service",
-            DestinationServices = new() { "Log Service" },
-
-            LogType = "Error",
-            Action = action,
-            Message = message,
-            Metadata = metadata
-        });
-
-        _logger.LogError("[PUBLISHER][LOG][ERROR] {Action} - {Message}", action, message);
+        var log = CreateBaseLog("error", "system", operation, message, data, correlationId);
+        await PublishAsync("error", log);
+        _logger.LogError(ex, "[LOG][ERROR] {Op} - {Msg}", operation, message);
     }
 
-    // ============================================================
-    // FAILOVER LOG
-    // ============================================================
-    public async Task PublishFailoverAsync(
-        string action,
-        string message,
-        Dictionary<string, string>? metadata = null,
-        Guid? correlationId = null)
+    public async Task PublishFailoverAsync(string operation, string message, Dictionary<string, object>? data = null, string? correlationId = null)
     {
-        await PublishAsync("failover", new LogMessage
-        {
-            CorrelationId = correlationId ?? Guid.NewGuid(),
-            Timestamp = DateTime.UtcNow,
-
-            SourceLayer = "Control Layer",
-            DestinationLayer = new() { "Log Layer" },
-
-            SourceService = "Intersection Controller Service",
-            DestinationServices = new() { "Log Service" },
-
-            LogType = "Failover",
-            Action = action,
-            Message = message,
-            Metadata = metadata
-        });
-
-        _logger.LogWarning("[PUBLISHER][LOG][FAILOVER] {Action} - {Message}", action, message);
+        var log = CreateBaseLog("failover", "system", operation, message, data, correlationId);
+        await PublishAsync("failover", log);
+        _logger.LogWarning("[LOG][FAILOVER] {Op} - {Msg}", operation, message);
     }
 
     // ============================================================
-    // INTERNAL PUBLISH HELPER
+    // PRIVATE HELPERS
     // ============================================================
+    private LogMessage CreateBaseLog(string type, string category, string operation, string message, Dictionary<string, object>? data, string? correlationId)
+        => new()
+        {
+            Layer = "Traffic",
+            Level = "Edge",
+            Service = "IntersectionController",
+            Domain = "[CONTROLLER][INTERSECTION]",
+            Type = type,
+            Category = category,
+            Message = message,
+            Operation = operation,
+            CorrelationId = correlationId ?? Guid.NewGuid().ToString(),
+            Timestamp = DateTime.UtcNow,
+            Hostname = _hostname,
+            Environment = _environment,
+            Data = data
+        };
+
     private async Task PublishAsync(string type, LogMessage msg)
     {
-        msg.CorrelationId = msg.CorrelationId == Guid.Empty ? Guid.NewGuid() : msg.CorrelationId;
-        msg.Timestamp = DateTime.UtcNow;
-
         var routingKey = _routingPattern.Replace("{type}", type);
         await _bus.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
     }

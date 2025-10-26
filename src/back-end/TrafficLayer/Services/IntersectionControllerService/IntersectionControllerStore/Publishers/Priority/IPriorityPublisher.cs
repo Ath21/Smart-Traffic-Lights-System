@@ -1,10 +1,11 @@
 using System;
 using Messages.Traffic;
+using Messages.Traffic.Priority;
 
 namespace IntersectionControllerStore.Publishers.Priority;
 
 public interface IPriorityPublisher
 {
-    Task PublishPriorityCountAsync(PriorityCountMessage msg);
-    Task PublishPriorityEventAsync(PriorityEventMessage msg);
+    Task PublishPriorityEventAsync(PriorityEventMessage message);
+    Task PublishPriorityCountAsync(PriorityCountMessage message);
 }
