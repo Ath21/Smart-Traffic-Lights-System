@@ -24,7 +24,7 @@ public static class MassTransitSetup
                 // ===============================
                 // Connection with RabbitMQ
                 // ===============================
-                cfg.Host(rabbit["Host"], rabbit["VirtualHost"] ?? "/", h =>
+                cfg.Host(rabbit["Host"], "/", h =>
                 {
                     h.Username(rabbit["Username"]);
                     h.Password(rabbit["Password"]);
@@ -33,32 +33,24 @@ public static class MassTransitSetup
                 // =====================================================
                 // Exchanges, Queues, and Routing Keys
                 // =====================================================
-                // Exchanges
-                var trafficExchange = rabbit["Exchanges:Traffic"];
-                var logExchange = rabbit["Exchanges:Log"];
+                var trafficExchange = rabbit["Exchanges:Traffic"]; // TRAFFIC.EXCHANGE
+                var logExchange = rabbit["Exchanges:Log"];         // LOG.EXCHANGE
 
-                // Queues
-                var controlQueue = rabbit["Queues:Traffic:LightControl"];
-
-                // Routing Keys
-                var controlKey = rabbit["RoutingKeys:Traffic:LightControl"];
+                var controlQueue = rabbit["Queues:Traffic:LightControl"]; // intersection-controller-2-traffic-light-controller.queue
+                var controlKey = rabbit["RoutingKeys:Traffic:LightControl"]; // traffic.light.control.{intersection}.{light}
+                var logKey = rabbit["RoutingKeys:Log:LightController"]; // log.traffic.light-controller.{type}
 
                 // =====================================================
                 // [CONSUME] TRAFFIC LIGHT CONTROL COMMANDS
                 // =====================================================
-                //
-                // Topic pattern : traffic.light.control.{intersection}.{light}
-                // Example key   : traffic.light.control.kentriki-pyli.kentriki-pyli201
-                //
                 cfg.ReceiveEndpoint(controlQueue, e =>
                 {
                     e.ConfigureConsumeTopology = false;
 
                     e.Bind(trafficExchange, s =>
                     {
-                        s.RoutingKey = controlKey
-                            .Replace("{intersection}", "*")
-                            .Replace("{light}", "*");
+                        // Use topic wildcard to receive all intersections and lights
+                        s.RoutingKey = controlKey.Replace("{intersection}", "*").Replace("{light}", "*");
                         s.ExchangeType = ExchangeType.Topic;
                     });
 
@@ -71,18 +63,8 @@ public static class MassTransitSetup
                 // =====================================================
                 // [PUBLISH] LOG MESSAGES
                 // =====================================================
-                //
-                // Topic pattern : log.traffic.light-controller.{type}
-                // Example key   : log.traffic.light-controller.audit
-                //
-                cfg.Message<LogMessage>(m =>
-                {
-                    m.SetEntityName(logExchange);
-                });
-                cfg.Publish<LogMessage>(m =>
-                {
-                    m.ExchangeType = ExchangeType.Topic;
-                });
+                cfg.Message<LogMessage>(m => m.SetEntityName(logExchange));
+                cfg.Publish<LogMessage>(m => m.ExchangeType = ExchangeType.Topic);
 
                 cfg.ConfigureEndpoints(context);
             });
@@ -91,34 +73,3 @@ public static class MassTransitSetup
         return services;
     }
 }
-
-/*
-
-{
-  "RabbitMQ": {
-
-    "Host": "rabbitmq",
-    "VirtualHost": "/",
-    "Username": "stls_user",
-    "Password": "stls_pass",
-
-    "Exchanges": {
-      "Traffic": "traffic.exchange",
-      "Log": "log.exchange"
-    },
-
-    "Queues": {
-      "Traffic": {
-        "LightControl": "traffic-light-control-queue"
-      }
-    },
-
-    "RoutingKeys": {
-      "Traffic": {
-        "LightControl": "traffic.light.control.{intersection}.{light}"
-      }
-    }
-  }
-}
-
-*/

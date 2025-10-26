@@ -5,9 +5,6 @@ using Microsoft.OpenApi.Models;
 using TrafficLightCacheData;
 using TrafficLightCacheData.Repositories;
 using TrafficLightCacheData.Settings;
-using TrafficLightControllerStore.Business;
-using TrafficLightControllerStore.Business.Failover;
-using TrafficLightControllerStore.Business.LightControl;
 using TrafficLightControllerStore.Consumers;
 using TrafficLightControllerStore.Domain;
 using TrafficLightControllerStore.Middleware;
@@ -98,8 +95,6 @@ public class Startup
         // ===============================
         // Business Layer (Services)
         // ===============================
-        services.AddScoped(typeof(ITrafficLightControlBusiness), typeof(TrafficLightControlBusiness));
-        services.AddScoped(typeof(IFailoverBusiness), typeof(FailoverBusiness));
 
         // ===============================
         // Message Layer (MassTransit with RabbitMQ)
@@ -139,7 +134,7 @@ public class Startup
         // CORS Policy
         // ===============================
         var allowedOrigins = _configuration["Cors:AllowedOrigins"]?.Split(",") ?? Array.Empty<string>();
-        var allowedMethods = _configuration["Cors:AllowedMethods"]?.Split(",") ?? new[] { "GET", "POST", "PUT", "DELETE", "PATCH" };
+        var allowedMethods = _configuration["Cors:AllowedMethods"]?.Split(",") ?? new[] { "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS" };
         var allowedHeaders = _configuration["Cors:AllowedHeaders"]?.Split(",") ?? new[] { "Content-Type", "Authorization" };
 
         services.AddCors(options =>
