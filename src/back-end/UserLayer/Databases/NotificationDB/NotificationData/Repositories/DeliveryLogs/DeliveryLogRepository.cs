@@ -8,6 +8,7 @@ public class DeliveryLogRepository : IDeliveryLogRepository
 {
     private readonly NotificationDbContext _dbContext;
     private readonly ILogger<DeliveryLogRepository> _logger;
+    private const string domain = "[REPOSITORY][DELIVERYLOG]";
 
     public DeliveryLogRepository(NotificationDbContext dbContext, ILogger<DeliveryLogRepository> logger)
     {
@@ -17,7 +18,7 @@ public class DeliveryLogRepository : IDeliveryLogRepository
 
     public async Task LogDeliveryAsync(string userId, string userEmail, string messageId, string status)
     {
-        _logger.LogInformation("[REPOSITORY][DELIVERYLOG] Logging {Status} delivery for {UserId} ({UserEmail}) ({MessageId})", status, userId, userEmail, messageId);
+        _logger.LogInformation("{Domain} Logging {Status} delivery for {UserId} ({UserEmail}) ({MessageId})\n", domain, status, userId, userEmail, messageId);
 
         var log = new DeliveryLogCollection
         {
@@ -33,7 +34,7 @@ public class DeliveryLogRepository : IDeliveryLogRepository
 
         public async Task<IEnumerable<DeliveryLogCollection>> GetUserDeliveriesAsync(string userId, bool unreadOnly = false)
     {
-        _logger.LogInformation("[REPOSITORY][DELIVERY] Fetching deliveries for {UserId}", userId);
+        _logger.LogInformation("{Domain} Fetching deliveries for {UserId}\n", domain, userId);
 
         var filter = Builders<DeliveryLogCollection>.Filter.Eq(l => l.UserId, userId);
 
@@ -52,7 +53,7 @@ public class DeliveryLogRepository : IDeliveryLogRepository
 
     public async Task MarkAsReadAsync(string userId, string userEmail, string deliveryId)
     {
-        _logger.LogInformation("[REPOSITORY][DELIVERY] Marking delivery {DeliveryId} as read for {UserId}/{UserEmail}", deliveryId, userId, userEmail);
+        _logger.LogInformation("{Domain} Marking delivery {DeliveryId} as read for {UserId}/{UserEmail}\n", domain, deliveryId, userId, userEmail);
 
         var filter = Builders<DeliveryLogCollection>.Filter.And(
             Builders<DeliveryLogCollection>.Filter.Eq(l => l.Id, deliveryId),

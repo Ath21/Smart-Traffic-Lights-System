@@ -8,16 +8,26 @@ namespace TrafficLightData.Repositories.Light;
 
 public class TrafficLightRepository : BaseRepository<TrafficLightEntity>, ITrafficLightRepository
 {
-    public TrafficLightRepository(TrafficLightDbContext context) : base(context) { }
+    private readonly ILogger<TrafficLightRepository> _logger;
+    private const string domain = "[REPOSITORY][TRAFFIC_LIGHT]";
+
+    public TrafficLightRepository(TrafficLightDbContext context, ILogger<TrafficLightRepository> logger) : base(context)
+    {
+        _logger = logger;
+    }
 
     public async Task<IEnumerable<TrafficLightEntity>> GetByIntersectionAsync(int intersectionId)
-        => await _context.TrafficLights
+    {
+        _logger.LogInformation("{Domain} Retrieving traffic lights for intersection {IntersectionId}\n", domain, intersectionId);
+        return await _context.TrafficLights
             .Where(l => l.IntersectionId == intersectionId)
             .OrderBy(l => l.LightName)
             .ToListAsync();
+    }
 
     public async Task UpdateStatusAsync(int lightId, bool isOperational)
     {
+        _logger.LogInformation("{Domain} Updating status for traffic light {LightId} to {IsOperational}\n", domain, lightId, isOperational);
         var light = await _context.TrafficLights.FindAsync(lightId);
         if (light != null)
         {

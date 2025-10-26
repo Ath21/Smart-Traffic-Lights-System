@@ -1,20 +1,23 @@
 using System.Net;
 using System.Net.Sockets;
-using DetectionData;
+using DetectionCacheData;
+using IntersectionControllerStore.Domain;
 using MassTransit;
 using Messages.Log;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using TrafficAnalyticsData;
+using TrafficLightCacheData;
 
-namespace TrafficAnalyticsStore.Controllers
+namespace IntersectionControllerStore.Controllers.Healthchecks
 {
     [ApiController]
-    [Route("traffic-analytics")]
+    [Route("intersection-controller")]
     public class ReadyController : ControllerBase
     {
-        private readonly TrafficAnalyticsDbContext _dbContext;
-        private readonly DetectionDbContext _detectionDbContext;
+        private readonly TrafficLightCacheDbContext _trafficLightCacheDbContext;
+        private readonly DetectionCacheDbContext _detectionCacheDbContext;
         private readonly IBusControl _bus;
+        private readonly IntersectionContext _intersection;
 
         private readonly string _service;
         private readonly string _layer;
@@ -24,17 +27,19 @@ namespace TrafficAnalyticsStore.Controllers
         private readonly string _containerIp;
 
         public ReadyController(
-            TrafficAnalyticsDbContext dbContext,
-            DetectionDbContext detectionDbContext,
-            IBusControl bus)
+            TrafficLightCacheDbContext trafficLightCacheDbContext,
+            DetectionCacheDbContext detectionCacheDbContext,
+            IBusControl bus,
+            IntersectionContext intersection)
         {
-            _dbContext = dbContext;
-            _detectionDbContext = detectionDbContext;
+            _trafficLightCacheDbContext = trafficLightCacheDbContext;
+            _detectionCacheDbContext = detectionCacheDbContext;
             _bus = bus;
+            _intersection = intersection;
 
-            _service = Environment.GetEnvironmentVariable("SERVICE_NAME") ?? "Traffic Analytics";
+            _service = Environment.GetEnvironmentVariable("SERVICE_NAME") ?? "IntersectionController";
             _layer = Environment.GetEnvironmentVariable("SERVICE_LAYER") ?? "Traffic";
-            _level = Environment.GetEnvironmentVariable("SERVICE_LEVEL") ?? "Cloud";
+            _level = Environment.GetEnvironmentVariable("SERVICE_LEVEL") ?? "Fog";
             _environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
             _hostname = Environment.MachineName;
             _containerIp = Dns.GetHostAddresses(Dns.GetHostName())
@@ -42,7 +47,9 @@ namespace TrafficAnalyticsStore.Controllers
                 ?.ToString() ?? "unknown";
         }
 
-        [HttpGet("ready")]
+        [HttpGet]
+        [Route("ready")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Ready()
         {
             var status = new Dictionary<string, object?>
@@ -54,35 +61,36 @@ namespace TrafficAnalyticsStore.Controllers
                 ["environment"] = _environment,
                 ["hostname"] = _hostname,
                 ["container_ip"] = _containerIp,
+                ["intersection"] = new { _intersection.Id, _intersection.Name },
                 ["timestamp"] = DateTime.UtcNow.ToString("u")
             };
 
             try
             {
-                // ---- TrafficAnalytics PostgreSQL ----
-                bool trafficDbConnected = await _dbContext.CanConnectAsync();
-                status["traffic-analytics-db"] = new { name = "TrafficAnalyticsDB (PostgreSQL)", reachable = trafficDbConnected };
-                if (!trafficDbConnected)
+                // ---- TrafficLight Cache Redis ----
+                bool trafficCacheOk = await _trafficLightCacheDbContext.CanConnectAsync();
+                status["traffic_light_cache"] = new { name = "TrafficLightCacheDB (Redis)", reachable = trafficCacheOk };
+                if (!trafficCacheOk)
                 {
                     status["status"] = "Not Ready";
-                    status["reason"] = "TrafficAnalyticsDB PostgreSQL unreachable";
+                    status["reason"] = "TrafficLightCacheDB (Redis) unreachable";
                     return StatusCode(503, status);
                 }
 
-                // ---- Detection MongoDB ----
-                bool detectionDbConnected = await _detectionDbContext.CanConnectAsync();
-                status["detection-db"] = new { name = "DetectionDB (MongoDB)", reachable = detectionDbConnected };
-                if (!detectionDbConnected)
+                // ---- Detection Cache Redis ----
+                bool detectionCacheOk = await _detectionCacheDbContext.CanConnectAsync();
+                status["detection_cache"] = new { name = "DetectionCacheDB (Redis)", reachable = detectionCacheOk };
+                if (!detectionCacheOk)
                 {
                     status["status"] = "Not Ready";
-                    status["reason"] = "DetectionDB MongoDB unreachable";
+                    status["reason"] = "DetectionCacheDB (Redis) unreachable";
                     return StatusCode(503, status);
                 }
 
                 // ---- RabbitMQ ----
-                bool brokerConnected = _bus.Topology.TryGetPublishAddress(typeof(LogMessage), out _);
-                status["rabbitmq"] = new { name = "RabbitMQ", reachable = brokerConnected };
-                if (!brokerConnected)
+                bool brokerOk = _bus.Topology.TryGetPublishAddress(typeof(LogMessage), out _);
+                status["message_broker"] = new { name = "RabbitMQ", reachable = brokerOk };
+                if (!brokerOk)
                 {
                     status["status"] = "Not Ready";
                     status["reason"] = "RabbitMQ not connected";

@@ -21,8 +21,8 @@ public static class MassTransitSetup
             {
                 var rabbit = configuration.GetSection("RabbitMQ");
 
-                var intersection = configuration["Intersection__Name"]?.ToLower().Replace(" ", "-") ?? "default";
-                var light = configuration["Light__Id"] ?? "0"; // optional, if you have per-light ID
+                var intersection = configuration["Intersection:Name"]?.ToLower().Replace(" ", "-") ?? "default";
+                var light = configuration["TrafficLight:Id"] ?? "0"; // optional, if you have per-light ID
 
                 // ===============================
                 // Connection with RabbitMQ

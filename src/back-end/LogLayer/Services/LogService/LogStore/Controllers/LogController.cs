@@ -13,6 +13,7 @@ public class LogController : ControllerBase
 {
     private readonly ILogBusiness _logBusiness;
     private readonly ILogger<LogController> _logger;
+    private const string domain = "[CONTROLLER][LOG]";
 
     public LogController(ILogBusiness logBusiness, ILogger<LogController> logger)
     {
@@ -22,10 +23,12 @@ public class LogController : ControllerBase
 
     [HttpGet]
     [Route("search")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> SearchLogs([FromQuery] SearchLogRequest request)
     {
         _logger.LogInformation(
-            "[CONTROLLER] Log search requested by {User} | Layer={Layer} | Service={Service} | Type={Type} | From={From} | To={To}",
+            "{Domain}[SEARCH] Log search requested by {User} | Layer={Layer} | Service={Service} | Type={Type} | From={From} | To={To}\n",
+            domain,
             User.FindFirstValue(ClaimTypes.Email) ?? "Unknown",
             request.Layer ?? "Any",
             request.Service ?? "Any",
@@ -40,21 +43,24 @@ public class LogController : ControllerBase
         if (logs == null || !logs.Any())
         {
             _logger.LogWarning(
-                "[CONTROLLER] No logs found for filters: Layer={Layer}, Service={Service}, Type={Type}, Range={From}–{To}",
-                request.Layer, request.Service, request.Type, request.From, request.To);
+                "{Domain}[SEARCH] No logs found for filters: Layer={Layer}, Service={Service}, Type={Type}, Range={From}–{To}\n",
+                domain, request.Layer, request.Service, request.Type, request.From, request.To);
             return NotFound();
         }
 
-        _logger.LogInformation("[CONTROLLER] {Count} log entries returned for query.", logs.Count());
+        _logger.LogInformation("{Domain}[SEARCH] {Count} log entries returned for query.\n", domain, logs.Count());
+        
         return Ok(logs);
     }
 
     [HttpPost]
     [Route("export")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> ExportLogs([FromBody] SearchLogRequest request, [FromQuery] string format = "csv")
     {
         _logger.LogInformation(
-            "[CONTROLLER] Log export requested by {User} | Format={Format} | Layer={Layer} | Service={Service} | Type={Type}",
+            "{Domain}[EXPORT] Log export requested by {User} | Format={Format} | Layer={Layer} | Service={Service} | Type={Type}\n",
+            domain,
             User.FindFirstValue(ClaimTypes.Email) ?? "Unknown",
             format, request.Layer, request.Service, request.Type);
 
@@ -62,11 +68,13 @@ public class LogController : ControllerBase
 
         if (logs == null || !logs.Any())
         {
-            _logger.LogWarning("[CONTROLLER] No logs found for export.");
+            _logger.LogWarning("{Domain}[EXPORT] No logs found for export.\n", domain);
+            
             return NotFound();
         }
 
         var csvBytes = await _logBusiness.ExportLogsToCsvAsync(logs);
+        
         return File(csvBytes, "text/csv", $"logs_export_{DateTime.UtcNow:yyyyMMdd_HHmm}.csv");
     }
 }

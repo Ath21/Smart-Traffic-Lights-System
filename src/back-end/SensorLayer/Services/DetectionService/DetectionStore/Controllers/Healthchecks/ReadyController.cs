@@ -2,15 +2,15 @@ using System.Net;
 using System.Net.Sockets;
 using DetectionCacheData;
 using DetectionData;
-using SensorStore.Domain;
+using DetectionStore.Domain;
 using MassTransit;
 using Messages.Log;
 using Microsoft.AspNetCore.Mvc;
 
-namespace SensorStore.Controllers
+namespace DetectionStore.Controllers
 {
     [ApiController]
-    [Route("sensor-service")]
+    [Route("detection-service")]
     public class ReadyController : ControllerBase
     {
         private readonly DetectionDbContext _detectionDbContext;
@@ -18,9 +18,9 @@ namespace SensorStore.Controllers
         private readonly IBusControl _bus;
         private readonly IntersectionContext _intersection;
 
+        private readonly string _service;
         private readonly string _layer;
         private readonly string _level;
-        private readonly string _service;
         private readonly string _environment;
         private readonly string _hostname;
         private readonly string _containerIp;
@@ -36,9 +36,9 @@ namespace SensorStore.Controllers
             _bus = bus;
             _intersection = intersection;
 
-            _layer = Environment.GetEnvironmentVariable("SERVICE_LAYER") ?? "Sensor Layer";
+            _service = Environment.GetEnvironmentVariable("SERVICE_NAME") ?? "Detection";
+            _layer = Environment.GetEnvironmentVariable("SERVICE_LAYER") ?? "Sensor";
             _level = Environment.GetEnvironmentVariable("SERVICE_LEVEL") ?? "Fog";
-            _service = Environment.GetEnvironmentVariable("SERVICE_NAME") ?? "Sensor Service";
             _environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
             _hostname = Environment.MachineName;
             _containerIp = Dns.GetHostAddresses(Dns.GetHostName())
@@ -46,7 +46,9 @@ namespace SensorStore.Controllers
                 ?.ToString() ?? "unknown";
         }
 
-        [HttpGet("ready")]
+        [HttpGet]
+        [Route("ready")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Ready()
         {
             var status = new Dictionary<string, object?>
@@ -94,7 +96,7 @@ namespace SensorStore.Controllers
                     return StatusCode(503, status);
                 }
 
-                // Everything OK
+                // All checks OK
                 return Ok(status);
             }
             catch (Exception ex)

@@ -14,7 +14,7 @@ public class DetectionLogPublisher : IDetectionLogPublisher
     private readonly string _routingPattern;
     private readonly string _exchangeName;
 
-    private const string Tag = "[PUBLISHER][LOG]";
+    private const string domain = "[PUBLISHER][LOG]";
 
     // Cached environment context
     private readonly string _layer;
@@ -74,11 +74,11 @@ public class DetectionLogPublisher : IDetectionLogPublisher
         try
         {
             await _publisher.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
-            _logger.LogInformation("{Tag} Published AUDIT log | Domain={Domain} | Message={Message}", Tag, domain, messageText);
+            _logger.LogInformation("{Domain} Published AUDIT log | Domain={Domain} | Message={Message}\n", domain, domain, messageText);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "{Tag} Failed to publish AUDIT log | Domain={Domain} | Error={Error}", Tag, domain, ex.Message);
+            _logger.LogError(ex, "{Domain} Failed to publish AUDIT log | Domain={Domain} | Error={Error}\n", domain, domain, ex.Message);
         }
     }
 
@@ -110,11 +110,11 @@ public class DetectionLogPublisher : IDetectionLogPublisher
         try
         {
             await _publisher.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
-            _logger.LogWarning("{Tag} Published ERROR log | Domain={Domain} | Message={Message}", Tag, domain, messageText);
+            _logger.LogWarning("{Domain} Published ERROR log | Domain={Domain} | Message={Message}\n", domain, domain, messageText);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "{Tag} Failed to publish ERROR log | Domain={Domain} | Error={Error}", Tag, domain, ex.Message);
+            _logger.LogError(ex, "{Domain} Failed to publish ERROR log | Domain={Domain} | Error={Error}\n", domain, domain, ex.Message);
         }
     }
 
@@ -146,11 +146,11 @@ public class DetectionLogPublisher : IDetectionLogPublisher
         try
         {
             await _publisher.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
-            _logger.LogWarning("{Tag} Published FAILOVER log | Domain={Domain} | Message={Message}", Tag, domain, messageText);
+            _logger.LogWarning("{Domain} Published FAILOVER log | Domain={Domain} | Message={Message}\n", domain, domain, messageText);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "{Tag} Failed to publish FAILOVER log | Domain={Domain} | Error={Error}", Tag, domain, ex.Message);
+            _logger.LogError(ex, "{Domain} Failed to publish FAILOVER log | Domain={Domain} | Error={Error}\n", domain, domain, ex.Message);
         }
     }
 }

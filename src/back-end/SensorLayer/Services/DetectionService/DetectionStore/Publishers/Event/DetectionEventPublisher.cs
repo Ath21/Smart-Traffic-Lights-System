@@ -12,6 +12,7 @@ public class DetectionEventPublisher : IDetectionEventPublisher
     private readonly ILogger<DetectionEventPublisher> _logger;
     private readonly IntersectionContext _intersection;
     private readonly string _routingPattern;
+    private const string domain = "[PUBLISHER][DETECTION]";
 
     public DetectionEventPublisher(
         IBus bus,
@@ -35,8 +36,8 @@ public class DetectionEventPublisher : IDetectionEventPublisher
         message.Intersection = _intersection.Name;
 
         await _bus.Publish(message, ctx => ctx.SetRoutingKey(routingKey));
-        _logger.LogInformation("[PUBLISHER][DETECTION] Emergency vehicle detected at {Intersection} ({Type})",
-            _intersection.Name, message.EmergencyVehicleType);
+        _logger.LogInformation("{Domain} Emergency vehicle detected at {Intersection} ({Type})\n",
+            domain, _intersection.Name, message.EmergencyVehicleType);
     }
 
     public async Task PublishPublicTransportDetectedAsync(PublicTransportDetectedMessage message)
@@ -48,8 +49,8 @@ public class DetectionEventPublisher : IDetectionEventPublisher
         message.IntersectionName = _intersection.Name;
 
         await _bus.Publish(message, ctx => ctx.SetRoutingKey(routingKey));
-        _logger.LogInformation("[PUBLISHER][DETECTION] Public transport detected at {Intersection} (Line={Line})",
-            _intersection.Name, message.LineName);
+        _logger.LogInformation("{Domain} Public transport detected at {Intersection} (Line={Line})\n",
+            domain, _intersection.Name, message.LineName);
     }
 
     public async Task PublishIncidentDetectedAsync(IncidentDetectedMessage message)
@@ -61,8 +62,8 @@ public class DetectionEventPublisher : IDetectionEventPublisher
         message.Intersection = _intersection.Name;
 
         await _bus.Publish(message, ctx => ctx.SetRoutingKey(routingKey));
-        _logger.LogInformation("[PUBLISHER][DETECTION] Incident detected at {Intersection}: {Description}",
-            _intersection.Name, message.Description);
+        _logger.LogInformation("{Domain} Incident detected at {Intersection}: {Description}\n",
+            domain, _intersection.Name, message.Description);
     }
 
     private string BuildRoutingKey(string eventType)

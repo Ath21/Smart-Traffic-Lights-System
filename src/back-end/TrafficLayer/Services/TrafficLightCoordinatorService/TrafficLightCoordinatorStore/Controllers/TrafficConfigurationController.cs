@@ -11,6 +11,7 @@ public class TrafficConfigurationsController : ControllerBase
 {
     private readonly TrafficLightDbContext _db;
     private readonly ILogger<TrafficConfigurationsController> _logger;
+    private const string domain = "[CONTROLLER][TRAFFIC_CONFIGURATION]";
 
     public TrafficConfigurationsController(TrafficLightDbContext db, ILogger<TrafficConfigurationsController> logger)
     {
@@ -21,8 +22,11 @@ public class TrafficConfigurationsController : ControllerBase
     // GET: /api/configurations
     [HttpGet]
     [Route("all")]
+    [Authorize(Roles = "Admin,TrafficOperator")]
     public async Task<IActionResult> GetAll()
     {
+        _logger.LogInformation("{Domain}[GET_ALL] GetAll called\n", domain);
+
         var configs = await _db.TrafficConfigurations
             .AsNoTracking()
             .OrderBy(c => c.ConfigurationId)
@@ -44,8 +48,11 @@ public class TrafficConfigurationsController : ControllerBase
     // GET: /api/configurations/{mode}
     [HttpGet]
     [Route("mode")]
+    [Authorize(Roles = "Admin,TrafficOperator")]
     public async Task<IActionResult> GetByMode(string mode)
     {
+        _logger.LogInformation("{Domain}[GET_BY_MODE] GetByMode called with mode={Mode}\n", domain, mode);
+
         var config = await _db.TrafficConfigurations
             .AsNoTracking()
             .Where(c => c.Mode.ToLower() == mode.ToLower())

@@ -3,19 +3,16 @@ using System.Net.Sockets;
 using MassTransit;
 using Messages.Log;
 using Microsoft.AspNetCore.Mvc;
-using TrafficLightCacheData;
-using TrafficLightControllerStore.Domain;
+using NotificationData;
 
-namespace TrafficLightControllerStore.Controllers
+namespace NotificationStore.Controllers.Healthchecks
 {
     [ApiController]
-    [Route("traffic-light-controller")]
+    [Route("notification-service")]
     public class ReadyController : ControllerBase
     {
-        private readonly TrafficLightCacheDbContext _trafficLightCacheDbContext;
+        private readonly NotificationDbContext _dbContext;
         private readonly IBusControl _bus;
-        private readonly IntersectionContext _intersection;
-        private readonly TrafficLightContext _light;
 
         private readonly string _service;
         private readonly string _layer;
@@ -24,20 +21,14 @@ namespace TrafficLightControllerStore.Controllers
         private readonly string _hostname;
         private readonly string _containerIp;
 
-        public ReadyController(
-            TrafficLightCacheDbContext trafficLightCacheDbContext,
-            IBusControl bus,
-            IntersectionContext intersection,
-            TrafficLightContext light)
+        public ReadyController(NotificationDbContext dbContext, IBusControl bus)
         {
-            _trafficLightCacheDbContext = trafficLightCacheDbContext;
+            _dbContext = dbContext;
             _bus = bus;
-            _intersection = intersection;
-            _light = light;
 
-            _service = Environment.GetEnvironmentVariable("SERVICE_NAME") ?? "Traffic Light Controller";
-            _layer = Environment.GetEnvironmentVariable("SERVICE_LAYER") ?? "Traffic";
-            _level = Environment.GetEnvironmentVariable("SERVICE_LEVEL") ?? "Edge";
+            _service = Environment.GetEnvironmentVariable("SERVICE_NAME") ?? "Notification";
+            _layer = Environment.GetEnvironmentVariable("SERVICE_LAYER") ?? "User";
+            _level = Environment.GetEnvironmentVariable("SERVICE_LEVEL") ?? "Cloud";
             _environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
             _hostname = Environment.MachineName;
             _containerIp = Dns.GetHostAddresses(Dns.GetHostName())
@@ -45,7 +36,9 @@ namespace TrafficLightControllerStore.Controllers
                 ?.ToString() ?? "unknown";
         }
 
-        [HttpGet("ready")]
+        [HttpGet]
+        [Route("ready")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Ready()
         {
             var status = new Dictionary<string, object?>
@@ -57,33 +50,34 @@ namespace TrafficLightControllerStore.Controllers
                 ["environment"] = _environment,
                 ["hostname"] = _hostname,
                 ["container_ip"] = _containerIp,
-                ["intersection"] = new { _intersection.Id, _intersection.Name },
-                ["light"] = new { _light.Id, _light.Name },
                 ["timestamp"] = DateTime.UtcNow.ToString("u")
             };
 
             try
             {
-                // ---- TrafficLight Cache Redis ----
-                bool cacheOk = await _trafficLightCacheDbContext.CanConnectAsync();
-                status["traffic_light_cache"] = new { name = "TrafficLightCacheDB (Redis)", reachable = cacheOk };
-                if (!cacheOk)
+                // ===== MongoDB Connectivity =====
+                bool dbConnected = await _dbContext.CanConnectAsync();
+                status["database"] = new { name = "NotificationDB (MongoDB)", reachable = dbConnected };
+
+                if (!dbConnected)
                 {
                     status["status"] = "Not Ready";
-                    status["reason"] = "TrafficLightCacheDB (Redis) unreachable";
+                    status["reason"] = "MongoDB unreachable";
                     return StatusCode(503, status);
                 }
 
-                // ---- RabbitMQ ----
-                bool brokerOk = _bus.Topology.TryGetPublishAddress(typeof(LogMessage), out _);
-                status["message_broker"] = new { name = "RabbitMQ", reachable = brokerOk };
-                if (!brokerOk)
+                // ===== RabbitMQ Connectivity =====
+                bool brokerConnected = _bus.Topology.TryGetPublishAddress(typeof(LogMessage), out _);
+                status["message_broker"] = new { name = "RabbitMQ", reachable = brokerConnected };
+
+                if (!brokerConnected)
                 {
                     status["status"] = "Not Ready";
-                    status["reason"] = "RabbitMQ not connected";
+                    status["reason"] = "RabbitMQ unreachable or topology not established";
                     return StatusCode(503, status);
                 }
 
+                // ===== OK =====
                 return Ok(status);
             }
             catch (Exception ex)

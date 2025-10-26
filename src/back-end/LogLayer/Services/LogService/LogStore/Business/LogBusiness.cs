@@ -14,6 +14,7 @@ public class LogBusiness : ILogBusiness
     private readonly ISearchLogRepository _searchRepo;
     private readonly IAuditLogRepository _auditRepo;
     private readonly ILogger<LogBusiness> _logger;
+    private const string domain = "[BUSINESS][LOG]";
 
     public LogBusiness(
         ISearchLogRepository searchRepo,
@@ -36,11 +37,11 @@ public class LogBusiness : ILogBusiness
         DateTime? to)
     {
         _logger.LogInformation(
-            "[BUSINESS][LOG] SearchLogsAsync called with layer={Layer}, service={Service}, type={Type}, from={From}, to={To}",
-            layer, service, type, from, to);
+            "{Domain} SearchLogsAsync called with layer={Layer}, service={Service}, type={Type}, from={From}, to={To}\n",
+            domain, layer, service, type, from, to);
 
         var results = await _searchRepo.SearchAsync(layer, service, type, from, to);
-        _logger.LogInformation("[BUSINESS][LOG] Retrieved {Count} logs from repository", results.Count());
+        _logger.LogInformation("{Domain} Retrieved {Count} logs from repository\n", domain, results.Count());
 
         var responses = new List<SearchLogResponse>();
 
@@ -62,7 +63,7 @@ public class LogBusiness : ILogBusiness
             }
         }
 
-        _logger.LogInformation("[BUSINESS][LOG] Mapped {Count} results to SearchLogResponse", responses.Count);
+        _logger.LogInformation("{Domain} Mapped {Count} results to SearchLogResponse\n", domain, responses.Count);
 
         // ------------------------------------------------------------
         // AUDIT: record business operation
@@ -74,15 +75,15 @@ public class LogBusiness : ILogBusiness
             Timestamp = DateTime.UtcNow,
             SourceLayer = "Log",
             SourceLevel = "Cloud",
-            SourceService = "Log Service",
-            SourceDomain = "[BUSINESS][SEARCH]",
-            Type = "audit",
+            SourceService = "Log",
+            SourceDomain = domain + "[SEARCH]",
+            Type = "Audit",
             Category = "Business",
             Message = $"Executed search query (layer={layer}, service={service}, type={type}, from={from}, to={to})",
             Operation = "SearchLogsAsync",
             Hostname = Environment.MachineName,
             ContainerIp = Environment.GetEnvironmentVariable("CONTAINER_IP") ?? "unknown",
-            Environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "prod",
+            Environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development",
             Data = new BsonDocument
             {
                 { "results_count", responses.Count },
@@ -91,7 +92,7 @@ public class LogBusiness : ILogBusiness
         };
 
         await _auditRepo.InsertAsync(auditEntry);
-        _logger.LogInformation("[BUSINESS][LOG][AUDIT] Stored business search audit entry ({AuditId})", auditEntry.AuditId);
+        _logger.LogInformation("{Domain} Stored business search audit entry ({AuditId})\n", domain, auditEntry.AuditId);
 
         return responses;
     }
@@ -101,7 +102,7 @@ public class LogBusiness : ILogBusiness
     // ============================================================
     public async Task<byte[]> ExportLogsToCsvAsync(IEnumerable<object> logs)
     {
-        _logger.LogInformation("[BUSINESS][LOG] ExportLogsToCsvAsync called with {Count} items", logs.Count());
+        _logger.LogInformation("{Domain} ExportLogsToCsvAsync called with {Count} items\n", domain, logs.Count());
 
         var sb = new StringBuilder();
         sb.AppendLine("Timestamp,SourceLayer,SourceLevel,SourceService,SourceDomain,Type,Category,Operation,Message,Environment");
@@ -134,9 +135,9 @@ public class LogBusiness : ILogBusiness
             Timestamp = DateTime.UtcNow,
             SourceLayer = "Log",
             SourceLevel = "Cloud",
-            SourceService = "Log Service",
-            SourceDomain = "[BUSINESS][EXPORT]",
-            Type = "audit",
+            SourceService = "Log",
+            SourceDomain = domain + "[EXPORT]",
+            Type = "Audit",
             Category = "Business",
             Message = $"Exported logs to CSV with {logs.Count()} records",
             Operation = "ExportLogsToCsvAsync",
@@ -151,7 +152,7 @@ public class LogBusiness : ILogBusiness
         };
 
         await _auditRepo.InsertAsync(auditEntry);
-        _logger.LogInformation("[BUSINESS][LOG][AUDIT] Stored CSV export audit entry ({AuditId})", auditEntry.AuditId);
+        _logger.LogInformation("[BUSINESS][LOG][AUDIT] Stored CSV export audit entry ({AuditId})\n", auditEntry.AuditId);
 
         return await Task.FromResult(csvBytes);
     }

@@ -1,15 +1,13 @@
 using System.Net;
 using System.Net.Sockets;
 using Microsoft.AspNetCore.Mvc;
-using SensorStore.Domain;
 
-namespace SensorStore.Controllers
+namespace LogStore.Controllers
 {
     [ApiController]
-    [Route("sensor-service")]
+    [Route("log-service")]
     public class HealthController : ControllerBase
     {
-        private readonly IntersectionContext _intersection;
         private readonly string _layer;
         private readonly string _level;
         private readonly string _service;
@@ -17,12 +15,11 @@ namespace SensorStore.Controllers
         private readonly string _hostname;
         private readonly string _containerIp;
 
-        public HealthController(IntersectionContext intersection)
+        public HealthController()
         {
-            _intersection = intersection;
-            _layer = Environment.GetEnvironmentVariable("SERVICE_LAYER") ?? "Sensor Layer";
-            _level = Environment.GetEnvironmentVariable("SERVICE_LEVEL") ?? "Fog";
-            _service = Environment.GetEnvironmentVariable("SERVICE_NAME") ?? "Sensor Service";
+            _layer = Environment.GetEnvironmentVariable("SERVICE_LAYER") ?? "Log";
+            _level = Environment.GetEnvironmentVariable("SERVICE_LEVEL") ?? "Cloud";
+            _service = Environment.GetEnvironmentVariable("SERVICE_NAME") ?? "Log Service";
             _environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
             _hostname = Environment.MachineName;
             _containerIp = Dns.GetHostAddresses(Dns.GetHostName())
@@ -30,23 +27,20 @@ namespace SensorStore.Controllers
                 ?.ToString() ?? "unknown";
         }
 
-        [HttpGet("health")]
+        [HttpGet]
+        [Route("health")]
+        [AllowAnonymous]
         public IActionResult Health()
         {
             return Ok(new
             {
                 status = "Healthy",
                 service = _service,
+                environment = _environment,
                 layer = _layer,
                 level = _level,
-                environment = _environment,
                 hostname = _hostname,
                 container_ip = _containerIp,
-                intersection = new
-                {
-                    id = _intersection.Id,
-                    name = _intersection.Name
-                },
                 timestamp = DateTime.UtcNow.ToString("u")
             });
         }

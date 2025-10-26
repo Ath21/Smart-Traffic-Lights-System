@@ -8,6 +8,7 @@ public class NotificationRepository : INotificationRepository
 {
     private readonly NotificationDbContext _context;
     private readonly ILogger<NotificationRepository> _logger;
+    private const string domain = "[REPOSITORY][NOTIFICATION]";
 
     public NotificationRepository(NotificationDbContext context, ILogger<NotificationRepository> logger)
     {
@@ -17,8 +18,8 @@ public class NotificationRepository : INotificationRepository
 
     public async Task AddOrUpdateSubscriptionAsync(NotificationCollection subscription)
     {
-        _logger.LogInformation("[REPOSITORY][NOTIFICATION] Upserting subscription for {UserId}/{UserEmail} at {Intersection}/{Metric}",
-            subscription.UserId, subscription.UserEmail, subscription.Intersection, subscription.Metric);
+        _logger.LogInformation("{Domain} Upserting subscription for {UserId}/{UserEmail} at {Intersection}/{Metric}\n",
+            domain, subscription.UserId, subscription.UserEmail, subscription.Intersection, subscription.Metric);
 
         var filter = Builders<NotificationCollection>.Filter.And(
             Builders<NotificationCollection>.Filter.Eq(n => n.UserId, subscription.UserId),
@@ -36,7 +37,7 @@ public class NotificationRepository : INotificationRepository
 
     public async Task<IEnumerable<NotificationCollection>> GetSubscribersAsync(string intersection, string metric)
     {
-        _logger.LogInformation("[REPOSITORY][NOTIFICATION] Fetching subscribers for {Intersection}/{Metric}", intersection, metric);
+        _logger.LogInformation("{Domain} Fetching subscribers for {Intersection}/{Metric}\n", domain, intersection, metric);
 
         var filter = Builders<NotificationCollection>.Filter.And(
             Builders<NotificationCollection>.Filter.Eq(n => n.Intersection, intersection),
@@ -49,7 +50,7 @@ public class NotificationRepository : INotificationRepository
 
     public async Task<IEnumerable<NotificationCollection>> GetUserSubscriptionsAsync(string userId)
     {
-        _logger.LogInformation("[REPOSITORY][NOTIFICATION] Fetching subscriptions for {UserId}", userId);
+        _logger.LogInformation("{Domain} Fetching subscriptions for {UserId}\n", domain, userId);
 
         var filter = Builders<NotificationCollection>.Filter.And(
             Builders<NotificationCollection>.Filter.Eq(n => n.UserId, userId),
@@ -61,8 +62,8 @@ public class NotificationRepository : INotificationRepository
 
     public async Task DeactivateSubscriptionAsync(string userId, string userEmail, string intersection, string metric)
     {
-        _logger.LogInformation("[REPOSITORY][NOTIFICATION] Deactivating subscription for {UserId} {UserEmail} {Intersection}/{Metric}",
-            userId, userEmail, intersection, metric);
+        _logger.LogInformation("{Domain} Deactivating subscription for {UserId} {UserEmail} {Intersection}/{Metric}\n",
+            domain, userId, userEmail, intersection, metric);
 
         var filter = Builders<NotificationCollection>.Filter.And(
             Builders<NotificationCollection>.Filter.Eq(n => n.UserId, userId),

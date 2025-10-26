@@ -14,6 +14,7 @@ public class LogConsumer : IConsumer<LogMessage>
     private readonly IErrorLogRepository _errorRepo;
     private readonly IFailoverLogRepository _failoverRepo;
     private readonly ILogger<LogConsumer> _logger;
+    private const string domain = "[CONSUMER][LOG]";
 
     public LogConsumer(
         IAuditLogRepository auditRepo,
@@ -33,8 +34,8 @@ public class LogConsumer : IConsumer<LogMessage>
         var correlationId = Guid.TryParse(msg.CorrelationId, out var cid) ? cid : Guid.NewGuid();
 
         _logger.LogInformation(
-            "[CONSUMER][LOG] Received log message from {Service} ({Layer}@{Level}) Type={Type}, CorrelationId={CorrelationId}",
-            msg.Service, msg.Layer, msg.Level, msg.Type, correlationId);
+            "{Domain} Received log message from {Service} ({Layer}@{Level}) Type={Type}, CorrelationId={CorrelationId}\n",
+            domain, msg.Service, msg.Layer, msg.Level, msg.Type, correlationId);
 
         var bsonData = msg.Data is not null ? msg.Data.ToBsonDocument() : new BsonDocument();
 
@@ -63,9 +64,9 @@ public class LogConsumer : IConsumer<LogMessage>
                     Data = bsonData
                 };
 
-                _logger.LogInformation("[CONSUMER][LOG][AUDIT] Inserting AuditLog entry for {Service}", msg.Service);
+                _logger.LogInformation("{Domain}[AUDIT] Inserting AuditLog entry for {Service}\n", domain, msg.Service);
                 await _auditRepo.InsertAsync(auditEntry);
-                _logger.LogInformation("[CONSUMER][LOG][AUDIT] Inserted AuditLog with Id={AuditId}", auditEntry.AuditId);
+                _logger.LogInformation("{Domain}[AUDIT] Inserted AuditLog with Id={AuditId}\n", domain, auditEntry.AuditId);
                 break;
 
             // =====================================================
@@ -91,9 +92,9 @@ public class LogConsumer : IConsumer<LogMessage>
                     Data = bsonData
                 };
 
-                _logger.LogWarning("[CONSUMER][LOG][ERROR] Inserting ErrorLog entry for {Service}", msg.Service);
+                _logger.LogWarning("{Domain}[ERROR] Inserting ErrorLog entry for {Service}\n", domain, msg.Service);
                 await _errorRepo.InsertAsync(errorEntry);
-                _logger.LogWarning("[CONSUMER][LOG][ERROR] Inserted ErrorLog with Id={ErrorId}", errorEntry.ErrorId);
+                _logger.LogWarning("{Domain}[ERROR] Inserted ErrorLog with Id={ErrorId}\n", domain, errorEntry.ErrorId);
                 break;
 
             // =====================================================
@@ -119,9 +120,9 @@ public class LogConsumer : IConsumer<LogMessage>
                     Data = bsonData
                 };
 
-                _logger.LogInformation("[CONSUMER][LOG][FAILOVER] Inserting FailoverLog entry for {Service}", msg.Service);
+                _logger.LogInformation("{Domain}[FAILOVER] Inserting FailoverLog entry for {Service}\n", domain, msg.Service);
                 await _failoverRepo.InsertAsync(failoverEntry);
-                _logger.LogInformation("[CONSUMER][LOG][FAILOVER] Inserted FailoverLog with Id={FailoverId}", failoverEntry.FailoverId);
+                _logger.LogInformation("{Domain}[FAILOVER] Inserted FailoverLog with Id={FailoverId}\n", domain, failoverEntry.FailoverId);
                 break;
 
             // =====================================================
@@ -147,13 +148,13 @@ public class LogConsumer : IConsumer<LogMessage>
                     Data = bsonData
                 };
 
-                _logger.LogInformation("[CONSUMER][LOG][DEFAULT] No matching type; saving as AuditLog for {Service}", msg.Service);
+                _logger.LogInformation("{Domain}[DEFAULT] No matching type; saving as AuditLog for {Service}\n", domain, msg.Service);
                 await _auditRepo.InsertAsync(defaultEntry);
-                _logger.LogInformation("[CONSUMER][LOG][DEFAULT] Inserted fallback AuditLog with Id={AuditId}", defaultEntry.AuditId);
+                _logger.LogInformation("{Domain}[DEFAULT] Inserted fallback AuditLog with Id={AuditId}\n", domain, defaultEntry.AuditId);
                 break;
         }
 
-        _logger.LogInformation("[CONSUMER][LOG] Stored {Type} log from {Service} ({Layer}@{Level}) successfully",
-            msg.Type, msg.Service, msg.Layer, msg.Level);
+        _logger.LogInformation("{Domain} Stored {Type} log from {Service} ({Layer}@{Level}) successfully\n",
+            domain, msg.Type, msg.Service, msg.Layer, msg.Level);
     }
 }

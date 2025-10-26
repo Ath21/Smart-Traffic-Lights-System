@@ -10,6 +10,7 @@ public class TrafficLightsController : ControllerBase
 {
     private readonly TrafficLightDbContext _db;
     private readonly ILogger<TrafficLightsController> _logger;
+    private const string domain = "[CONTROLLER][TRAFFIC_LIGHT]";
 
     public TrafficLightsController(TrafficLightDbContext db, ILogger<TrafficLightsController> logger)
     {
@@ -20,8 +21,11 @@ public class TrafficLightsController : ControllerBase
     // GET: /api/trafficlights
     [HttpGet]
     [Route("all")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetAll()
     {
+        _logger.LogInformation("{Domain}[GET_ALL] GetAll called\n", domain);
+
         var lights = await _db.TrafficLights
             .AsNoTracking()
             .Include(l => l.Intersection)
@@ -47,8 +51,11 @@ public class TrafficLightsController : ControllerBase
     // GET: /api/trafficlights/{id}
     [HttpGet]
     [Route("{id:int}")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetById(int id)
     {
+        _logger.LogInformation("{Domain}[GET_BY_ID] GetById called for ID {Id}\n", domain, id);
+
         var light = await _db.TrafficLights
             .AsNoTracking()
             .Include(l => l.Intersection)

@@ -12,21 +12,29 @@ namespace TrafficLightControllerStore.Controllers
         private readonly ITrafficLightCacheRepository _repository;
         private readonly TrafficLightContext _trafficLight;
         private readonly IntersectionContext _intersection;
+        private const string domain = "[CONTROLLER][TRAFFIC_LIGHTS]";
+        private readonly ILogger<TrafficLightsController> _logger;
 
         public TrafficLightsController(
             ITrafficLightCacheRepository repository,
             TrafficLightContext trafficLight,
-            IntersectionContext intersection)
+            IntersectionContext intersection,
+            ILogger<TrafficLightsController> logger)
         {
             _repository = repository;
             _trafficLight = trafficLight;
             _intersection = intersection;
+            _logger = logger;
         }
 
         // GET api/traffic-lights/state
-        [HttpGet("state")]
+        [HttpGet]
+        [Route("state")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetState()
         {
+            _logger.LogInformation("{Domain}[GET_STATE] GetState called\n", domain);
+
             int intersectionId = _intersection.Id;
             int lightId = _trafficLight.Id;
 
@@ -49,9 +57,13 @@ namespace TrafficLightControllerStore.Controllers
         }
 
         // GET api/traffic-lights/cycle
-        [HttpGet("cycle")]
+        [HttpGet]
+        [Route("cycle")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetCycle()
         {
+            _logger.LogInformation("{Domain}[GET_CYCLE] GetCycle called\n", domain);
+
             int intersectionId = _intersection.Id;
             int lightId = _trafficLight.Id;
 
@@ -72,9 +84,13 @@ namespace TrafficLightControllerStore.Controllers
         }
 
         // GET api/traffic-lights/failover
-        [HttpGet("failover")]
+        [HttpGet]
+        [Route("failover")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetFailover()
         {
+            _logger.LogInformation("{Domain}[GET_FAILOVER] GetFailover called\n", domain);
+
             int intersectionId = _intersection.Id;
             int lightId = _trafficLight.Id;
 

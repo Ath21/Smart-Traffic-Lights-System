@@ -11,6 +11,7 @@ public class DetectionController : ControllerBase
     private readonly IDetectionBusiness _business;
     private readonly ILogger<DetectionController> _logger;
     private readonly IntersectionContext _intersection;
+    private const string domain = "[CONTROLLER][DETECTION]";
 
     public DetectionController(
         IDetectionBusiness business,
@@ -24,46 +25,49 @@ public class DetectionController : ControllerBase
 
     [HttpGet]
     [Route("emergency")]
+    [Authorize(Roles = "Admin,TrafficOperator")]
     public async Task<IActionResult> GetRecentEmergencies()
     {
         var data = await _business.GetRecentEmergenciesAsync(_intersection.Id);
         if (!data.Any())
         {
-            _logger.LogWarning("[CONTROLLER][DETECTION] No emergency detections found for {Intersection}", _intersection.Name);
+            _logger.LogWarning("{Domain}[EMERGENCY] No emergency detections found for {Intersection}\n", domain, _intersection.Name);
             return NotFound();
         }
 
-        _logger.LogInformation("[CONTROLLER][DETECTION] {Count} emergency detections returned for {Intersection}", data.Count(), _intersection.Name);
+        _logger.LogInformation("{Domain}[EMERGENCY] {Count} emergency detections returned for {Intersection}\n", domain, data.Count(), _intersection.Name);
         return Ok(data);
     }
 
     [HttpGet]
     [Route("public-transport")]
+    [Authorize(Roles = "Admin,TrafficOperator")]
     public async Task<IActionResult> GetPublicTransports()
     {
         var data = await _business.GetRecentPublicTransportsAsync(_intersection.Id);
         if (!data.Any())
         {
-            _logger.LogWarning("[CONTROLLER][DETECTION] No public transport detections found for {Intersection}", _intersection.Name);
+            _logger.LogWarning("{Domain}[PUBLIC_TRANSPORT] No public transport detections found for {Intersection}\n", domain, _intersection.Name);
             return NotFound();
         }
 
-        _logger.LogInformation("[CONTROLLER][DETECTION] {Count} public transport detections returned for {Intersection}", data.Count(), _intersection.Name);
+        _logger.LogInformation("{Domain}[PUBLIC_TRANSPORT] {Count} public transport detections returned for {Intersection}\n", domain, data.Count(), _intersection.Name);
         return Ok(data);
     }
 
     [HttpGet]
     [Route("incident")]
+    [Authorize(Roles = "Admin,TrafficOperator")]
     public async Task<IActionResult> GetRecentIncidents()
     {
         var data = await _business.GetRecentIncidentsAsync(_intersection.Id);
         if (!data.Any())
         {
-            _logger.LogWarning("[CONTROLLER][DETECTION] No incident detections found for {Intersection}", _intersection.Name);
+            _logger.LogWarning("{Domain}[INCIDENT] No incident detections found for {Intersection}\n", domain, _intersection.Name);
             return NotFound();
         }
 
-        _logger.LogInformation("[CONTROLLER][DETECTION] {Count} incident detections returned for {Intersection}", data.Count(), _intersection.Name);
+        _logger.LogInformation("{Domain}[INCIDENT] {Count} incident detections returned for {Intersection}\n", domain, data.Count(), _intersection.Name);
         return Ok(data);
     }
 }

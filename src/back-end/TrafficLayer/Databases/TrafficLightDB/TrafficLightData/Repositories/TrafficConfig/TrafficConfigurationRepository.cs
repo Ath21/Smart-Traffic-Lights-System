@@ -8,17 +8,39 @@ namespace TrafficLightData.Repositories.TrafficConfig;
 
 public class TrafficConfigurationRepository : BaseRepository<TrafficConfigurationEntity>, ITrafficConfigurationRepository
 {
-    public TrafficConfigurationRepository(TrafficLightDbContext context) : base(context) { }
+    private readonly ILogger<TrafficConfigurationRepository> _logger;
+    private const string domain = "[REPOSITORY][TRAFFIC_CONFIG]";
+
+    public TrafficConfigurationRepository(TrafficLightDbContext context, ILogger<TrafficConfigurationRepository> logger) : base(context)
+    {
+        _logger = logger;
+    }
 
     public async Task<TrafficConfigurationEntity?> GetLatestByIntersectionAsync(int configId)
-        => await _context.TrafficConfigurations
+    {
+        _logger.LogInformation("{domain} Fetching latest configuration for ConfigID: {configId}\n", domain, configId);
+        return await _context.TrafficConfigurations
             .Where(c => c.ConfigurationId == configId)
             .OrderByDescending(c => c.LastUpdated)
             .FirstOrDefaultAsync();
+    }
+
+    public async Task<TrafficConfigurationEntity?> GetLatestByIntersectionAsync(int intersectionId)
+    {
+        _logger.LogInformation("{domain} Fetching latest configuration for IntersectionID: {intersectionId}\n", domain, intersectionId);
+        return await _context.TrafficConfigurations
+            .Where(c => c.IntersectionId == intersectionId)
+            .OrderByDescending(c => c.LastUpdated)
+            .FirstOrDefaultAsync();
+    }
 
     public async Task<IEnumerable<TrafficConfigurationEntity>> GetByModeAsync(string mode)
-        => await _context.TrafficConfigurations
+    {
+        _logger.LogInformation("{domain} Fetching configurations for Mode: {mode}\n", domain, mode);
+        return await _context.TrafficConfigurations
             .Where(c => c.Mode == mode)
             .OrderByDescending(c => c.LastUpdated)
             .ToListAsync();
+    }
+
 }

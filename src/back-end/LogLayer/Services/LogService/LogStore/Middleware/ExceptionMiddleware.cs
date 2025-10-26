@@ -13,6 +13,7 @@ public class ExceptionMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionMiddleware> _logger;
+    private const string domain = "[MIDDLEWARE][EXCEPTION]";
 
     public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
     {
@@ -66,7 +67,7 @@ public class ExceptionMiddleware
         string errorType,
         Exception ex)
     {
-        _logger.LogError(ex, "[MIDDLEWARE][EXCEPTION] {ErrorType}: {UserMessage}", errorType, userMessage);
+        _logger.LogError(ex, "{Domain} {ErrorType}: {UserMessage}\n", domain, errorType, userMessage);
 
         // ============================================================
         // Structured error payload (for MongoDB)
@@ -106,9 +107,11 @@ public class ExceptionMiddleware
             Data = data
         };
 
-        _logger.LogInformation("[MIDDLEWARE][EXCEPTION] Writing error log entry to MongoDB ({ErrorType})", errorType);
+        _logger.LogInformation("{Domain} Writing error log entry to MongoDB ({ErrorType})\n", domain, errorType);
+
         await errorRepo.InsertAsync(errorEntry);
-        _logger.LogInformation("[MIDDLEWARE][EXCEPTION] Stored error log successfully with Id={ErrorId}", errorEntry.ErrorId);
+
+        _logger.LogInformation("{Domain} Stored error log successfully with Id={ErrorId}\n", domain, errorEntry.ErrorId);
 
         // ============================================================
         // API Response

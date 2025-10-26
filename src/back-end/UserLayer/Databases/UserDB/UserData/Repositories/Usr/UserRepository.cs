@@ -7,38 +7,62 @@ namespace UserData.Repositories.Usr;
 public class UserRepository : IUserRepository
 {
     private readonly UserDbContext _context;
-    public UserRepository(UserDbContext context) => _context = context;
+    private readonly ILogger<UserRepository> _logger;
+    private const string domain = "[REPOSITORY][USER]";
+    public UserRepository(UserDbContext context, ILogger<UserRepository> logger) 
+    {
+        _context = context;
+        _logger = logger;
+    }
 
     public async Task<UserEntity?> GetByIdAsync(int id)
-        => await _context.Users.FirstOrDefaultAsync(u => u.UserId == id);
+    {
+        _logger.LogInformation("{Domain} Retrieving user by ID {UserId}\n", domain, id);
+        return await _context.Users.FirstOrDefaultAsync(u => u.UserId == id);
+    }
 
     public async Task<UserEntity?> GetByEmailAsync(string email)
-        => await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+    {
+        _logger.LogInformation("{Domain} Retrieving user by email {Email}\n", domain, email);
+        return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+    }
 
     public async Task<UserEntity?> GetByUsernameAsync(string username)
-        => await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+    {
+        _logger.LogInformation("{Domain} Retrieving user by username {Username}\n", domain, username);
+        return await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+    }
 
     public async Task<IEnumerable<UserEntity>> GetActiveUsersAsync()
-        => await _context.Users.Where(u => u.IsActive).ToListAsync();
+    {
+        _logger.LogInformation("{Domain} Retrieving active users\n", domain);
+        return await _context.Users.Where(u => u.IsActive).ToListAsync();
+    }
 
     public async Task InsertAsync(UserEntity entity)
     {
+        _logger.LogInformation("{Domain} Inserting new user\n", domain);
         await _context.Users.AddAsync(entity);
         await _context.SaveChangesAsync();
     }
 
     public async Task UpdateAsync(UserEntity entity)
     {
+        _logger.LogInformation("{Domain} Updating user with ID {UserId}\n", domain, entity.UserId);
         _context.Users.Update(entity);
         await _context.SaveChangesAsync();
     }
 
     public async Task DeleteAsync(UserEntity entity)
     {
+        _logger.LogInformation("{Domain} Deleting user with ID {UserId}\n", domain, entity.UserId);
         _context.Users.Remove(entity);
         await _context.SaveChangesAsync();
     }
 
     public async Task<bool> ExistsAsync(string username, string email)
-        => await _context.Users.AnyAsync(u => u.Username == username || u.Email == email);
+    {
+        _logger.LogInformation("{Domain} Checking if user exists with Username: {Username} or Email: {Email}\n", domain, username, email);
+        return await _context.Users.AnyAsync(u => u.Username == username || u.Email == email);
+    }
 }

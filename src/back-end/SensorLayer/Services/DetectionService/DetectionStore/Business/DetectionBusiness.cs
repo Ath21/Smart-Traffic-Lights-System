@@ -79,7 +79,7 @@ public class DetectionBusiness : IDetectionBusiness
             "ProcessEmergencyVehicleAsync"
         );
 
-        _logger.LogInformation("{Domain} Emergency vehicle persisted at {Intersection}", Domain, msg.Intersection);
+        _logger.LogInformation("{Domain}[EMERGENCY] Emergency vehicle persisted at {Intersection}\n", Domain, msg.Intersection);
     }
 
     // ============================================================
@@ -113,7 +113,7 @@ public class DetectionBusiness : IDetectionBusiness
             "ProcessPublicTransportAsync"
         );
 
-        _logger.LogInformation("{Domain} Public transport persisted at {Intersection}", Domain, msg.IntersectionName);
+        _logger.LogInformation("{Domain}[PUBLIC_TRANSPORT] Public transport persisted at {Intersection}\n", Domain, msg.IntersectionName);
     }
 
     // ============================================================
@@ -147,7 +147,7 @@ public class DetectionBusiness : IDetectionBusiness
             "ProcessIncidentAsync"
         );
 
-        _logger.LogWarning("{Domain} Incident persisted at {Intersection}", Domain, msg.Intersection);
+        _logger.LogWarning("{Domain}[INCIDENT] Incident persisted at {Intersection}\n", Domain, msg.Intersection);
     }
 
     // ============================================================
@@ -155,18 +155,21 @@ public class DetectionBusiness : IDetectionBusiness
     // ============================================================
     public async Task<IEnumerable<EmergencyVehicleDetectionResponse>> GetRecentEmergenciesAsync(int intersectionId)
     {
+        _logger.LogInformation("{Domain} Retrieving recent emergencies for intersection {IntersectionId}\n", Domain, intersectionId);
         var data = await _emergencyRepo.GetRecentEmergenciesAsync(intersectionId);
         return _mapper.Map<IEnumerable<EmergencyVehicleDetectionResponse>>(data);
     }
 
     public async Task<IEnumerable<PublicTransportDetectionResponse>> GetRecentPublicTransportsAsync(int intersectionId)
     {
+        _logger.LogInformation("{Domain} Retrieving recent public transports for intersection {IntersectionId}\n", Domain, intersectionId);
         var data = await _publicRepo.GetRecentPublicTransportsAsync(intersectionId);
         return _mapper.Map<IEnumerable<PublicTransportDetectionResponse>>(data);
     }
 
     public async Task<IEnumerable<IncidentDetectionResponse>> GetRecentIncidentsAsync(int intersectionId)
     {
+        _logger.LogInformation("{Domain} Retrieving recent incidents for intersection {IntersectionId}\n", Domain, intersectionId);
         var data = await _incidentRepo.GetRecentIncidentsAsync(intersectionId);
         return _mapper.Map<IEnumerable<IncidentDetectionResponse>>(data);
     }

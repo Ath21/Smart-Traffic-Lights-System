@@ -57,7 +57,7 @@ public static class MassTransitSetup
                 var sensorCountPattern    = rabbit["RoutingKeys:Sensor:SensorCount"]       ?? "sensor.count.{intersection}.{count}";
                 var detectionEventPattern = rabbit["RoutingKeys:Sensor:DetectionEvents"]   ?? "sensor.detection.{intersection}.{event}";
                 var trafficAnalyticsKey   = rabbit["RoutingKeys:Traffic:Analytics"] ?? "traffic.analytics.{intersection}.{metric}";
-                var logAnalyticsKey       = rabbit["RoutingKeys:Log:Analytics"]     ?? "log.traffic.analytics.{type}";
+                var logAnalyticsKey       = rabbit["RoutingKeys:Log:TrafficAnalytics"]     ?? "log.traffic.analytics.{type}";
 
                 // =====================================================
                 // [PUBLISH] TRAFFIC ANALYTICS (Congestion, Incident, Summary)

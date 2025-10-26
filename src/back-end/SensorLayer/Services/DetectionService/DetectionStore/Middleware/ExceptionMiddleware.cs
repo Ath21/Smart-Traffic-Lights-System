@@ -72,7 +72,7 @@ public class ExceptionMiddleware
         string errorType,
         Exception ex)
     {
-        _logger.LogError(ex, "{Tag} {ErrorType} - {Message}", Tag, errorType, userMessage);
+        _logger.LogError(ex, "{Tag} {ErrorType} - {Message}\n", Tag, errorType, userMessage);
 
         var correlationId = context.Request.Headers.ContainsKey("X-Correlation-ID")
             ? context.Request.Headers["X-Correlation-ID"].ToString()
@@ -100,11 +100,11 @@ public class ExceptionMiddleware
                 data: data,
                 operation: "HandleErrorAsync");
 
-            _logger.LogInformation("{Tag} Published error log ({ErrorType}) via RabbitMQ", Tag, errorType);
+            _logger.LogInformation("{Tag} Published error log ({ErrorType}) via RabbitMQ\n", Tag, errorType);
         }
         catch (Exception pubEx)
         {
-            _logger.LogError(pubEx, "{Tag} Failed to publish error log to RabbitMQ", Tag);
+            _logger.LogError(pubEx, "{Tag} Failed to publish error log to RabbitMQ\n", Tag);
         }
 
         context.Response.StatusCode = (int)status;

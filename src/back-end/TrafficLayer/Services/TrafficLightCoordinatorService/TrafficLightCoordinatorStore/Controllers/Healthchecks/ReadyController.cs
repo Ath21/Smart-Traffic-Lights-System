@@ -1,17 +1,18 @@
+using MassTransit;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using TrafficLightData;
+using Messages.Log;
 using System.Net;
 using System.Net.Sockets;
-using MassTransit;
-using Messages.Log;
-using Microsoft.AspNetCore.Mvc;
-using NotificationData;
 
-namespace NotificationStore.Controllers
+namespace TrafficLightCoordinatorStore.Controllers.Healthchecks
 {
     [ApiController]
-    [Route("notification-service")]
+    [Route("traffic-light-coordinator")]
     public class ReadyController : ControllerBase
     {
-        private readonly NotificationDbContext _dbContext;
+        private readonly TrafficLightDbContext _dbContext;
         private readonly IBusControl _bus;
 
         private readonly string _service;
@@ -21,13 +22,15 @@ namespace NotificationStore.Controllers
         private readonly string _hostname;
         private readonly string _containerIp;
 
-        public ReadyController(NotificationDbContext dbContext, IBusControl bus)
+        public ReadyController(
+            TrafficLightDbContext dbContext,
+            IBusControl bus)
         {
             _dbContext = dbContext;
             _bus = bus;
 
-            _service = Environment.GetEnvironmentVariable("SERVICE_NAME") ?? "Notification Service";
-            _layer = Environment.GetEnvironmentVariable("SERVICE_LAYER") ?? "User Layer";
+            _service = Environment.GetEnvironmentVariable("SERVICE_NAME") ?? "TrafficLightCoordinator";
+            _layer = Environment.GetEnvironmentVariable("SERVICE_LAYER") ?? "Traffic";
             _level = Environment.GetEnvironmentVariable("SERVICE_LEVEL") ?? "Cloud";
             _environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
             _hostname = Environment.MachineName;
@@ -36,7 +39,9 @@ namespace NotificationStore.Controllers
                 ?.ToString() ?? "unknown";
         }
 
-        [HttpGet("ready")]
+        [HttpGet]
+        [Route("ready")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Ready()
         {
             var status = new Dictionary<string, object?>
@@ -53,29 +58,26 @@ namespace NotificationStore.Controllers
 
             try
             {
-                // ===== MongoDB Connectivity =====
+                // ---- TrafficLight MSSQL ----
                 bool dbConnected = await _dbContext.CanConnectAsync();
-                status["database"] = new { name = "NotificationDB (MongoDB)", reachable = dbConnected };
-
+                status["traffic_light_db"] = new { name = "TrafficLightDB (MSSQL)", reachable = dbConnected };
                 if (!dbConnected)
                 {
                     status["status"] = "Not Ready";
-                    status["reason"] = "MongoDB unreachable";
+                    status["reason"] = "TrafficLightDB MSSQL unreachable";
                     return StatusCode(503, status);
                 }
 
-                // ===== RabbitMQ Connectivity =====
+                // ---- RabbitMQ ----
                 bool brokerConnected = _bus.Topology.TryGetPublishAddress(typeof(LogMessage), out _);
                 status["message_broker"] = new { name = "RabbitMQ", reachable = brokerConnected };
-
                 if (!brokerConnected)
                 {
                     status["status"] = "Not Ready";
-                    status["reason"] = "RabbitMQ unreachable or topology not established";
+                    status["reason"] = "RabbitMQ not connected";
                     return StatusCode(503, status);
                 }
 
-                // ===== OK =====
                 return Ok(status);
             }
             catch (Exception ex)

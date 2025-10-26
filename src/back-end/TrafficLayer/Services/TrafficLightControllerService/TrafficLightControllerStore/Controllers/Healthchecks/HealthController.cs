@@ -1,25 +1,32 @@
 using System.Net;
 using System.Net.Sockets;
 using Microsoft.AspNetCore.Mvc;
+using TrafficLightControllerStore.Domain;
 
-namespace UserStore.Controllers
+namespace TrafficLightControllerStore.Controllers.Healthchecks
 {
     [ApiController]
-    [Route("user-service")]
+    [Route("traffic-light-controller")]
     public class HealthController : ControllerBase
     {
+        private readonly IntersectionContext _intersection;
+        private readonly TrafficLightContext _light;
+
+        private readonly string _service;
         private readonly string _layer;
         private readonly string _level;
-        private readonly string _service;
         private readonly string _environment;
         private readonly string _hostname;
         private readonly string _containerIp;
 
-        public HealthController()
+        public HealthController(IntersectionContext intersection, TrafficLightContext light)
         {
-            _layer = Environment.GetEnvironmentVariable("SERVICE_LAYER") ?? "User";
-            _level = Environment.GetEnvironmentVariable("SERVICE_LEVEL") ?? "Cloud";
-            _service = Environment.GetEnvironmentVariable("SERVICE_NAME") ?? "User Service";
+            _intersection = intersection;
+            _light = light;
+
+            _service = Environment.GetEnvironmentVariable("SERVICE_NAME") ?? "TrafficLightController";
+            _layer = Environment.GetEnvironmentVariable("SERVICE_LAYER") ?? "Traffic";
+            _level = Environment.GetEnvironmentVariable("SERVICE_LEVEL") ?? "Edge";
             _environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
             _hostname = Environment.MachineName;
             _containerIp = Dns.GetHostAddresses(Dns.GetHostName())
@@ -27,18 +34,22 @@ namespace UserStore.Controllers
                 ?.ToString() ?? "unknown";
         }
 
-        [HttpGet("health")]
+        [HttpGet]
+        [Route("health")]
+        [AllowAnonymous]
         public IActionResult Health()
         {
             return Ok(new
             {
                 status = "Healthy",
                 service = _service,
-                environment = _environment,
                 layer = _layer,
                 level = _level,
+                environment = _environment,
                 hostname = _hostname,
                 container_ip = _containerIp,
+                intersection = new { _intersection.Id, _intersection.Name },
+                light = new { _light.Id, _light.Name },
                 timestamp = DateTime.UtcNow.ToString("u")
             });
         }

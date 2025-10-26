@@ -13,7 +13,7 @@ public class UserSubscriptionController : ControllerBase
 {
     private readonly IUserSubscriptionService _subscriptionService;
     private readonly ILogger<UserSubscriptionController> _logger;
-    private const string ControllerTag = "[CONTROLLER][SUBSCRIPTION]";
+    private const string domain = "[CONTROLLER][SUBSCRIPTION]";
 
     public UserSubscriptionController(
         IUserSubscriptionService subscriptionService,
@@ -34,7 +34,7 @@ public class UserSubscriptionController : ControllerBase
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "unknown";
         var email = User.FindFirstValue(ClaimTypes.Email) ?? "unknown";
 
-        _logger.LogInformation("{Tag} Received subscription request from {UserId} ({Email})", ControllerTag, userId, email);
+        _logger.LogInformation("{domain}[SUBSCRIBE] Received subscription request from {UserId} ({Email})\n", domain, userId, email);
 
         var result = await _subscriptionService.SubscribeAsync(userId, email, request);
         return Ok(result);

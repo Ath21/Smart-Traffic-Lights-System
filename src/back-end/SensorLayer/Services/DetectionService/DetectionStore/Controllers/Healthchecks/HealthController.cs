@@ -1,26 +1,28 @@
 using System.Net;
 using System.Net.Sockets;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using DetectionStore.Domain;
 
-namespace TrafficAnalyticsStore.Controllers
+namespace DetectionStore.Controllers.Healthchecks
 {
     [ApiController]
-    [Route("traffic-analytics")]
+    [Route("detection-service")]
     public class HealthController : ControllerBase
     {
-        private readonly string _service;
+        private readonly IntersectionContext _intersection;
         private readonly string _layer;
         private readonly string _level;
+        private readonly string _service;
         private readonly string _environment;
         private readonly string _hostname;
         private readonly string _containerIp;
 
-        public HealthController()
+        public HealthController(IntersectionContext intersection)
         {
-            _service = Environment.GetEnvironmentVariable("SERVICE_NAME") ?? "Traffic Analytics";
-            _layer = Environment.GetEnvironmentVariable("SERVICE_LAYER") ?? "Traffic";
-            _level = Environment.GetEnvironmentVariable("SERVICE_LEVEL") ?? "Cloud";
+            _intersection = intersection;
+            _layer = Environment.GetEnvironmentVariable("SERVICE_LAYER") ?? "Sensor";
+            _level = Environment.GetEnvironmentVariable("SERVICE_LEVEL") ?? "Fog";
+            _service = Environment.GetEnvironmentVariable("SERVICE_NAME") ?? "Detection";
             _environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
             _hostname = Environment.MachineName;
             _containerIp = Dns.GetHostAddresses(Dns.GetHostName())
@@ -28,7 +30,9 @@ namespace TrafficAnalyticsStore.Controllers
                 ?.ToString() ?? "unknown";
         }
 
-        [HttpGet("health")]
+        [HttpGet]
+        [Route("health")]
+        [AllowAnonymous]
         public IActionResult Health()
         {
             return Ok(new
@@ -40,6 +44,11 @@ namespace TrafficAnalyticsStore.Controllers
                 level = _level,
                 hostname = _hostname,
                 container_ip = _containerIp,
+                intersection = new
+                {
+                    id = _intersection.Id,
+                    name = _intersection.Name
+                },
                 timestamp = DateTime.UtcNow.ToString("u")
             });
         }

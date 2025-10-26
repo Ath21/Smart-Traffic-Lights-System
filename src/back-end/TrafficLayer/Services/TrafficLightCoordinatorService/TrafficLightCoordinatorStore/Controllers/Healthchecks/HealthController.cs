@@ -1,25 +1,26 @@
 using System.Net;
 using System.Net.Sockets;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace NotificationStore.Controllers
+namespace TrafficLightCoordinatorStore.Controllers.Healthchecks
 {
     [ApiController]
-    [Route("notification-service")]
+    [Route("traffic-light-coordinator")]
     public class HealthController : ControllerBase
     {
+        private readonly string _service;
         private readonly string _layer;
         private readonly string _level;
-        private readonly string _service;
         private readonly string _environment;
         private readonly string _hostname;
         private readonly string _containerIp;
 
         public HealthController()
         {
-            _layer = Environment.GetEnvironmentVariable("SERVICE_LAYER") ?? "User";
+            _service = Environment.GetEnvironmentVariable("SERVICE_NAME") ?? "TrafficLightCoordinator";
+            _layer = Environment.GetEnvironmentVariable("SERVICE_LAYER") ?? "Traffic";
             _level = Environment.GetEnvironmentVariable("SERVICE_LEVEL") ?? "Cloud";
-            _service = Environment.GetEnvironmentVariable("SERVICE_NAME") ?? "Notification Service";
             _environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
             _hostname = Environment.MachineName;
             _containerIp = Dns.GetHostAddresses(Dns.GetHostName())
@@ -27,10 +28,12 @@ namespace NotificationStore.Controllers
                 ?.ToString() ?? "unknown";
         }
 
-        [HttpGet("health")]
+        [HttpGet]
+        [Route("health")]
+        [AllowAnonymous]
         public IActionResult Health()
         {
-            var info = new
+            return Ok(new
             {
                 status = "Healthy",
                 service = _service,
@@ -40,9 +43,7 @@ namespace NotificationStore.Controllers
                 hostname = _hostname,
                 container_ip = _containerIp,
                 timestamp = DateTime.UtcNow.ToString("u")
-            };
-
-            return Ok(info);
+            });
         }
     }
 }

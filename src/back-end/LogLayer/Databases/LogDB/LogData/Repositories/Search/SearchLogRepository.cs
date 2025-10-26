@@ -6,10 +6,13 @@ namespace LogData.Repositories.Search;
 public class SearchLogRepository : ISearchLogRepository
 {
     private readonly LogDbContext _context;
+    private readonly ILogger<SearchLogRepository> _logger;
+    private const string domain = "[REPOSITORY][SEARCHLOG]";
 
-    public SearchLogRepository(LogDbContext context)
+    public SearchLogRepository(LogDbContext context, ILogger<SearchLogRepository> logger)
     {
         _context = context;
+        _logger = logger;
     }
 
     public async Task<IEnumerable<BaseLogCollection>> SearchAsync(
@@ -19,6 +22,8 @@ public class SearchLogRepository : ISearchLogRepository
         DateTime? from,
         DateTime? to)
     {
+        _logger.LogInformation("{domain} Searching logs with parameters - Layer: {layer}, Service: {service}, Type: {type}, From: {from}, To: {to}\n",
+            domain, layer, service, type, from, to);
         // Build reusable filters
         var auditFilter = BuildFilter(_context.AuditLogs, layer, service, from, to);
         var errorFilter = BuildFilter(_context.ErrorLogs, layer, service, from, to);

@@ -80,7 +80,7 @@ public class Startup
                     IssuerSigningKey = new SymmetricSecurityKey(key)
                 };
             });
-
+        
         // ===============================
         // Message Layer (MassTransit with RabbitMQ)
         // ===============================

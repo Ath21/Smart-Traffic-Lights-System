@@ -1,17 +1,16 @@
 using System.Net;
 using System.Net.Sockets;
+using IntersectionControllerStore.Domain;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using TrafficLightControllerStore.Domain;
 
-namespace TrafficLightControllerStore.Controllers
+namespace IntersectionControllerStore.Controllers.Healthchecks
 {
     [ApiController]
-    [Route("traffic-light-controller")]
+    [Route("intersection-controller")]
     public class HealthController : ControllerBase
     {
         private readonly IntersectionContext _intersection;
-        private readonly TrafficLightContext _light;
-
         private readonly string _service;
         private readonly string _layer;
         private readonly string _level;
@@ -19,14 +18,12 @@ namespace TrafficLightControllerStore.Controllers
         private readonly string _hostname;
         private readonly string _containerIp;
 
-        public HealthController(IntersectionContext intersection, TrafficLightContext light)
+        public HealthController(IntersectionContext intersection)
         {
             _intersection = intersection;
-            _light = light;
-
-            _service = Environment.GetEnvironmentVariable("SERVICE_NAME") ?? "Traffic Light Controller";
+            _service = Environment.GetEnvironmentVariable("SERVICE_NAME") ?? "IntersectionController";
             _layer = Environment.GetEnvironmentVariable("SERVICE_LAYER") ?? "Traffic";
-            _level = Environment.GetEnvironmentVariable("SERVICE_LEVEL") ?? "Edge";
+            _level = Environment.GetEnvironmentVariable("SERVICE_LEVEL") ?? "Fog";
             _environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
             _hostname = Environment.MachineName;
             _containerIp = Dns.GetHostAddresses(Dns.GetHostName())
@@ -34,7 +31,9 @@ namespace TrafficLightControllerStore.Controllers
                 ?.ToString() ?? "unknown";
         }
 
-        [HttpGet("health")]
+        [HttpGet]
+        [Route("health")]
+        [AllowAnonymous]
         public IActionResult Health()
         {
             return Ok(new
@@ -47,7 +46,6 @@ namespace TrafficLightControllerStore.Controllers
                 hostname = _hostname,
                 container_ip = _containerIp,
                 intersection = new { _intersection.Id, _intersection.Name },
-                light = new { _light.Id, _light.Name },
                 timestamp = DateTime.UtcNow.ToString("u")
             });
         }

@@ -15,6 +15,7 @@ public class DetectionWorker : BackgroundService
     private readonly ILogger<DetectionWorker> _logger;
     private readonly IntersectionContext _intersection;
     private readonly Random _rand = new();
+    private const string domain = "[WORKER][DETECTION]";
 
     public DetectionWorker(IServiceScopeFactory scopeFactory, ILogger<DetectionWorker> logger, IntersectionContext intersection)
     {
@@ -25,7 +26,7 @@ public class DetectionWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("[WORKER][DETECTION] Started for {Intersection} (Id={Id})", _intersection.Name, _intersection.Id);
+        _logger.LogInformation("{Domain} Started for {Intersection} (Id={Id})\n", domain, _intersection.Name, _intersection.Id);
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -79,13 +80,13 @@ public class DetectionWorker : BackgroundService
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "[WORKER][DETECTION] Loop error at {Intersection}", _intersection.Name);
+                _logger.LogError(ex, "{Domain} Loop error at {Intersection}\n", domain, _intersection.Name);
             }
 
             await Task.Delay(TimeSpan.FromSeconds(_rand.Next(25, 40)), stoppingToken);
         }
 
-        _logger.LogInformation("[WORKER][DETECTION] Stopped for {Intersection}", _intersection.Name);
+        _logger.LogInformation("{Domain} Stopped for {Intersection}\n", domain, _intersection.Name);
     }
 
     private EmergencyVehicleDetectedMessage GenerateEmergencyVehicleMessage()

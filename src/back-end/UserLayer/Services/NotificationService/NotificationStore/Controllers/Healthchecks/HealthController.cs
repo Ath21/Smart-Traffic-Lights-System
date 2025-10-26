@@ -1,26 +1,25 @@
 using System.Net;
 using System.Net.Sockets;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace TrafficLightCoordinatorStore.Controllers
+namespace NotificationStore.Controllers.Healthchecks
 {
     [ApiController]
-    [Route("traffic-light-coordinator")]
+    [Route("notification-service")]
     public class HealthController : ControllerBase
     {
-        private readonly string _service;
         private readonly string _layer;
         private readonly string _level;
+        private readonly string _service;
         private readonly string _environment;
         private readonly string _hostname;
         private readonly string _containerIp;
 
         public HealthController()
         {
-            _service = Environment.GetEnvironmentVariable("SERVICE_NAME") ?? "Traffic Light Coordinator";
-            _layer = Environment.GetEnvironmentVariable("SERVICE_LAYER") ?? "Traffic";
+            _layer = Environment.GetEnvironmentVariable("SERVICE_LAYER") ?? "User";
             _level = Environment.GetEnvironmentVariable("SERVICE_LEVEL") ?? "Cloud";
+            _service = Environment.GetEnvironmentVariable("SERVICE_NAME") ?? "Notification";
             _environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
             _hostname = Environment.MachineName;
             _containerIp = Dns.GetHostAddresses(Dns.GetHostName())
@@ -28,11 +27,12 @@ namespace TrafficLightCoordinatorStore.Controllers
                 ?.ToString() ?? "unknown";
         }
 
-        // Liveness: service running (no external dependencies)
-        [HttpGet("health")]
+        [HttpGet]
+        [Route("health")]
+        [AllowAnonymous]
         public IActionResult Health()
         {
-            return Ok(new
+            var info = new
             {
                 status = "Healthy",
                 service = _service,
@@ -42,7 +42,9 @@ namespace TrafficLightCoordinatorStore.Controllers
                 hostname = _hostname,
                 container_ip = _containerIp,
                 timestamp = DateTime.UtcNow.ToString("u")
-            });
+            };
+
+            return Ok(info);
         }
     }
 }

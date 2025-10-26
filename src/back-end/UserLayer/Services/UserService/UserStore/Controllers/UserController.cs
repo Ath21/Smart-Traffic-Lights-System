@@ -12,10 +12,13 @@ namespace UserStore.Controllers;
 public class UserController : ControllerBase
 {
     private readonly IUsrService _userService;
+    private readonly ILogger<UserController> _logger;
+    private const string domain = "[CONTROLLER][USER]";
 
-    public UserController(IUsrService userService)
+    public UserController(IUsrService userService, ILogger<UserController> logger)
     {
         _userService = userService;
+        _logger = logger;
     }
 
     [HttpPost]
@@ -23,6 +26,10 @@ public class UserController : ControllerBase
     [AllowAnonymous]
     public async Task<ActionResult<UserResponse>> Register([FromBody] RegisterUserRequest request)
     {
+        _logger.LogInformation(
+            "{Domain}[REGISTER] Registration attempt for username: {Username}, email: {Email}\n",
+            domain, request.Username, request.Email);
+
         if (string.IsNullOrWhiteSpace(request.Username) ||
             string.IsNullOrWhiteSpace(request.Email) ||
             string.IsNullOrWhiteSpace(request.Password) ||
@@ -45,6 +52,10 @@ public class UserController : ControllerBase
     [AllowAnonymous]
     public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
     {
+        _logger.LogInformation(
+            "{Domain}[LOGIN] Login attempt for username: {Username}\n",
+            domain, request.Username);
+
         var result = await _userService.LoginAsync(request);
         return Ok(result);
     }
@@ -54,6 +65,8 @@ public class UserController : ControllerBase
     [Authorize]
     public async Task<IActionResult> Logout()
     {
+        _logger.LogInformation("{Domain}[LOGOUT] Logout attempt for user: {UserId}\n", domain, GetUserId());
+
         var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
         await _userService.LogoutAsync(token);
         return NoContent();
@@ -64,6 +77,8 @@ public class UserController : ControllerBase
     [Authorize]
     public async Task<ActionResult<UserProfileResponse>> GetProfile()
     {
+        _logger.LogInformation("{Domain}[PROFILE] Profile request for user: {UserId}\n", domain, GetUserId());
+
         var userId = GetUserId();
         var profile = await _userService.GetProfileAsync(userId);
         return Ok(profile);
@@ -74,6 +89,8 @@ public class UserController : ControllerBase
     [Authorize]
     public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request)
     {
+        _logger.LogInformation("{Domain}[UPDATE_PROFILE] Update profile request for user: {UserId}\n", domain, GetUserId());
+
         if (string.IsNullOrWhiteSpace(request.Username) ||
             string.IsNullOrWhiteSpace(request.Email))
         {
@@ -96,6 +113,10 @@ public class UserController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
     {
+        _logger.LogInformation(
+            "{Domain}[RESET_PASSWORD] Password reset attempt for email: {Email}\n",
+            domain, request.Email);
+
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 

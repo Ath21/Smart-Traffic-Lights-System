@@ -31,7 +31,7 @@ public static class MassTransitSetup
             x.UsingRabbitMq((context, cfg) =>
             {
                 var rabbit = configuration.GetSection("RabbitMQ");
-                var intersection = configuration["Intersection__Name"]?.ToLower().Replace(" ", "-") ?? "default";
+                var intersection = configuration["Intersection:Name"]?.ToLower().Replace(" ", "-") ?? "default";
 
                 cfg.Host(rabbit["Host"], rabbit["VirtualHost"] ?? "/", h =>
                 {

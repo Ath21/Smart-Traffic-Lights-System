@@ -17,6 +17,7 @@ public class SensorBusiness : ISensorBusiness
     private readonly IDetectionCacheRepository _cacheRepo;
     private readonly IMapper _mapper;
     private readonly ILogger<SensorBusiness> _logger;
+    private const string domain = "[BUSINESS][SENSOR]";
 
     public SensorBusiness(
         IVehicleCountRepository vehicleRepo,
@@ -55,8 +56,8 @@ public class SensorBusiness : ISensorBusiness
         await _cacheRepo.SetVehicleCountAsync(msg.IntersectionId, msg.CountTotal);
 
         _logger.LogInformation(
-            "[BUSINESS][SENSOR] Vehicle count persisted for {Intersection} | Total={Total}, FlowRate={FlowRate:F2}",
-            msg.Intersection, msg.CountTotal, msg.FlowRate);
+            "{Domain} Vehicle count persisted for {Intersection} | Total={Total}, FlowRate={FlowRate:F2}\n",
+            domain, msg.Intersection, msg.CountTotal, msg.FlowRate);
     }
 
     // ============================================================
@@ -76,8 +77,8 @@ public class SensorBusiness : ISensorBusiness
         await _cacheRepo.SetPedestrianCountAsync(msg.IntersectionId, msg.Count);
 
         _logger.LogInformation(
-            "[BUSINESS][SENSOR] Pedestrian count persisted for {Intersection} | Count={Count}",
-            msg.Intersection, msg.Count);
+            "{Domain} Pedestrian count persisted for {Intersection} | Count={Count}\n",
+            domain, msg.Intersection, msg.Count);
     }
 
     // ============================================================
@@ -97,8 +98,8 @@ public class SensorBusiness : ISensorBusiness
         await _cacheRepo.SetCyclistCountAsync(msg.IntersectionId, msg.Count);
 
         _logger.LogInformation(
-            "[BUSINESS][SENSOR] Cyclist count persisted for {Intersection} | Count={Count}",
-            msg.Intersection, msg.Count);
+            "{Domain} Cyclist count persisted for {Intersection} | Count={Count}\n",
+            domain, msg.Intersection, msg.Count);
     }
 
     // ============================================================
@@ -110,8 +111,8 @@ public class SensorBusiness : ISensorBusiness
         var mapped = _mapper.Map<IEnumerable<VehicleCountResponse>>(data);
 
         _logger.LogInformation(
-            "[BUSINESS][SENSOR] Retrieved {Count} vehicle count records for intersection {Id}",
-            mapped.Count(), intersectionId);
+            "{Domain} Retrieved {Count} vehicle count records for intersection {Id}\n",
+            domain, mapped.Count(), intersectionId);
 
         return mapped;
     }
@@ -125,8 +126,8 @@ public class SensorBusiness : ISensorBusiness
         var mapped = _mapper.Map<IEnumerable<PedestrianCountResponse>>(data);
 
         _logger.LogInformation(
-            "[BUSINESS][SENSOR] Retrieved {Count} pedestrian count records for intersection {Id}",
-            mapped.Count(), intersectionId);
+            "{Domain} Retrieved {Count} pedestrian count records for intersection {Id}\n",
+            domain, mapped.Count(), intersectionId);
 
         return mapped;
     }
@@ -140,8 +141,8 @@ public class SensorBusiness : ISensorBusiness
         var mapped = _mapper.Map<IEnumerable<CyclistCountResponse>>(data);
 
         _logger.LogInformation(
-            "[BUSINESS][SENSOR] Retrieved {Count} cyclist count records for intersection {Id}",
-            mapped.Count(), intersectionId);
+            "{Domain} Retrieved {Count} cyclist count records for intersection {Id}\n",
+            domain, mapped.Count(), intersectionId);
 
         return mapped;
     }

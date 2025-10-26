@@ -1,17 +1,17 @@
 using System.Net;
 using System.Net.Sockets;
+using LogData;
 using MassTransit;
 using Messages.Log;
 using Microsoft.AspNetCore.Mvc;
-using UserData;
 
-namespace UserStore.Controllers
+namespace LogStore.Controllers
 {
     [ApiController]
-    [Route("user-service")]
+    [Route("log-service")]
     public class ReadyController : ControllerBase
     {
-        private readonly UserDbContext _dbContext;
+        private readonly LogDbContext _dbContext;
         private readonly IBusControl _bus;
 
         private readonly string _service;
@@ -21,13 +21,13 @@ namespace UserStore.Controllers
         private readonly string _hostname;
         private readonly string _containerIp;
 
-        public ReadyController(UserDbContext dbContext, IBusControl bus)
+        public ReadyController(LogDbContext dbContext, IBusControl bus)
         {
             _dbContext = dbContext;
             _bus = bus;
 
-            _service = Environment.GetEnvironmentVariable("SERVICE_NAME") ?? "User Service";
-            _layer = Environment.GetEnvironmentVariable("SERVICE_LAYER") ?? "User Layer";
+            _service = Environment.GetEnvironmentVariable("SERVICE_NAME") ?? "Log";
+            _layer = Environment.GetEnvironmentVariable("SERVICE_LAYER") ?? "Log";
             _level = Environment.GetEnvironmentVariable("SERVICE_LEVEL") ?? "Cloud";
             _environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
             _hostname = Environment.MachineName;
@@ -36,7 +36,9 @@ namespace UserStore.Controllers
                 ?.ToString() ?? "unknown";
         }
 
-        [HttpGet("ready")]
+        [HttpGet]
+        [Route("ready")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Ready()
         {
             var status = new Dictionary<string, object?>
@@ -53,18 +55,18 @@ namespace UserStore.Controllers
 
             try
             {
-                // ---- Database Check ----
+                // ===== MongoDB Connectivity =====
                 bool dbConnected = await _dbContext.CanConnectAsync();
-                status["database"] = new { name = "UserDB (MSSQL)", reachable = dbConnected };
+                status["database"] = new { name = "LogDB (MongoDB)", reachable = dbConnected };
 
                 if (!dbConnected)
                 {
                     status["status"] = "Not Ready";
-                    status["reason"] = "MSSQL unreachable";
+                    status["reason"] = "MongoDB unreachable";
                     return StatusCode(503, status);
                 }
 
-                // ---- RabbitMQ Check ----
+                // ===== RabbitMQ Connectivity =====
                 bool brokerConnected = _bus.Topology.TryGetPublishAddress(typeof(LogMessage), out _);
                 status["message_broker"] = new { name = "RabbitMQ", reachable = brokerConnected };
 
@@ -73,9 +75,9 @@ namespace UserStore.Controllers
                     status["status"] = "Not Ready";
                     status["reason"] = "RabbitMQ unreachable or topology not established";
                     return StatusCode(503, status);
-                }
-
-                // Everything OK
+                } 
+                
+                // ===== OK =====
                 return Ok(status);
             }
             catch (Exception ex)

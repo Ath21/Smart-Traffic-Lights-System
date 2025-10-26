@@ -1,18 +1,17 @@
-using MassTransit;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using TrafficLightData;
-using Messages.Log;
 using System.Net;
 using System.Net.Sockets;
+using MassTransit;
+using Messages.Log;
+using Microsoft.AspNetCore.Mvc;
+using UserData;
 
-namespace TrafficLightCoordinatorStore.Controllers
+namespace UserStore.Controllers.Healthchecks
 {
     [ApiController]
-    [Route("traffic-light-coordinator")]
+    [Route("user-service")]
     public class ReadyController : ControllerBase
     {
-        private readonly TrafficLightDbContext _dbContext;
+        private readonly UserDbContext _dbContext;
         private readonly IBusControl _bus;
 
         private readonly string _service;
@@ -22,15 +21,13 @@ namespace TrafficLightCoordinatorStore.Controllers
         private readonly string _hostname;
         private readonly string _containerIp;
 
-        public ReadyController(
-            TrafficLightDbContext dbContext,
-            IBusControl bus)
+        public ReadyController(UserDbContext dbContext, IBusControl bus)
         {
             _dbContext = dbContext;
             _bus = bus;
 
-            _service = Environment.GetEnvironmentVariable("SERVICE_NAME") ?? "Traffic Light Coordinator";
-            _layer = Environment.GetEnvironmentVariable("SERVICE_LAYER") ?? "Traffic";
+            _service = Environment.GetEnvironmentVariable("SERVICE_NAME") ?? "User";
+            _layer = Environment.GetEnvironmentVariable("SERVICE_LAYER") ?? "User";
             _level = Environment.GetEnvironmentVariable("SERVICE_LEVEL") ?? "Cloud";
             _environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
             _hostname = Environment.MachineName;
@@ -39,7 +36,9 @@ namespace TrafficLightCoordinatorStore.Controllers
                 ?.ToString() ?? "unknown";
         }
 
-        [HttpGet("ready")]
+        [HttpGet]
+        [Route("ready")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Ready()
         {
             var status = new Dictionary<string, object?>
@@ -56,26 +55,29 @@ namespace TrafficLightCoordinatorStore.Controllers
 
             try
             {
-                // ---- TrafficLight MSSQL ----
+                // ---- Database Check ----
                 bool dbConnected = await _dbContext.CanConnectAsync();
-                status["traffic_light_db"] = new { name = "TrafficLightDB (MSSQL)", reachable = dbConnected };
+                status["database"] = new { name = "UserDB (MSSQL)", reachable = dbConnected };
+
                 if (!dbConnected)
                 {
                     status["status"] = "Not Ready";
-                    status["reason"] = "TrafficLightDB MSSQL unreachable";
+                    status["reason"] = "MSSQL unreachable";
                     return StatusCode(503, status);
                 }
 
-                // ---- RabbitMQ ----
+                // ---- RabbitMQ Check ----
                 bool brokerConnected = _bus.Topology.TryGetPublishAddress(typeof(LogMessage), out _);
                 status["message_broker"] = new { name = "RabbitMQ", reachable = brokerConnected };
+
                 if (!brokerConnected)
                 {
                     status["status"] = "Not Ready";
-                    status["reason"] = "RabbitMQ not connected";
+                    status["reason"] = "RabbitMQ unreachable or topology not established";
                     return StatusCode(503, status);
                 }
 
+                // Everything OK
                 return Ok(status);
             }
             catch (Exception ex)
