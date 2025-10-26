@@ -31,6 +31,7 @@ public static class MassTransitSetup
             x.UsingRabbitMq((context, cfg) =>
             {
                 var rabbit = configuration.GetSection("RabbitMQ");
+                var intersection = configuration["Intersection__Name"]?.ToLower().Replace(" ", "-") ?? "default";
 
                 cfg.Host(rabbit["Host"], rabbit["VirtualHost"] ?? "/", h =>
                 {
@@ -46,36 +47,34 @@ public static class MassTransitSetup
                 var logExchange     = rabbit["Exchanges:Log"];
 
                 // ===========================
-                // Queues
+                // Queues (replace {intersection})
                 // ===========================
-                var lightQueue     = rabbit["Queues:Traffic:LightSchedule"];
-                var countQueue     = rabbit["Queues:Sensor:SensorCount"];
-                var detectionQueue = rabbit["Queues:Sensor:DetectionEvents"];
+                var lightQueue     = rabbit["Queues:Traffic:LightSchedule"]?
+                                        .Replace("{intersection}", intersection);
+                var countQueue     = rabbit["Queues:Sensor:SensorCount"]?
+                                        .Replace("{intersection}", intersection);
+                var detectionQueue = rabbit["Queues:Sensor:DetectionEvents"]?
+                                        .Replace("{intersection}", intersection);
 
                 // ===========================
                 // Routing Keys
                 // ===========================
-                var trafficLightKeys     = new[] { rabbit["RoutingKeys:Traffic:LightSchedule"] };
-                var sensorCountKeys      = new[] { rabbit["RoutingKeys:Sensor:SensorCount"] };
-                var sensorDetectionKeys  = new[] { rabbit["RoutingKeys:Sensor:DetectionEvents"] };
+                var trafficLightKeys    = new[] { rabbit["RoutingKeys:Traffic:LightSchedule"] };
+                var sensorCountKeys     = new[] { rabbit["RoutingKeys:Sensor:SensorCount"] };
+                var sensorDetectionKeys = new[] { rabbit["RoutingKeys:Sensor:DetectionEvents"] };
 
                 // ===========================
                 // PUBLISH CONFIGURATION
                 // ===========================
-
-                // Traffic Light Control
                 cfg.Message<TrafficLightControlMessage>(m => m.SetEntityName(trafficExchange));
                 cfg.Publish<TrafficLightControlMessage>(m => m.ExchangeType = ExchangeType.Topic);
 
-                // Priority Event
                 cfg.Message<PriorityEventMessage>(m => m.SetEntityName(trafficExchange));
                 cfg.Publish<PriorityEventMessage>(m => m.ExchangeType = ExchangeType.Topic);
 
-                // Priority Count
                 cfg.Message<PriorityCountMessage>(m => m.SetEntityName(trafficExchange));
                 cfg.Publish<PriorityCountMessage>(m => m.ExchangeType = ExchangeType.Topic);
 
-                // Logs
                 cfg.Message<LogMessage>(m => m.SetEntityName(logExchange));
                 cfg.Publish<LogMessage>(m => m.ExchangeType = ExchangeType.Topic);
 
@@ -83,24 +82,32 @@ public static class MassTransitSetup
                 // CONSUMERS / ENDPOINTS
                 // ===========================
 
-                // Light Schedule (from Coordinator)
+                // Light Schedule
                 cfg.ReceiveEndpoint(lightQueue, e =>
                 {
                     e.ConfigureConsumeTopology = false;
                     foreach (var key in trafficLightKeys)
-                        e.Bind(trafficExchange, s => { s.ExchangeType = ExchangeType.Topic; s.RoutingKey = key; });
+                        e.Bind(trafficExchange, s =>
+                        {
+                            s.ExchangeType = ExchangeType.Topic;
+                            s.RoutingKey = key.Replace("{intersection}", intersection);
+                        });
 
                     e.ConfigureConsumer<LightScheduleConsumer>(context);
                     e.PrefetchCount = 10;
                     e.ConcurrentMessageLimit = 5;
                 });
 
-                // Sensor Count (Vehicle, Pedestrian, Cyclist)
+                // Sensor Count
                 cfg.ReceiveEndpoint(countQueue, e =>
                 {
                     e.ConfigureConsumeTopology = false;
                     foreach (var key in sensorCountKeys)
-                        e.Bind(sensorExchange, s => { s.ExchangeType = ExchangeType.Topic; s.RoutingKey = key; });
+                        e.Bind(sensorExchange, s =>
+                        {
+                            s.ExchangeType = ExchangeType.Topic;
+                            s.RoutingKey = key.Replace("{intersection}", intersection);
+                        });
 
                     e.ConfigureConsumer<VehicleCountConsumer>(context);
                     e.ConfigureConsumer<PedestrianCountConsumer>(context);
@@ -110,12 +117,16 @@ public static class MassTransitSetup
                     e.ConcurrentMessageLimit = 5;
                 });
 
-                // Sensor Detection (Emergency Vehicle, Public Transport, Incident)
+                // Sensor Detection
                 cfg.ReceiveEndpoint(detectionQueue, e =>
                 {
                     e.ConfigureConsumeTopology = false;
                     foreach (var key in sensorDetectionKeys)
-                        e.Bind(sensorExchange, s => { s.ExchangeType = ExchangeType.Topic; s.RoutingKey = key; });
+                        e.Bind(sensorExchange, s =>
+                        {
+                            s.ExchangeType = ExchangeType.Topic;
+                            s.RoutingKey = key.Replace("{intersection}", intersection);
+                        });
 
                     e.ConfigureConsumer<EmergencyVehicleDetectedConsumer>(context);
                     e.ConfigureConsumer<PublicTransportDetectedConsumer>(context);

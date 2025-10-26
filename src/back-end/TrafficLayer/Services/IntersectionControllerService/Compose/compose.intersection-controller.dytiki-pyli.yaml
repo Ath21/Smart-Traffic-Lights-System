@@ -72,9 +72,9 @@ services:
       RabbitMQ__Exchanges__Log: LOG.EXCHANGE
 
       ## Queues
-      RabbitMQ__Queues__Sensor__SensorCount: sensor-2-intersection-controller.queue
-      RabbitMQ__Queues__Sensor__DetectionEvents: detection-2-intersection-controller.queue
-      RabbitMQ__Queues__Traffic__LightSchedule: coordinator-2-intersection-controller.queue
+      RabbitMQ__Queues__Sensor__SensorCount: sensor-2-intersection-controller.{intersection}.queue
+      RabbitMQ__Queues__Sensor__DetectionEvents: detection-2-intersection-controller.{intersection}.queue
+      RabbitMQ__Queues__Traffic__LightSchedule: coordinator-2-intersection-controller.{intersection}.queue
 
       ## Routing Keys
       RabbitMQ__RoutingKeys__Sensor__SensorCount: sensor.count.{intersection}.{count}

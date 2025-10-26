@@ -41,7 +41,7 @@ public class IncidentAnalyticsConsumer : IConsumer<IncidentAnalyticsMessage>
             {
                 ["Intersection"] = msg.Intersection,
                 ["IncidentType"] = msg.IncidentType,
-                ["Severity"] = msg.Severity
+                ["Severity"] = msg.Severity.ToString()
             });
 
         var subs = await _repo.GetSubscribersAsync(msg.Intersection, "incident");

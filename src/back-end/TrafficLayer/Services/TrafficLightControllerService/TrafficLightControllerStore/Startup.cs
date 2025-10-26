@@ -28,8 +28,8 @@ public class Startup
         // ===============================
         services.AddSingleton(sp =>
         {
-            var id = int.Parse(_configuration["Traffic_Light:Id"] ?? throw new InvalidOperationException("Traffic Light Id missing"));
-            var name = _configuration["Traffic_Light:Name"] ?? "Unknown";
+            var id = int.Parse(_configuration["TrafficLight:Id"] ?? throw new InvalidOperationException("Traffic Light Id missing"));
+            var name = _configuration["TrafficLight:Name"] ?? "Unknown";
             return new TrafficLightContext(id, name);
         });
 

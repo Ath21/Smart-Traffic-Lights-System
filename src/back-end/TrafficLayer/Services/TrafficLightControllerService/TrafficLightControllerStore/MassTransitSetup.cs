@@ -21,6 +21,9 @@ public static class MassTransitSetup
             {
                 var rabbit = configuration.GetSection("RabbitMQ");
 
+                var intersection = configuration["Intersection__Name"]?.ToLower().Replace(" ", "-") ?? "default";
+                var light = configuration["Light__Id"] ?? "0"; // optional, if you have per-light ID
+
                 // ===============================
                 // Connection with RabbitMQ
                 // ===============================
@@ -30,14 +33,21 @@ public static class MassTransitSetup
                     h.Password(rabbit["Password"]);
                 });
 
-                // =====================================================
-                // Exchanges, Queues, and Routing Keys
-                // =====================================================
+                // ===============================
+                // Exchanges, Queues, Routing Keys
+                // ===============================
                 var trafficExchange = rabbit["Exchanges:Traffic"]; // TRAFFIC.EXCHANGE
                 var logExchange = rabbit["Exchanges:Log"];         // LOG.EXCHANGE
 
-                var controlQueue = rabbit["Queues:Traffic:LightControl"]; // intersection-controller-2-traffic-light-controller.queue
-                var controlKey = rabbit["RoutingKeys:Traffic:LightControl"]; // traffic.light.control.{intersection}.{light}
+                // Replace placeholders in queue name
+                var controlQueue = rabbit["Queues:Traffic:LightControl"]?
+                    .Replace("{intersection}", intersection)
+                    .Replace("{light}", light);
+
+                var controlKey = rabbit["RoutingKeys:Traffic:LightControl"]?
+                    .Replace("{intersection}", intersection)
+                    .Replace("{light}", light);
+
                 var logKey = rabbit["RoutingKeys:Log:LightController"]; // log.traffic.light-controller.{type}
 
                 // =====================================================
@@ -49,8 +59,7 @@ public static class MassTransitSetup
 
                     e.Bind(trafficExchange, s =>
                     {
-                        // Use topic wildcard to receive all intersections and lights
-                        s.RoutingKey = controlKey.Replace("{intersection}", "*").Replace("{light}", "*");
+                        s.RoutingKey = controlKey;
                         s.ExchangeType = ExchangeType.Topic;
                     });
 
