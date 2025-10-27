@@ -8,7 +8,7 @@ using Messages.Log;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace DetectionStore.Controllers
+namespace DetectionStore.Controllers.Healthchecks
 {
     [ApiController]
     [Route("detection-service")]
@@ -49,7 +49,6 @@ namespace DetectionStore.Controllers
 
         [HttpGet]
         [Route("ready")]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Ready()
         {
             var status = new Dictionary<string, object?>

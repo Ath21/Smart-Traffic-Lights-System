@@ -33,8 +33,7 @@ namespace IntersectionControllerStore.Controllers.Healthchecks
         }
 
         [HttpGet]
-        [Route("health")]
-        [AllowAnonymous]
+        [Route("health")]        
         public IActionResult Health()
         {
             return Ok(new

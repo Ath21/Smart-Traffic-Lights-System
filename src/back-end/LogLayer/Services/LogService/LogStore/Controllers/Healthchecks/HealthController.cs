@@ -30,7 +30,6 @@ namespace LogStore.Controllers
 
         [HttpGet]
         [Route("health")]
-        [AllowAnonymous]
         public IActionResult Health()
         {
             return Ok(new

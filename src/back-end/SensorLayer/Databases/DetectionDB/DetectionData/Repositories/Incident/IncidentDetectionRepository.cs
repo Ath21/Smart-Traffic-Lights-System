@@ -1,15 +1,14 @@
 using System;
 using DetectionData;
 using DetectionData.Collections.Detection;
-using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 
 namespace DetectionData.Repositories.Incident;
 
 public class IncidentDetectionRepository : BaseRepository<IncidentDetectionCollection>, IIncidentDetectionRepository
 {
-    public IncidentDetectionRepository(DetectionDbContext context, ILogger<IncidentDetectionRepository> logger)
-        : base(context.IncidentDetections, logger) { }
+    public IncidentDetectionRepository(DetectionDbContext context)
+        : base(context.IncidentDetections) { }
 
     public async Task<IEnumerable<IncidentDetectionCollection>> GetRecentIncidentsAsync(int intersectionId, int limit = 20)
     {

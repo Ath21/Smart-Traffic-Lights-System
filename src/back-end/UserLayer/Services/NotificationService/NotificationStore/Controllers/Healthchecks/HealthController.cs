@@ -30,7 +30,6 @@ namespace NotificationStore.Controllers.Healthchecks
 
         [HttpGet]
         [Route("health")]
-        [AllowAnonymous]
         public IActionResult Health()
         {
             var info = new

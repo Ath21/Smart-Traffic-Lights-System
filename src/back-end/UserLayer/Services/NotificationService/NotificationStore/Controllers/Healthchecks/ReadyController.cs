@@ -39,7 +39,6 @@ namespace NotificationStore.Controllers.Healthchecks
 
         [HttpGet]
         [Route("ready")]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Ready()
         {
             var status = new Dictionary<string, object?>

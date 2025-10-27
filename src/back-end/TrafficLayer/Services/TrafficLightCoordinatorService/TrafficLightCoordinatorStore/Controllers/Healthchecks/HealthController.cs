@@ -31,7 +31,6 @@ namespace TrafficLightCoordinatorStore.Controllers.Healthchecks
 
         [HttpGet]
         [Route("health")]
-        [AllowAnonymous]
         public IActionResult Health()
         {
             return Ok(new
