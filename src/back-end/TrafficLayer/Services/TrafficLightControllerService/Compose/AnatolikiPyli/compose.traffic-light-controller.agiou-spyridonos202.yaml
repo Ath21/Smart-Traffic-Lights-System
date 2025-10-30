@@ -63,8 +63,10 @@ services:
       RabbitMQ__Queues__Traffic__LightControl: intersection-controller-2-traffic-light-controller.{intersection}.{light}.queue
 
       ## Routing Keys
-      RabbitMQ__RoutingKeys__Traffic__LightControl: traffic.light.control.{intersection}.{light}
-      RabbitMQ__RoutingKeys__Log__LightController: log.traffic.light-controller.{type}
+      ### Consume
+      RabbitMQ__RoutingKeys__Traffic__LightControl: traffic.light.control.#
+      ### Publish
+      RabbitMQ__RoutingKeys__Log__LightController: log.{layer}.{service}.{type}
 
     restart: always
 

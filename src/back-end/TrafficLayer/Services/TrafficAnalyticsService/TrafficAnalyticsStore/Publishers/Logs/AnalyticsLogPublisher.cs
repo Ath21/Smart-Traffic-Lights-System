@@ -36,7 +36,7 @@ public class AnalyticsLogPublisher : IAnalyticsLogPublisher
 
         _exchangeName = configuration["RabbitMQ:Exchanges:Log"] ?? "LOG.EXCHANGE";
         _routingPattern = configuration["RabbitMQ:RoutingKeys:Log:TrafficAnalytics"]
-                          ?? "log.traffic.analytics.{type}";
+                          ?? "log.traffic.analytics.*";
 
         // ============================================================
         // Environment-based service identity
@@ -61,7 +61,7 @@ public class AnalyticsLogPublisher : IAnalyticsLogPublisher
         Dictionary<string, object>? data = null,
         string? operation = null)
     {
-        var routingKey = _routingPattern.Replace("{type}", "audit");
+        var routingKey = _routingPattern.Replace("*", "audit");
 
         var msg = new LogMessage
         {
@@ -100,7 +100,7 @@ public class AnalyticsLogPublisher : IAnalyticsLogPublisher
         Dictionary<string, object>? data = null,
         string? operation = null)
     {
-        var routingKey = _routingPattern.Replace("{type}", "error");
+        var routingKey = _routingPattern.Replace("*", "error");
 
         var msg = new LogMessage
         {

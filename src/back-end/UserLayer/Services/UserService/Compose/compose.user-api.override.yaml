@@ -37,8 +37,9 @@ services:
       RabbitMQ__Exchanges__Log: LOG.EXCHANGE
 
       ## Routing Keys
+      ### Publish
       RabbitMQ__RoutingKeys__User__NotificationRequests: user.notification.request
-      RabbitMQ__RoutingKeys__Log__User: log.user.user-api.{type}
+      RabbitMQ__RoutingKeys__Log__User: log.{layer}.{service}.{type}
 
     depends_on:
       user-db:

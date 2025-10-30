@@ -22,7 +22,7 @@ public class TrafficLightPublisher : ITrafficLightPublisher
 
         // Default routing: traffic.light.control.{intersection}.{light}
         _routingPattern = config["RabbitMQ:RoutingKeys:Traffic:LightControl"]
-                          ?? "traffic.light.control.{intersection}.{light}";
+                          ?? "traffic.light.control.*.*";
 
         _hostname = Environment.MachineName;
         _environment = config["ASPNETCORE_ENVIRONMENT"] ?? "unknown";

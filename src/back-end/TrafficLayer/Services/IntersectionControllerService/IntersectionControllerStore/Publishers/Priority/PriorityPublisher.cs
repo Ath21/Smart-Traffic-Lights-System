@@ -17,9 +17,9 @@ public class PriorityPublisher : IPriorityPublisher
         _bus = bus;
         _logger = logger;
         _routingPatternCount = config["RabbitMQ:RoutingKeys:Traffic:PriorityCount"]
-                               ?? "priority.count.{intersection}.{count}";
+                               ?? "priority.count.*.*"; //{intersection}.{count}";
         _routingPatternEvent = config["RabbitMQ:RoutingKeys:Traffic:PriorityEvent"]
-                               ?? "priority.detection.{intersection}.{event}";
+                               ?? "priority.detection.*.*"; //{intersection}.{event}";
     }
 
     public async Task PublishPriorityCountAsync(PriorityCountMessage msg)

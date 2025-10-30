@@ -24,7 +24,7 @@ public class SensorCountPublisher : ISensorCountPublisher
         _intersection = intersection;
 
         _routingPattern = config["RabbitMQ:RoutingKeys:Sensor:SensorCount"]
-                          ?? "sensor.count.{intersection}.{count}";
+                          ?? "sensor.count.*.*";  // {intersection}.{count}";
     }
 
     // ============================================================
@@ -89,8 +89,13 @@ public class SensorCountPublisher : ISensorCountPublisher
     // ============================================================
     private string BuildRoutingKey(string typeKey)
     {
-        return _routingPattern
-            .Replace("{intersection}", _intersection.Name.ToLower().Replace(' ', '-'))
-            .Replace("{count}", typeKey);
+        // Routing key format: sensor.count.{intersection}.{type}
+        var intersectionKey = _intersection.Name
+            .ToLower()
+            .Replace(' ', '-')
+            .Replace('_', '-');
+
+        return $"sensor.count.{intersectionKey}.{typeKey}";
     }
+
 }

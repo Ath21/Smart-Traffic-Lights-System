@@ -17,9 +17,9 @@ public static class MassTransitSetup
     {
         services.AddMassTransit(x =>
         {
-            // ===========================
+            // =====================================================
             // Register Consumers
-            // ===========================
+            // =====================================================
             x.AddConsumer<LightScheduleConsumer>();
             x.AddConsumer<EmergencyVehicleDetectedConsumer>();
             x.AddConsumer<PublicTransportDetectedConsumer>();
@@ -39,33 +39,30 @@ public static class MassTransitSetup
                     h.Password(rabbit["Password"]);
                 });
 
-                // ===========================
+                // =====================================================
                 // Exchanges
-                // ===========================
+                // =====================================================
                 var trafficExchange = rabbit["Exchanges:Traffic"];
                 var sensorExchange  = rabbit["Exchanges:Sensor"];
                 var logExchange     = rabbit["Exchanges:Log"];
 
-                // ===========================
-                // Queues (replace {intersection})
-                // ===========================
-                var lightQueue     = rabbit["Queues:Traffic:LightSchedule"]?
-                                        .Replace("{intersection}", intersection);
-                var countQueue     = rabbit["Queues:Sensor:SensorCount"]?
-                                        .Replace("{intersection}", intersection);
-                var detectionQueue = rabbit["Queues:Sensor:DetectionEvents"]?
-                                        .Replace("{intersection}", intersection);
+                // =====================================================
+                // Queues (intersection specific)
+                // =====================================================
+                var lightQueue     = rabbit["Queues:Traffic:LightSchedule"]?.Replace("{intersection}", intersection);
+                var countQueue     = rabbit["Queues:Sensor:SensorCount"]?.Replace("{intersection}", intersection);
+                var detectionQueue = rabbit["Queues:Sensor:DetectionEvents"]?.Replace("{intersection}", intersection);
 
-                // ===========================
-                // Routing Keys
-                // ===========================
-                var trafficLightKeys    = new[] { rabbit["RoutingKeys:Traffic:LightSchedule"] };
-                var sensorCountKeys     = new[] { rabbit["RoutingKeys:Sensor:SensorCount"] };
-                var sensorDetectionKeys = new[] { rabbit["RoutingKeys:Sensor:DetectionEvents"] };
+                // =====================================================
+                // Routing Keys (wildcards — no replacements)
+                // =====================================================
+                var trafficLightKeys    = new[] { "traffic.light.schedule.*" };
+                var sensorCountKeys     = new[] { "sensor.count.*.*" };
+                var sensorDetectionKeys = new[] { "sensor.detection.*.*" };
 
-                // ===========================
+                // =====================================================
                 // PUBLISH CONFIGURATION
-                // ===========================
+                // =====================================================
                 cfg.Message<TrafficLightControlMessage>(m => m.SetEntityName(trafficExchange));
                 cfg.Publish<TrafficLightControlMessage>(m => m.ExchangeType = ExchangeType.Topic);
 
@@ -78,11 +75,11 @@ public static class MassTransitSetup
                 cfg.Message<LogMessage>(m => m.SetEntityName(logExchange));
                 cfg.Publish<LogMessage>(m => m.ExchangeType = ExchangeType.Topic);
 
-                // ===========================
+                // =====================================================
                 // CONSUMERS / ENDPOINTS
-                // ===========================
+                // =====================================================
 
-                // Light Schedule
+                // LIGHT SCHEDULE
                 cfg.ReceiveEndpoint(lightQueue, e =>
                 {
                     e.ConfigureConsumeTopology = false;
@@ -90,7 +87,7 @@ public static class MassTransitSetup
                         e.Bind(trafficExchange, s =>
                         {
                             s.ExchangeType = ExchangeType.Topic;
-                            s.RoutingKey = key.Replace("{intersection}", intersection);
+                            s.RoutingKey = key;
                         });
 
                     e.ConfigureConsumer<LightScheduleConsumer>(context);
@@ -98,7 +95,7 @@ public static class MassTransitSetup
                     e.ConcurrentMessageLimit = 5;
                 });
 
-                // Sensor Count
+                // SENSOR COUNT
                 cfg.ReceiveEndpoint(countQueue, e =>
                 {
                     e.ConfigureConsumeTopology = false;
@@ -106,7 +103,7 @@ public static class MassTransitSetup
                         e.Bind(sensorExchange, s =>
                         {
                             s.ExchangeType = ExchangeType.Topic;
-                            s.RoutingKey = key.Replace("{intersection}", intersection);
+                            s.RoutingKey = key;
                         });
 
                     e.ConfigureConsumer<VehicleCountConsumer>(context);
@@ -117,7 +114,7 @@ public static class MassTransitSetup
                     e.ConcurrentMessageLimit = 5;
                 });
 
-                // Sensor Detection
+                // SENSOR DETECTION
                 cfg.ReceiveEndpoint(detectionQueue, e =>
                 {
                     e.ConfigureConsumeTopology = false;
@@ -125,7 +122,7 @@ public static class MassTransitSetup
                         e.Bind(sensorExchange, s =>
                         {
                             s.ExchangeType = ExchangeType.Topic;
-                            s.RoutingKey = key.Replace("{intersection}", intersection);
+                            s.RoutingKey = key;
                         });
 
                     e.ConfigureConsumer<EmergencyVehicleDetectedConsumer>(context);

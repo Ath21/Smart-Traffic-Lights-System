@@ -21,7 +21,7 @@ public class IntersectionLogPublisher : IIntersectionLogPublisher
         _logger = logger;
 
         _routingPattern = config["RabbitMQ:RoutingKeys:Log:Intersection"]
-                          ?? "log.traffic.intersection-controller.{type}";
+                          ?? "log.traffic.intersection-controller.*";
 
         _hostname = Environment.MachineName;
         _environment = config["ASPNETCORE_ENVIRONMENT"] ?? "unknown";
@@ -78,7 +78,7 @@ public class IntersectionLogPublisher : IIntersectionLogPublisher
 
     private async Task PublishAsync(string type, LogMessage msg)
     {
-        var routingKey = _routingPattern.Replace("{type}", type);
+        var routingKey = _routingPattern.Replace("*", type);
         await _bus.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
     }
 }

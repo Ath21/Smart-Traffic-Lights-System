@@ -53,9 +53,11 @@ services:
       RabbitMQ__Queues__Traffic__Analytics: analytics-2-notification.queue
 
       ## Routing Keys
+      ### Consume
+      RabbitMQ__RoutingKeys__Traffic__Analytics: traffic.analytics.#
+      ### Publish
       RabbitMQ__RoutingKeys__User__Notifications: user.notification.request
-      RabbitMQ__RoutingKeys__Traffic__Analytics: traffic.analytics.{intersection}.{metric}
-      RabbitMQ__RoutingKeys__Log__User: log.user.notification-api.{type}
+      RabbitMQ__RoutingKeys__Log__User: log.{layer}.{service}.{type}
 
     depends_on:
       notification-db:

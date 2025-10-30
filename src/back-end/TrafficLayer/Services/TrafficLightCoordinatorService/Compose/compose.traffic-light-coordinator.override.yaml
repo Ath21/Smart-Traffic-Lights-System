@@ -42,12 +42,14 @@ services:
       RabbitMQ__Queues__Traffic__Analytics: analytics-2-light-coordinator.queue
 
       ## Routing Keys
-      RabbitMQ__RoutingKeys__Traffic__PriorityCount: priority.count.{intersection}.{count}
-      RabbitMQ__RoutingKeys__Traffic__PriorityDetection: priority.detection.{intersection}.{event}
-      RabbitMQ__RoutingKeys__Traffic__Analytics: traffic.analytics.{intersection}.{metric}
+      ### Consume
+      RabbitMQ__RoutingKeys__Traffic__PriorityCount: priority.count.#
+      RabbitMQ__RoutingKeys__Traffic__PriorityDetection: priority.detection.#
+      RabbitMQ__RoutingKeys__Traffic__Analytics: traffic.analytics.#
+      ### Publish
       RabbitMQ__RoutingKeys__Traffic__LightSchedule: traffic.light.schedule.{intersection}
       RabbitMQ__RoutingKeys__Traffic__LightControl: traffic.light.control.{intersection}.{light}
-      RabbitMQ__RoutingKeys__Log__Coordinator: log.traffic.light-coordinator.{type}
+      RabbitMQ__RoutingKeys__Log__Coordinator: log.{layer}.{service}.{type}
 
     depends_on:
       traffic-light-db:

@@ -26,7 +26,7 @@ public static class MassTransitSetup
                 var rabbit = configuration.GetSection("RabbitMQ");
 
                 // =====================================================
-                // RabbitMQ Connection
+                // Connection
                 // =====================================================
                 cfg.Host(rabbit["Host"], rabbit["VirtualHost"] ?? "/", h =>
                 {
@@ -38,21 +38,21 @@ public static class MassTransitSetup
                 // Exchanges
                 // =====================================================
                 var trafficExchange = rabbit["Exchanges:Traffic"];
-                var logExchange = rabbit["Exchanges:Log"];
+                var logExchange     = rabbit["Exchanges:Log"];
 
                 // =====================================================
                 // Queues
                 // =====================================================
-                var priorityCountQueue = rabbit["Queues:Traffic:PriorityCount"];
+                var priorityCountQueue     = rabbit["Queues:Traffic:PriorityCount"];
                 var priorityDetectionQueue = rabbit["Queues:Traffic:PriorityDetection"];
-                var analyticsQueue = rabbit["Queues:Traffic:Analytics"];
+                var analyticsQueue         = rabbit["Queues:Traffic:Analytics"];
 
                 // =====================================================
-                // Routing Keys
+                // Routing Keys (use wildcards for intersection)
                 // =====================================================
-                var priorityCountKey = rabbit["RoutingKeys:Traffic:PriorityCount"];
-                var priorityDetectionKey = rabbit["RoutingKeys:Traffic:PriorityDetection"];
-                var analyticsKey = rabbit["RoutingKeys:Traffic:Analytics"];
+                var priorityCountKey     = "priority.count.*.*";       // {intersection}.{count}
+                var priorityDetectionKey = "priority.detection.*.*";   // {intersection}.{event}
+                var analyticsKey         = "traffic.analytics.*.*";    // {intersection}.{metric}
 
                 // =====================================================
                 // [PUBLISH] TRAFFIC LIGHT SCHEDULE
@@ -61,7 +61,7 @@ public static class MassTransitSetup
                 cfg.Publish<TrafficLightScheduleMessage>(m => m.ExchangeType = ExchangeType.Topic);
 
                 // =====================================================
-                // [PUBLISH] LOG MESSAGES
+                // [PUBLISH] LOGS
                 // =====================================================
                 cfg.Message<LogMessage>(m => m.SetEntityName(logExchange));
                 cfg.Publish<LogMessage>(m => m.ExchangeType = ExchangeType.Topic);
@@ -72,11 +72,10 @@ public static class MassTransitSetup
                 cfg.ReceiveEndpoint(priorityDetectionQueue, e =>
                 {
                     e.ConfigureConsumeTopology = false;
-
                     e.Bind(trafficExchange, s =>
                     {
-                        s.RoutingKey = priorityDetectionKey;
                         s.ExchangeType = ExchangeType.Topic;
+                        s.RoutingKey = priorityDetectionKey;
                     });
 
                     e.ConfigureConsumer<PriorityEventConsumer>(context);
@@ -90,11 +89,10 @@ public static class MassTransitSetup
                 cfg.ReceiveEndpoint(priorityCountQueue, e =>
                 {
                     e.ConfigureConsumeTopology = false;
-
                     e.Bind(trafficExchange, s =>
                     {
-                        s.RoutingKey = priorityCountKey;
                         s.ExchangeType = ExchangeType.Topic;
+                        s.RoutingKey = priorityCountKey;
                     });
 
                     e.ConfigureConsumer<PriorityCountConsumer>(context);
@@ -108,11 +106,10 @@ public static class MassTransitSetup
                 cfg.ReceiveEndpoint(analyticsQueue, e =>
                 {
                     e.ConfigureConsumeTopology = false;
-
                     e.Bind(trafficExchange, s =>
                     {
-                        s.RoutingKey = analyticsKey;
                         s.ExchangeType = ExchangeType.Topic;
+                        s.RoutingKey = analyticsKey;
                     });
 
                     e.ConfigureConsumer<CongestionAnalyticsConsumer>(context);

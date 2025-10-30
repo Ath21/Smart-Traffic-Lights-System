@@ -54,10 +54,10 @@ public static class MassTransitSetup
                 // =====================================================
                 // Routing Keys
                 // =====================================================
-                var sensorCountPattern    = rabbit["RoutingKeys:Sensor:SensorCount"]       ?? "sensor.count.{intersection}.{count}";
-                var detectionEventPattern = rabbit["RoutingKeys:Sensor:DetectionEvents"]   ?? "sensor.detection.{intersection}.{event}";
-                var trafficAnalyticsKey   = rabbit["RoutingKeys:Traffic:Analytics"] ?? "traffic.analytics.{intersection}.{metric}";
-                var logAnalyticsKey       = rabbit["RoutingKeys:Log:TrafficAnalytics"]     ?? "log.traffic.analytics.{type}";
+                var sensorCountPattern = rabbit["RoutingKeys:Sensor:SensorCount"] ?? "sensor.count.#"; //{intersection}.{count}";
+                var detectionEventPattern = rabbit["RoutingKeys:Sensor:DetectionEvents"]   ?? "sensor.detection.#";
+                var trafficAnalyticsKey   = rabbit["RoutingKeys:Traffic:Analytics"] ?? "traffic.analytics.#";
+                var logAnalyticsKey       = rabbit["RoutingKeys:Log:TrafficAnalytics"]     ?? "log.traffic.analytics.*";
 
                 // =====================================================
                 // [PUBLISH] TRAFFIC ANALYTICS (Congestion, Incident, Summary)
@@ -90,9 +90,7 @@ public static class MassTransitSetup
                     e.Bind(sensorExchange, s =>
                     {
                         s.ExchangeType = ExchangeType.Topic;
-                        s.RoutingKey = sensorCountPattern
-                            .Replace("{intersection}", "*")
-                            .Replace("{count}", "#");
+                        s.RoutingKey = sensorCountPattern;
                     });
 
                     e.ConfigureConsumer<VehicleCountConsumer>(context);
@@ -117,9 +115,7 @@ public static class MassTransitSetup
                     e.Bind(sensorExchange, s =>
                     {
                         s.ExchangeType = ExchangeType.Topic;
-                        s.RoutingKey = detectionEventPattern
-                            .Replace("{intersection}", "*")
-                            .Replace("{event}", "#");
+                        s.RoutingKey = detectionEventPattern;
                     });
 
                     e.ConfigureConsumer<EmergencyVehicleDetectedConsumer>(context);

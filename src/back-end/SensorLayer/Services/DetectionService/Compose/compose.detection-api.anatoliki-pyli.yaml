@@ -61,9 +61,10 @@ services:
       RabbitMQ__Exchanges__Sensor: SENSOR.EXCHANGE
       RabbitMQ__Exchanges__Log: LOG.EXCHANGE
 
-      ## Routing Keys
+      ## Routing Keys 
+      ### Publish 
       RabbitMQ__RoutingKeys__Sensor__DetectionEvent: sensor.detection.{intersection}.{event}
-      RabbitMQ__RoutingKeys__Log__Sensor: log.sensor.detection-api.{type}
+      RabbitMQ__RoutingKeys__Log__Sensor: log.{layer}.{service}.{type}
 
     networks:
       - detection-network

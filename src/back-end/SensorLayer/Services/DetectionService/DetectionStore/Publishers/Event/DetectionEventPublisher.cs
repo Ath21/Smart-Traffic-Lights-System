@@ -24,7 +24,7 @@ public class DetectionEventPublisher : IDetectionEventPublisher
         _logger = logger;
         _intersection = intersection;
         _routingPattern = config["RabbitMQ:RoutingKeys:Sensor:DetectionEvent"]
-                          ?? "sensor.detection.{intersection}.{event}";
+                          ?? "sensor.detection.*.*";  // {intersection}.{event}
     }
 
     public async Task PublishEmergencyVehicleDetectedAsync(EmergencyVehicleDetectedMessage message)
@@ -66,7 +66,17 @@ public class DetectionEventPublisher : IDetectionEventPublisher
             domain, _intersection.Name, message.Description);
     }
 
-    private string BuildRoutingKey(string eventType)
-        => _routingPattern.Replace("{intersection}", _intersection.Name.ToLower().Replace(' ', '-'))
-                          .Replace("{event}", eventType);
+    // ============================================================
+    // Helper: Build routing key for intersection/type
+    // ============================================================
+    private string BuildRoutingKey(string eventKey)
+    {
+        // Routing key format: sensor.count.{intersection}.{type}
+        var intersectionKey = _intersection.Name
+            .ToLower()
+            .Replace(' ', '-')
+            .Replace('_', '-');
+
+        return $"sensor.detection.{intersectionKey}.{eventKey}";
+    }
 }

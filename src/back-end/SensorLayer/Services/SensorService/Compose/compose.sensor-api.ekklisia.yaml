@@ -63,7 +63,7 @@ services:
 
       ## Routing Keys
       RabbitMQ__RoutingKeys__Sensor__SensorCount: sensor.count.{intersection}.{count}
-      RabbitMQ__RoutingKeys__Log__Sensor: log.sensor.sensor-api.{type}
+      RabbitMQ__RoutingKeys__Log__Sensor: log.{layer}.{service}.{type}
 
     networks:
       - detection-network

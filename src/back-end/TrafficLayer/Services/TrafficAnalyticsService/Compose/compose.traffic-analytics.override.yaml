@@ -52,10 +52,12 @@ services:
       RabbitMQ__Queues__Sensor__DetectionEvents: detection-2-analytics.queue
 
       ## Routing Keys
-      RabbitMQ__RoutingKeys__Sensor__SensorCount: sensor.count.{intersection}.{count}
-      RabbitMQ__RoutingKeys__Sensor__DetectionEvents: sensor.detection.{intersection}.{event}
+      ### Consume
+      RabbitMQ__RoutingKeys__Sensor__SensorCount: sensor.count.# 
+      RabbitMQ__RoutingKeys__Sensor__DetectionEvents: sensor.detection.# 
+      ### Publish
       RabbitMQ__RoutingKeys__Traffic__Analytics: traffic.analytics.{intersection}.{metric}
-      RabbitMQ__RoutingKeys__Log__TrafficAnalytics: log.traffic.analytics.{type}
+      RabbitMQ__RoutingKeys__Log__TrafficAnalytics: log.{layer}.{service}.{type}
 
     depends_on:
       traffic-analytics-db:

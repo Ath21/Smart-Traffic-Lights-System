@@ -18,7 +18,7 @@ public class TrafficAnalyticsPublisher : ITrafficAnalyticsPublisher
         _logger = logger;
 
         _routingPattern = config["RabbitMQ:RoutingKeys:Traffic:Analytics"]
-                          ?? "traffic.analytics.{intersection}.{metric}";
+                          ?? "traffic.analytics.#";
     }
 
     // ============================================================
@@ -79,8 +79,19 @@ public class TrafficAnalyticsPublisher : ITrafficAnalyticsPublisher
     // ============================================================
     private string BuildRoutingKey(string metric, string intersection)
     {
-        return _routingPattern
-            .Replace("{intersection}", intersection.ToLower().Replace(' ', '-'))
-            .Replace("{metric}", metric);
+        var baseKey = _routingPattern
+            .TrimEnd('#', '.'); // remove any trailing wildcards or dots
+
+        var safeIntersection = intersection
+            .Replace(" ", "-")
+            .Replace(".", "-")
+            .ToLowerInvariant();
+
+        var safeMetric = metric
+            .Replace(" ", "-")
+            .Replace(".", "-")
+            .ToLowerInvariant();
+
+        return $"{baseKey}.{safeIntersection}.{safeMetric}";
     }
 }

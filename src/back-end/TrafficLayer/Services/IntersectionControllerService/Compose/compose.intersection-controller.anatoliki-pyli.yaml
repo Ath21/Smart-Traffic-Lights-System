@@ -77,13 +77,15 @@ services:
       RabbitMQ__Queues__Traffic__LightSchedule: coordinator-2-intersection-controller.{intersection}.queue
 
       ## Routing Keys
-      RabbitMQ__RoutingKeys__Sensor__SensorCount: sensor.count.{intersection}.{count}
-      RabbitMQ__RoutingKeys__Sensor__DetectionEvents: sensor.detection.{intersection}.{event}
-      RabbitMQ__RoutingKeys__Traffic__LightSchedule: traffic.light.schedule.{intersection}
-      RabbitMQ__RoutingKeys__Traffic__PriorityCount: priority.count.{intersection}.{count}
+      ### Consume 
+      RabbitMQ__RoutingKeys__Sensor__SensorCount: sensor.count.# 
+      RabbitMQ__RoutingKeys__Sensor__DetectionEvents: sensor.detection.#
+      RabbitMQ__RoutingKeys__Traffic__LightSchedule: traffic.light.schedule.*
+      ### Publish
+      RabbitMQ__RoutingKeys__Traffic__PriorityCount: priority.count.{intersection}.{type}
       RabbitMQ__RoutingKeys__Traffic__PriorityDetection: priority.detection.{intersection}.{event}
       RabbitMQ__RoutingKeys__Traffic__LightControl: traffic.light.control.{intersection}.{light}
-      RabbitMQ__RoutingKeys__Log__IntersectionController: log.traffic.intersection-controller.{type}
+      RabbitMQ__RoutingKeys__Log__IntersectionController: log.{layer}.{service}.{type}
     
     networks:
       - traffic-light-cache-network
