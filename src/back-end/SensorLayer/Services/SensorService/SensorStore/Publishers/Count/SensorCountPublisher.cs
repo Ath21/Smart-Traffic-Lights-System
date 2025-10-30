@@ -24,7 +24,7 @@ public class SensorCountPublisher : ISensorCountPublisher
         _intersection = intersection;
 
         _routingPattern = config["RabbitMQ:RoutingKeys:Sensor:SensorCount"]
-                          ?? "sensor.count.*.*";  // {intersection}.{count}";
+                          ?? "sensor.count.{intersection}.{count}";
     }
 
     // ============================================================
@@ -32,7 +32,9 @@ public class SensorCountPublisher : ISensorCountPublisher
     // ============================================================
     public async Task PublishVehicleCountAsync(VehicleCountMessage message)
     {
-        var routingKey = BuildRoutingKey("vehicle");
+        var routingKey = _routingPattern
+            .Replace("{intersection}", _intersection.Name.ToLower().Replace(' ', '-'))
+            .Replace("{count}", "vehicle");
 
         message.CorrelationId ??= Guid.NewGuid().ToString();
         message.Timestamp = DateTime.UtcNow;
@@ -51,7 +53,9 @@ public class SensorCountPublisher : ISensorCountPublisher
     // ============================================================
     public async Task PublishPedestrianCountAsync(PedestrianCountMessage message)
     {
-        var routingKey = BuildRoutingKey("pedestrian");
+        var routingKey = _routingPattern
+            .Replace("{intersection}", _intersection.Name.ToLower().Replace(' ', '-'))
+            .Replace("{count}", "pedestrian");
 
         message.CorrelationId ??= Guid.NewGuid().ToString();
         message.Timestamp = DateTime.UtcNow;
@@ -70,7 +74,9 @@ public class SensorCountPublisher : ISensorCountPublisher
     // ============================================================
     public async Task PublishCyclistCountAsync(CyclistCountMessage message)
     {
-        var routingKey = BuildRoutingKey("cyclist");
+        var routingKey = _routingPattern
+            .Replace("{intersection}", _intersection.Name.ToLower().Replace(' ', '-'))
+            .Replace("{count}", "cyclist");
 
         message.CorrelationId ??= Guid.NewGuid().ToString();
         message.Timestamp = DateTime.UtcNow;
@@ -82,20 +88,6 @@ public class SensorCountPublisher : ISensorCountPublisher
         _logger.LogInformation(
             "[PUBLISHER][COUNT][{Intersection}] CYCLIST count published: {Count}",
             _intersection.Name, message.Count);
-    }
-
-    // ============================================================
-    // Helper: Build routing key for intersection/type
-    // ============================================================
-    private string BuildRoutingKey(string typeKey)
-    {
-        // Routing key format: sensor.count.{intersection}.{type}
-        var intersectionKey = _intersection.Name
-            .ToLower()
-            .Replace(' ', '-')
-            .Replace('_', '-');
-
-        return $"sensor.count.{intersectionKey}.{typeKey}";
     }
 
 }

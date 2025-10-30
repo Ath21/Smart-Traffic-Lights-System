@@ -33,7 +33,7 @@ public class DetectionLogPublisher : IDetectionLogPublisher
         _logger = logger;
 
         _exchangeName = configuration["RabbitMQ:Exchanges:Log"] ?? "log.exchange";
-        _routingPattern = configuration["RabbitMQ:RoutingKeys:Log:Detection"] ?? "log.sensor.detection-api.*"; //{type}";
+        _routingPattern = configuration["RabbitMQ:RoutingKeys:Log:Detection"] ?? "log.{layer}.{service}.{type}";
 
         _layer = Environment.GetEnvironmentVariable("SERVICE_LAYER") ?? "Sensor";
         _level = Environment.GetEnvironmentVariable("SERVICE_LEVEL") ?? "Fog";
@@ -52,7 +52,10 @@ public class DetectionLogPublisher : IDetectionLogPublisher
         Dictionary<string, object>? data = null,
         string? operation = null)
     {
-        var routingKey = _routingPattern.Replace("*", "audit");
+        var routingKey = _routingPattern
+            .Replace("{layer}", _layer.ToLower())
+            .Replace("{service}", _service.ToLower() + "-api")
+            .Replace("{type}", "audit");
 
         var msg = new LogMessage
         {
@@ -88,7 +91,10 @@ public class DetectionLogPublisher : IDetectionLogPublisher
         Dictionary<string, object>? data = null,
         string? operation = null)
     {
-        var routingKey = _routingPattern.Replace("*", "error");
+        var routingKey = _routingPattern
+            .Replace("{layer}", _layer.ToLower())
+            .Replace("{service}", _service.ToLower() + "-api")
+            .Replace("{type}", "error");
 
         var msg = new LogMessage
         {
@@ -124,7 +130,10 @@ public class DetectionLogPublisher : IDetectionLogPublisher
         Dictionary<string, object>? data = null,
         string? operation = null)
     {
-        var routingKey = _routingPattern.Replace("*", "failover");
+        var routingKey = _routingPattern
+            .Replace("{layer}", _layer.ToLower())
+            .Replace("{service}", _service.ToLower() + "-api")
+            .Replace("{type}", "failover");
 
         var msg = new LogMessage
         {

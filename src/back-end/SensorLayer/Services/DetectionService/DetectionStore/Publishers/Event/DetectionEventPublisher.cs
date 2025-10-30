@@ -24,12 +24,15 @@ public class DetectionEventPublisher : IDetectionEventPublisher
         _logger = logger;
         _intersection = intersection;
         _routingPattern = config["RabbitMQ:RoutingKeys:Sensor:DetectionEvent"]
-                          ?? "sensor.detection.*.*";  // {intersection}.{event}
+                          ?? "sensor.detection.{intersection}.{event}";
     }
 
     public async Task PublishEmergencyVehicleDetectedAsync(EmergencyVehicleDetectedMessage message)
     {
-        var routingKey = BuildRoutingKey("emergency");
+        var routingKey = _routingPattern
+            .Replace("{intersection}", _intersection.Name.ToLower().Replace(' ', '-'))
+            .Replace("{event}", "emergency-vehicle");
+
         message.CorrelationId ??= Guid.NewGuid().ToString();
         message.DetectedAt = DateTime.UtcNow;
         message.IntersectionId = _intersection.Id;
@@ -42,7 +45,10 @@ public class DetectionEventPublisher : IDetectionEventPublisher
 
     public async Task PublishPublicTransportDetectedAsync(PublicTransportDetectedMessage message)
     {
-        var routingKey = BuildRoutingKey("public-transport");
+        var routingKey = _routingPattern
+            .Replace("{intersection}", _intersection.Name.ToLower().Replace(' ', '-'))
+            .Replace("{event}", "public-transport");
+
         message.CorrelationId ??= Guid.NewGuid().ToString();
         message.DetectedAt = DateTime.UtcNow;
         message.IntersectionId = _intersection.Id;
@@ -55,7 +61,10 @@ public class DetectionEventPublisher : IDetectionEventPublisher
 
     public async Task PublishIncidentDetectedAsync(IncidentDetectedMessage message)
     {
-        var routingKey = BuildRoutingKey("incident");
+        var routingKey = _routingPattern
+            .Replace("{intersection}", _intersection.Name.ToLower().Replace(' ', '-'))
+            .Replace("{event}", "incident");
+
         message.CorrelationId ??= Guid.NewGuid().ToString();
         message.ReportedAt = DateTime.UtcNow;
         message.IntersectionId = _intersection.Id;
@@ -64,19 +73,5 @@ public class DetectionEventPublisher : IDetectionEventPublisher
         await _bus.Publish(message, ctx => ctx.SetRoutingKey(routingKey));
         _logger.LogInformation("{Domain} Incident detected at {Intersection}: {Description}\n",
             domain, _intersection.Name, message.Description);
-    }
-
-    // ============================================================
-    // Helper: Build routing key for intersection/type
-    // ============================================================
-    private string BuildRoutingKey(string eventKey)
-    {
-        // Routing key format: sensor.count.{intersection}.{type}
-        var intersectionKey = _intersection.Name
-            .ToLower()
-            .Replace(' ', '-')
-            .Replace('_', '-');
-
-        return $"sensor.detection.{intersectionKey}.{eventKey}";
     }
 }
