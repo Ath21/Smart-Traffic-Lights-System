@@ -36,14 +36,14 @@ public class AnalyticsLogPublisher : IAnalyticsLogPublisher
 
         _exchangeName = configuration["RabbitMQ:Exchanges:Log"] ?? "LOG.EXCHANGE";
         _routingPattern = configuration["RabbitMQ:RoutingKeys:Log:TrafficAnalytics"]
-                          ?? "log.traffic.analytics.*";
+                          ?? "log.{layer}.{service}.{type}";
 
         // ============================================================
         // Environment-based service identity
         // ============================================================
         _layer = Environment.GetEnvironmentVariable("SERVICE_LAYER") ?? "Traffic";
         _level = Environment.GetEnvironmentVariable("SERVICE_LEVEL") ?? "Cloud";
-        _service = Environment.GetEnvironmentVariable("SERVICE_NAME") ?? "TrafficAnalytics";
+        _service = Environment.GetEnvironmentVariable("SERVICE_NAME") ?? "Traffic Analytics";
         _environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
         _hostname = Environment.MachineName;
         _containerIp = Dns.GetHostAddresses(Dns.GetHostName())
@@ -61,7 +61,10 @@ public class AnalyticsLogPublisher : IAnalyticsLogPublisher
         Dictionary<string, object>? data = null,
         string? operation = null)
     {
-        var routingKey = _routingPattern.Replace("*", "audit");
+        var routingKey = _routingPattern
+            .Replace("{layer}", _layer.ToLower())
+            .Replace("{service}", _service.ToLower().Replace(' ', '-'))
+            .Replace("{type}", "audit");
 
         var msg = new LogMessage
         {
@@ -100,7 +103,10 @@ public class AnalyticsLogPublisher : IAnalyticsLogPublisher
         Dictionary<string, object>? data = null,
         string? operation = null)
     {
-        var routingKey = _routingPattern.Replace("*", "error");
+        var routingKey = _routingPattern
+            .Replace("{layer}", _layer.ToLower())
+            .Replace("{service}", _service.ToLower().Replace(' ', '-'))
+            .Replace("{type}", "error");
 
         var msg = new LogMessage
         {

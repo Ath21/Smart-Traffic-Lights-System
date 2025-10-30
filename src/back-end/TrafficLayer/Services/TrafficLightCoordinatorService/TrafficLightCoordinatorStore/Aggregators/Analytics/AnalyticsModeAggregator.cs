@@ -132,13 +132,13 @@ public class AnalyticsModeAggregator : IAnalyticsModeAggregator
             "TrafficCoordinator",
             $"Schedule published for {intersectionName} in mode {config.Mode}",
             "[ANALYTICS]",
-            "mode-change",
             new Dictionary<string, object>
             {
-                ["Intersection"] = intersectionName,
-                ["Mode"] = config.Mode,
-                ["Source"] = source
-            });
+            ["Intersection"] = intersectionName,
+            ["Mode"] = config.Mode,
+            ["Source"] = source
+            },
+            "mode-change");
 
         _logger.LogInformation("[AGGREGATOR][ANALYTICS] Published schedule for {Intersection} in mode {Mode}", intersectionName, config.Mode);
     }

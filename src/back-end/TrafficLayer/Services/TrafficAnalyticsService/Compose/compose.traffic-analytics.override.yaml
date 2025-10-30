@@ -8,7 +8,7 @@ services:
       ASPNETCORE_URLS: http://+:8080
       SERVICE_LAYER: Traffic 
       SERVICE_LEVEL: Cloud
-      SERVICE_NAME: TrafficAnalytics 
+      SERVICE_NAME: Traffic Analytics 
 
       # CORS
       Cors__AllowedOrigins: http://localhost:5173,https://uniwa-stls.local

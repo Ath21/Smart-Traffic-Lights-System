@@ -50,9 +50,9 @@ public static class MassTransitSetup
                 // =====================================================
                 // Routing Keys (use wildcards for intersection)
                 // =====================================================
-                var priorityCountKey     = "priority.count.*.*";       // {intersection}.{count}
-                var priorityDetectionKey = "priority.detection.*.*";   // {intersection}.{event}
-                var analyticsKey         = "traffic.analytics.*.*";    // {intersection}.{metric}
+                var priorityCountKey     = rabbit["RoutingKeys:Traffic:PriorityCount"];
+                var priorityDetectionKey = rabbit["RoutingKeys:Traffic:PriorityDetection"];
+                var analyticsKey         = rabbit["RoutingKeys:Traffic:Analytics"];
 
                 // =====================================================
                 // [PUBLISH] TRAFFIC LIGHT SCHEDULE

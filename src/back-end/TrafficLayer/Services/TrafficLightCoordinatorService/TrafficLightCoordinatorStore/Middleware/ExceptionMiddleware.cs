@@ -91,12 +91,10 @@ public class ExceptionMiddleware
             var logPublisher = scope.ServiceProvider.GetRequiredService<ICoordinatorLogPublisher>();
 
             await logPublisher.PublishErrorAsync(
-                operation: errorType,
-                message: $"[{errorType}] {userMessage}: {ex.Message}",
-                ex: ex,
                 domain: "[COORDINATOR]",
-                category: "system",
-                data: metadata
+                messageText: $"[{errorType}] {userMessage}: {ex.Message}",
+                data: metadata,
+                operation: errorType
             );
 
             _logger.LogInformation("[EXCEPTION] Published error log ({ErrorType}) via RabbitMQ", errorType);

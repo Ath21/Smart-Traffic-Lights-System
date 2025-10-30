@@ -9,7 +9,7 @@ services:
       ASPNETCORE_URLS: http://+:8080
       SERVICE_LAYER: Traffic
       SERVICE_LEVEL: Fog
-      SERVICE_NAME: IntersectionController
+      SERVICE_NAME: Intersection Controller
 
       # Intersection Details
       Intersection__Id: 1

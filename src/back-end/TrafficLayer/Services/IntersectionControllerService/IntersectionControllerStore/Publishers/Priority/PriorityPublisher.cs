@@ -17,15 +17,17 @@ public class PriorityPublisher : IPriorityPublisher
         _bus = bus;
         _logger = logger;
         _routingPatternCount = config["RabbitMQ:RoutingKeys:Traffic:PriorityCount"]
-                               ?? "priority.count.*.*"; //{intersection}.{count}";
+                               ?? "priority.count.{intersection}.{count}";
         _routingPatternEvent = config["RabbitMQ:RoutingKeys:Traffic:PriorityEvent"]
-                               ?? "priority.detection.*.*"; //{intersection}.{event}";
+                               ?? "priority.detection.{intersection}.{event}";
     }
 
     public async Task PublishPriorityCountAsync(PriorityCountMessage msg)
     {
-        var routingKey = _routingPatternCount.Replace("{intersection}", msg.IntersectionName!.ToLower().Replace(' ', '-'));
-        routingKey = routingKey.Replace("{count}", msg.CountType.ToString().ToLower());
+        var routingKey = _routingPatternCount
+            .Replace("{intersection}", msg.IntersectionName!.ToLower().Replace(' ', '-'))
+            .Replace("{count}", msg.CountType.ToString().ToLower());
+
         await _bus.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
 
         _logger.LogInformation("[PUBLISHER][PRIORITY][COUNT][{Intersection}] {CountType}={Count}, Priority={Level}",
@@ -34,8 +36,15 @@ public class PriorityPublisher : IPriorityPublisher
 
     public async Task PublishPriorityEventAsync(PriorityEventMessage msg)
     {
-        var routingKey = _routingPatternEvent.Replace("{intersection}", msg.IntersectionName!.ToLower().Replace(' ', '-'));
-        routingKey = routingKey.Replace("{event}", msg.EventType.ToString().ToLower());
+        var routingKey = _routingPatternEvent
+            .Replace("{intersection}", msg.IntersectionName!.ToLower().Replace(' ', '-'))
+            .Replace("{event}", msg.EventType.ToString().ToLower());
+
+        await _bus.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
+
+        _logger.LogInformation("[PUBLISHER][PRIORITY][EVENT][{Intersection}] {EventType} ({VehicleType}) Priority={Level}",
+            msg.IntersectionName, msg.EventType, msg.VehicleType, msg.PriorityLevel);
+        
         await _bus.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
 
         _logger.LogInformation("[PUBLISHER][PRIORITY][EVENT][{Intersection}] {EventType} ({VehicleType}) Priority={Level}",

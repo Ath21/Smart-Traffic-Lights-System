@@ -49,11 +49,12 @@ public class TrafficLightAggregator : ITrafficLightAggregator
         await _logPublisher.PublishAuditAsync(
             "LightScheduleApplied",
             $"Applied light schedule for intersection {schedule.IntersectionName}",
-            new()
+            category: "system",
+            data: new Dictionary<string, object>
             {
-                ["Mode"] = schedule.CurrentMode,
-                ["CycleDurationSec"] = schedule.CycleDurationSec,
-                ["Operational"] = schedule.IsOperational
+            ["Mode"] = schedule.CurrentMode,
+            ["CycleDurationSec"] = schedule.CycleDurationSec,
+            ["Operational"] = schedule.IsOperational
             });
 
         _logger.LogInformation(

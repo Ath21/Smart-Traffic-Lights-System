@@ -18,7 +18,7 @@ public class TrafficAnalyticsPublisher : ITrafficAnalyticsPublisher
         _logger = logger;
 
         _routingPattern = config["RabbitMQ:RoutingKeys:Traffic:Analytics"]
-                          ?? "traffic.analytics.#";
+                          ?? "traffic.analytics.{intersection}.{metric}";
     }
 
     // ============================================================
@@ -26,7 +26,9 @@ public class TrafficAnalyticsPublisher : ITrafficAnalyticsPublisher
     // ============================================================
     public async Task PublishCongestionAsync(CongestionAnalyticsMessage message)
     {
-        var routingKey = BuildRoutingKey("congestion", message.Intersection);
+        var routingKey = _routingPattern
+            .Replace("{intersection}", message.Intersection.ToLower().Replace(' ', '-'))
+            .Replace("{metric}", "congestion");
 
         message.Timestamp = DateTime.UtcNow;
 
@@ -42,7 +44,9 @@ public class TrafficAnalyticsPublisher : ITrafficAnalyticsPublisher
     // ============================================================
     public async Task PublishIncidentAsync(IncidentAnalyticsMessage message)
     {
-        var routingKey = BuildRoutingKey("incident", message.Intersection);
+        var routingKey = _routingPattern
+            .Replace("{intersection}", message.Intersection.ToLower().Replace(' ', '-'))
+            .Replace("{metric}", "incident");
 
         message.Timestamp = DateTime.UtcNow;
 
@@ -58,7 +62,9 @@ public class TrafficAnalyticsPublisher : ITrafficAnalyticsPublisher
     // ============================================================
     public async Task PublishSummaryAsync(SummaryAnalyticsMessage message)
     {
-        var routingKey = BuildRoutingKey("summary", message.Intersection);
+        var routingKey = _routingPattern
+            .Replace("{intersection}", message.Intersection.ToLower().Replace(' ', '-'))
+            .Replace("{metric}", "summary");
 
         message.GeneratedAt = DateTime.UtcNow;
 
@@ -72,26 +78,5 @@ public class TrafficAnalyticsPublisher : ITrafficAnalyticsPublisher
             message.CyclistCount,
             message.IncidentsDetected,
             message.AverageCongestion);
-    }
-
-    // ============================================================
-    // Helper: Build routing key for intersection/metric
-    // ============================================================
-    private string BuildRoutingKey(string metric, string intersection)
-    {
-        var baseKey = _routingPattern
-            .TrimEnd('#', '.'); // remove any trailing wildcards or dots
-
-        var safeIntersection = intersection
-            .Replace(" ", "-")
-            .Replace(".", "-")
-            .ToLowerInvariant();
-
-        var safeMetric = metric
-            .Replace(" ", "-")
-            .Replace(".", "-")
-            .ToLowerInvariant();
-
-        return $"{baseKey}.{safeIntersection}.{safeMetric}";
     }
 }

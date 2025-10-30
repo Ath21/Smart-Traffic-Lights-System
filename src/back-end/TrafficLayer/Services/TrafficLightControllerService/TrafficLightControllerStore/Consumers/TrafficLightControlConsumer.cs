@@ -26,8 +26,6 @@ public class TrafficLightControlConsumer : IConsumer<TrafficLightControlMessage>
     {
         var msg = context.Message;
 
-        try
-        {
             // =================================
             // Update core state
             // =================================
@@ -65,7 +63,7 @@ public class TrafficLightControlConsumer : IConsumer<TrafficLightControlMessage>
             await _logPublisher.PublishAuditAsync(
                 "TrafficLightControlApplied",
                 $"Traffic light control updated for intersection {msg.IntersectionName}",
-                new()
+                data: new Dictionary<string, object>
                 {
                     ["LightName"] = msg.LightName,
                     ["Mode"] = msg.Mode,
@@ -74,7 +72,7 @@ public class TrafficLightControlConsumer : IConsumer<TrafficLightControlMessage>
                     ["CurrentPhase"] = msg.CurrentPhase,
                     ["RemainingTimeSec"] = msg.RemainingTimeSec
                 },
-                context.CorrelationId?.ToString()
+                operation: context.CorrelationId?.ToString()
             );
 
             _logger.LogInformation(
@@ -84,17 +82,5 @@ public class TrafficLightControlConsumer : IConsumer<TrafficLightControlMessage>
                 msg.Mode,
                 msg.CurrentPhase
             );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to apply traffic light control for intersection {Intersection}", msg.IntersectionName);
-            await _logPublisher.PublishErrorAsync(
-                "TrafficLightControlConsumer",
-                $"Failed to apply traffic light control for {msg.IntersectionName}",
-                ex,
-                new() { ["LightName"] = msg.LightName },
-                context.CorrelationId?.ToString()
-            );
-        }
     }
 }

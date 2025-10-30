@@ -54,11 +54,11 @@ public static class MassTransitSetup
                 var detectionQueue = rabbit["Queues:Sensor:DetectionEvents"]?.Replace("{intersection}", intersection);
 
                 // =====================================================
-                // Routing Keys (wildcards — no replacements)
+                // Routing Keys
                 // =====================================================
-                var trafficLightKeys    = new[] { "traffic.light.schedule.*" };
-                var sensorCountKeys     = new[] { "sensor.count.*.*" };
-                var sensorDetectionKeys = new[] { "sensor.detection.*.*" };
+                var trafficLightKeys    = new[] { rabbit["RoutingKeys:Traffic:LightSchedule"] ?? "traffic.light.schedule.*" };
+                var sensorCountKeys     = new[] { rabbit["RoutingKeys:Sensor:SensorCount"] ?? "sensor.count.#" };
+                var sensorDetectionKeys = new[] { rabbit["RoutingKeys:Sensor:DetectionEvents"] ?? "sensor.detection.#" };
 
                 // =====================================================
                 // PUBLISH CONFIGURATION

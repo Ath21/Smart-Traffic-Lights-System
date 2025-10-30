@@ -32,7 +32,7 @@ public class DetectionLogPublisher : IDetectionLogPublisher
         _publisher = publisher;
         _logger = logger;
 
-        _exchangeName = configuration["RabbitMQ:Exchanges:Log"] ?? "log.exchange";
+        _exchangeName = configuration["RabbitMQ:Exchanges:Log"] ?? "LOG.EXCHANGE";
         _routingPattern = configuration["RabbitMQ:RoutingKeys:Log:Detection"] ?? "log.{layer}.{service}.{type}";
 
         _layer = Environment.GetEnvironmentVariable("SERVICE_LAYER") ?? "Sensor";

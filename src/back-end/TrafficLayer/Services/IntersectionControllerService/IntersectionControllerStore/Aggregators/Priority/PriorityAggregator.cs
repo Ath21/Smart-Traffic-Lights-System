@@ -43,7 +43,12 @@ public class PriorityAggregator : IPriorityAggregator
         await _logPublisher.PublishAuditAsync(
             "EmergencyVehicle",
             $"High-priority emergency vehicle detected at {ev.Intersection}",
-            new() { ["Direction"] = ev.Direction ?? "Unknown", ["VehicleType"] = ev.EmergencyVehicleType ?? "Unknown" },
+            "EmergencyVehicle",
+            new Dictionary<string, object>
+            {
+            ["Direction"] = ev.Direction ?? "Unknown",
+            ["VehicleType"] = ev.EmergencyVehicleType ?? "Unknown"
+            },
             ev.CorrelationId
         );
 
@@ -73,8 +78,8 @@ public class PriorityAggregator : IPriorityAggregator
         await _logPublisher.PublishAuditAsync(
             "IncidentDetected",
             $"Incident reported at {incident.Intersection}",
-            new() { ["Description"] = incident.Description ?? "N/A", ["Severity"] = severity },
-            incident.CorrelationId
+            data: new() { ["Description"] = incident.Description ?? "N/A", ["Severity"] = severity },
+            operation: incident.CorrelationId
         );
 
         return message;
@@ -99,8 +104,8 @@ public class PriorityAggregator : IPriorityAggregator
         await _logPublisher.PublishAuditAsync(
             "PublicTransportDetected",
             $"Public transport detected at {pt.IntersectionName} ({pt.LineName ?? "Unknown line"})",
-            new() { ["DetectedAt"] = pt.DetectedAt, ["LineName"] = pt.LineName ?? "N/A" },
-            pt.CorrelationId
+            data: new() { ["DetectedAt"] = pt.DetectedAt, ["LineName"] = pt.LineName ?? "N/A" },
+            operation: pt.CorrelationId
         );
 
         return message;
@@ -131,14 +136,14 @@ public class PriorityAggregator : IPriorityAggregator
         await _logPublisher.PublishAuditAsync(
             "VehicleCount",
             $"Vehicle count processed at {vc.Intersection} ({vc.CountTotal} vehicles)",
-            new()
+            data: new()
             {
-                ["PriorityLevel"] = priority,
-                ["ThresholdExceeded"] = isThresholdExceeded,
-                ["AverageSpeedKmh"] = vc.AverageSpeedKmh,
-                ["AverageWaitTimeSec"] = vc.AverageWaitTimeSec
+            ["PriorityLevel"] = priority,
+            ["ThresholdExceeded"] = isThresholdExceeded,
+            ["AverageSpeedKmh"] = vc.AverageSpeedKmh,
+            ["AverageWaitTimeSec"] = vc.AverageWaitTimeSec
             },
-            vc.CorrelationId
+            operation: vc.CorrelationId
         );
 
         return message;
@@ -167,12 +172,12 @@ public class PriorityAggregator : IPriorityAggregator
         await _logPublisher.PublishAuditAsync(
             "PedestrianCount",
             $"Pedestrian count processed at {pc.Intersection} ({pc.Count} pedestrians)",
-            new()
+            data: new()
             {
-                ["PriorityLevel"] = priority,
-                ["ThresholdExceeded"] = pc.Count > 10
+            ["PriorityLevel"] = priority,
+            ["ThresholdExceeded"] = pc.Count > 10
             },
-            pc.CorrelationId
+            operation: pc.CorrelationId
         );
 
         return message;
@@ -201,12 +206,12 @@ public class PriorityAggregator : IPriorityAggregator
         await _logPublisher.PublishAuditAsync(
             "CyclistCount",
             $"Cyclist count processed at {cc.Intersection} ({cc.Count} cyclists)",
-            new()
+            data: new Dictionary<string, object>
             {
-                ["PriorityLevel"] = priority,
-                ["ThresholdExceeded"] = cc.Count > 5
+            ["PriorityLevel"] = priority,
+            ["ThresholdExceeded"] = cc.Count > 5
             },
-            cc.CorrelationId
+            operation: cc.CorrelationId
         );
 
         return message;

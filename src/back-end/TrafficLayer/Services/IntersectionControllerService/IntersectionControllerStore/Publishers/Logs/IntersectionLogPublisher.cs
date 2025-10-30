@@ -1,4 +1,6 @@
 using System;
+using System.Net;
+using System.Net.Sockets;
 using MassTransit;
 using Messages.Log;
 
@@ -6,79 +8,158 @@ namespace IntersectionControllerStore.Publishers.Logs;
 
 public class IntersectionLogPublisher : IIntersectionLogPublisher
 {
-    private readonly IBus _bus;
+    private readonly IPublishEndpoint _publisher;
     private readonly ILogger<IntersectionLogPublisher> _logger;
     private readonly string _routingPattern;
-    private readonly string _hostname;
+    private readonly string _exchangeName;
+
+    private const string domain = "[PUBLISHER][LOG]";
+
+    // Cached environment context
+    private readonly string _layer;
+    private readonly string _level;
+    private readonly string _service;
     private readonly string _environment;
+    private readonly string _hostname;
+    private readonly string _containerIp;
 
     public IntersectionLogPublisher(
-        IBus bus,
-        IConfiguration config,
+        IPublishEndpoint publisher,
+        IConfiguration configuration,
         ILogger<IntersectionLogPublisher> logger)
     {
-        _bus = bus;
+        _publisher = publisher;
         _logger = logger;
 
-        _routingPattern = config["RabbitMQ:RoutingKeys:Log:Intersection"]
-                          ?? "log.traffic.intersection-controller.*";
+        _exchangeName = configuration["RabbitMQ:Exchanges:Log"] ?? "LOG.EXCHANGE";
+        _routingPattern = configuration["RabbitMQ:RoutingKeys:Log:Detection"] ?? "log.{layer}.{service}.{type}";
 
+        _layer = Environment.GetEnvironmentVariable("SERVICE_LAYER") ?? "Traffic";
+        _level = Environment.GetEnvironmentVariable("SERVICE_LEVEL") ?? "Fog";
+        _service = Environment.GetEnvironmentVariable("SERVICE_NAME") ?? "Intersection Controller";
+        _environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
         _hostname = Environment.MachineName;
-        _environment = config["ASPNETCORE_ENVIRONMENT"] ?? "unknown";
+        _containerIp = Dns.GetHostAddresses(Dns.GetHostName())
+            .FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork)
+            ?.ToString() ?? "unknown";
     }
 
-    public async Task PublishAuditAsync(string operation, string message, Dictionary<string, object>? data = null, string? correlationId = null)
-    {
-        var log = CreateBaseLog("audit", "system", operation, message, data, correlationId);
-        await PublishAsync("audit", log);
-        _logger.LogInformation("[LOG][AUDIT] {Op} - {Msg}", operation, message);
-    }
 
-    public async Task PublishErrorAsync(string operation, string message, Exception? ex = null, Dictionary<string, object>? data = null, string? correlationId = null)
+    public async Task PublishAuditAsync(
+        string domain,
+        string messageText,
+        string? category = "system",
+        Dictionary<string, object>? data = null,
+        string? operation = null)
     {
-        data ??= new();
-        if (ex != null)
+        var routingKey = _routingPattern
+            .Replace("{layer}", _layer.ToLower())
+            .Replace("{service}", _service.ToLower().Replace(' ', '-'))
+            .Replace("{type}", "audit");
+
+        var msg = new LogMessage
         {
-            data["exception_type"] = ex.GetType().Name;
-            data["exception_message"] = ex.Message;
-        }
-
-        var log = CreateBaseLog("error", "system", operation, message, data, correlationId);
-        await PublishAsync("error", log);
-        _logger.LogError(ex, "[LOG][ERROR] {Op} - {Msg}", operation, message);
-    }
-
-    public async Task PublishFailoverAsync(string operation, string message, Dictionary<string, object>? data = null, string? correlationId = null)
-    {
-        var log = CreateBaseLog("failover", "system", operation, message, data, correlationId);
-        await PublishAsync("failover", log);
-        _logger.LogWarning("[LOG][FAILOVER] {Op} - {Msg}", operation, message);
-    }
-
-    // ============================================================
-    // PRIVATE HELPERS
-    // ============================================================
-    private LogMessage CreateBaseLog(string type, string category, string operation, string message, Dictionary<string, object>? data, string? correlationId)
-        => new()
-        {
-            Layer = "Traffic",
-            Level = "Edge",
-            Service = "IntersectionController",
-            Domain = "[CONTROLLER][INTERSECTION]",
-            Type = type,
-            Category = category,
-            Message = message,
+            Layer = _layer,
+            Level = _level,
+            Service = _service,
+            Domain = domain,
+            Type = "audit",
+            Category = category ?? "system",
+            Message = messageText,
             Operation = operation,
-            CorrelationId = correlationId ?? Guid.NewGuid().ToString(),
-            Timestamp = DateTime.UtcNow,
             Hostname = _hostname,
+            ContainerIp = _containerIp,
             Environment = _environment,
+            Timestamp = DateTime.UtcNow,
             Data = data
         };
 
-    private async Task PublishAsync(string type, LogMessage msg)
+        try
+        {
+            await _publisher.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
+            _logger.LogInformation("{Domain} Published AUDIT log | Domain={Domain} | Message={Message}\n", domain, domain, messageText);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "{Domain} Failed to publish AUDIT log | Domain={Domain} | Error={Error}\n", domain, domain, ex.Message);
+        }
+    }
+
+    public async Task PublishErrorAsync(
+        string domain,
+        string messageText,
+        Dictionary<string, object>? data = null,
+        string? operation = null)
     {
-        var routingKey = _routingPattern.Replace("*", type);
-        await _bus.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
+        var routingKey = _routingPattern
+            .Replace("{layer}", _layer.ToLower())
+            .Replace("{service}", _service.ToLower().Replace(' ', '-'))
+            .Replace("{type}", "error");
+
+        var msg = new LogMessage
+        {
+            Layer = _layer,
+            Level = _level,
+            Service = _service,
+            Domain = domain,
+            Type = "error",
+            Category = "Error",
+            Message = messageText,
+            Operation = operation,
+            Hostname = _hostname,
+            ContainerIp = _containerIp,
+            Environment = _environment,
+            Timestamp = DateTime.UtcNow,
+            Data = data
+        };
+
+        try
+        {
+            await _publisher.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
+            _logger.LogWarning("{Domain} Published ERROR log | Domain={Domain} | Message={Message}\n", domain, domain, messageText);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "{Domain} Failed to publish ERROR log | Domain={Domain} | Error={Error}\n", domain, domain, ex.Message);
+        }
+    }
+
+    public async Task PublishFailoverAsync(
+        string domain,
+        string messageText,
+        Dictionary<string, object>? data = null,
+        string? operation = null)
+    {
+        var routingKey = _routingPattern
+            .Replace("{layer}", _layer.ToLower())
+            .Replace("{service}", _service.ToLower().Replace(' ', '-'))
+            .Replace("{type}", "failover");
+
+        var msg = new LogMessage
+        {
+            Layer = _layer,
+            Level = _level,
+            Service = _service,
+            Domain = domain,
+            Type = "failover",
+            Category = "Failover",
+            Message = messageText,
+            Operation = operation,
+            Hostname = _hostname,
+            ContainerIp = _containerIp,
+            Environment = _environment,
+            Timestamp = DateTime.UtcNow,
+            Data = data
+        };
+
+        try
+        {
+            await _publisher.Publish(msg, ctx => ctx.SetRoutingKey(routingKey));
+            _logger.LogWarning("{Domain} Published FAILOVER log | Domain={Domain} | Message={Message}\n", domain, domain, messageText);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "{Domain} Failed to publish FAILOVER log | Domain={Domain} | Error={Error}\n", domain, domain, ex.Message);
+        }
     }
 }

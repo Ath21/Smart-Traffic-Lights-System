@@ -22,7 +22,7 @@ public class TrafficLightPublisher : ITrafficLightPublisher
 
         // Default routing: traffic.light.control.{intersection}.{light}
         _routingPattern = config["RabbitMQ:RoutingKeys:Traffic:LightControl"]
-                          ?? "traffic.light.control.*.*";
+                          ?? "traffic.light.control.{intersection}.{light}";
 
         _hostname = Environment.MachineName;
         _environment = config["ASPNETCORE_ENVIRONMENT"] ?? "unknown";
@@ -40,8 +40,8 @@ public class TrafficLightPublisher : ITrafficLightPublisher
             message.LightName = $"{message.IntersectionName}-Light";
 
         var routingKey = _routingPattern
-            .Replace("{intersection}", SanitizeRoutingKeyPart(message.IntersectionName))
-            .Replace("{light}", SanitizeRoutingKeyPart(message.LightName));
+            .Replace("{intersection}", message.IntersectionName.ToLower().Replace(' ', '-'))
+            .Replace("{light}", message.LightName.ToLower().Replace(' ', '-'));
 
         await _bus.Publish(message, ctx => ctx.SetRoutingKey(routingKey));
 
@@ -53,9 +53,4 @@ public class TrafficLightPublisher : ITrafficLightPublisher
             _environment);
     }
 
-    // ============================================================
-    // INTERNAL HELPER
-    // ============================================================
-    private static string SanitizeRoutingKeyPart(string value)
-        => value.Replace(" ", "-").Replace(".", "-").ToLowerInvariant();
 }

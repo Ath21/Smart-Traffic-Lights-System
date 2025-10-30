@@ -127,11 +127,10 @@ public class ExceptionMiddleware
             }
 
             await logPublisher.PublishErrorAsync(
-                operation: errorType,
-                message: $"[{errorType}] {userMessage}: {ex.Message}",
-                ex: ex,
+                domain: "[PUBLISHER][LOG]",
+                messageText: $"[{errorType}] {userMessage}: {ex.Message}",
                 data: data,
-                correlationId: correlationId);
+                operation: errorType);
 
             _logger.LogInformation("[EXCEPTION] Published error log ({ErrorType}) via RabbitMQ", errorType);
         }

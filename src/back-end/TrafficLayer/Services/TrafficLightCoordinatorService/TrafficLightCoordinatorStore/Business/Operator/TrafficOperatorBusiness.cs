@@ -76,12 +76,12 @@ public class TrafficOperatorBusiness : ITrafficOperatorBusiness
             "TrafficOperator",
             $"Manual mode applied for {intersection.Name}: {config.Mode}",
             "[TRAFFIC-OPERATOR]",
-            "manual-mode",
             new Dictionary<string, object>
             {
-                ["IntersectionId"] = intersection.IntersectionId,
-                ["Mode"] = config.Mode
-            });
+            ["IntersectionId"] = intersection.IntersectionId,
+            ["Mode"] = config.Mode
+            },
+            "manual-mode");
 
         _logger.LogInformation("[TRAFFIC-OPERATOR] Applied mode {Mode} to intersection {Intersection}", config.Mode, intersection.Name);
     }
@@ -154,13 +154,13 @@ public class TrafficOperatorBusiness : ITrafficOperatorBusiness
             "TrafficOperator",
             $"Override applied to light {light.LightName} on intersection {intersection.Name}: {mode}",
             "[TRAFFIC-OPERATOR]",
-            "manual-override",
             new Dictionary<string, object>
             {
-                ["IntersectionId"] = intersection.IntersectionId,
-                ["LightId"] = light.LightId,
-                ["Mode"] = mode
-            });
+            ["IntersectionId"] = intersection.IntersectionId,
+            ["LightId"] = light.LightId,
+            ["Mode"] = mode
+            },
+            "manual-override");
 
         _logger.LogInformation("[TRAFFIC-OPERATOR] Override applied to light {Light} at intersection {Intersection}: {Mode}", light.LightName, intersection.Name, mode);
     }

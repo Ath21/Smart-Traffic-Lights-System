@@ -5,25 +5,22 @@ namespace TrafficLightCoordinatorStore.Publishers.Logs;
 public interface ICoordinatorLogPublisher
 {
     Task PublishAuditAsync(
-        string operation,
-        string message,
-        string domain = "[COORDINATOR]",
-        string category = "system",
-        Dictionary<string, object>? data = null);
+        string domain,
+        string messageText,
+        string? category = "system",
+        Dictionary<string, object>? data = null,
+        string? operation = null);
 
     Task PublishErrorAsync(
-        string operation,
-        string message,
-        Exception? ex = null,
-        string domain = "[COORDINATOR]",
-        string category = "system",
-        Dictionary<string, object>? data = null);
-
+        string domain,
+        string messageText,
+        Dictionary<string, object>? data = null,
+        string? operation = null);
+    
     Task PublishFailoverAsync(
-        string operation,
-        string message,
-        string domain = "[COORDINATOR]",
-        string category = "system",
-        Dictionary<string, object>? data = null);
+        string domain,
+        string messageText,
+        Dictionary<string, object>? data = null,
+        string? operation = null);
 }
 

@@ -18,7 +18,7 @@ public class TrafficLightControlPublisher : ITrafficLightControlPublisher
 
         // Configurable routing pattern (default: traffic.light.control.{intersection}.{light})
         _routingPattern = config["RabbitMQ:RoutingKeys:Traffic:LightControl"]
-                          ?? "traffic.light.control.*.*"; //{intersection}.{light}";
+                          ?? "traffic.light.control.{intersection}.{light}";
     }
 
     public async Task PublishControlAsync(

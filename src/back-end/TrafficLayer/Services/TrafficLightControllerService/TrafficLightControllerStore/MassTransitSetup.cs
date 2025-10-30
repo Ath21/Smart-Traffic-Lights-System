@@ -36,19 +36,13 @@ public static class MassTransitSetup
                 // ===============================
                 // Exchanges, Queues, Routing Keys
                 // ===============================
-                var trafficExchange = rabbit["Exchanges:Traffic"]; // TRAFFIC.EXCHANGE
-                var logExchange = rabbit["Exchanges:Log"];         // LOG.EXCHANGE
+                var trafficExchange = rabbit["Exchanges:Traffic"]; 
+                var logExchange = rabbit["Exchanges:Log"];       
 
-                // Replace placeholders in queue name
-                var controlQueue = rabbit["Queues:Traffic:LightControl"]?
-                    .Replace("{intersection}", intersection)
-                    .Replace("{light}", light);
+                var controlQueue = rabbit["Queues:Traffic:LightControl"];
+                
+                var controlKey = rabbit["RoutingKeys:Traffic:LightControl"];
 
-                var controlKey = rabbit["RoutingKeys:Traffic:LightControl"]?
-                    .Replace("{intersection}", intersection)
-                    .Replace("{light}", light);
-
-                var logKey = rabbit["RoutingKeys:Log:LightController"]; // log.traffic.light-controller.{type}
 
                 // =====================================================
                 // [CONSUME] TRAFFIC LIGHT CONTROL COMMANDS

@@ -99,16 +99,16 @@ public class TrafficModeAggregator : ITrafficModeAggregator
         );
 
         await _log.PublishAuditAsync(
-            operation: "PublishSchedule",
-            message: $"Schedule published for {name ?? intersectionId.ToString()} in mode {config.Mode}",
             domain: "[AGGREGATOR][TRAFFIC_MODE]",
+            messageText: $"Schedule published for {name ?? intersectionId.ToString()} in mode {config.Mode}",
             category: "mode-change",
-            data: new()
+            data: new Dictionary<string, object>
             {
-                ["IntersectionId"] = intersectionId,
-                ["Mode"] = config.Mode,
-                ["Source"] = source
-            }
+            ["IntersectionId"] = intersectionId,
+            ["Mode"] = config.Mode,
+            ["Source"] = source
+            },
+            operation: "PublishSchedule"
         );
 
         _logger.LogInformation(
