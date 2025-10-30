@@ -41,7 +41,6 @@ public static class MassTransitSetup
                 // Routing keys
                 var userNotifKeyPattern  = rabbit["RoutingKeys:User:Notifications"];
                 var trafficAnalyticKey   = rabbit["RoutingKeys:Traffic:Analytics"];
-                var userLogKeyPattern = rabbit["RoutingKeys:Log:User"];
 
                 cfg.Message<LogMessage>(m => m.SetEntityName(logExchange));
                 cfg.Publish<LogMessage>(m => m.ExchangeType = ExchangeType.Topic);
@@ -66,23 +65,12 @@ public static class MassTransitSetup
                 {
                     e.ConfigureConsumeTopology = false;
 
-                    // Bind to analytics patterns dynamically (incident/congestion/summary)
-                    var routingPatterns = new[]
+                    e.Bind(trafficExchange, s =>
                     {
-                        trafficAnalyticKey.Replace("{intersection}", "*").Replace("{metric}", "incident"),
-                        trafficAnalyticKey.Replace("{intersection}", "*").Replace("{metric}", "congestion"),
-                        trafficAnalyticKey.Replace("{intersection}", "*").Replace("{metric}", "summary")
-                    };
-
-                    foreach (var key in routingPatterns)
-                    {
-                        e.Bind(trafficExchange, s =>
-                        {
-                            s.ExchangeType = ExchangeType.Topic;
-                            s.RoutingKey = key;
-                        });
-                    }
-
+                        s.ExchangeType = ExchangeType.Topic;
+                        s.RoutingKey = trafficAnalyticKey;
+                    });
+                    
                     e.ConfigureConsumer<IncidentAnalyticsConsumer>(context);
                     e.ConfigureConsumer<CongestionAnalyticsConsumer>(context);
                     e.ConfigureConsumer<SummaryAnalyticsConsumer>(context);

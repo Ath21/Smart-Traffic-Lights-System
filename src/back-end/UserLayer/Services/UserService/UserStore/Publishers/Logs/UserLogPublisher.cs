@@ -55,7 +55,10 @@ public class UserLogPublisher : IUserLogPublisher
         Dictionary<string, object>? data = null,
         string? operation = null)
     {
-        var routingKey = _routingPattern.Replace("{type}", "audit");
+        var routingKey = _routingPattern
+            .Replace("{layer}", _layer.ToLower())
+            .Replace("{service}", _service.ToLower() + "-api")
+            .Replace("{type}", "audit");
 
         var msg = new LogMessage
         {
@@ -91,7 +94,10 @@ public class UserLogPublisher : IUserLogPublisher
         Dictionary<string, object>? data = null,
         string? operation = null)
     {
-        var routingKey = _routingPattern.Replace("{type}", "error");
+        var routingKey = _routingPattern
+            .Replace("{layer}", _layer.ToLower())
+            .Replace("{service}", _service.ToLower() + "-api")
+            .Replace("{type}", "error");
 
         var msg = new LogMessage
         {

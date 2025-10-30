@@ -33,7 +33,7 @@ public class NotificationLogPublisher : INotificationLogPublisher
         _logger = logger;
 
         _exchangeName = configuration["RabbitMQ:Exchanges:Log"] ?? "LOG.EXCHANGE";
-        _routingPattern = configuration["RabbitMQ:RoutingKeys:Log:User"] ?? "log.user.notification-api.{type}";
+        _routingPattern = configuration["RabbitMQ:RoutingKeys:Log:User"] ?? "log.{layer}.{service}.{type}";
 
         // ============================================================
         // Environment-based service identity
@@ -55,7 +55,10 @@ public class NotificationLogPublisher : INotificationLogPublisher
         Dictionary<string, object>? data = null,
         string? operation = null)
     {
-        var routingKey = _routingPattern.Replace("{type}", "audit");
+        var routingKey = _routingPattern
+            .Replace("{layer}", _layer.ToLower())
+            .Replace("{service}", _service.ToLower() + "-api")
+            .Replace("{type}", "audit");
 
         var msg = new LogMessage
         {
@@ -91,7 +94,10 @@ public class NotificationLogPublisher : INotificationLogPublisher
         Dictionary<string, object>? data = null,
         string? operation = null)
     {
-        var routingKey = _routingPattern.Replace("{type}", "error");
+        var routingKey = _routingPattern
+            .Replace("{layer}", _layer.ToLower())
+            .Replace("{service}", _service.ToLower() + "-api")
+            .Replace("{type}", "error");
 
         var msg = new LogMessage
         {

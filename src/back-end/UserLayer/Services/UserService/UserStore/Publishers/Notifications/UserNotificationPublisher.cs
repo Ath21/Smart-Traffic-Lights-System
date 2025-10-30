@@ -36,7 +36,7 @@ public class UserNotificationPublisher : IUserNotificationPublisher
             await _publisher.Publish(message, ctx => ctx.SetRoutingKey(_routingKey));
 
             _logger.LogInformation(
-                "{Tag} Published subscription request for {UserId} ({Email}) → {Intersection}/{Metric}",
+                "{Tag} Published subscription request for {UserId} ({Email}) => {Intersection}/{Metric}",
                 Tag, message.UserId, message.UserEmail, message.Intersection, message.Metric);
 
             await _logPublisher.PublishAuditAsync(
