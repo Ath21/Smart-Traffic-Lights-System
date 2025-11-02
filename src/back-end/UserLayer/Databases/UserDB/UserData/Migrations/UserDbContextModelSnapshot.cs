@@ -129,7 +129,7 @@ namespace UserData.Migrations
                         {
                             UserId = 1,
                             CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "ice19390005@gmail.com",
+                            Email = "ice19390005@uniwa.gr",
                             IsActive = true,
                             PasswordHash = "10000.vFdpYw0mEjr8PGPY7dHw1w==.nJrA50wXkN3/JRyR1xz2/6Yd4Z4RrdCC8scvkoU7U9M=",
                             Role = "Admin",

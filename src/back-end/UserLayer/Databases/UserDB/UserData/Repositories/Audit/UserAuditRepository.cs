@@ -32,4 +32,16 @@ public class UserAuditRepository : IUserAuditRepository
         await _context.UserAudits.AddAsync(entity);
         await _context.SaveChangesAsync();
     }
+
+    public async Task DeleteUserAuditsAsync(int userId)
+    {
+        _logger.LogInformation("{Domain} Deleting all audits for user {UserId}\n", domain, userId);
+        var audits = await _context.UserAudits.Where(a => a.UserId == userId).ToListAsync();
+        if (audits.Any())
+        {
+            _context.UserAudits.RemoveRange(audits);
+            await _context.SaveChangesAsync();
+        }
+    }
+
 }

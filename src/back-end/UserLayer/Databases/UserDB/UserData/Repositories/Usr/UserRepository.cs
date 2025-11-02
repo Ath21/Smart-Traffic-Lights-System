@@ -66,4 +66,24 @@ public class UserRepository : IUserRepository
         _logger.LogInformation("{Domain} Checking if user exists with Username: {Username} or Email: {Email}\n", domain, username, email);
         return await _context.Users.AnyAsync(u => u.Username == username || u.Email == email);
     }
+
+    public async Task<IEnumerable<UserEntity>> GetAllUsersAsync()
+    {
+        _logger.LogInformation("{Domain} Retrieving all users\n", domain);
+        return await _context.Users.AsNoTracking().ToListAsync();
+    }
+
+    public async Task DeleteByIdAsync(int userId)
+    {
+        _logger.LogInformation("{Domain} Deleting user by ID {UserId}\n", domain, userId);
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+        if (user == null)
+        {
+            _logger.LogWarning("{Domain} Attempted to delete non-existent user ID {UserId}\n", domain, userId);
+            throw new KeyNotFoundException("User not found.");
+        }
+
+        _context.Users.Remove(user);
+        await _context.SaveChangesAsync();
+    }
 }

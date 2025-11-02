@@ -10,4 +10,5 @@ public interface ISessionRepository
     Task InsertAsync(SessionEntity session);
     Task UpdateAsync(SessionEntity session);
     Task DeleteAsync(SessionEntity session);
+    Task DeleteUserSessionsAsync(int userId);
 }

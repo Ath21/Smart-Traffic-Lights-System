@@ -81,7 +81,7 @@ namespace UserData.Migrations
                 columns: new[] { "UserId", "CreatedAt", "Email", "IsActive", "PasswordHash", "Role", "Username" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "ice19390005@gmail.com", true, "10000.vFdpYw0mEjr8PGPY7dHw1w==.nJrA50wXkN3/JRyR1xz2/6Yd4Z4RrdCC8scvkoU7U9M=", "Admin", "vathanasiou" },
+                    { 1, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "ice19390005@uniwa.gr", true, "10000.vFdpYw0mEjr8PGPY7dHw1w==.nJrA50wXkN3/JRyR1xz2/6Yd4Z4RrdCC8scvkoU7U9M=", "Admin", "vathanasiou" },
                     { 2, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "billath131908@gmail.com", true, "10000.jT4SfxQOk2Jxvax8zGqx7A==.oO3A2oS1LQEMzPBI4Dnk6xNCDbDsKkQJzJ7yIh0V+eY=", "TrafficOperator", "vmamalis" },
                     { 3, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "athinnovations@gmail.com", true, "10000.uzBGBmVpi6oLdRIfJ8wcVQ==.Zw+yGumJf7tXvTnPQ03x9obrcvQwFZcPiC64ZXe+Pp8=", "User", "apostolos" }
                 });

@@ -124,6 +124,26 @@ public class UserController : ControllerBase
         return NoContent();
     }
 
+    [HttpGet]
+    [Route("all")]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult<IEnumerable<UserResponse>>> GetAllUsers()
+    {
+        _logger.LogInformation("{Domain}[GET_ALL_USERS] Admin fetching all users\n", domain);
+        var users = await _userService.GetAllUsersAsync();
+        return Ok(users);
+    }
+
+    [HttpDelete]
+    [Route("{id:int}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> DeleteUser(int id)
+    {
+        _logger.LogInformation("{Domain}[DELETE_USER] Admin deleting user {UserId}\n", domain, id);
+        await _userService.DeleteUserAsync(id);
+        return NoContent();
+    }
+
     private int GetUserId()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)

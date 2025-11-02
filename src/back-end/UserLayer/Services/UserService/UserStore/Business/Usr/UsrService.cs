@@ -252,4 +252,56 @@ public class UsrService : IUsrService
             },
             operation: "ResetPasswordAsync");
     }
+
+    public async Task<IEnumerable<UserResponse>> GetAllUsersAsync()
+    {
+        var users = await _userRepository.GetAllUsersAsync();
+        var result = _mapper.Map<IEnumerable<UserResponse>>(users);
+
+        await _logPublisher.PublishAuditAsync(
+            domain: "[BUSINESS][GET_ALL_USERS]",
+            messageText: $"{ServiceTag} Retrieved all users (count={result.Count()}).",
+            category: "GET_ALL_USERS",
+            data: new Dictionary<string, object>
+            {
+                ["Count"] = result.Count()
+            },
+            operation: "GetAllUsersAsync");
+
+        return result;
+    }
+
+    public async Task DeleteUserAsync(int userId)
+    {
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user == null)
+            throw new KeyNotFoundException($"User with ID {userId} not found.");
+
+        await _sessionRepository.DeleteUserSessionsAsync(userId);
+
+        await _auditRepository.DeleteUserAuditsAsync(userId);
+
+        await _userRepository.DeleteAsync(user);
+
+        await _auditRepository.InsertAsync(new UserAuditEntity
+        {
+            UserId = userId,
+            Action = "DELETE",
+            Details = $"{ServiceTag} User '{user.Username}' deleted by admin.",
+            Timestamp = DateTime.UtcNow
+        });
+
+        await _logPublisher.PublishAuditAsync(
+            domain: "[BUSINESS][DELETE_USER]",
+            messageText: $"{ServiceTag} User '{user.Username}' deleted by admin.",
+            category: "DELETE_USER",
+            data: new Dictionary<string, object>
+            {
+                ["UserId"] = user.UserId,
+                ["Email"] = user.Email
+            },
+            operation: "DeleteUserAsync");
+    }
+
+
 }

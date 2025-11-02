@@ -12,4 +12,6 @@ public interface IUserRepository
     Task UpdateAsync(UserEntity entity);
     Task DeleteAsync(UserEntity entity);
     Task<bool> ExistsAsync(string username, string email);
+    Task<IEnumerable<UserEntity>> GetAllUsersAsync();
+    Task DeleteByIdAsync(int userId);
 }

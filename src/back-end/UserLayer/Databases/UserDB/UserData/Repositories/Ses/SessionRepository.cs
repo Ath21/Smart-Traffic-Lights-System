@@ -60,4 +60,15 @@ public class SessionRepository : ISessionRepository
         _context.Sessions.Remove(session);
         await _context.SaveChangesAsync();
     }
+
+    public async Task DeleteUserSessionsAsync(int userId)
+    {
+        _logger.LogInformation("{Domain} Deleting all sessions for user {UserId}\n", domain, userId);
+        var sessions = await _context.Sessions.Where(s => s.UserId == userId).ToListAsync();
+        if (sessions.Any())
+        {
+            _context.Sessions.RemoveRange(sessions);
+            await _context.SaveChangesAsync();
+        }
+    }
 }
