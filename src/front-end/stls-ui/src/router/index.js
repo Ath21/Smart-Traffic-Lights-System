@@ -12,6 +12,8 @@ const UpdateProfile = () => import('../pages/User/UpdateProfile.vue')
 const Notifications = () => import('../pages/Notification/Notifications.vue')
 const Subscribe = () => import('../pages/Notification/Subscribe.vue')
 const Logs = () => import('../pages/Admin/Logs.vue') // ✅ new page for admin log viewer
+const Users = () => import('../pages/Admin/Users.vue')
+const UserAudits = () => import('../pages/Admin/Audits.vue')
 
 // === Routes ===
 const routes = [
@@ -32,6 +34,9 @@ const routes = [
 
   // Admin-only route
   { path: '/stls/logs', name: 'logs', component: Logs, meta: { roles: ['admin'] } }, // ✅ admin-only route
+  { path: '/stls/users', name: 'users', component: Users, meta: { roles: ['admin'] } },
+  // Admin-only route
+  { path: '/stls/audits', name: 'audits', component: UserAudits, meta: { roles: ['admin'] } },
 
   // Fallback
   { path: '/:pathMatch(.*)*', redirect: '/' }
