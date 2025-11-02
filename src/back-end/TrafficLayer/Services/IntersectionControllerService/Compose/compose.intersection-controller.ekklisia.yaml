@@ -15,6 +15,16 @@ services:
       Intersection__Id: 4
       Intersection__Name: Ekklisia
 
+      # ============================
+      # Traffic Lights Managed by this Controller
+      # ============================
+      TrafficLights__0__Id: 401
+      TrafficLights__0__Name: Dimitsanas
+      TrafficLights__1__Id: 402
+      TrafficLights__1__Name: Edessis
+      TrafficLights__2__Id: 403
+      TrafficLights__2__Name: Korytsas
+
       # TrafficLightCacheDB (Redis)
       Redis__TrafficLight__Host: traffic-light-cache-db
       Redis__TrafficLight__Port: 6379

@@ -15,6 +15,14 @@ services:
       Intersection__Id: 1
       Intersection__Name: Agiou Spyridonos
 
+      # ============================
+      # Traffic Lights Managed by this Controller
+      # ============================
+      TrafficLights__0__Id: 101
+      TrafficLights__0__Name: Agiou Spyridonos
+      TrafficLights__1__Id: 102
+      TrafficLights__1__Name: Dimitsanas
+
       # TrafficLightCacheDB (Redis)
       Redis__TrafficLight__Host: traffic-light-cache-db
       Redis__TrafficLight__Port: 6379

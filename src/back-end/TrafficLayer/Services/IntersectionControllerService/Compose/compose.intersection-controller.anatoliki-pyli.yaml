@@ -15,6 +15,14 @@ services:
       Intersection__Id: 2
       Intersection__Name: Anatoliki Pyli
 
+      # ============================
+      # Traffic Lights Managed by this Controller
+      # ============================
+      TrafficLights__0__Id: 201
+      TrafficLights__0__Name: Anatoliki Pyli
+      TrafficLights__1__Id: 202
+      TrafficLights__1__Name: Agiou Spyridonos
+
       # TrafficLightCacheDB (Redis)
       Redis__TrafficLight__Host: traffic-light-cache-db
       Redis__TrafficLight__Port: 6379

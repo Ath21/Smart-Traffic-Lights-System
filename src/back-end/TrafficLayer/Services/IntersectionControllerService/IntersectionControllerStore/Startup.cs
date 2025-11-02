@@ -36,9 +36,22 @@ public class Startup
         // ===============================
         services.AddSingleton(sp =>
         {
-            var id = int.Parse(_configuration["Intersection:Id"] ?? throw new InvalidOperationException("Intersection Id missing"));
-            var name = _configuration["Intersection:Name"] ?? "Unknown";
-            return new IntersectionContext(id, name);
+            var config = _configuration;
+
+            var intersectionId = int.Parse(config["Intersection:Id"]
+                ?? throw new InvalidOperationException("Intersection Id missing"));
+
+            var intersectionName = config["Intersection:Name"] ?? "Unknown";
+
+            // Read traffic lights
+            var trafficLights = config.GetSection("TrafficLights")
+                .GetChildren()
+                .Select(section => new TrafficLightContext(
+                    int.Parse(section["Id"] ?? throw new InvalidOperationException("TrafficLight Id missing")),
+                    section["Name"] ?? "Unknown"))
+                .ToList();
+
+            return new IntersectionContext(intersectionId, intersectionName, trafficLights);
         });
 
         // ===============================

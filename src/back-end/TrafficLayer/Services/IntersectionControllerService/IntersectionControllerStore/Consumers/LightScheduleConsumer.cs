@@ -1,10 +1,12 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using Messages.Traffic.Light;
 using TrafficLightCacheData.Repositories;
 using IntersectionControllerStore.Aggregators.Light;
+using IntersectionControllerStore.Domain; // for IntersectionContext
 
 namespace IntersectionControllerStore.Consumers.Light;
 
@@ -12,15 +14,18 @@ public class LightScheduleConsumer : IConsumer<TrafficLightScheduleMessage>
 {
     private readonly ITrafficLightAggregator _aggregator;
     private readonly ITrafficLightCacheRepository _cache;
+    private readonly IntersectionContext _intersection;
     private readonly ILogger<LightScheduleConsumer> _logger;
 
     public LightScheduleConsumer(
         ITrafficLightAggregator aggregator,
         ITrafficLightCacheRepository cache,
+        IntersectionContext intersection,
         ILogger<LightScheduleConsumer> logger)
     {
         _aggregator = aggregator;
         _cache = cache;
+        _intersection = intersection;
         _logger = logger;
     }
 
@@ -28,13 +33,25 @@ public class LightScheduleConsumer : IConsumer<TrafficLightScheduleMessage>
     {
         var schedule = context.Message;
 
+        if (schedule.IntersectionId != _intersection.Id)
+        {
+            _logger.LogWarning(
+                "Received schedule for intersection {Id}, but this controller manages intersection {LocalId}. Ignoring.",
+                schedule.IntersectionId, _intersection.Id);
+            return;
+        }
+
         _logger.LogInformation(
             "[Intersection {Id}] Received schedule from coordinator (Mode={Mode}, Cycle={Cycle}s, Offset={Offset}s)",
             schedule.IntersectionId, schedule.CurrentMode, schedule.CycleDurationSec, schedule.GlobalOffsetSec);
 
         await UpdateIntersectionCacheAsync(schedule);
 
-        await _aggregator.BuildLightControlAsync(schedule);
+        // For each light in this intersection, build and send control message
+        foreach (var light in _intersection.Lights)
+        {
+            await _aggregator.BuildLightControlAsync(schedule, light);
+        }
     }
 
     private async Task UpdateIntersectionCacheAsync(TrafficLightScheduleMessage schedule)

@@ -1,7 +1,9 @@
 using System;
+using IntersectionControllerStore.Domain;
 using IntersectionControllerStore.Publishers.Light;
 using IntersectionControllerStore.Publishers.Logs;
 using Messages.Traffic.Light;
+using Microsoft.Extensions.Logging;
 
 namespace IntersectionControllerStore.Aggregators.Light;
 
@@ -21,15 +23,16 @@ public class TrafficLightAggregator : ITrafficLightAggregator
         _logger = logger;
     }
 
-    public async Task<TrafficLightControlMessage> BuildLightControlAsync(TrafficLightScheduleMessage schedule)
+    public async Task<TrafficLightControlMessage> BuildLightControlAsync(
+        TrafficLightScheduleMessage schedule,
+        TrafficLightContext light)
     {
-        // For each intersection, we build a control model (light controller will interpret it)
         var control = new TrafficLightControlMessage
         {
             IntersectionId = schedule.IntersectionId,
             IntersectionName = schedule.IntersectionName,
-            LightId = schedule.IntersectionId, // same as intersection in single-light test setups
-            LightName = $"{schedule.IntersectionName}-MainLight",
+            LightId = light.Id,
+            LightName = light.Name,
             Mode = schedule.CurrentMode,
             OperationalMode = schedule.IsOperational ? "Normal" : "Off",
             PhaseDurations = schedule.PhaseDurations,
@@ -42,24 +45,24 @@ public class TrafficLightAggregator : ITrafficLightAggregator
             LastUpdate = DateTime.UtcNow
         };
 
-        // Publish to light controllers topic
         await _lightPublisher.PublishLightControlAsync(control);
 
-        // Audit for Coordinator traceability
         await _logPublisher.PublishAuditAsync(
             "LightScheduleApplied",
-            $"Applied light schedule for intersection {schedule.IntersectionName}",
+            $"Applied light schedule for light {light.Name} (Intersection {schedule.IntersectionName})",
             category: "system",
             data: new Dictionary<string, object>
             {
-            ["Mode"] = schedule.CurrentMode,
-            ["CycleDurationSec"] = schedule.CycleDurationSec,
-            ["Operational"] = schedule.IsOperational
+                ["LightId"] = light.Id,
+                ["Mode"] = schedule.CurrentMode,
+                ["CycleDurationSec"] = schedule.CycleDurationSec,
+                ["Operational"] = schedule.IsOperational
             });
 
         _logger.LogInformation(
-            "Light control built and published for intersection {Intersection} ({Mode})",
+            "[Intersection {Intersection}] Sent control to light {Light} ({Mode})",
             schedule.IntersectionName,
+            light.Name,
             schedule.CurrentMode);
 
         return control;

@@ -15,6 +15,14 @@ services:
       Intersection__Id: 5
       Intersection__Name: Kentriki Pyli
 
+      # ============================
+      # Traffic Lights Managed by this Controller
+      # ============================
+      TrafficLights__0__Id: 501
+      TrafficLights__0__Name: Kentriki Pyli
+      TrafficLights__1__Id: 502
+      TrafficLights__1__Name: Agiou Spyridonos
+
       # TrafficLightCacheDB (Redis)
       Redis__TrafficLight__Host: traffic-light-cache-db
       Redis__TrafficLight__Port: 6379

@@ -3,6 +3,7 @@ using RabbitMQ.Client;
 using Messages.Log;
 using Messages.Traffic;
 using TrafficLightControllerStore.Consumers;
+using Messages.Traffic.Light;
 
 namespace TrafficLightControllerStore;
 
@@ -21,28 +22,53 @@ public static class MassTransitSetup
             {
                 var rabbit = configuration.GetSection("RabbitMQ");
 
-                var intersection = configuration["Intersection:Name"]?.ToLower().Replace(" ", "-") ?? "default";
-                var light = configuration["TrafficLight:Id"] ?? "0"; // optional, if you have per-light ID
+                // =====================================================
+                // Common Configuration
+                // =====================================================
+                var intersection = configuration["Intersection:Name"]?.ToLower().Replace(" ", "-");
+                var light = configuration["Light:Name"]?.ToLower().Replace(" ", "-");
 
-                // ===============================
-                // Connection with RabbitMQ
-                // ===============================
-                cfg.Host(rabbit["Host"], "/", h =>
+                cfg.Host(rabbit["Host"], rabbit["VirtualHost"] ?? "/", h =>
                 {
                     h.Username(rabbit["Username"]);
                     h.Password(rabbit["Password"]);
                 });
 
-                // ===============================
-                // Exchanges, Queues, Routing Keys
-                // ===============================
-                var trafficExchange = rabbit["Exchanges:Traffic"]; 
-                var logExchange = rabbit["Exchanges:Log"];       
+                // =====================================================
+                // Exchanges
+                // =====================================================
+                var trafficExchange = rabbit["Exchanges:Traffic"];
+                var logExchange = rabbit["Exchanges:Log"];
 
-                var controlQueue = rabbit["Queues:Traffic:LightControl"];
-                
-                var controlKey = rabbit["RoutingKeys:Traffic:LightControl"];
+                // =====================================================
+                // Queues (intersection & light specific)
+                // =====================================================
+                var controlQueuePattern = rabbit["Queues:Traffic:LightControl"];
+                var controlQueue = controlQueuePattern
+                    ?.Replace("{intersection}", intersection)
+                    ?.Replace("{light}", light);
 
+                // =====================================================
+                // Routing Keys
+                // =====================================================
+                var controlKeyPattern = rabbit["RoutingKeys:Traffic:LightControl"] ?? "traffic.light.control.#";
+                var controlKeys = new[]
+                {
+                    controlKeyPattern
+                        .Replace("{intersection}", intersection)
+                        .Replace("{light}", light)
+                };
+
+                var logKeyPattern = rabbit["RoutingKeys:Log:LightController"] ?? "log.{layer}.{service}.{type}";
+
+                // =====================================================
+                // PUBLISH CONFIGURATION
+                // =====================================================
+                cfg.Message<LogMessage>(m => m.SetEntityName(logExchange));
+                cfg.Publish<LogMessage>(m => m.ExchangeType = ExchangeType.Topic);
+
+                cfg.Message<TrafficLightControlMessage>(m => m.SetEntityName(trafficExchange));
+                cfg.Publish<TrafficLightControlMessage>(m => m.ExchangeType = ExchangeType.Topic);
 
                 // =====================================================
                 // [CONSUME] TRAFFIC LIGHT CONTROL COMMANDS
@@ -51,24 +77,23 @@ public static class MassTransitSetup
                 {
                     e.ConfigureConsumeTopology = false;
 
-                    e.Bind(trafficExchange, s =>
+                    foreach (var key in controlKeys)
                     {
-                        s.RoutingKey = controlKey;
-                        s.ExchangeType = ExchangeType.Topic;
-                    });
+                        e.Bind(trafficExchange, s =>
+                        {
+                            s.ExchangeType = ExchangeType.Topic;
+                            s.RoutingKey = key;
+                        });
+                    }
 
                     e.ConfigureConsumer<TrafficLightControlConsumer>(context);
-
                     e.PrefetchCount = 10;
                     e.ConcurrentMessageLimit = 5;
                 });
 
                 // =====================================================
-                // [PUBLISH] LOG MESSAGES
+                // FINALIZE
                 // =====================================================
-                cfg.Message<LogMessage>(m => m.SetEntityName(logExchange));
-                cfg.Publish<LogMessage>(m => m.ExchangeType = ExchangeType.Topic);
-
                 cfg.ConfigureEndpoints(context);
             });
         });
