@@ -1,49 +1,54 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: rabbitmq-state
+  name: notification-db-state
   namespace: uniwa-stls
 spec:
-  serviceName: rabbitmq
+  serviceName: notification-db
   replicas: 1
   selector:
     matchLabels:
-      app: rabbitmq
+      app: notification-db
   template:
     metadata:
       labels:
-        app: rabbitmq
+        app: notification-db
     spec:
       containers:
-        - name: rabbitmq-container
-          image: ath21/stls-broker:rabbitmq
+        - name: notification-db-container
+          image: ath21/stls-databases:notification-mongo
           ports:
-            - containerPort: 5672
-              name: amqp
-            - containerPort: 15672
-              name: management
+            - containerPort: 27017
+              name: mongo
           envFrom:
             - secretRef:
-                name: rabbitmq-secret
+                name: notification-db-secret
           volumeMounts:
-            - name: rabbitmq-data
-              mountPath: /var/lib/rabbitmq
+            - name: notification-db-data
+              mountPath: /data/db
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 300m
+              memory: 256Mi
           livenessProbe:
             exec:
-              command: ["rabbitmqctl", "status"]
+              command: ["mongo", "--eval", "db.adminCommand('ping')"]
             initialDelaySeconds: 15
             periodSeconds: 20
             timeoutSeconds: 5
             failureThreshold: 5
           readinessProbe:
             exec:
-              command: ["rabbitmqctl", "status"]
+              command: ["mongo", "--eval", "db.adminCommand('ping')"]
             initialDelaySeconds: 10
             periodSeconds: 10
       restartPolicy: Always
   volumeClaimTemplates:
     - metadata:
-        name: rabbitmq-data
+        name: notification-db-data
       spec:
         accessModes: [ "ReadWriteOnce" ]
         resources:

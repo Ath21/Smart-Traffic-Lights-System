@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: detection-db-state
+  namespace: uniwa-stls
+spec:
+  serviceName: detection-db
+  replicas: 1
+  selector:
+    matchLabels:
+      app: detection-db
+  template:
+    metadata:
+      labels:
+        app: detection-db
+    spec:
+      containers:
+        - name: detection-db-container
+          image: ath21/stls-databases:detection-mongo
+          ports:
+            - containerPort: 27017
+              name: mongo
+          envFrom:
+            - secretRef:
+                name: detection-db-secret
+          volumeMounts:
+            - name: mongo-data
+              mountPath: /data/db
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 300m
+              memory: 256Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 27017
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 27017
+            initialDelaySeconds: 10
+            periodSeconds: 10
+      restartPolicy: Always
+  volumeClaimTemplates:
+    - metadata:
+        name: detection-db-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 1Gi
+        storageClassName: standard
