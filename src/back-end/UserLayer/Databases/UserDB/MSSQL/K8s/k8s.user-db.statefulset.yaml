@@ -15,7 +15,7 @@ spec:
         app: user-db
     spec:
       containers:
-        - name: mssql
+        - name: user-db-container
           image: ath21/stls-databases:user-mssql
           ports:
             - containerPort: 1433
@@ -64,12 +64,7 @@ spec:
             initialDelaySeconds: 15
             periodSeconds: 10
       restartPolicy: Always
-  volumeClaimTemplates:
-    - metadata:
-        name: user-db-data
-      spec:
-        accessModes: [ "ReadWriteOnce" ]
-        resources:
-          requests:
-            storage: 2Gi
-        storageClassName: standard
+      volumes:
+        - name: user-db-data
+          persistentVolumeClaim:
+            claimName: user-db-pvc

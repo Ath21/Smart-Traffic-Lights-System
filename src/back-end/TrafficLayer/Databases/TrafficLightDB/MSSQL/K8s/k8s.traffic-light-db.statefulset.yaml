@@ -42,7 +42,7 @@ spec:
                 - "-U"
                 - "sa"
                 - "-P"
-                - "MyPass@word"
+                - "$(MSSQL_SA_PASSWORD)"
                 - "-Q"
                 - "SELECT 1"
             initialDelaySeconds: 30
@@ -58,18 +58,13 @@ spec:
                 - "-U"
                 - "sa"
                 - "-P"
-                - "MyPass@word"
+                - "$(MSSQL_SA_PASSWORD)"
                 - "-Q"
                 - "SELECT 1"
             initialDelaySeconds: 15
             periodSeconds: 10
       restartPolicy: Always
-  volumeClaimTemplates:
-    - metadata:
-        name: traffic-light-db-data
-      spec:
-        accessModes: [ "ReadWriteOnce" ]
-        resources:
-          requests:
-            storage: 2Gi
-        storageClassName: standard
+      volumes:
+        - name: traffic-light-db-data
+          persistentVolumeClaim:
+            claimName: traffic-light-db-pvc

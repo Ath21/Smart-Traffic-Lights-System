@@ -1,18 +1,22 @@
 apiVersion: apps/v1
 kind: StatefulSet
+
 metadata:
   name: rabbitmq-state
   namespace: uniwa-stls
+
 spec:
   serviceName: rabbitmq
   replicas: 1
   selector:
     matchLabels:
       app: rabbitmq
+
   template:
     metadata:
       labels:
         app: rabbitmq
+
     spec:
       containers:
         - name: rabbitmq-container
@@ -28,6 +32,15 @@ spec:
           volumeMounts:
             - name: rabbitmq-data
               mountPath: /var/lib/rabbitmq
+
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+
           livenessProbe:
             exec:
               command: ["rabbitmqctl", "status"]
@@ -40,13 +53,11 @@ spec:
               command: ["rabbitmqctl", "status"]
             initialDelaySeconds: 10
             periodSeconds: 10
+            timeoutSeconds: 5
+
       restartPolicy: Always
-  volumeClaimTemplates:
-    - metadata:
-        name: rabbitmq-data
-      spec:
-        accessModes: [ "ReadWriteOnce" ]
-        resources:
-          requests:
-            storage: 1Gi
-        storageClassName: standard
+
+      volumes:
+        - name: rabbitmq-data
+          persistentVolumeClaim:
+            claimName: rabbitmq-pvc

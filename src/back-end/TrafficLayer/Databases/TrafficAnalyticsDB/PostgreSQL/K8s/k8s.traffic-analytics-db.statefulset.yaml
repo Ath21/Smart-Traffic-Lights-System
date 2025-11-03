@@ -26,13 +26,6 @@ spec:
           volumeMounts:
             - name: traffic-analytics-db-data
               mountPath: /var/lib/postgresql/data
-          resources:
-            requests:
-              cpu: 100m
-              memory: 256Mi
-            limits:
-              cpu: 500m
-              memory: 512Mi
           livenessProbe:
             exec:
               command:
@@ -55,13 +48,15 @@ spec:
                 - "TrafficAnalyticsDB"
             initialDelaySeconds: 10
             periodSeconds: 10
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
       restartPolicy: Always
-  volumeClaimTemplates:
-    - metadata:
-        name: traffic-analytics-db-data
-      spec:
-        accessModes: [ "ReadWriteOnce" ]
-        resources:
-          requests:
-            storage: 1Gi
-        storageClassName: standard
+      volumes:
+        - name: traffic-analytics-db-data
+          persistentVolumeClaim:
+            claimName: traffic-analytics-db-pvc

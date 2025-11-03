@@ -24,8 +24,20 @@ spec:
             - secretRef:
                 name: detection-db-secret
           volumeMounts:
-            - name: mongo-data
+            - name: detection-db-data
               mountPath: /data/db
+          livenessProbe:
+            exec:
+              command: ["mongo", "--eval", "db.adminCommand('ping')"]
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 5
+          readinessProbe:
+            exec:
+              command: ["mongo", "--eval", "db.adminCommand('ping')"]
+            initialDelaySeconds: 10
+            periodSeconds: 10
           resources:
             requests:
               cpu: 100m
@@ -33,25 +45,8 @@ spec:
             limits:
               cpu: 300m
               memory: 256Mi
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: 27017
-            initialDelaySeconds: 15
-            periodSeconds: 20
-          readinessProbe:
-            httpGet:
-              path: /ready
-              port: 27017
-            initialDelaySeconds: 10
-            periodSeconds: 10
       restartPolicy: Always
-  volumeClaimTemplates:
-    - metadata:
-        name: detection-db-data
-      spec:
-        accessModes: [ "ReadWriteOnce" ]
-        resources:
-          requests:
-            storage: 1Gi
-        storageClassName: standard
+      volumes:
+        - name: detection-db-data
+          persistentVolumeClaim:
+            claimName: detection-db-pvc

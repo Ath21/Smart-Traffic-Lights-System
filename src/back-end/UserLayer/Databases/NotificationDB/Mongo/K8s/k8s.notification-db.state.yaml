@@ -46,12 +46,7 @@ spec:
             initialDelaySeconds: 10
             periodSeconds: 10
       restartPolicy: Always
-  volumeClaimTemplates:
-    - metadata:
-        name: notification-db-data
-      spec:
-        accessModes: [ "ReadWriteOnce" ]
-        resources:
-          requests:
-            storage: 1Gi
-        storageClassName: standard
+      volumes:
+        - name: notification-db-data
+          persistentVolumeClaim:
+            claimName: notification-db-pvc
