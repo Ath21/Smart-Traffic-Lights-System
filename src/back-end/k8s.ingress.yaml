@@ -4,94 +4,230 @@ metadata:
   name: stls-ingress
   namespace: uniwa-stls
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
+  ingressClassName: nginx
   rules:
   - host: uniwa-stls.local   # mapped in /etc/hosts → 192.168.49.2 uniwa-stls.local
     http:
       paths:
       # ================================
-      # Detection APIs
+      # Sensor Layer
       # ================================
-      - path: /detection/agiou-spyridonos/api/detections
+      ## Detection Services
+      - path: /detections/agiou-spyridonos(/|$)(.*)
         pathType: Prefix
         backend:
           service:
-            name: detectionapi-agiou-spyridonos
+            name: detection-api-agiou-spyridonos
             port:
               number: 8080
 
-      - path: /detection/anatoliki-pyli/api/detections
+      - path: /detections/anatoliki-pyli(/|$)(.*)
         pathType: Prefix
         backend:
           service:
-            name: detectionapi-anatoliki-pyli
+            name: detection-api-anatoliki-pyli
             port:
               number: 8080
 
-      - path: /detection/dytiki-pyli/api/detections
+      - path: /detections/dytiki-pyli(/|$)(.*)
         pathType: Prefix
         backend:
           service:
-            name: detectionapi-dytiki-pyli
+            name: detection-api-dytiki-pyli
             port:
               number: 8080
 
-      - path: /detection/ekklisia/api/detections
+      - path: /detections/ekklisia(/|$)(.*)
         pathType: Prefix
         backend:
           service:
-            name: detectionapi-ekklisia
+            name: detection-api-ekklisia
             port:
               number: 8080
 
-      - path: /detection/kentriki-pyli/api/detections
+      - path: /detections/kentriki-pyli(/|$)(.*)
         pathType: Prefix
         backend:
           service:
-            name: detectionapi-kentriki-pyli
+            name: detection-api-kentriki-pyli
+            port:
+              number: 8080
+
+      ## Sensor Services
+      - path: /sensors/agiou-spyridonos(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: sensor-api-agiou-spyridonos
+            port:
+              number: 8080
+
+      - path: /sensors/anatoliki-pyli(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: sensor-api-anatoliki-pyli
+            port:
+              number: 8080
+
+      - path: /sensors/dytiki-pyli(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: sensor-api-dytiki-pyli
+            port:
+              number: 8080
+
+      - path: /sensors/ekklisia(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: sensor-api-ekklisia
+            port:
+              number: 8080
+
+      - path: /sensors/kentriki-pyli(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: sensor-api-kentriki-pyli
             port:
               number: 8080
 
       # ================================
-      # Sensor APIs
+      # Traffic Layer
       # ================================
-      - path: /sensor/agiou-spyridonos/api/sensors
+      ## Traffic Analytics Service
+      - path: /traffic-analytics(/|$)(.*)
         pathType: Prefix
         backend:
           service:
-            name: sensorapi-agiou-spyridonos
+            name: traffic-analytics
+            port:
+              number: 8080
+      
+      ## Traffic Light Coordinator Service
+      - path: /traffic-light-coordinator(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: traffic-light-coordinator
             port:
               number: 8080
 
-      - path: /sensor/anatoliki-pyli/api/sensors
+      ## Intersection Controller Services
+      - path: /intersection-controller/agiou-spyridonos(/|$)(.*)
         pathType: Prefix
         backend:
           service:
-            name: sensorapi-anatoliki-pyli
+            name: intersection-controller-agiou-spyridonos
+            port:
+              number: 8080
+      
+      - path: /intersection-controller/anatoliki-pyli(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: intersection-controller-anatoliki-pyli
             port:
               number: 8080
 
-      - path: /sensor/dytiki-pyli/api/sensors
+      - path: /intersection-controller/dytiki-pyli(/|$)(.*)
         pathType: Prefix
         backend:
           service:
-            name: sensorapi-dytiki-pyli
+            name: intersection-controller-dytiki-pyli
             port:
               number: 8080
 
-      - path: /sensor/ekklisia/api/sensors
+      - path: /intersection-controller/ekklisia(/|$)(.*)
         pathType: Prefix
         backend:
           service:
-            name: sensorapi-ekklisia
+            name: intersection-controller-ekklisia
             port:
               number: 8080
 
-      - path: /sensor/kentriki-pyli/api/sensors
+      - path: /intersection-controller/kentriki-pyli(/|$)(.*)
         pathType: Prefix
         backend:
           service:
-            name: sensorapi-kentriki-pyli
+            name: intersection-controller-kentriki-pyli
+            port:
+              number: 8080    
+     
+      ## Traffic Light Controller Services
+      - path: /traffic-light-controller/agiou-spyridonos(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: traffic-light-controller-agiou-spyridonos
+            port:
+              number: 8080
+
+      - path: /traffic-light-controller/anatoliki-pyli(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: traffic-light-controller-anatoliki-pyli
+            port:
+              number: 8080
+
+      - path: /traffic-light-controller/dytiki-pyli(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: traffic-light-controller-dytiki-pyli
+            port:
+              number: 8080
+
+      - path: /traffic-light-controller/ekklisia(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: traffic-light-controller-ekklisia
+            port:
+              number: 8080
+
+      - path: /traffic-light-controller/kentriki-pyli(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: traffic-light-controller-kentriki-pyli
+            port:
+              number: 8080
+        
+      # ================================
+      # User Layer
+      # ================================
+      ## User Service
+      - path: /user(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: user-api
+            port:
+              number: 8080
+      
+      ## Notification Service
+      - path: /notification(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: notification-api
+            port:
+              number: 8080
+            
+      # ================================
+      # Log Layer
+      # ================================
+      ## Log Service
+      - path: /log(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: log-api
             port:
               number: 8080

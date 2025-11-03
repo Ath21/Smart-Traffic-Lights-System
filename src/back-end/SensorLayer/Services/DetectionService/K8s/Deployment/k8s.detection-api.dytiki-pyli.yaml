@@ -1,0 +1,193 @@
+# =============================================
+# DetectionAPI - Agiou Spyridonos
+# =============================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: detectionapi-dytiki-pyli
+  namespace: uniwa-stls
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: detectionapi-dytiki-pyli
+  template:
+    metadata:
+      labels:
+        app: detectionapi-dytiki-pyli
+    spec:
+      containers:
+      - name: detectionapi
+        image: ath21/stls:detection_api
+        ports:
+        - containerPort: 8080
+        env:
+        # ===============================
+        # ASP.NET Core
+        # ===============================
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Development"
+
+        # ===============================
+        # Intersection
+        # ===============================
+        - name: INTERSECTION__ID
+          valueFrom:
+            configMapKeyRef:
+              name: uniwa-stls-ids
+              key: INTERSECTION_DYTIKI_PYLI_ID
+        - name: INTERSECTION__NAME
+          value: "Dytiki Pyli"
+
+        # ===============================
+        # MongoDB
+        # ===============================
+        - name: Mongo__ConnectionString
+          value: "mongodb://$(MONGO_ROOT_USERNAME):$(MONGO_ROOT_PASSWORD)@detectiondb:27017"
+        - name: Mongo__Database
+          value: "DetectionDB"
+        - name: Mongo__Collections__VehicleCount
+          value: "vehicle_count"
+        - name: Mongo__Collections__PedestrianCount
+          value: "pedestrian_count"
+        - name: Mongo__Collections__CyclistCount
+          value: "cyclist_count"
+        - name: Mongo__Collections__Emergency
+          value: "emergency_vehicle"
+        - name: Mongo__Collections__PublicTransport
+          value: "public_transport"
+        - name: Mongo__Collections__Incident
+          value: "incident"
+        - name: MONGO_ROOT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: detectionapi-secret
+              key: MONGO_ROOT_USERNAME
+        - name: MONGO_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: detectionapi-secret
+              key: MONGO_ROOT_PASSWORD
+
+        # ===============================
+        # Redis
+        # ===============================
+        - name: Redis__Host
+          value: "detectioncachedb"
+        - name: Redis__Port
+          value: "6379"
+        - name: Redis__Password
+          valueFrom:
+            secretKeyRef:
+              name: detectionapi-secret
+              key: REDIS_PASSWORD
+        - name: Redis__Database
+          value: "0"
+        - name: Redis__KeyPrefix__VehicleCount
+          value: "sensor.count.{intersection}.vehicle"
+        - name: Redis__KeyPrefix__PedestrianCount
+          value: "sensor.count.{intersection}.pedestrian"
+        - name: Redis__KeyPrefix__CyclistCount
+          value: "sensor.count.{intersection}.cyclist"
+        - name: Redis__KeyPrefix__EmergencyDetected
+          value: "sensor.detection.{intersection}.emergency"
+        - name: Redis__KeyPrefix__PublicTransportDetected
+          value: "sensor.detection.{intersection}.public_transport"
+        - name: Redis__KeyPrefix__IncidentDetected
+          value: "sensor.detection.{intersection}.incident"
+
+        # ===============================
+        # CORS
+        # ===============================
+        - name: Cors__AllowedOrigins
+          value: "http://localhost:5173"
+        - name: Cors__AllowedMethods
+          value: "GET,POST,PUT,PATCH,DELETE"
+        - name: Cors__AllowedHeaders
+          value: "Content-Type,Authorization"
+
+        # ===============================
+        # JWT
+        # ===============================
+        - name: Jwt__Issuer
+          value: "http://stls_backend:8080"
+        - name: Jwt__Audience
+          value: "http://stls_backend:8080"
+        - name: Jwt__Key
+          valueFrom:
+            secretKeyRef:
+              name: detectionapi-secret
+              key: JWT_KEY
+
+        # ===============================
+        # RabbitMQ
+        # ===============================
+        - name: RabbitMQ__Host
+          value: "rabbitmq"
+        - name: RabbitMQ__Port
+          value: "5672"
+        - name: RabbitMQ__Username
+          valueFrom:
+            secretKeyRef:
+              name: detectionapi-secret
+              key: RABBITMQ_USERNAME
+        - name: RabbitMQ__Password
+          valueFrom:
+            secretKeyRef:
+              name: detectionapi-secret
+              key: RABBITMQ_PASSWORD
+        - name: RabbitMQ__Exchanges__Sensor
+          value: "SENSOR.EXCHANGE"
+        - name: RabbitMQ__Exchanges__Log
+          value: "LOG.EXCHANGE"
+        - name: RabbitMQ__RoutingKeys__Sensor__EmergencyVehicle
+          value: "sensor.detection.{intersection}.emergency"
+        - name: RabbitMQ__RoutingKeys__Sensor__PublicTransport
+          value: "sensor.detection.{intersection}.public_transport"
+        - name: RabbitMQ__RoutingKeys__Sensor__IncidentDetected
+          value: "sensor.detection.{intersection}.incident"
+        - name: RabbitMQ__RoutingKeys__Log__Audit
+          value: "log.sensor.detection_service.{intersection}.audit"
+        - name: RabbitMQ__RoutingKeys__Log__Error
+          value: "log.sensor.detection_service.{intersection}.error"
+
+        # ===============================
+        # Probes
+        # ===============================
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 15
+          timeoutSeconds: 2
+          failureThreshold: 3
+
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 15
+          periodSeconds: 20
+          timeoutSeconds: 3
+          failureThreshold: 3
+
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          failureThreshold: 30   # up to ~5 min
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: detection-api-dytiki-pyli
+  namespace: uniwa-stls
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8080
+    targetPort: 8080
+  selector:
+    app: detection-api-dytiki-pyli
