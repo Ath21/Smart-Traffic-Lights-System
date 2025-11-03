@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: intersection-controller-ekklisia
+  name: intersection-controller-ekklisia-depl
   namespace: uniwa-stls
   labels:
     app: intersection-controller-ekklisia
@@ -84,7 +84,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: intersection-controller-ekklisia
+  name: intersection-controller-ekklisia-svc
   namespace: uniwa-stls
 spec:
   type: ClusterIP

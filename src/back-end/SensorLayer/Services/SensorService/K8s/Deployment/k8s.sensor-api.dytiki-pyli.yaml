@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: sensor-api-dytiki-pyli
+  name: sensor-api-dytiki-pyli-depl
   namespace: uniwa-stls
   labels:
     app: sensor-api-dytiki-pyli
@@ -70,7 +70,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: sensor-api-dytiki-pyli
+  name: sensor-api-dytiki-pyli-svc
   namespace: uniwa-stls
 spec:
   type: ClusterIP

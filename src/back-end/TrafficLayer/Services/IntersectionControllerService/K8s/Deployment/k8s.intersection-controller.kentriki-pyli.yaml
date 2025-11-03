@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: intersection-controller-kentriki-pyli
+  name: intersection-controller-kentriki-pyli-depl
   namespace: uniwa-stls
   labels:
     app: intersection-controller-kentriki-pyli
@@ -80,7 +80,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: intersection-controller-kentriki-pyli
+  name: intersection-controller-kentriki-pyli-svc
   namespace: uniwa-stls
 spec:
   type: ClusterIP

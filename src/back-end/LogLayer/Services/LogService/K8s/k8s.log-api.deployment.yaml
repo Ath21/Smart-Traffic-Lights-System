@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: log-api
+  name: log-api-depl
   namespace: uniwa-stls
   labels:
     app: log-api

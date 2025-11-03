@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: traffic-light-controller-dimitsanas102
+  name: traffic-light-controller-dimitsanas102-depl
   namespace: uniwa-stls
   labels:
     app: traffic-light-controller-dimitsanas102
@@ -76,7 +76,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: traffic-light-controller-dimitsanas102
+  name: traffic-light-controller-dimitsanas102-svc
   namespace: uniwa-stls
 spec:
   type: ClusterIP
