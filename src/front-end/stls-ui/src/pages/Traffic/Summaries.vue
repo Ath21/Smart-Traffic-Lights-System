@@ -49,25 +49,43 @@ const intersectionId = ref(null)
 const from = ref('')
 const to = ref('')
 
-// Fetch summaries
 const loadSummaries = async () => {
-  if (!intersectionId.value) return // prevent null request
+  if (!intersectionId.value) return
   await analytics.fetchSummaries({
     intersectionId: intersectionId.value,
     intersection: intersection.value,
     from: from.value,
     to: to.value
   })
+  updateCharts(summaries.value) // <-- update charts immediately
+}
+
+const updateCharts = (data) => {
+  if (!data || !data.length) return
+
+  const labels = data.map(s => new Date(s.Date).toLocaleDateString())
+
+  vehiclesChartData.labels = labels
+  vehiclesChartData.datasets[0].data = data.map(s => s.TotalVehicles)
+
+  pedestriansChartData.labels = labels
+  pedestriansChartData.datasets[0].data = data.map(s => s.TotalPedestrians)
+
+  cyclistsChartData.labels = labels
+  cyclistsChartData.datasets[0].data = data.map(s => s.TotalCyclists)
+
+  congestionChartData.labels = labels
+  congestionChartData.datasets[0].data = data.map(s => s.CongestionIndex)
 }
 
 // Load initial data on mount
 onMounted(loadSummaries)
 
 // Initialize charts with empty but valid structure
-const vehiclesChartData = reactive({ labels: [], datasets: [{ label: 'Total Vehicles', data: [] }] })
-const pedestriansChartData = reactive({ labels: [], datasets: [{ label: 'Total Pedestrians', data: [] }] })
-const cyclistsChartData = reactive({ labels: [], datasets: [{ label: 'Total Cyclists', data: [] }] })
-const congestionChartData = reactive({ labels: [], datasets: [{ label: 'Congestion Index', data: [] }] })
+const vehiclesChartData = reactive({ labels: [], datasets: [{ label: 'Total Vehicles', data: [], borderColor: '#1d4ed8', backgroundColor: '#1d4ed8AA', tension: 0.3 }] })
+const pedestriansChartData = reactive({ labels: [], datasets: [{ label: 'Total Pedestrians', data: [], borderColor: '#059669', backgroundColor: '#059669AA', tension: 0.3 }] })
+const cyclistsChartData = reactive({ labels: [], datasets: [{ label: 'Total Cyclists', data: [], borderColor: '#b45309', backgroundColor: '#b45309AA', tension: 0.3 }] })
+const congestionChartData = reactive({ labels: [], datasets: [{ label: 'Congestion Index', data: [], borderColor: '#dc2626', backgroundColor: '#dc2626AA', tension: 0.3 }] })
 
 // Watch summaries and update charts reactively
 watch(summaries, (newSummaries) => {
@@ -116,6 +134,6 @@ watch(summaries, (newSummaries) => {
   flex: 1 1 45%;
   min-width: 300px;
   max-width: 600px;
-  height: 300px; /* fixed height to prevent disappearing */
+  height: 300px; /* fixed height */
 }
 </style>
