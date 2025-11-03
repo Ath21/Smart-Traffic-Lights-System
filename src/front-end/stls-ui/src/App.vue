@@ -41,7 +41,8 @@ const topbarPages = [
   "/stls/subscribe",
   "/stls/logs",
   "/stls/users",
-  "/stls/audits"
+  "/stls/audits",
+  "/stls/analytics",
 ];
 const showTopbar = computed(() => topbarPages.includes(route.path));
 </script>

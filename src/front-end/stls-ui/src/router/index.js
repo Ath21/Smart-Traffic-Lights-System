@@ -14,6 +14,7 @@ const Subscribe = () => import('../pages/Notification/Subscribe.vue')
 const Logs = () => import('../pages/Admin/Logs.vue') // ✅ new page for admin log viewer
 const Users = () => import('../pages/Admin/Users.vue')
 const UserAudits = () => import('../pages/Admin/Audits.vue')
+const Summaries = () => import('../pages/Traffic/Summaries.vue')
 
 // === Routes ===
 const routes = [
@@ -31,6 +32,7 @@ const routes = [
   { path: '/stls/update', name: 'update', component: UpdateProfile, meta: { roles: ['user', 'admin', 'trafficoperator'] } },
   { path: '/stls/subscriptions', name: 'subscriptions', component: Notifications, meta: { roles: ['user'] } }, // ✅ user only
   { path: '/stls/subscribe', name: 'subscribe', component: Subscribe, meta: { roles: ['user'] } }, // ✅ user only
+  { path: '/stls/analytics', name: 'summaries', component: Summaries, meta: { roles: ['user', 'admin', 'trafficoperator'] } },
 
   // Admin-only route
   { path: '/stls/logs', name: 'logs', component: Logs, meta: { roles: ['admin'] } }, // ✅ admin-only route

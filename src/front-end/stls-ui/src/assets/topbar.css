@@ -118,3 +118,15 @@ header.topbar {
   background: linear-gradient(90deg, #1ec8ff, #47dcff);
   box-shadow: 0 3px 12px rgba(30, 200, 255, 0.55);
 }
+
+.middle-alerts {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ff4d4f;
+  color: white;
+  padding: 0.3rem 0.6rem;
+  border-radius: 1rem;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
