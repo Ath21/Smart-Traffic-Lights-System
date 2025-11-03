@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace DetectionStore.Controllers.Healthchecks
 {
     [ApiController]
-    [Route("detection-service")]
+    [Route("/")]
     public class ReadyController : ControllerBase
     {
         private readonly DetectionDbContext _detectionDbContext;

@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace DetectionStore.Controllers.Healthchecks
 {
     [ApiController]
-    [Route("detection-service")]
+    [Route("/")]
     public class HealthController : ControllerBase
     {
         private readonly IntersectionContext _intersection;

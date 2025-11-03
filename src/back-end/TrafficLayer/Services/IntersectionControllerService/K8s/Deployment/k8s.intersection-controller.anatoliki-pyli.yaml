@@ -1,86 +1,91 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: intersection-controller-api
+  name: intersection-controller-anatoliki-pyli
+  namespace: uniwa-stls
+  labels:
+    app: intersection-controller-anatoliki-pyli
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: intersection-controller-api
+      app: intersection-controller-anatoliki-pyli
   template:
     metadata:
       labels:
-        app: intersection-controller-api
+        app: intersection-controller-anatoliki-pyli
     spec:
       containers:
-      - name: intersection-controller-api
-        image: ath21/stls:intersection_controller_api
-        ports:
-        - containerPort: 8080
-        env:
-        - name: ASPNETCORE_ENVIRONMENT
-          value: "Development"
+        - name: intersection-controller-anatoliki-pyli-container
+          image: ath21/stls-services:intersection-controller
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
 
-        - name: Redis__TrafficLight__Host
-          value: "trafficlightcachedb"
-        - name: Redis__TrafficLight__Port
-          value: "6379"
+          # --- Load from ConfigMap and Secret ---
+          envFrom:
+            - configMapRef:
+                name: intersection-controller-config
+            - secretRef:
+                name: intersection-controller-secret
+          
+          env:
+            # --- Intersection Details ---
+            - name: "Intersection__Id"
+              value: "2"
+            - name: "Intersection__Name"
+              value: "Anatoliki Pyli"
 
-        - name: Redis__Detection__Host
-          value: "detectioncachedb"
-        - name: Redis__Detection__Port
-          value: "6379"
+            # --- Traffic Lights ---
+            - name: "TrafficLights__0__Id"
+              value: "201"
+            - name: "TrafficLights__0__Name"
+              value: "Anatoliki Pyli"
+            - name: "TrafficLights__1__Id"
+              value: "202"
+            - name: "TrafficLights__1__Name"
+              value: "Agiou Spyridonos"
 
-        - name: Jwt__Key
-          valueFrom:
-            secretKeyRef:
-              name: intersectioncontrollerapi-secret
-              key: JWT_KEY
+          # --- Probes ---
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            timeoutSeconds: 3
+            failureThreshold: 3
 
-        - name: RabbitMQ__Host
-          value: "rabbitmq"
-        - name: RabbitMQ__Port
-          value: "5672"
-        - name: RabbitMQ__Username
-          valueFrom:
-            secretKeyRef:
-              name: intersectioncontrollerapi-secret
-              key: RABBITMQ_USERNAME
-        - name: RabbitMQ__Password
-          valueFrom:
-            secretKeyRef:
-              name: intersectioncontrollerapi-secret
-              key: RABBITMQ_PASSWORD
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
 
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 8080
-          initialDelaySeconds: 10
-          periodSeconds: 15
-          timeoutSeconds: 2
-          failureThreshold: 3
+          # --- Resource Limits ---
+          resources:
+            requests:
+              cpu: 150m
+              memory: 256Mi
+            limits:
+              cpu: 400m
+              memory: 512Mi
 
-        readinessProbe:
-          httpGet:
-            path: /ready
-            port: 8080
-          initialDelaySeconds: 15
-          periodSeconds: 20
-          timeoutSeconds: 3
-          failureThreshold: 3
-
+      restartPolicy: Always
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: intersection-controller-anatoliki-pyli  
+  name: intersection-controller-anatoliki-pyli
   namespace: uniwa-stls
 spec:
   type: ClusterIP
   ports:
-  - port: 8080
-    targetPort: 8080
+    - port: 8080
+      targetPort: 8080
   selector:
     app: intersection-controller-anatoliki-pyli

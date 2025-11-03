@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace IntersectionControllerStore.Controllers.Healthchecks
 {
     [ApiController]
-    [Route("intersection-controller")]
+    [Route("/")]
     public class HealthController : ControllerBase
     {
         private readonly IntersectionContext _intersection;

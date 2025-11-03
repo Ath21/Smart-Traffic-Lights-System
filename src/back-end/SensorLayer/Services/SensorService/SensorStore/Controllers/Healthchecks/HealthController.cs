@@ -7,7 +7,7 @@ using SensorStore.Domain;
 namespace SensorStore.Controllers.Healthchecks
 {
     [ApiController]
-    [Route("sensor-service")]
+    [Route("/")]
     public class HealthController : ControllerBase
     {
         private readonly IntersectionContext _intersection;

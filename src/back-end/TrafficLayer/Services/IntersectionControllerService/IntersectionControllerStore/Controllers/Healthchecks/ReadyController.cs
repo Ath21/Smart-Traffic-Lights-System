@@ -12,7 +12,7 @@ using TrafficLightCacheData;
 namespace IntersectionControllerStore.Controllers.Healthchecks
 {
     [ApiController]
-    [Route("intersection-controller")]
+    [Route("/")]
     public class ReadyController : ControllerBase
     {
         private readonly TrafficLightCacheDbContext _trafficLightCacheDbContext;

@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace SensorStore.Controllers.Healthchecks
 {
     [ApiController]
-    [Route("sensor-service")]
+    [Route("/")]
     public class ReadyController : ControllerBase
     {
         private readonly DetectionDbContext _detectionDbContext;

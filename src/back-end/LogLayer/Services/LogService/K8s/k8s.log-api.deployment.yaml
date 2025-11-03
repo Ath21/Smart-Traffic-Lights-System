@@ -20,11 +20,13 @@ spec:
           image: ath21/stls-services:log-api
           ports:
             - containerPort: 8080
+          
           envFrom:
             - configMapRef:
                 name: log-api-config
             - secretRef:
                 name: log-api-secret
+          
           resources:
             requests:
               cpu: 100m
@@ -32,6 +34,7 @@ spec:
             limits:
               cpu: 300m
               memory: 256Mi
+          
           livenessProbe:
             httpGet:
               path: /health
@@ -44,4 +47,5 @@ spec:
               port: 8080
             initialDelaySeconds: 10
             periodSeconds: 10
+      
       restartPolicy: Always
