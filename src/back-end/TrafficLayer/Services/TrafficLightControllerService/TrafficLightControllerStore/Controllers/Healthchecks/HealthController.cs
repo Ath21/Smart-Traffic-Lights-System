@@ -7,7 +7,7 @@ using TrafficLightControllerStore.Domain;
 namespace TrafficLightControllerStore.Controllers.Healthchecks
 {
     [ApiController]
-    [Route("traffic-light-controller")]
+    [Route("/")]
     public class HealthController : ControllerBase
     {
         private readonly IntersectionContext _intersection;

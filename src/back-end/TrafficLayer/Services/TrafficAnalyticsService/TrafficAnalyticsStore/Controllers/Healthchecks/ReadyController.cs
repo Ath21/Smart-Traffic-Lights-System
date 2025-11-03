@@ -10,7 +10,7 @@ using TrafficAnalyticsData;
 namespace TrafficAnalyticsStore.Controllers.Healthchecks
 {
     [ApiController]
-    [Route("traffic-analytics")]
+    [Route("/")]
     public class ReadyController : ControllerBase
     {
         private readonly TrafficAnalyticsDbContext _dbContext;

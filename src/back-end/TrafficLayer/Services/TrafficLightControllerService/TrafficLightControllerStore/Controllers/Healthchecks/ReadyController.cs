@@ -10,7 +10,7 @@ using TrafficLightControllerStore.Domain;
 namespace TrafficLightControllerStore.Controllers.Healthchecks
 {
     [ApiController]
-    [Route("traffic-light-controller")]
+    [Route("/")]
     public class ReadyController : ControllerBase
     {
         private readonly TrafficLightCacheDbContext _trafficLightCacheDbContext;

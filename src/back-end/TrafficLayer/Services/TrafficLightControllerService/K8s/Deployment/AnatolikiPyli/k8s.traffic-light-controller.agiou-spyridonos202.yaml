@@ -1,70 +1,76 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: traffic-light-controller-api
+  name: traffic-light-controller-agiou-spyridonos202
+  namespace: uniwa-stls
+  labels:
+    app: traffic-light-controller-agiou-spyridonos202
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: traffic-light-controller-api
+      app: traffic-light-controller-agiou-spyridonos202
   template:
     metadata:
       labels:
-        app: traffic-light-controller-api
+        app: traffic-light-controller-agiou-spyridonos202
     spec:
       containers:
-      - name: traffic-light-controller-api
-        image: ath21/stls:traffic_light_controller_api
-        ports:
-        - containerPort: 8080
-        env:
-        - name: ASPNETCORE_ENVIRONMENT
-          value: "Development"
+        - name: traffic-light-controller-agiou-spyridonos202-container
+          image: ath21/stls-services:traffic-light-controller
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
 
-        - name: Redis__TrafficLight__Host
-          value: "trafficlightcachedb"
-        - name: Redis__TrafficLight__Port
-          value: "6379"
+          # --- Load from ConfigMap and Secret ---
+          envFrom:
+            - configMapRef:
+                name: traffic-light-controller-config
+            - secretRef:
+                name: traffic-light-controller-secret
 
-        - name: Jwt__Key
-          valueFrom:
-            secretKeyRef:
-              name: trafficlightcontrollerapi-secret
-              key: JWT_KEY
+          env:
+            # --- Intersection Details ---
+            - name: "Intersection__Id"
+              value: "2"
+            - name: "Intersection__Name"
+              value: "Anatoliki Pyli"
 
-        - name: RabbitMQ__Host
-          value: "rabbitmq"
-        - name: RabbitMQ__Port
-          value: "5672"
-        - name: RabbitMQ__Username
-          valueFrom:
-            secretKeyRef:
-              name: trafficlightcontrollerapi-secret
-              key: RABBITMQ_USERNAME
-        - name: RabbitMQ__Password
-          valueFrom:
-            secretKeyRef:
-              name: trafficlightcontrollerapi-secret
-              key: RABBITMQ_PASSWORD
+            # --- Traffic Lights ---
+            - name: "TrafficLights__Id"
+              value: "202"
+            - name: "TrafficLights__Name"
+              value: "Agiou Spyridonos"
 
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 8080
-          initialDelaySeconds: 10
-          periodSeconds: 15
-          timeoutSeconds: 2
-          failureThreshold: 3
+          # --- Probes ---
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            timeoutSeconds: 3
+            failureThreshold: 3
 
-        readinessProbe:
-          httpGet:
-            path: /ready
-            port: 8080
-          initialDelaySeconds: 15
-          periodSeconds: 20
-          timeoutSeconds: 3
-          failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
 
+          # --- Resource Limits ---
+          resources:
+            requests:
+              cpu: 150m
+              memory: 256Mi
+            limits:
+              cpu: 400m
+              memory: 512Mi
+
+      restartPolicy: Always
 
 ---
 apiVersion: v1
@@ -75,7 +81,7 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-  - port: 8080
-    targetPort: 8080
+    - port: 8080
+      targetPort: 8080
   selector:
     app: traffic-light-controller-agiou-spyridonos202

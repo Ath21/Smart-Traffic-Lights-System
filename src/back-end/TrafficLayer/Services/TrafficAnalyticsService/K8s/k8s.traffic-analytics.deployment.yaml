@@ -1,81 +1,60 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: traffic-analytics-api
+  name: traffic-analytics
+  namespace: uniwa-stls
+  labels:
+    app: traffic-analytics
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: traffic-analytics-api
+      app: traffic-analytics
   template:
     metadata:
       labels:
-        app: traffic-analytics-api
+        app: traffic-analytics
     spec:
       containers:
-      - name: traffic-analytics-api
-        image: ath21/stls:traffic_analytics_api
-        ports:
-        - containerPort: 8080
-        env:
-        - name: ASPNETCORE_ENVIRONMENT
-          value: "Development"
+        - name: traffic-analytics-container
+          image: ath21/stls-services:traffic-analytics
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          
+          # Load configuration from ConfigMap + Secret
+          envFrom:
+            - configMapRef:
+                name: traffic-analytics-config
+            - secretRef:
+                name: traffic-analytics-secret
 
-        # Postgres
-        - name: PostgreSQL__ConnectionString
-          value: "Host=trafficanalyticsdb;Port=5432;Database=TrafficAnalyticsDB;Username=postgres;Password=postgres123"
+          # --- Probes ---
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 3
 
-        # Redis
-        - name: Redis__Host
-          value: "detectioncachedb"
-        - name: Redis__Port
-          value: "6379"
-        - name: Redis__Password
-          value: ""
-        - name: Redis__Database
-          value: "0"
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
 
-        # JWT
-        - name: Jwt__Issuer
-          value: "http://stls_backend:8080"
-        - name: Jwt__Audience
-          value: "http://stls_backend:8080"
-        - name: Jwt__Key
-          valueFrom:
-            secretKeyRef:
-              name: trafficanalyticsapi-secret
-              key: JWT_KEY
+          # --- Resource Limits ---
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 300m
+              memory: 256Mi
 
-        # RabbitMQ
-        - name: RabbitMQ__Host
-          value: "rabbitmq"
-        - name: RabbitMQ__Port
-          value: "5672"
-        - name: RabbitMQ__Username
-          valueFrom:
-            secretKeyRef:
-              name: trafficanalyticsapi-secret
-              key: RABBITMQ_USERNAME
-        - name: RabbitMQ__Password
-          valueFrom:
-            secretKeyRef:
-              name: trafficanalyticsapi-secret
-              key: RABBITMQ_PASSWORD
-
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 8080
-          initialDelaySeconds: 10
-          periodSeconds: 15
-          timeoutSeconds: 2
-          failureThreshold: 3
-
-        readinessProbe:
-          httpGet:
-            path: /ready
-            port: 8080
-          initialDelaySeconds: 15
-          periodSeconds: 20
-          timeoutSeconds: 3
-          failureThreshold: 3
+      restartPolicy: Always

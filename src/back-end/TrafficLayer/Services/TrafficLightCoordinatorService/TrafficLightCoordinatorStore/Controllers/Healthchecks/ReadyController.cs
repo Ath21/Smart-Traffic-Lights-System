@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace TrafficLightCoordinatorStore.Controllers.Healthchecks
 {
     [ApiController]
-    [Route("traffic-light-coordinator")]
+    [Route("/")]
     public class ReadyController : ControllerBase
     {
         private readonly TrafficLightDbContext _dbContext;

@@ -1,73 +1,60 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: traffic-light-coordinator-api
+  name: traffic-light-coordinator
+  namespace: uniwa-stls
+  labels:
+    app: traffic-light-coordinator
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: traffic-light-coordinator-api
+      app: traffic-light-coordinator
   template:
     metadata:
       labels:
-        app: traffic-light-coordinator-api
+        app: traffic-light-coordinator
     spec:
       containers:
-      - name: traffic-light-coordinator-api
-        image: ath21/stls:traffic_light_coordinator_api
-        ports:
-        - containerPort: 8080
-        env:
-        - name: ASPNETCORE_ENVIRONMENT
-          value: "Development"
+        - name: traffic-light-coordinator-container
+          image: ath21/stls-services:traffic-light-coordinator
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          
+          # Load configuration from ConfigMap + Secret
+          envFrom:
+            - configMapRef:
+                name: traffic-light-coordinator-config
+            - secretRef:
+                name: traffic-light-coordinator-secret
 
-        - name: PostgreSQL__ConnectionString
-          value: "Host=trafficlightdb;Port=5432;Database=TrafficLightDB;Username=postgres;Password=postgres123"
+          # --- Probes ---
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 3
 
-        - name: Redis__TrafficLight__Host
-          value: "trafficlightcachedb"
-        - name: Redis__TrafficLight__Port
-          value: "6379"
-        - name: Redis__TrafficLight__Password
-          value: ""
-        - name: Redis__TrafficLight__Database
-          value: "0"
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
 
-        - name: Jwt__Key
-          valueFrom:
-            secretKeyRef:
-              name: trafficlightcoordinatorapi-secret
-              key: JWT_KEY
+          # --- Resource Limits ---
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 300m
+              memory: 256Mi
 
-        - name: RabbitMQ__Host
-          value: "rabbitmq"
-        - name: RabbitMQ__Port
-          value: "5672"
-        - name: RabbitMQ__Username
-          valueFrom:
-            secretKeyRef:
-              name: trafficlightcoordinatorapi-secret
-              key: RABBITMQ_USERNAME
-        - name: RabbitMQ__Password
-          valueFrom:
-            secretKeyRef:
-              name: trafficlightcoordinatorapi-secret
-              key: RABBITMQ_PASSWORD
-
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 8080
-          initialDelaySeconds: 10
-          periodSeconds: 15
-          timeoutSeconds: 2
-          failureThreshold: 3
-
-        readinessProbe:
-          httpGet:
-            path: /ready
-            port: 8080
-          initialDelaySeconds: 15
-          periodSeconds: 20
-          timeoutSeconds: 3
-          failureThreshold: 3
+      restartPolicy: Always

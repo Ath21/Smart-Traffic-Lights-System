@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace TrafficLightCoordinatorStore.Controllers.Healthchecks
 {
     [ApiController]
-    [Route("traffic-light-coordinator")]
+    [Route("/")]
     public class HealthController : ControllerBase
     {
         private readonly string _service;
