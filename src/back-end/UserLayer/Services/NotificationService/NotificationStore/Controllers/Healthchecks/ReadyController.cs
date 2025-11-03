@@ -9,7 +9,7 @@ using NotificationData;
 namespace NotificationStore.Controllers.Healthchecks
 {
     [ApiController]
-    [Route("notification-service")]
+    [Route("/")]
     public class ReadyController : ControllerBase
     {
         private readonly NotificationDbContext _dbContext;

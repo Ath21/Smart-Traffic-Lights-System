@@ -2,6 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: notification-api
+  namespace: uniwa-stls
+  labels:
+    app: notification-api
 spec:
   replicas: 1
   selector:
@@ -13,134 +16,45 @@ spec:
         app: notification-api
     spec:
       containers:
-      - name: notification-api
-        image: ath21/stls:notification_api
-        ports:
-        - containerPort: 8080
-        env:
-        # ASP.NET
-        - name: ASPNETCORE_ENVIRONMENT
-          value: "Development"
+        - name: notification-api-container
+          image: ath21/stls-services:notification-api
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          
+          # Load configuration from ConfigMap + Secret
+          envFrom:
+            - configMapRef:
+                name: notification-api-config
+            - secretRef:
+                name: notification-api-secret
 
-        # MongoDB
-        - name: Mongo__ConnectionString
-          value: "mongodb://$(MONGO_ROOT_USERNAME):$(MONGO_ROOT_PASSWORD)@notificationdb:27017"
-        - name: Mongo__Database
-          value: "NotificationDB"
-        - name: Mongo__NotificationsCollection
-          value: "notifications"
-        - name: Mongo__DeliveryLogsCollection
-          value: "delivery_logs"
-        - name: MONGO_ROOT_USERNAME
-          valueFrom:
-            secretKeyRef:
-              name: notificationdb-secret
-              key: MONGO_ROOT_USERNAME
-        - name: MONGO_ROOT_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: notificationdb-secret
-              key: MONGO_ROOT_PASSWORD
+          # --- Probes ---
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 3
 
-        # JWT
-        - name: Jwt__Issuer
-          value: "http://stls_backend:8080"
-        - name: Jwt__Audience
-          value: "http://stls_backend:8080"
-        - name: Jwt__Key
-          valueFrom:
-            secretKeyRef:
-              name: notificationapi-secret
-              key: JWT_KEY
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
 
-        # CORS
-        - name: Cors__AllowedOrigins
-          value: "http://localhost:5173"
-        - name: Cors__AllowedMethods
-          value: "GET,POST,PUT,PATCH,DELETE"
-        - name: Cors__AllowedHeaders
-          value: "Content-Type,Authorization"
+          # --- Resource Limits ---
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 300m
+              memory: 256Mi
 
-        # Email
-        - name: Email__SmtpServer
-          value: "smtp.gmail.com"
-        - name: Email__Port
-          value: "587"
-        - name: Email__SenderName
-          value: "UNIWA STLS"
-        - name: Email__SenderEmail
-          value: "ice19390005@gmail.com"
-        - name: Email__Username
-          valueFrom:
-            secretKeyRef:
-              name: notificationapi-secret
-              key: EMAIL_USERNAME
-        - name: Email__Password
-          valueFrom:
-            secretKeyRef:
-              name: notificationapi-secret
-              key: EMAIL_PASSWORD
-
-        # RabbitMQ
-        - name: RabbitMQ__Host
-          value: "rabbitmq"
-        - name: RabbitMQ__Port
-          value: "5672"
-        - name: RabbitMQ__Username
-          valueFrom:
-            secretKeyRef:
-              name: notificationapi-secret
-              key: RABBITMQ_USERNAME
-        - name: RabbitMQ__Password
-          valueFrom:
-            secretKeyRef:
-              name: notificationapi-secret
-              key: RABBITMQ_PASSWORD
-
-        # Exchanges and routing keys
-        - name: RabbitMQ__Exchanges__User
-          value: "USER.EXCHANGE"
-        - name: RabbitMQ__RoutingKeys__User__NotificationAlert
-          value: "user.notification.alert"
-        - name: RabbitMQ__RoutingKeys__User__NotificationPublic
-          value: "notification.event.public_notice"
-        - name: RabbitMQ__Queues__User__Requests
-          value: "requests.notification.queue"
-        - name: RabbitMQ__RoutingKeys__User__NotificationRequest
-          value: "user.notification.request"
-
-        - name: RabbitMQ__Exchanges__Traffic
-          value: "TRAFFIC.EXCHANGE"
-        - name: RabbitMQ__Queues__Traffic__Analytics
-          value: "traffic.analytics.notification.queue"
-        - name: RabbitMQ__RoutingKeys__Traffic__Congestion
-          value: "traffic.analytics.congestion.{intersection_id}"
-        - name: RabbitMQ__RoutingKeys__Traffic__Summary
-          value: "traffic.analytics.summary.{intersection_id}"
-        - name: RabbitMQ__RoutingKeys__Traffic__Incident
-          value: "traffic.analytics.incident.{intersection_id}"
-
-        - name: RabbitMQ__Exchanges__Log
-          value: "LOG.EXCHANGE"
-        - name: RabbitMQ__RoutingKeys__Log__Audit
-          value: "log.user.notification_service.audit"
-        - name: RabbitMQ__RoutingKeys__Log__Error
-          value: "log.user.notification_service.error"
-        
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 8080
-          initialDelaySeconds: 10
-          periodSeconds: 15
-          timeoutSeconds: 2
-          failureThreshold: 3
-
-        readinessProbe:
-          httpGet:
-            path: /ready
-            port: 8080
-          initialDelaySeconds: 15
-          periodSeconds: 20
-          timeoutSeconds: 3
-          failureThreshold: 3
+      restartPolicy: Always

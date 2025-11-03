@@ -9,7 +9,7 @@ using UserData;
 namespace UserStore.Controllers.Healthchecks
 {
     [ApiController]
-    [Route("user-service")]
+    [Route("/")]
     public class ReadyController : ControllerBase
     {
         private readonly UserDbContext _dbContext;

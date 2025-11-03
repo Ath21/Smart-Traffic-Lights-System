@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace NotificationStore.Controllers.Healthchecks
 {
     [ApiController]
-    [Route("notification-service")]
+    [Route("/")]
     public class HealthController : ControllerBase
     {
         private readonly string _layer;

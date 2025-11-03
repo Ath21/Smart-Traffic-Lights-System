@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace UserStore.Controllers.Healthchecks
 {
     [ApiController]
-    [Route("user-service")]
+    [Route("/")]
     public class HealthController : ControllerBase
     {
         private readonly string _layer;

@@ -2,6 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: user-api
+  namespace: uniwa-stls
+  labels:
+    app: user-api
 spec:
   replicas: 1
   selector:
@@ -13,107 +16,45 @@ spec:
         app: user-api
     spec:
       containers:
-      - name: user-api
-        image: ath21/stls:user_api
-        ports:
-        - containerPort: 8080
-        env:
-        # ASP.NET
-        - name: ASPNETCORE_ENVIRONMENT
-          value: "Development"
+        - name: user-api-container
+          image: ath21/stls-services:user-api
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          
+          # Load configuration from ConfigMap + Secret
+          envFrom:
+            - configMapRef:
+                name: user-api-config
+            - secretRef:
+                name: user-api-secret
 
-        # Database
-        - name: MSSQL__ConnectionString
-          value: "Server=userdb,1433;Database=UserDB;User Id=sa;Password=$(SA_PASSWORD);TrustServerCertificate=True"
-        - name: SA_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: userdb-secret
-              key: SA_PASSWORD
+          # --- Probes ---
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 3
 
-        # JWT
-        - name: Jwt__Issuer
-          value: "http://stls_backend:8080"
-        - name: Jwt__Audience
-          value: "http://stls_backend:8080"
-        - name: Jwt__Key
-          valueFrom:
-            secretKeyRef:
-              name: userapi-secret
-              key: JWT_KEY
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
 
-        # CORS
-        - name: Cors__AllowedOrigins
-          value: "http://localhost:5173"
-        - name: Cors__AllowedMethods
-          value: "GET,POST,PUT,PATCH,DELETE"
-        - name: Cors__AllowedHeaders
-          value: "Content-Type,Authorization"
+          # --- Resource Limits ---
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 300m
+              memory: 256Mi
 
-        # RabbitMQ
-        - name: RabbitMQ__Host
-          value: "rabbitmq"
-        - name: RabbitMQ__Port
-          value: "5672"
-        - name: RabbitMQ__Username
-          valueFrom:
-            secretKeyRef:
-              name: userapi-secret
-              key: RABBITMQ_USERNAME
-        - name: RabbitMQ__Password
-          valueFrom:
-            secretKeyRef:
-              name: userapi-secret
-              key: RABBITMQ_PASSWORD
-
-        # Exchanges and routing keys
-        - name: RabbitMQ__Exchanges__User
-          value: "USER.EXCHANGE"
-        - name: RabbitMQ__RoutingKeys__User__NotificationRequest
-          value: "user.notification.request"
-        - name: RabbitMQ__Queues__User__Notifications
-          value: "notifications.user.queue"
-        - name: RabbitMQ__RoutingKeys__User__NotificationAlert
-          value: "user.notification.alert"
-        - name: RabbitMQ__RoutingKeys__User__NotificationPublic
-          value: "notification.event.public_notice"
-
-        - name: RabbitMQ__Exchanges__Traffic
-          value: "TRAFFIC.EXCHANGE"
-        - name: RabbitMQ__RoutingKeys__Traffic__LightControl
-          value: "traffic.light.control.{intersection_id}.{light_id}"
-        - name: RabbitMQ__RoutingKeys__Traffic__LightUpdate
-          value: "traffic.light.update.{intersection_id}"
-        - name: RabbitMQ__Queues__Traffic__Analytics
-          value: "traffic.analytics.user.queue"
-        - name: RabbitMQ__RoutingKeys__Traffic__Congestion
-          value: "traffic.analytics.congestion.{intersection_id}"
-        - name: RabbitMQ__RoutingKeys__Traffic__Summary
-          value: "traffic.analytics.summary.{intersection_id}"
-        - name: RabbitMQ__RoutingKeys__Traffic__Incident
-          value: "traffic.analytics.incident.{intersection_id}"
-
-        - name: RabbitMQ__Exchanges__Log
-          value: "LOG.EXCHANGE"
-        - name: RabbitMQ__RoutingKeys__Log__Audit
-          value: "log.user.user_service.audit"
-        - name: RabbitMQ__RoutingKeys__Log__Error
-          value: "log.user.user_service.error"
-
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 8080
-          initialDelaySeconds: 10
-          periodSeconds: 15
-          timeoutSeconds: 2
-          failureThreshold: 3
-
-        readinessProbe:
-          httpGet:
-            path: /ready
-            port: 8080
-          initialDelaySeconds: 15
-          periodSeconds: 20
-          timeoutSeconds: 3
-          failureThreshold: 3
+      restartPolicy: Always
