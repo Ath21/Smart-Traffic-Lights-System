@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace LogStore.Controllers
 {
     [ApiController]
-    [Route("log-service")]
+    [Route("/")]
     public class ReadyController : ControllerBase
     {
         private readonly LogDbContext _dbContext;

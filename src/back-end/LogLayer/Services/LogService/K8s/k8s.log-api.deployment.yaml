@@ -16,8 +16,8 @@ spec:
         app: log-api
     spec:
       containers:
-        - name: log-api
-          image: yourregistry/uniwa-stls-log-api:latest
+        - name: log-api-container
+          image: ath21/stls-services:log-api
           ports:
             - containerPort: 8080
           envFrom:
@@ -40,7 +40,7 @@ spec:
             periodSeconds: 20
           readinessProbe:
             httpGet:
-              path: /health
+              path: /ready
               port: 8080
             initialDelaySeconds: 10
             periodSeconds: 10

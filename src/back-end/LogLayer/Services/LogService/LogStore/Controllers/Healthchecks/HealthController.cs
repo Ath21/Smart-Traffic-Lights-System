@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace LogStore.Controllers
 {
     [ApiController]
-    [Route("log-service")]
+    [Route("/")]
     public class HealthController : ControllerBase
     {
         private readonly string _layer;
