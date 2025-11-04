@@ -76,7 +76,7 @@ const intersections = [
     center: [38.003558, 23.678042],
     lights: [
       { id: 201, label: "Anatoliki Pyli", coords: [38.003549, 23.677997], state: "green" },
-      { id: 202, label: "Agioy Spyridonos", coords: [38.00357, 23.678093], state: "red" }
+      { id: 202, label: "Agiou Spyridonos", coords: [38.00357, 23.678093], state: "red" }
     ]
   }
 ];
