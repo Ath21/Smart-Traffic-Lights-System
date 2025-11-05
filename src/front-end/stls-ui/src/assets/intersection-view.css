@@ -1,4 +1,112 @@
-/* Blinking / pulse animation for active lights */
+/* Container */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 55px;
+  font-family: Arial, sans-serif;
+  background-color: #f3f4f6;
+}
+
+/* Header */
+.header h1 {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.location {
+  color: #4b5563;
+  margin-bottom: 3px;
+}
+
+.coordinates {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+/* Loading & Error */
+.loading {
+  color: #4b5563;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.error {
+  color: #dc2626;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+/* Grid */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+@media (min-width: 600px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 900px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Card */
+.card {
+  background-color: white;
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  transition: box-shadow 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+}
+
+/* Light name */
+.light-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.direction {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+/* Info text */
+.info {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin-bottom: 3px;
+}
+
+/* Status colors */
+.green-text { color: #16a34a; font-weight: bold; }
+.red-text { color: #dc2626; font-weight: bold; }
+
+/* Phase circle */
+.phase span {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  margin-right: 5px;
+}
+
+/* Colors for phases */
+.green-circle { background-color: #16a34a; }
+.yellow-circle { background-color: #facc15; }
+.red-circle { background-color: #dc2626; }
+
+/* Blinking animation */
 @keyframes pulse-light {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }
@@ -8,17 +116,17 @@
   animation: pulse-light 1s infinite;
 }
 
-/* Optional body background */
-body {
-  background-color: #f3f4f6; /* Tailwind gray-100 */
+.light-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
-/* Card shadow for hover effect */
-.card-shadow {
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
-  transition: box-shadow 0.2s ease;
-}
-
-.card-shadow:hover {
-  box-shadow: 0 10px 15px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.05);
+.light-img {
+  width: 300px;
+  height: 100px;
+  object-fit: contain;
+  border-radius: 6px;
+  border: 1px solid #d1d5db; /* light gray border */
 }

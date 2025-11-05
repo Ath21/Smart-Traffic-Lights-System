@@ -43,6 +43,11 @@ const topbarPages = [
   "/stls/users",
   "/stls/audits",
   "/stls/analytics",
+  "/stls/intersection/agiou-spyridonos",
+  "/stls/intersection/anatoliki-pyli",
+  "/stls/intersection/dytiki-pyli",
+  "/stls/intersection/ekklisia",
+  "/stls/intersection/kentriki-pyli",
 ];
 const showTopbar = computed(() => topbarPages.includes(route.path));
 </script>
