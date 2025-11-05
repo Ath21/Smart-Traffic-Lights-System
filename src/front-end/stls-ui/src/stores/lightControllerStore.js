@@ -16,14 +16,18 @@ export const useLightControllerStore = defineStore("lightControllerStore", () =>
   // ===============================
   function getLightClient(lightId) {
     for (const intersection of Object.values(intersectionClients)) {
-      for (const [id, client] of Object.entries(intersection.controllers)) {
-        if (Number(id.split("_").pop()) === lightId) {
+      if (!intersection.lightControllers) continue;
+
+      for (const [key, client] of Object.entries(intersection.lightControllers)) {
+        // Match by LightId at the end of key
+        if (key.endsWith(lightId.toString())) {
           return client;
         }
       }
     }
-    throw new Error(`No controller client found for light ID ${lightId}`);
+    throw new Error(`[LightControllerStore] No controller client found for light ID ${lightId}`);
   }
+
 
   // ===============================
   // Fetch a single light's full data (state + cycle + failover)
@@ -75,6 +79,7 @@ export const useLightControllerStore = defineStore("lightControllerStore", () =>
     if (!lights?.length) return {};
     loading.value = true;
     error.value = null;
+console.log("LightsData after fetch:", lightsData.value);
 
     try {
       const results = await Promise.all(
