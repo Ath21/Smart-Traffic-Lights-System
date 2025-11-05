@@ -99,6 +99,7 @@ export const useUserStore = defineStore("userStore", () => {
     } catch (err) {
       error.value = err.response?.data?.message || err.message || "Login failed";
       console.error("[UserStore] login error:", err);
+      
       throw err;
     } finally {
       loading.value = false;
@@ -227,7 +228,7 @@ export const useUserStore = defineStore("userStore", () => {
   // ===============================
   async function checkHealth() {
     try {
-      const { data } = await userApi.get("/user-service/health");
+      const { data } = await userApi.get("/health");
       return data;
     } catch (err) {
       console.error("[UserStore] health error:", err);
@@ -237,7 +238,7 @@ export const useUserStore = defineStore("userStore", () => {
 
   async function checkReady() {
     try {
-      const { data } = await userApi.get("/user-service/ready");
+      const { data } = await userApi.get("/ready");
       return data;
     } catch (err) {
       console.error("[UserStore] ready error:", err);

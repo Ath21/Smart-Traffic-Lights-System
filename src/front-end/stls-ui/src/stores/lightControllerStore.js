@@ -78,11 +78,11 @@ export const useLightControllerStore = defineStore("lightControllerStore", () =>
 
     try {
       const results = await Promise.all(
-        lights.map((light) => fetchLightData(light.id))
+        lights.map((light) => fetchLightData(light.LightId))
       );
 
       return results.reduce((acc, data, idx) => {
-        if (data) acc[lights[idx].id] = data;
+        if (data) acc[lights[idx].LightId] = data;
         return acc;
       }, {});
     } catch (err) {
@@ -95,6 +95,7 @@ export const useLightControllerStore = defineStore("lightControllerStore", () =>
       loading.value = false;
     }
   }
+
 
   // ===============================
   // Select a light
