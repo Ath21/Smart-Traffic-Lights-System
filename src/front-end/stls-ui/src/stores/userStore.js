@@ -1,15 +1,14 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
+import { userApi } from "../services/httpClients";
 
 // ===============================
-// JWT Decoder (handles malformed/padded tokens)
+// JWT Decoder
 // ===============================
 function decodeJWT(token) {
   try {
     const base64 = token.split(".")[1];
     if (!base64) return null;
-
-    // Fix base64 padding
     const padded = base64.replace(/-/g, "+").replace(/_/g, "/");
     const payload = JSON.parse(
       decodeURIComponent(
@@ -26,14 +25,18 @@ function decodeJWT(token) {
   }
 }
 
-export const useAuth = defineStore("auth", () => {
+// ===============================
+// User Store
+// ===============================
+export const useUserStore = defineStore("userStore", () => {
   // ===============================
   // State
   // ===============================
-  const token = ref(localStorage.getItem("jwt") || null);
+  const token = ref(localStorage.getItem("stls_token") || null);
   const user = ref(null);
   const loading = ref(false);
   const ready = ref(false);
+  const error = ref(null);
 
   // ===============================
   // Derived
@@ -44,7 +47,7 @@ export const useAuth = defineStore("auth", () => {
   // Bootstrap from localStorage
   // ===============================
   function bootstrap() {
-    const saved = localStorage.getItem("jwt");
+    const saved = localStorage.getItem("stls_token");
     if (!saved) {
       ready.value = true;
       return;
@@ -52,12 +55,11 @@ export const useAuth = defineStore("auth", () => {
 
     const decoded = decodeJWT(saved);
     if (!decoded) {
-      localStorage.removeItem("jwt");
+      localStorage.removeItem("stls_token");
       ready.value = true;
       return;
     }
 
-    // Normalize common JWT claim names
     user.value = {
       id: decoded.sub,
       email:
@@ -75,7 +77,6 @@ export const useAuth = defineStore("auth", () => {
       status: decoded.status || "active",
       exp: decoded.exp,
     };
-
     token.value = saved;
     ready.value = true;
   }
@@ -83,45 +84,165 @@ export const useAuth = defineStore("auth", () => {
   // ===============================
   // Auth Actions
   // ===============================
-  function login(newToken) {
-    token.value = newToken;
-    localStorage.setItem("jwt", newToken);
-
-    const decoded = decodeJWT(newToken);
-    if (decoded) {
-      user.value = {
-        id: decoded.sub,
-        email:
-          decoded.email ||
-          decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"] ||
-          null,
-        username:
-          decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] ||
-          decoded.username ||
-          decoded.email,
-        role:
-          decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] ||
-          decoded.role ||
-          "User",
-        status: decoded.status || "active",
-        exp: decoded.exp,
-      };
+  async function login(email, password) {
+    loading.value = true;
+    error.value = null;
+    try {
+      const { data } = await userApi.post("/api/users/login", { Email: email, Password: password });
+      if (data?.Token) {
+        token.value = data.Token;
+        localStorage.setItem("stls_token", data.Token);
+        localStorage.setItem("stls_token_exp", data.ExpiresAt);
+        bootstrap(); // decode token and set user
+      }
+      return data;
+    } catch (err) {
+      error.value = err.response?.data?.message || err.message || "Login failed";
+      console.error("[UserStore] login error:", err);
+      throw err;
+    } finally {
+      loading.value = false;
     }
   }
 
-  function logout() {
-    token.value = null;
-    user.value = null;
-    localStorage.removeItem("jwt");
+  async function logout() {
+    try {
+      await userApi.post("/api/users/logout");
+    } catch {
+      /* ignore errors */
+    } finally {
+      token.value = null;
+      user.value = null;
+      localStorage.removeItem("stls_token");
+      localStorage.removeItem("stls_token_exp");
+    }
+  }
+
+  async function register({ email, username, password, confirmPassword }) {
+    loading.value = true;
+    error.value = null;
+    try {
+      const { data } = await userApi.post("/api/users/register", {
+        Email: email,
+        Username: username,
+        Password: password,
+        ConfirmPassword: confirmPassword,
+      });
+      return data;
+    } catch (err) {
+      error.value = err.response?.data?.message || err.message || "Registration failed";
+      console.error("[UserStore] register error:", err);
+      throw err;
+    } finally {
+      loading.value = false;
+    }
   }
 
   // ===============================
-  // Helper for authorized fetch
+  // Profile
   // ===============================
-  async function apiFetch(url, options = {}) {
-    const headers = options.headers || {};
-    if (token.value) headers.Authorization = `Bearer ${token.value}`;
-    return fetch(url, { ...options, headers });
+  async function fetchProfile() {
+    loading.value = true;
+    error.value = null;
+    try {
+      const { data } = await userApi.get("/api/users/profile");
+      return data;
+    } catch (err) {
+      error.value = err.response?.data?.message || err.message || "Failed to fetch profile";
+      console.error("[UserStore] fetchProfile error:", err);
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function updateProfile(form) {
+    loading.value = true;
+    error.value = null;
+    try {
+      const payload = {
+        Email: form.email,
+        Username: form.username,
+        Password: form.password || null,
+        ConfirmPassword: form.confirmPassword || null,
+      };
+      const { data } = await userApi.put("/api/users/update", payload, {
+        headers: { Authorization: `Bearer ${token.value}` },
+      });
+      return data;
+    } catch (err) {
+      error.value = err.response?.data?.message || err.message || "Failed to update profile";
+      console.error("[UserStore] updateProfile error:", err);
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  // ===============================
+  // Password reset
+  // ===============================
+  async function resetPassword(email, newPassword, confirmPassword) {
+    loading.value = true;
+    error.value = null;
+    try {
+      const { data } = await userApi.post("/api/users/reset-password", {
+        Email: email,
+        NewPassword: newPassword,
+        ConfirmPassword: confirmPassword,
+      });
+      return data;
+    } catch (err) {
+      error.value = err.response?.data?.message || err.message || "Failed to reset password";
+      console.error("[UserStore] resetPassword error:", err);
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  // ===============================
+  // Subscriptions
+  // ===============================
+  async function subscribe(intersection, metric) {
+    loading.value = true;
+    error.value = null;
+    try {
+      const { data } = await userApi.post("/api/users/subscriptions/subscribe", {
+        Intersection: intersection,
+        Metric: metric,
+      });
+      return data;
+    } catch (err) {
+      error.value = err.response?.data?.message || err.message || "Failed to subscribe";
+      console.error("[UserStore] subscribe error:", err);
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  // ===============================
+  // Health checks
+  // ===============================
+  async function checkHealth() {
+    try {
+      const { data } = await userApi.get("/user-service/health");
+      return data;
+    } catch (err) {
+      console.error("[UserStore] health error:", err);
+      throw err;
+    }
+  }
+
+  async function checkReady() {
+    try {
+      const { data } = await userApi.get("/user-service/ready");
+      return data;
+    } catch (err) {
+      console.error("[UserStore] ready error:", err);
+      throw err;
+    }
   }
 
   // ===============================
@@ -134,10 +255,16 @@ export const useAuth = defineStore("auth", () => {
     user,
     loading,
     ready,
+    error,
     isAuthenticated,
-    bootstrap,
     login,
     logout,
-    apiFetch,
+    register,
+    fetchProfile,
+    updateProfile,
+    resetPassword,
+    subscribe,
+    checkHealth,
+    checkReady,
   };
 });

@@ -15,6 +15,7 @@ const Logs = () => import('../pages/Admin/Logs.vue') // ✅ new page for admin l
 const Users = () => import('../pages/Admin/Users.vue')
 const UserAudits = () => import('../pages/Admin/Audits.vue')
 const Summaries = () => import('../pages/Traffic/Summaries.vue')
+const IntersectionView = () => import('../pages/Traffic/IntersectionView.vue')
 
 // === Routes ===
 const routes = [
@@ -33,6 +34,7 @@ const routes = [
   { path: '/stls/subscriptions', name: 'subscriptions', component: Notifications, meta: { roles: ['user'] } }, // ✅ user only
   { path: '/stls/subscribe', name: 'subscribe', component: Subscribe, meta: { roles: ['user'] } }, // ✅ user only
   { path: '/stls/analytics', name: 'summaries', component: Summaries, meta: { roles: ['user', 'admin', 'trafficoperator'] } },
+  { path: '/stls/intersection/:name', name: 'intersection', component: IntersectionView, meta: { roles: ['user', 'admin', 'trafficoperator'] } },
 
   // Admin-only route
   { path: '/stls/logs', name: 'logs', component: Logs, meta: { roles: ['admin'] } }, // ✅ admin-only route

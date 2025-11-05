@@ -1,19 +1,11 @@
-import axios from 'axios'
+import { analyticsApi } from "./httpClients"; // centralized client
 
-const ANALYTICS_API = import.meta.env.VITE_ANALYTICS_API || 'http://localhost:5208'
+// === Analytics API ===
 
-const api = axios.create({
-  baseURL: ANALYTICS_API,
-  headers: { 'Content-Type': 'application/json' },
-})
+// Fetch traffic summaries
+export const fetchSummariesApi = (params = {}) =>
+  analyticsApi.get("/api/analytics/summaries", { params });
 
-// Attach JWT automatically
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('stls_token')
-  if (token) config.headers.Authorization = `Bearer ${token}`
-  return config
-})
-
-// Fetch summaries
-export const fetchSummariesApi = (params) => api.get('/api/analytics/summaries', { params })
-export const fetchAlertsApi = (params) => api.get('/api/analytics/alerts', { params })
+// Fetch traffic alerts
+export const fetchAlertsApi = (params = {}) =>
+  analyticsApi.get("/api/analytics/alerts", { params });

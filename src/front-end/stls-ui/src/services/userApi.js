@@ -1,23 +1,4 @@
-import axios from "axios";
-
-// ===============================
-// Base Configuration
-// ===============================
-const USER_API = import.meta.env.VITE_USER_API || "http://localhost:5055";
-
-const api = axios.create({
-  baseURL: USER_API,
-  headers: { "Content-Type": "application/json" },
-});
-
-// ===============================
-// Request Interceptor (JWT attach)
-// ===============================
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("stls_token");
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
+import { userApi } from "./httpClients"; // centralized client
 
 // ===============================
 // AUTHENTICATION
@@ -25,7 +6,7 @@ api.interceptors.request.use((config) => {
 
 // LOGIN
 export async function loginApi({ email, password }) {
-  const { data } = await api.post("/api/users/login", {
+  const { data } = await userApi.post("/api/users/login", {
     Email: email,
     Password: password,
   });
@@ -44,7 +25,7 @@ export async function loginApi({ email, password }) {
 
 // REGISTER
 export async function registerApi({ email, username, password, confirmPassword }) {
-  const { data } = await api.post("/api/users/register", {
+  const { data } = await userApi.post("/api/users/register", {
     Email: email,
     Username: username,
     Password: password,
@@ -56,7 +37,7 @@ export async function registerApi({ email, username, password, confirmPassword }
 // LOGOUT
 export async function logoutApi() {
   try {
-    await api.post("/api/users/logout");
+    await userApi.post("/api/users/logout");
   } finally {
     // Always clear local storage
     localStorage.removeItem("stls_token");
@@ -70,23 +51,18 @@ export async function logoutApi() {
 
 // GET PROFILE
 export async function getProfileApi() {
-  const { data } = await api.get("/api/users/profile");
+  const { data } = await userApi.get("/api/users/profile");
   return data;
 }
 
 // UPDATE PROFILE
-export async function updateProfileApi(token, form) {
-  const payload = {
+export async function updateProfileApi(form) {
+  const { data } = await userApi.put("/api/users/update", {
     Email: form.email,
     Username: form.username,
     Password: form.password || null,
     ConfirmPassword: form.confirmPassword || null,
-  };
-
-  const { data } = await api.put("/api/users/update", payload, {
-    headers: { Authorization: `Bearer ${token}` },
   });
-
   return data;
 }
 
@@ -95,7 +71,7 @@ export async function updateProfileApi(token, form) {
 // ===============================
 
 export async function resetPasswordApi(email, newPassword, confirmPassword) {
-  const { data } = await api.post("/api/users/reset-password", {
+  const { data } = await userApi.post("/api/users/reset-password", {
     Email: email,
     NewPassword: newPassword,
     ConfirmPassword: confirmPassword,
@@ -108,7 +84,7 @@ export async function resetPasswordApi(email, newPassword, confirmPassword) {
 // ===============================
 
 export async function subscribeApi({ intersection, metric }) {
-  const { data } = await api.post("/api/users/subscriptions/subscribe", {
+  const { data } = await userApi.post("/api/users/subscriptions/subscribe", {
     Intersection: intersection,
     Metric: metric,
   });
@@ -120,9 +96,11 @@ export async function subscribeApi({ intersection, metric }) {
 // ===============================
 
 export async function checkHealth() {
-  return api.get("/user-service/health");
+  const { data } = await userApi.get("/user-service/health");
+  return data;
 }
 
 export async function checkReady() {
-  return api.get("/user-service/ready");
+  const { data } = await userApi.get("/user-service/ready");
+  return data;
 }

@@ -21,10 +21,12 @@
 
 <script setup>
 import { onMounted, onBeforeUnmount, ref } from "vue";
+import { useRouter } from "vue-router";
 import L from "leaflet";
 import "../assets/map.css";
 import "../assets/legend-lights.css";
 
+const router = useRouter();
 const mapEl = ref(null);
 let map, group, intervalId;
 
@@ -117,6 +119,7 @@ function renderMap() {
   group.clearLayers();
 
   intersections.forEach(inter => {
+    // Lights
     inter.lights.forEach(light => {
       L.marker(light.coords, { icon: trafficIcon(light.state) })
         .addTo(group)
@@ -127,17 +130,22 @@ function renderMap() {
         );
     });
 
-    // Circle for intersection center
-    L.circle(inter.center, {
+    // Circle clickable area for intersection
+    const circle = L.circle(inter.center, {
       radius: 20,
       color: "blue",
       fillColor: "#3f82ff",
       fillOpacity: 0.1
     }).addTo(group);
 
-    // Dynamic label with congestion class
+    // Click handler → navigate to intersection view
+    circle.on("click", () => {
+      router.push(`/stls/${encodeURIComponent(inter.name)}`);
+    });
+
+    // Label with congestion state
     const congestion = getCongestion(inter);
-    L.tooltip({
+    const tooltip = L.tooltip({
       permanent: true,
       direction: "top",
       offset: [0, -25],
@@ -146,6 +154,11 @@ function renderMap() {
       .setContent(`<b>[${inter.id}] ${inter.name}</b>`)
       .setLatLng(inter.center)
       .addTo(group);
+
+    // Make tooltip clickable too
+    tooltip.on("click", () => {
+      router.push(`/stls/${encodeURIComponent(inter.name)}`);
+    });
   });
 }
 

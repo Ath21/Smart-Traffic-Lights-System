@@ -1,18 +1,4 @@
-import axios from "axios";
-
-const NOTIF_API = import.meta.env.VITE_NOTIFICATION_API || "http://localhost:5087";
-
-export const notificationApi = axios.create({
-  baseURL: NOTIF_API,
-  headers: { "Content-Type": "application/json" }
-});
-
-// Inject JWT token automatically
-notificationApi.interceptors.request.use(config => {
-  const token = localStorage.getItem("stls_token");
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
+import { notificationApi } from "./httpClients"; // centralized client
 
 // ===== API FUNCTIONS =====
 

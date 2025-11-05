@@ -1,79 +1,107 @@
-import { defineStore } from "pinia"
-import { searchLogs, exportLogs } from "../services/logApi"
-import { useAuth } from "./userStore"
+import { defineStore } from "pinia";
+import { logApi } from "../services/httpClients";
+import { useAuth } from "./userStore";
 
-export const useLogStore = defineStore("logStore", {
-  state: () => ({
-    logs: [],
-    isLoading: false,
-    error: null,
-    filters: {
-      Layer: "",
-      Service: "",
-      Type: "",
-      From: "",
-      To: ""
-    }
-  }),
+export const useLogStore = defineStore("logStore", () => {
+  // ===============================
+  // State
+  // ===============================
+  const logs = ref([]);
+  const isLoading = ref(false);
+  const error = ref(null);
+  const filters = ref({
+    Layer: "",
+    Service: "",
+    Type: "",
+    From: "",
+    To: "",
+  });
 
-  actions: {
-    async fetchLogs(filtersOverride = null) {
-      const auth = useAuth()
-      if (!auth.user || auth.user.role.toLowerCase() !== "admin") return
+  // ===============================
+  // Fetch logs with optional filters
+  // ===============================
+  async function fetchLogs(filtersOverride = null) {
+    const auth = useAuth();
+    if (!auth.user || auth.user.role.toLowerCase() !== "admin") return;
 
-      this.isLoading = true
-      try {
-        const filters = filtersOverride || this.filters
-        const data = await searchLogs(filters)
+    isLoading.value = true;
+    error.value = null;
 
-        // Ensure data is an array
-        const logsArray = Array.isArray(data) ? data : data.logs || []
+    try {
+      const params = filtersOverride || filters.value;
+      const { data } = await logApi.get("/api/logs/search", { params });
 
-        // Map API fields to lowercase keys for table
-        this.logs = logsArray.map(log => ({
-          id: log.id,
-          timestamp: log.Timestamp || log.timestamp || "",
-          layer: log.Layer || log.layer || "",
-          service: log.Service || log.service || "",
-          type: log.Type || log.type || "",
-          message: log.Message || log.message || ""
-        }))
+      // Ensure data is an array
+      const logsArray = Array.isArray(data) ? data : data.logs || [];
 
-        this.error = null
-      } catch (err) {
-        this.error = err.message || "Failed to fetch logs"
-      } finally {
-        this.isLoading = false
-      }
-    },
-
-    async export(format = "csv") {
-      try {
-        const blob = await exportLogs(this.filters, format)
-
-        const now = new Date()
-        const pad = (n) => n.toString().padStart(2, "0")
-        const dateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`
-
-        const url = window.URL.createObjectURL(blob)
-        const link = document.createElement("a")
-        link.href = url
-        link.download = `logs_export_${dateStr}.${format}`
-        document.body.appendChild(link)
-        link.click()
-        link.remove()
-        window.URL.revokeObjectURL(url)
-      } catch (err) {
-        this.error = err.message || "Failed to export logs"
-      }
-    },
-
-    setFilter(key, value) {
-      this.filters[key] = value
-    },
-
-    clearFilters() {
-      this.filters = { Layer: "", Service: "", Type: "", From: "", To: "" }
+      logs.value = logsArray.map((log) => ({
+        id: log.id,
+        timestamp: log.Timestamp || log.timestamp || "",
+        layer: log.Layer || log.layer || "",
+        service: log.Service || log.service || "",
+        type: log.Type || log.type || "",
+        message: log.Message || log.message || "",
+      }));
+    } catch (err) {
+      error.value = err.response?.data?.message || err.message || "Failed to fetch logs";
+      console.error("[LogStore] fetchLogs error:", err);
+      logs.value = [];
+    } finally {
+      isLoading.value = false;
     }
   }
-})
+
+  // ===============================
+  // Export logs
+  // ===============================
+  async function exportLogsToFile(format = "csv") {
+    try {
+      const { data } = await logApi.post(`/api/logs/export?format=${format}`, filters.value, {
+        responseType: "blob",
+      });
+
+      const now = new Date();
+      const pad = (n) => n.toString().padStart(2, "0");
+      const dateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(
+        now.getHours()
+      )}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
+
+      const url = window.URL.createObjectURL(data);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `logs_export_${dateStr}.${format}`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      error.value = err.response?.data?.message || err.message || "Failed to export logs";
+      console.error("[LogStore] exportLogs error:", err);
+    }
+  }
+
+  // ===============================
+  // Filters
+  // ===============================
+  function setFilter(key, value) {
+    filters.value[key] = value;
+  }
+
+  function clearFilters() {
+    filters.value = { Layer: "", Service: "", Type: "", From: "", To: "" };
+  }
+
+  // ===============================
+  // Return state & actions
+  // ===============================
+  return {
+    logs,
+    isLoading,
+    error,
+    filters,
+    fetchLogs,
+    exportLogsToFile,
+    setFilter,
+    clearFilters,
+  };
+});

@@ -1,39 +1,29 @@
-import axios from 'axios';
+import { coordinatorApi } from "./httpClients"; // preferred central client
 
-const COORDINATOR_API = import.meta.env.VITE_COORDINATOR_API || 'http://localhost:5020'
+// === Intersections ===
+export const getAllIntersections = () =>
+  coordinatorApi.get("/api/intersections/all");
 
-const apiClient = axios.create({
-  baseURL: COORDINATOR_API,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+export const getIntersectionById = (id) =>
+  coordinatorApi.get(`/api/intersections/${id}`);
 
-// Optional: add JWT interceptor
-apiClient.interceptors.request.use(config => {
-  const token = localStorage.getItem('jwt');
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
+// === Traffic Configurations ===
+export const getAllConfigurations = () =>
+  coordinatorApi.get("/api/configurations/all");
 
-export const trafficCoordinatorService = {
-  // Health & readiness
-  health: () => apiClient.get('/traffic-light-coordinator/health'),
-  ready: () => apiClient.get('/traffic-light-coordinator/ready'),
+export const getConfigurationByMode = (mode) =>
+  coordinatorApi.get("/api/configurations/mode", { params: { mode } });
 
-  // Intersections
-  getAllIntersections: () => apiClient.get('/api/intersections/all'),
-  getIntersection: (id) => apiClient.get(`/api/intersections/${id}`),
+// === Traffic Lights ===
+export const getAllTrafficLights = () =>
+  coordinatorApi.get("/api/traffic-lights/all");
 
-  // Traffic lights
-  getAllTrafficLights: () => apiClient.get('/api/traffic-lights/all'),
-  getTrafficLight: (id) => apiClient.get(`/api/traffic-lights/${id}`),
+export const getTrafficLightById = (id) =>
+  coordinatorApi.get(`/api/traffic-lights/${id}`);
 
-  // Traffic configurations
-  getAllConfigurations: () => apiClient.get('/api/configurations/all'),
-  getConfigurationsByMode: (mode) => apiClient.get('/api/configurations/mode', { params: { mode } }),
+// === Traffic Operator ===
+export const applyTrafficMode = (data) =>
+  coordinatorApi.post("/api/traffic-operator/apply-mode", data);
 
-  // Traffic operator actions
-  applyMode: (payload) => apiClient.post('/api/traffic-operator/apply-mode', payload),
-  overrideLight: (payload) => apiClient.post('/api/traffic-operator/override-light', payload),
-};
+export const overrideTrafficLight = (data) =>
+  coordinatorApi.post("/api/traffic-operator/override-light", data);

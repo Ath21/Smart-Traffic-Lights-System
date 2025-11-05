@@ -1,82 +1,148 @@
-import { defineStore } from 'pinia';
-import { ref } from 'vue';
-import { trafficCoordinatorService } from '../services/coordinatorApi';
+import { defineStore } from "pinia";
+import { ref } from "vue";
+import { coordinatorApi } from "../services/httpClients";
 
-export const useTrafficCoordinatorStore = defineStore('trafficCoordinator', () => {
+export const useCoordinatorStore = defineStore("coordinatorStore", () => {
+  // ===============================
   // State
+  // ===============================
   const intersections = ref([]);
-  const trafficLights = ref([]);
+  const selectedIntersection = ref(null);
   const configurations = ref([]);
+  const trafficLights = ref([]);
   const loading = ref(false);
   const error = ref(null);
 
-  // Actions
-  const fetchIntersections = async () => {
+  // ===============================
+  // Intersections
+  // ===============================
+  async function fetchIntersections() {
     loading.value = true;
     error.value = null;
     try {
-      const { data } = await trafficCoordinatorService.getAllIntersections();
-      intersections.value = data;
+      const res = await coordinatorApi.get("/api/intersections/all");
+      intersections.value = res.data;
     } catch (err) {
-      error.value = err;
+      error.value =
+        err.response?.status
+          ? `[HTTP ${err.response.status}]`
+          : err.message || "Failed to load intersections.";
+      intersections.value = [];
+      console.error("[CoordinatorStore] fetchIntersections error:", err);
     } finally {
       loading.value = false;
     }
-  };
+  }
 
-  const fetchTrafficLights = async () => {
+  async function selectIntersection(id) {
     loading.value = true;
     error.value = null;
     try {
-      const { data } = await trafficCoordinatorService.getAllTrafficLights();
-      trafficLights.value = data;
+      const res = await coordinatorApi.get(`/api/intersections/${id}`);
+      selectedIntersection.value = res.data;
     } catch (err) {
-      error.value = err;
+      error.value =
+        err.response?.status
+          ? `[HTTP ${err.response.status}]`
+          : err.message || "Failed to fetch intersection details.";
+      selectedIntersection.value = null;
+      console.error("[CoordinatorStore] selectIntersection error:", err);
     } finally {
       loading.value = false;
     }
-  };
+  }
 
-  const fetchConfigurations = async () => {
+  // ===============================
+  // Configurations
+  // ===============================
+  async function fetchConfigurations() {
     loading.value = true;
     error.value = null;
     try {
-      const { data } = await trafficCoordinatorService.getAllConfigurations();
-      configurations.value = data;
+      const res = await coordinatorApi.get("/api/configurations/all");
+      configurations.value = res.data;
     } catch (err) {
-      error.value = err;
+      error.value =
+        err.response?.status
+          ? `[HTTP ${err.response.status}]`
+          : err.message || "Failed to fetch configurations.";
+      configurations.value = [];
+      console.error("[CoordinatorStore] fetchConfigurations error:", err);
     } finally {
       loading.value = false;
     }
-  };
+  }
 
-  const applyMode = async (payload) => {
+  async function fetchTrafficLights() {
+    loading.value = true;
+    error.value = null;
     try {
-      await trafficCoordinatorService.applyMode(payload);
-      await fetchConfigurations(); // refresh configs
+      const res = await coordinatorApi.get("/api/traffic-lights/all");
+      trafficLights.value = res.data;
     } catch (err) {
-      error.value = err;
+      error.value =
+        err.response?.status
+          ? `[HTTP ${err.response.status}]`
+          : err.message || "Failed to fetch traffic lights.";
+      trafficLights.value = [];
+      console.error("[CoordinatorStore] fetchTrafficLights error:", err);
+    } finally {
+      loading.value = false;
     }
-  };
+  }
 
-  const overrideLight = async (payload) => {
+  // ===============================
+  // Traffic Operator
+  // ===============================
+  async function applyMode(intersectionId, mode) {
+    loading.value = true;
+    error.value = null;
     try {
-      await trafficCoordinatorService.overrideLight(payload);
-      await fetchTrafficLights(); // refresh lights
+      await coordinatorApi.post("/api/traffic-operator/apply-mode", {
+        IntersectionId: intersectionId,
+        Mode: mode,
+      });
     } catch (err) {
-      error.value = err;
+      error.value =
+        err.response?.status
+          ? `[HTTP ${err.response.status}]`
+          : err.message || "Failed to apply traffic mode.";
+      console.error("[CoordinatorStore] applyMode error:", err);
+    } finally {
+      loading.value = false;
     }
-  };
+  }
 
+  async function overrideLight(data) {
+    loading.value = true;
+    error.value = null;
+    try {
+      await coordinatorApi.post("/api/traffic-operator/override-light", data);
+    } catch (err) {
+      error.value =
+        err.response?.status
+          ? `[HTTP ${err.response.status}]`
+          : err.message || "Failed to override light.";
+      console.error("[CoordinatorStore] overrideLight error:", err);
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  // ===============================
+  // Return state & actions
+  // ===============================
   return {
     intersections,
-    trafficLights,
+    selectedIntersection,
     configurations,
+    trafficLights,
     loading,
     error,
     fetchIntersections,
-    fetchTrafficLights,
+    selectIntersection,
     fetchConfigurations,
+    fetchTrafficLights,
     applyMode,
     overrideLight,
   };

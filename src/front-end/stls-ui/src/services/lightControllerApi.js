@@ -1,27 +1,65 @@
-import axios from 'axios';
+import { intersectionClients } from "./httpClients";
 
-function getControllerClient(intersectionIndex) {
-  const base = import.meta.env.VITE_TRAFFIC_LIGHT_CONTROLLER_BASE;
-  const startPort = Number(import.meta.env.VITE_TRAFFIC_LIGHT_CONTROLLER_PORT_START);
-  const port = startPort + intersectionIndex; // index 0 -> 5261
-  const client = axios.create({
-    baseURL: `${base}:${port}`,
-    headers: { 'Content-Type': 'application/json' },
-  });
+/**
+ * Helper: get Axios client for a specific light ID
+ * Looks up the correct controller from the centralized clients
+ */
+function getLightApi(lightId) {
+  // Flatten all controllers from all intersections
+  const controllers = Object.values(intersectionClients).flatMap(inter =>
+    Object.entries(inter.lightControllers).map(([key, client]) => ({ key, client }))
+  );
 
-  client.interceptors.request.use(config => {
-    const token = localStorage.getItem('jwt');
-    if (token) config.headers.Authorization = `Bearer ${token}`;
-    return config;
-  });
+  // Find the client whose key ends with the lightId
+  const entry = controllers.find(({ key }) => key.endsWith(lightId.toString()));
+  if (!entry) {
+    throw new Error(`[lightControllerApi] No controller client found for light ID ${lightId}`);
+  }
 
-  return client;
+  return entry.client;
 }
 
-export const trafficControllerService = {
-  health: (index) => getControllerClient(index).get('/traffic-light-controller/health'),
-  ready: (index) => getControllerClient(index).get('/traffic-light-controller/ready'),
-  getState: (index) => getControllerClient(index).get('/api/traffic-lights/state'),
-  getCycle: (index) => getControllerClient(index).get('/api/traffic-lights/cycle'),
-  getFailover: (index) => getControllerClient(index).get('/api/traffic-lights/failover'),
+// === API Methods ===
+
+// Get operational state (current color, timers)
+export const getLightState = (lightId) => {
+  const client = getLightApi(lightId);
+  return client.get("/api/traffic-lights/state", { params: { id: lightId } });
+};
+
+// Get full light cycle configuration (green/yellow/red durations)
+export const getLightCycle = (lightId) => {
+  const client = getLightApi(lightId);
+  return client.get("/api/traffic-lights/cycle", { params: { id: lightId } });
+};
+
+// Get current failover/fallback mode state (manual/auto)
+export const getLightFailover = (lightId) => {
+  const client = getLightApi(lightId);
+  return client.get("/api/traffic-lights/failover", { params: { id: lightId } });
+};
+
+// Optional bulk fetch helper
+export async function getAllLightStates() {
+  const results = [];
+  const lightIds = Object.values(intersectionClients)
+    .flatMap(inter => Object.keys(inter.controllers));
+
+  for (const id of lightIds) {
+    try {
+      const res = await getLightState(id);
+      results.push({ id, ...res.data });
+    } catch (err) {
+      results.push({ id, error: err.message });
+    }
+  }
+
+  return results;
+}
+
+export default {
+  getLightState,
+  getLightCycle,
+  getLightFailover,
+  getAllLightStates
 };
