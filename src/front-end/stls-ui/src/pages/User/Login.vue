@@ -4,14 +4,10 @@
 
     <div class="login-card">
       <div class="card-content">
-        <!-- Title -->
-        <h1 class="title">
-          UNIWA STLS
-        </h1>
+        <h1 class="title">UNIWA STLS</h1>
 
-        <!-- Form -->
         <form class="form" @submit.prevent="submit">
-          <!-- Email input -->
+          <!-- Email -->
           <input
             v-model="email"
             type="email"
@@ -20,7 +16,7 @@
             class="input"
           />
 
-          <!-- Password Wrapper -->
+          <!-- Password -->
           <div class="password-wrapper">
             <input
               v-model="password"
@@ -31,8 +27,6 @@
               @keydown="checkCapsLock"
               @keyup="checkCapsLock"
             />
-
-            <!-- Eye toggle -->
             <span class="toggle-eye" @click="toggleShowPassword">
               <svg v-if="!showPassword" xmlns="http://www.w3.org/2000/svg" fill="none"
                    viewBox="0 0 24 24" stroke="currentColor" class="eye-icon">
@@ -64,22 +58,19 @@
             <p v-if="capsLockOn" class="caps-warning">⚠ Caps Lock is ON</p>
           </transition>
 
-          <!-- Forgot password link -->
-          <router-link to="/reset-password" class="forgot-link">
-            Forgot password?
-          </router-link>
+          <!-- Forgot password -->
+          <router-link to="/reset-password" class="forgot-link">Forgot password?</router-link>
 
           <button :disabled="loading" class="submit-btn">
             {{ loading ? 'Logging in…' : 'LOGIN' }}
           </button>
         </form>
 
-        <!-- Feedback message -->
-        <p v-if="message" :class="['message', { error: isError, success: isSuccess }]">
-          {{ message }}
-        </p>
+        <!-- Feedback -->
+        <p v-if="error" class="message error">❌ {{ error }}</p>
+        <p v-if="success" class="message success">✅ {{ success }}</p>
 
-        <!-- Footer link -->
+        <!-- Footer -->
         <p class="footer-text">
           Don’t have an account?
           <RouterLink to="/register" class="register-link">Register</RouterLink>
@@ -90,54 +81,57 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { loginApi } from '../../services/userApi'
-import { useAuth } from '../../stores/userStore'
+import { ref, watch, nextTick, onMounted } from 'vue'
+import { useUserStore } from '../../stores/userStore'
+import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import '../../assets/login.css'
 
 const email = ref('')
 const password = ref('')
-const loading = ref(false)
 const showPassword = ref(false)
 const capsLockOn = ref(false)
+const success = ref('')
 
-const message = ref('')
-const isError = ref(false)
-const isSuccess = ref(false)
+// ========== Pinia store ==========
+const auth = useUserStore()
+const { loading, error, user } = storeToRefs(auth)
 
-const auth = useAuth()
 const router = useRouter()
 
+// Redirect if already logged in
+onMounted(() => {
+  if (auth.isAuthenticated) router.replace('/stls')
+})
+
+// Clear success/error when user types
+watch([email, password], () => {
+  success.value = ''
+})
+
+// Toggle password visibility
 function toggleShowPassword() {
   showPassword.value = !showPassword.value
 }
 
+// Detect Caps Lock
 function checkCapsLock(event) {
   capsLockOn.value = event.getModifierState && event.getModifierState('CapsLock')
 }
 
+// Submit login
 async function submit() {
-  if (loading.value) return
-  loading.value = true
-  message.value = ''
+  if (!email.value || !password.value || loading.value) return
+  success.value = ''
+
   try {
-    const { token, expiresAt } = await loginApi({
-      email: email.value,
-      password: password.value
-    })
-    auth.login(token, expiresAt)
-    message.value = "✅ Login successful!"
-    isSuccess.value = true
-    isError.value = false
-    router.push('/stls') // or your main /app route
+    await auth.login(email.value, password.value)
+    success.value = 'Login successful!'
+    // Wait for reactivity to update
+    await nextTick()
+    router.push('/stls')
   } catch (err) {
-    const details = err.response?.data?.details || err.response?.data?.error || err.message
-    message.value = "❌ " + details
-    isError.value = true
-    isSuccess.value = false
-  } finally {
-    loading.value = false
+    console.error(err)
   }
 }
 </script>

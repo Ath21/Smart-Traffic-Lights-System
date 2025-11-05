@@ -8,10 +8,10 @@
 
     <!-- Subscriptions List -->
     <ul v-else-if="subscriptions.length > 0" class="subscriptions-list">
-      <li v-for="sub in subscriptions" :key="sub.id" class="subscription-item">
+      <li v-for="sub in subscriptions" :key="sub.Intersection + sub.Metric" class="subscription-item">
         <strong>{{ sub.Intersection }}</strong> - {{ sub.Metric }}
         <button
-          @click="remove(sub.Intersection, sub.Metric)"
+          @click="unsubscribe(sub.Intersection, sub.Metric)"
           class="unsubscribe-btn"
           :disabled="isLoading"
         >
@@ -28,17 +28,21 @@
 <script setup>
 import { onMounted } from "vue";
 import { storeToRefs } from "pinia";
-import { useNotifications } from "../../stores/notificationStore";
+import { useNotificationStore } from "../../stores/notificationStore";
 import "../../assets/notifications.css";
 
-const notificationStore = useNotifications();
+const notificationStore = useNotificationStore();
 const { subscriptions, isLoading, error } = storeToRefs(notificationStore);
 
+// ===============================
 // Unsubscribe action
-function remove(intersection, metric) {
-  notificationStore.removeSubscription(intersection, metric);
+// ===============================
+async function unsubscribe(intersection, metric) {
+  await notificationStore.removeSubscription(intersection, metric);
 }
 
+// ===============================
 // Fetch subscriptions on mount
+// ===============================
 onMounted(() => notificationStore.fetchSubscriptions());
 </script>

@@ -40,9 +40,8 @@
 </template>
 
 <script setup>
-import { onMounted, computed, reactive } from "vue";
+import { onMounted, computed } from "vue";
 import { useRoute } from "vue-router";
-import { storeToRefs } from "pinia";
 import { useCoordinatorStore } from "../../stores/coordinatorStore";
 import { useLightControllerStore } from "../../stores/lightControllerStore";
 
@@ -52,11 +51,31 @@ const intersectionName = route.params.name;
 const coordinatorStore = useCoordinatorStore();
 const lightControllerStore = useLightControllerStore();
 
-const { error: errorCoordinator, loading: loadingCoordinator } = storeToRefs(coordinatorStore);
-const { error: errorLights, loading: loadingLights } = storeToRefs(lightControllerStore);
+// Coordinator loading/error
+const loadingCoordinator = computed(() => coordinatorStore.loading);
+const errorCoordinator = computed(() => coordinatorStore.error);
 
+// Lights loading/error for this intersection
+const loadingLights = computed(() => {
+  const ids = coordinatorStore.selectedIntersection?.trafficLights?.map(l => l.id) || [];
+  return ids.some(id => !lightControllerStore.lightsData[id]);
+});
+
+const errorLights = computed(() => lightControllerStore.error);
+
+// Coordinator data
 const coordinatorData = computed(() => coordinatorStore.selectedIntersection);
-const lightControllerData = reactive({});
+
+// Lights for this intersection
+const lightControllerData = computed(() => {
+  const lights = coordinatorData.value?.trafficLights || [];
+  return lights.reduce((acc, l) => {
+    if (lightControllerStore.lightsData[l.id]) {
+      acc[l.id] = lightControllerStore.lightsData[l.id];
+    }
+    return acc;
+  }, {});
+});
 
 onMounted(async () => {
   if (!coordinatorStore.intersections.length) {
@@ -74,15 +93,13 @@ onMounted(async () => {
 
   await coordinatorStore.selectIntersection(found.id);
 
-  // === Fetch all lights for this intersection ===
+  // Fetch all lights for this intersection
   if (coordinatorData.value?.trafficLights?.length) {
-    const results = await lightControllerStore.fetchLightsForIntersection(
-      coordinatorData.value.trafficLights
-    );
-    Object.assign(lightControllerData, results);
+    await lightControllerStore.fetchLightsForIntersection(coordinatorData.value.trafficLights);
   }
 });
 </script>
+
 
 <style scoped>
 pre {

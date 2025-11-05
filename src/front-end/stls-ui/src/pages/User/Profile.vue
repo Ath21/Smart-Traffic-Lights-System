@@ -5,7 +5,7 @@
     <div v-if="loading" class="loading">Loading...</div>
     <div v-else-if="error" class="error">Error: {{ error }}</div>
 
-    <div v-else class="profile-card">
+    <div v-else class="profile-card" v-if="user">
       <p><strong>Username:</strong> {{ user.username }}</p>
       <p><strong>Email:</strong> {{ user.email }}</p>
       <p><strong>Role:</strong> {{ user.role }}</p>
@@ -17,45 +17,38 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
-import { useAuth } from "../../stores/userStore";
-import { getProfileApi } from "../../services/userApi";
+import { onMounted, computed } from "vue";
+import { useUserStore } from "../../stores/userStore";
+import { storeToRefs } from "pinia";
 import "../../assets/profile.css";
 
-const auth = useAuth();
-const user = ref(null);
-const loading = ref(true);
-const error = ref(null);
+// Pinia store
+const auth = useUserStore();
+const { user, loading, error } = storeToRefs(auth);
 
-async function fetchUser() {
-  try {
-    const data = await getProfileApi();
-
-    // Adapt backend shape → front-end shape
-    user.value = {
-      userId: data.UserId,
-      username: data.Username,
-      email: data.Email,
-      role: data.Role,
-      status: data.Status,
-      createdAt: data.CreatedAt,
-      updatedAt: data.UpdatedAt,
-    };
-
-    // Sync with auth store
-    auth.user = user.value;
-  } catch (err) {
-    console.error("[Profile] fetch error:", err);
-    error.value = err.message || "Failed to load profile.";
-  } finally {
-    loading.value = false;
-  }
-}
-
+// Format date
 function formatDate(dateStr) {
   if (!dateStr) return "—";
   return new Date(dateStr).toLocaleString();
 }
 
-onMounted(fetchUser);
+// Fetch profile on mount
+onMounted(async () => {
+  try {
+    const data = await auth.fetchProfile();
+
+    // Adapt backend → frontend shape
+    user.value = {
+      id: data.UserId || data.id,
+      username: data.Username || data.username,
+      email: data.Email || data.email,
+      role: data.Role || data.role,
+      status: data.Status || data.status,
+      createdAt: data.CreatedAt || data.createdAt,
+      updatedAt: data.UpdatedAt || data.updatedAt,
+    };
+  } catch (err) {
+    console.error("[Profile] fetch error:", err);
+  }
+});
 </script>

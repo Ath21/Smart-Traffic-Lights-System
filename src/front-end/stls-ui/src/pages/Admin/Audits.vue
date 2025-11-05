@@ -35,7 +35,10 @@
       </tbody>
     </table>
 
-    <div v-else-if="!loading && audits.length === 0 && userIdInput" class="empty">
+    <div
+      v-else-if="!loading && audits.length === 0 && userIdInput"
+      class="empty"
+    >
       No audits found for User ID {{ userIdInput }}.
     </div>
 
@@ -44,37 +47,44 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useAuth } from '../../stores/userStore'
-import '../../assets/audits.css'
+import { ref } from "vue";
+import { useUserStore } from "../../stores/userStore";
+import "../../assets/audits.css";
 
-const auth = useAuth()
-const userIdInput = ref('')
-const audits = ref([])
-const loading = ref(false)
-const error = ref(null)
+const userStore = useUserStore();
 
+const userIdInput = ref("");
+const audits = ref([]);
+const loading = ref(false);
+const error = ref(null);
+
+// ===============================
+// Fetch audits via userStore apiFetch
+// ===============================
 async function fetchAudits() {
-  if (!userIdInput.value) return
+  if (!userIdInput.value) return;
 
-  loading.value = true
-  error.value = null
-  audits.value = []
+  loading.value = true;
+  error.value = null;
+  audits.value = [];
 
   try {
-    const res = await auth.apiFetch(`http://localhost:5055/api/audit/user/${userIdInput.value}`)
+    // Use store's apiFetch for JWT auth
+    const res = await userStore.apiFetch(
+      `${import.meta.env.VITE_USER_API || "http://localhost:5055"}/api/audit/user/${userIdInput.value}`
+    );
+
     if (!res.ok) {
-      const body = await res.json().catch(() => ({}))
-      throw new Error(body.error || `Failed to fetch audits: ${res.status}`)
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.error || `Failed to fetch audits: ${res.status}`);
     }
-    audits.value = await res.json()
+
+    audits.value = await res.json();
   } catch (err) {
-    console.error(err)
-    error.value = err.message
+    console.error("[AuditsPage] fetchAudits error:", err);
+    error.value = err.message;
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 </script>
-
-

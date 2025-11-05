@@ -4,15 +4,13 @@
 
     <div class="register-card">
       <div class="card-content">
-        <!-- Title -->
         <h1 class="title">UNIWA STLS</h1>
 
-        <!-- Form -->
         <form class="form" @submit.prevent="submit">
           <input v-model="email" type="email" required placeholder="Email" class="input" />
           <input v-model="username" type="text" required placeholder="Username" class="input" />
 
-          <!-- Password Wrapper -->
+          <!-- Password -->
           <div class="password-wrapper">
             <input
               v-model="password"
@@ -23,9 +21,7 @@
               @keydown="checkCapsLock"
               @keyup="checkCapsLock"
             />
-            <!-- Eye toggle -->
             <span class="toggle-eye" @click="toggleShowPassword">
-              <!-- Hidden -->
               <svg v-if="!showPassword" xmlns="http://www.w3.org/2000/svg" fill="none"
                    viewBox="0 0 24 24" stroke="currentColor" class="eye-icon">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -37,7 +33,6 @@
                          01-4.132 5.411M15 12a3 3 0 
                          11-6 0 3 3 0 016 0zM3 3l18 18" />
               </svg>
-              <!-- Visible -->
               <svg v-else xmlns="http://www.w3.org/2000/svg" fill="none"
                    viewBox="0 0 24 24" stroke="currentColor" class="eye-icon">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -65,7 +60,6 @@
             />
           </div>
 
-          <!-- Caps Lock warning -->
           <transition name="fade">
             <p v-if="capsLockOn" class="caps-warning">⚠ Caps Lock is ON</p>
           </transition>
@@ -75,12 +69,10 @@
           </button>
         </form>
 
-        <!-- Feedback message -->
         <p v-if="message" :class="['message', { error: isError, success: isSuccess }]">
           {{ message }}
         </p>
 
-        <!-- Footer link -->
         <p class="footer-text">
           Have an account?
           <RouterLink to="/login" class="login-link">Log in</RouterLink>
@@ -91,67 +83,66 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { registerApi } from '../../services/userApi'
-import { useAuth } from '../../stores/userStore'
-import { useRouter } from 'vue-router'
-import '../../assets/register.css'
+import { ref } from "vue";
+import { useUserStore } from "../../stores/userStore";
+import { useRouter } from "vue-router";
+import "../../assets/register.css";
 
-const email = ref('')
-const username = ref('')
-const password = ref('')
-const confirmPassword = ref('')
-const loading = ref(false)
+const email = ref("");
+const username = ref("");
+const password = ref("");
+const confirmPassword = ref("");
 
-const message = ref('')
-const isError = ref(false)
-const isSuccess = ref(false)
+const loading = ref(false);
+const message = ref("");
+const isError = ref(false);
+const isSuccess = ref(false);
 
-const showPassword = ref(false)
-const capsLockOn = ref(false)
+const showPassword = ref(false);
+const capsLockOn = ref(false);
 
-const auth = useAuth()
-const router = useRouter()
+const auth = useUserStore();
+const router = useRouter();
 
 function toggleShowPassword() {
-  showPassword.value = !showPassword.value
+  showPassword.value = !showPassword.value;
 }
 
 function checkCapsLock(event) {
-  capsLockOn.value = event.getModifierState && event.getModifierState('CapsLock')
+  capsLockOn.value = event.getModifierState && event.getModifierState("CapsLock");
 }
 
 async function submit() {
-  if (loading.value) return
+  if (loading.value) return;
 
   if (password.value !== confirmPassword.value) {
-    message.value = "❌ Passwords do not match!"
-    isError.value = true
-    isSuccess.value = false
-    return
+    message.value = "❌ Passwords do not match!";
+    isError.value = true;
+    isSuccess.value = false;
+    return;
   }
 
-  loading.value = true
+  loading.value = true;
   try {
-    await registerApi({
+    await auth.register({
       email: email.value,
       username: username.value,
       password: password.value,
-      confirmPassword: confirmPassword.value
-    })
-    message.value = "✅ Registration successful!"
-    isSuccess.value = true
-    isError.value = false
-    router.push('/login')
+      confirmPassword: confirmPassword.value,
+    });
+    message.value = "✅ Registration successful!";
+    isSuccess.value = true;
+    isError.value = false;
+
+    // Navigate to login page
+    router.push("/login");
   } catch (err) {
-    const details = err.response?.data?.details || err.response?.data?.error || err.message
-    message.value = "❌ " + details
-    isError.value = true
-    isSuccess.value = false
+    const details = auth.error || err.response?.data?.details || err.response?.data?.error || err.message;
+    message.value = "❌ " + details;
+    isError.value = true;
+    isSuccess.value = false;
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
-
-
 </script>

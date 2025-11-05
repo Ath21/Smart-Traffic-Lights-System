@@ -31,14 +31,13 @@
             <th>Message</th>
           </tr>
         </thead>
-        
         <tbody>
           <tr v-for="log in logs" :key="log.id">
-            <td>{{ log.Timestamp }}</td>
-            <td>{{ log.Layer }}</td>
-            <td>{{ log.Service }}</td>
-            <td>{{ log.Type }}</td>
-            <td>{{ log.Message }}</td>
+            <td>{{ log.timestamp }}</td>
+            <td>{{ log.layer }}</td>
+            <td>{{ log.service }}</td>
+            <td>{{ log.type }}</td>
+            <td>{{ log.message }}</td>
           </tr>
         </tbody>
       </table>
@@ -49,31 +48,35 @@
 </template>
 
 <script setup>
-import { onMounted, computed } from "vue"
-import { useLogStore } from "../../stores/logStore"
-import "../../assets/logs.css"
+import { onMounted, computed } from "vue";
+import { useLogStore } from "../../stores/logStore";
+import "../../assets/logs.css";
 
-const logStore = useLogStore()
+const logStore = useLogStore();
 
-const logs = computed(() => logStore.logs)
-const isLoading = computed(() => logStore.isLoading)
-const error = computed(() => logStore.error)
-const filters = logStore.filters
+// Reactive references
+const logs = computed(() => logStore.logs);
+const isLoading = computed(() => logStore.isLoading);
+const error = computed(() => logStore.error);
+const filters = logStore.filters;
 
+// ===============================
+// Actions
+// ===============================
 function fetchLogs() {
-  logStore.fetchLogs()
+  logStore.fetchLogs();
 }
 
 function clearFilters() {
-  logStore.clearFilters()
+  logStore.clearFilters();
 }
 
 function exportLogs() {
-  logStore.export("csv")
+  logStore.exportLogsToFile("csv");
 }
 
 // Automatically fetch logs on mount
 onMounted(() => {
-  fetchLogs()
-})
+  fetchLogs();
+});
 </script>

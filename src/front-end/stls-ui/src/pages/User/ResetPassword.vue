@@ -4,10 +4,9 @@
 
     <div class="login-card">
       <div class="card-content">
-        <!-- Title aligned with login -->
         <h1 class="title">UNIWA STLS</h1>
 
-        <form class="form" @submit.prevent="resetPassword">
+        <form class="form" @submit.prevent="submit">
           <!-- Email -->
           <input
             v-model="email"
@@ -17,7 +16,7 @@
             class="input"
           />
 
-          <!-- New Password with eye toggle -->
+          <!-- New Password -->
           <div class="password-wrapper">
             <input
               v-model="newPassword"
@@ -29,7 +28,6 @@
               @keyup="checkCapsLock"
             />
             <span class="toggle-eye" @click="toggleShowPassword">
-              <!-- Hidden -->
               <svg v-if="!showPassword" xmlns="http://www.w3.org/2000/svg" fill="none"
                    viewBox="0 0 24 24" stroke="currentColor" class="eye-icon">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -41,7 +39,6 @@
                          01-4.132 5.411M15 12a3 3 0 
                          11-6 0 3 3 0 016 0zM3 3l18 18" />
               </svg>
-              <!-- Visible -->
               <svg v-else xmlns="http://www.w3.org/2000/svg" fill="none"
                    viewBox="0 0 24 24" stroke="currentColor" class="eye-icon">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -68,23 +65,21 @@
             />
           </div>
 
-          <!-- Caps Lock warning -->
           <transition name="fade">
             <p v-if="capsLockOn" class="caps-warning">⚠ Caps Lock is ON</p>
           </transition>
 
-          <button type="submit" class="submit-btn">RESET PASSWORD</button>
+          <button type="submit" class="submit-btn" :disabled="loading">
+            {{ loading ? "Resetting…" : "RESET PASSWORD" }}
+          </button>
         </form>
 
         <p 
           v-if="message" 
-          :class="['message', { error: isError, success: isSuccess }]"
-        >
+          :class="['message', { error: isError, success: isSuccess }]">
           {{ message }}
         </p>
 
-
-        <!-- Back to login -->
         <p class="footer-text">
           Remembered password?
           <RouterLink to="/login" class="register-link">Login</RouterLink>
@@ -96,15 +91,21 @@
 
 <script setup>
 import { ref } from "vue";
-import { resetPasswordApi } from "../../services/userApi";
+import { useUserStore } from "../../stores/userStore";
 import "../../assets/reset-password.css";
 
 const email = ref("");
 const newPassword = ref("");
 const confirmPassword = ref("");
-const message = ref("");
 const showPassword = ref(false);
 const capsLockOn = ref(false);
+
+const loading = ref(false);
+const message = ref("");
+const isError = ref(false);
+const isSuccess = ref(false);
+
+const auth = useUserStore();
 
 function toggleShowPassword() {
   showPassword.value = !showPassword.value;
@@ -114,10 +115,7 @@ function checkCapsLock(event) {
   capsLockOn.value = event.getModifierState && event.getModifierState("CapsLock");
 }
 
-const isError = ref(false);
-const isSuccess = ref(false);
-
-async function resetPassword() {
+async function submit() {
   if (newPassword.value !== confirmPassword.value) {
     message.value = "❌ Passwords do not match!";
     isError.value = true;
@@ -125,23 +123,25 @@ async function resetPassword() {
     return;
   }
 
+  loading.value = true;
   try {
-    await resetPasswordApi(email.value, newPassword.value, confirmPassword.value);
+    await auth.resetPassword(email.value, newPassword.value, confirmPassword.value);
     message.value = "✅ Password reset successful!";
     isSuccess.value = true;
     isError.value = false;
   } catch (err) {
     const details =
-      err.response?.data?.details ||   // ✅ show Invalid email / etc
-      err.response?.data?.error ||     // fallback to general error
-      err.response?.data?.message ||   // or message if exists
-      err.message;                     // last fallback
+      auth.error || 
+      err.response?.data?.details || 
+      err.response?.data?.error || 
+      err.response?.data?.message || 
+      err.message;
 
     message.value = "❌ " + details;
     isError.value = true;
     isSuccess.value = false;
+  } finally {
+    loading.value = false;
   }
 }
-
-
 </script>

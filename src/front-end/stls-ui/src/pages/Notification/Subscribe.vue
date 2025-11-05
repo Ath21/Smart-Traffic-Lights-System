@@ -33,14 +33,16 @@
 
 <script setup>
 import { ref } from "vue";
-import { subscribeApi } from "../../services/userApi";
+import { useUserStore } from "../../stores/userStore";
+import "../../assets/subscribe.css";
+
+const userStore = useUserStore();
 
 const intersection = ref("");
 const metric = ref("");
-const loading = ref(false);
-const error = ref("");
 const success = ref("");
 
+// Options
 const intersections = [
   { value: "Agiou Spyridonos", label: "Agiou Spyridonos" },
   { value: "Anatoliki Pyli", label: "Anatoliki Pyli" },
@@ -48,8 +50,11 @@ const intersections = [
   { value: "Ekklisia", label: "Ekklisia" },
   { value: "Kentriki Pyli", label: "Kentriki Pyli" },
 ];
-
 const metrics = ["Congestion", "Incidents", "Summary"];
+
+// Computed reactive loading/error from store
+const loading = ref(false);
+const error = ref("");
 
 async function onSubmit() {
   if (!intersection.value || !metric.value) return;
@@ -59,20 +64,15 @@ async function onSubmit() {
   success.value = "";
 
   try {
-    await subscribeApi({
-      intersection: intersection.value,
-      metric: metric.value
-    });
+    await userStore.subscribe(intersection.value, metric.value);
     success.value = `Subscribed to ${metric.value} alerts at ${intersection.value}!`;
     intersection.value = "";
     metric.value = "";
   } catch (err) {
     console.error(err);
-    error.value = err.response?.data?.message || err.message || "Subscription failed.";
+    error.value = userStore.error || err.message || "Subscription failed.";
   } finally {
     loading.value = false;
   }
 }
 </script>
-
-<style src="../../assets/subscribe.css"></style>

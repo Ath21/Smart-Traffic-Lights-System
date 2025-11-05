@@ -30,25 +30,26 @@
           class="input"
         />
 
-        <!-- Error Message -->
+        <!-- Error / Success Message -->
         <p v-if="error" class="error-msg">❌ {{ error }}</p>
         <p v-if="success" class="success-msg">✅ Profile updated successfully!</p>
 
-        <button class="btn" type="submit">Save Changes</button>
+        <button class="btn" type="submit" :disabled="loading">
+          {{ loading ? "Saving…" : "Save Changes" }}
+        </button>
       </form>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from "vue";
-import { useAuth } from "../../stores/userStore";
-import { updateProfileApi } from "../../services/userApi";
+import { ref, reactive } from "vue";
+import { useUserStore } from "../../stores/userStore";
 import "../../assets/update-profile.css";
 
-const auth = useAuth();
+const auth = useUserStore();
 
-const form = ref({
+const form = reactive({
   email: auth.user?.email || "",
   username: auth.user?.username || "",
   password: "",
@@ -57,32 +58,36 @@ const form = ref({
 
 const error = ref("");
 const success = ref(false);
+const loading = ref(false);
 
 async function submit() {
   error.value = "";
   success.value = false;
 
-  if (form.value.password && form.value.password !== form.value.confirmPassword) {
+  if (form.password && form.password !== form.confirmPassword) {
     error.value = "Passwords do not match!";
     return;
   }
 
+  loading.value = true;
   try {
-    await updateProfileApi(auth.token, form.value);
+    await auth.updateProfile(form);
 
-    // Update Pinia store state
+    // Update local Pinia state
     auth.user = {
       ...auth.user,
-      email: form.value.email,
-      username: form.value.username,
+      email: form.email,
+      username: form.username,
     };
 
     success.value = true;
-    form.value.password = "";
-    form.value.confirmPassword = "";
+    form.password = "";
+    form.confirmPassword = "";
   } catch (err) {
     console.error("[UpdateProfile] error:", err);
-    error.value = err.response?.data?.message || "❌ Failed to update profile.";
+    error.value = auth.error || err.response?.data?.message || "❌ Failed to update profile.";
+  } finally {
+    loading.value = false;
   }
 }
 </script>

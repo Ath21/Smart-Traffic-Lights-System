@@ -16,7 +16,7 @@
     <div v-if="error" class="error">{{ error }}</div>
 
     <!-- Charts container -->
-    <div class="charts-container" v-if="summaries.length">
+    <div class="charts-container" v-if="summaries.length && !loading">
       <div class="chart-wrapper">
         <LineChart :chart-data="vehiclesChartData" title="Vehicles per Day" />
       </div>
@@ -30,25 +30,30 @@
         <LineChart :chart-data="congestionChartData" title="Congestion Index" />
       </div>
     </div>
+
+    <!-- Empty state -->
+    <div v-else-if="!loading && !summaries.length" class="text-gray-500">
+      No summaries found for the selected filters.
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useAnalyticsStore } from '../../stores/analyticsStore'
-import { storeToRefs } from 'pinia'
 import LineChart from '../../components/LineChart.vue'
 
-// Pinia store
 const analytics = useAnalyticsStore()
-const { summaries, loading, error } = storeToRefs(analytics)
 
 // Filters
 const intersection = ref('')
 const intersectionId = ref(null)
-const from = ref('')
-const to = ref('')
+const from = ref(new Date(Date.now() - 7*24*60*60*1000).toISOString().split('T')[0]) // 7 days ago
+const to = ref(new Date().toISOString().split('T')[0])
 
+const { summaries, loading, error } = analytics
+
+// Load summaries with current filters
 const loadSummaries = async () => {
   if (!intersectionId.value) return
   await analytics.fetchSummaries({
@@ -57,54 +62,55 @@ const loadSummaries = async () => {
     from: from.value,
     to: to.value
   })
-  updateCharts(summaries.value) // <-- update charts immediately
 }
 
-const updateCharts = (data) => {
-  if (!data || !data.length) return
+// === Computed chart data ===
+const vehiclesChartData = computed(() => ({
+  labels: summaries.value.map(s => new Date(s.Date).toLocaleDateString()),
+  datasets: [{
+    label: 'Total Vehicles',
+    data: summaries.value.map(s => s.TotalVehicles),
+    borderColor: '#1d4ed8',
+    backgroundColor: '#1d4ed8AA',
+    tension: 0.3
+  }]
+}))
 
-  const labels = data.map(s => new Date(s.Date).toLocaleDateString())
+const pedestriansChartData = computed(() => ({
+  labels: summaries.value.map(s => new Date(s.Date).toLocaleDateString()),
+  datasets: [{
+    label: 'Total Pedestrians',
+    data: summaries.value.map(s => s.TotalPedestrians),
+    borderColor: '#059669',
+    backgroundColor: '#059669AA',
+    tension: 0.3
+  }]
+}))
 
-  vehiclesChartData.labels = labels
-  vehiclesChartData.datasets[0].data = data.map(s => s.TotalVehicles)
+const cyclistsChartData = computed(() => ({
+  labels: summaries.value.map(s => new Date(s.Date).toLocaleDateString()),
+  datasets: [{
+    label: 'Total Cyclists',
+    data: summaries.value.map(s => s.TotalCyclists),
+    borderColor: '#b45309',
+    backgroundColor: '#b45309AA',
+    tension: 0.3
+  }]
+}))
 
-  pedestriansChartData.labels = labels
-  pedestriansChartData.datasets[0].data = data.map(s => s.TotalPedestrians)
+const congestionChartData = computed(() => ({
+  labels: summaries.value.map(s => new Date(s.Date).toLocaleDateString()),
+  datasets: [{
+    label: 'Congestion Index',
+    data: summaries.value.map(s => s.CongestionIndex),
+    borderColor: '#dc2626',
+    backgroundColor: '#dc2626AA',
+    tension: 0.3
+  }]
+}))
 
-  cyclistsChartData.labels = labels
-  cyclistsChartData.datasets[0].data = data.map(s => s.TotalCyclists)
-
-  congestionChartData.labels = labels
-  congestionChartData.datasets[0].data = data.map(s => s.CongestionIndex)
-}
-
-// Load initial data on mount
+// Load initial summaries on mount
 onMounted(loadSummaries)
-
-// Initialize charts with empty but valid structure
-const vehiclesChartData = reactive({ labels: [], datasets: [{ label: 'Total Vehicles', data: [], borderColor: '#1d4ed8', backgroundColor: '#1d4ed8AA', tension: 0.3 }] })
-const pedestriansChartData = reactive({ labels: [], datasets: [{ label: 'Total Pedestrians', data: [], borderColor: '#059669', backgroundColor: '#059669AA', tension: 0.3 }] })
-const cyclistsChartData = reactive({ labels: [], datasets: [{ label: 'Total Cyclists', data: [], borderColor: '#b45309', backgroundColor: '#b45309AA', tension: 0.3 }] })
-const congestionChartData = reactive({ labels: [], datasets: [{ label: 'Congestion Index', data: [], borderColor: '#dc2626', backgroundColor: '#dc2626AA', tension: 0.3 }] })
-
-// Watch summaries and update charts reactively
-watch(summaries, (newSummaries) => {
-  if (!newSummaries || !newSummaries.length) return
-
-  const labels = newSummaries.map(s => new Date(s.Date).toLocaleDateString())
-
-  vehiclesChartData.labels = labels
-  vehiclesChartData.datasets[0].data = newSummaries.map(s => s.TotalVehicles)
-
-  pedestriansChartData.labels = labels
-  pedestriansChartData.datasets[0].data = newSummaries.map(s => s.TotalPedestrians)
-
-  cyclistsChartData.labels = labels
-  cyclistsChartData.datasets[0].data = newSummaries.map(s => s.TotalCyclists)
-
-  congestionChartData.labels = labels
-  congestionChartData.datasets[0].data = newSummaries.map(s => s.CongestionIndex)
-}, { immediate: true })
 </script>
 
 <style scoped>
@@ -134,6 +140,6 @@ watch(summaries, (newSummaries) => {
   flex: 1 1 45%;
   min-width: 300px;
   max-width: 600px;
-  height: 300px; /* fixed height */
+  height: 300px;
 }
 </style>
