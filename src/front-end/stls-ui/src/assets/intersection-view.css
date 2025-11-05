@@ -130,3 +130,44 @@
   border-radius: 6px;
   border: 1px solid #d1d5db; /* light gray border */
 }
+
+/* Configuration info under card */
+/* Configuration Info Card */
+/* Lights config container */
+.lights-config {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 15px;
+}
+
+/* Each light's config card */
+.light-config-card {
+  background-color: #f9fafb;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+}
+
+/* Phase bar container */
+.phase-bar {
+  display: flex;
+  height: 25px;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-top: 5px;
+  font-size: 0.8rem;
+  color: white;
+  font-weight: bold;
+}
+
+/* Each phase segment */
+.phase-segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  height: 100%;
+}
+
+

@@ -9,6 +9,7 @@ export const useCoordinatorStore = defineStore("coordinatorStore", () => {
   const intersections = ref([]);
   const selectedIntersection = ref(null);
   const configurations = ref([]);
+  const currentConfiguration = ref(null); // <-- added
   const trafficLights = ref([]);
   const loading = ref(false);
   const error = ref(null);
@@ -73,6 +74,34 @@ export const useCoordinatorStore = defineStore("coordinatorStore", () => {
     }
   }
 
+  // Fetch configuration by mode and set currentConfiguration
+  async function fetchConfigurationByMode(mode) {
+    loading.value = true;
+    error.value = null;
+    try {
+      const res = await coordinatorApi.get("/api/configurations/mode", {
+        params: { mode },
+      });
+
+      configurations.value = res.data;
+
+      // set currentConfiguration to the API result
+      currentConfiguration.value = res.data;
+    } catch (err) {
+      error.value =
+        err.response?.status
+          ? `[HTTP ${err.response.status}]`
+          : err.message || `Failed to fetch configuration for mode "${mode}".`;
+      console.error("[CoordinatorStore] fetchConfigurationByMode error:", err);
+      currentConfiguration.value = null;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  // ===============================
+  // Traffic Lights
+  // ===============================
   async function fetchTrafficLights() {
     loading.value = true;
     error.value = null;
@@ -136,12 +165,14 @@ export const useCoordinatorStore = defineStore("coordinatorStore", () => {
     intersections,
     selectedIntersection,
     configurations,
+    currentConfiguration, // <-- expose currentConfiguration
     trafficLights,
     loading,
     error,
     fetchIntersections,
     selectIntersection,
     fetchConfigurations,
+    fetchConfigurationByMode,
     fetchTrafficLights,
     applyMode,
     overrideLight,
