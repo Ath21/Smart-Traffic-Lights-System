@@ -96,11 +96,11 @@ export async function subscribeApi({ intersection, metric }) {
 // ===============================
 
 export async function checkHealth() {
-  const { data } = await userApi.get("/user-service/health");
+  const { data } = await userApi.get("/health");
   return data;
 }
 
 export async function checkReady() {
-  const { data } = await userApi.get("/user-service/ready");
+  const { data } = await userApi.get("/ready");
   return data;
 }

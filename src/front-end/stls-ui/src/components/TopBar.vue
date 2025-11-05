@@ -90,13 +90,13 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'  // ✅ make sure computed is imported
 import { useRouter } from 'vue-router'
-import { useAuth } from '../stores/userStore'
+import { useUserStore } from '../stores/userStore'
 import { useAnalyticsStore } from '../stores/analyticsStore'
 import { logoutApi } from '../services/userApi'
 import UserMenu from './UserMenu.vue'
 import '../assets/topbar.css'
 
-const auth = useAuth()
+const auth = useUserStore()
 const router = useRouter()
 const notificationCount = ref(0)
 const analytics = useAnalyticsStore()

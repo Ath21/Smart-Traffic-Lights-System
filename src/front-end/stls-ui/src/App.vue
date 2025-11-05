@@ -23,10 +23,10 @@
 <script setup>
 import { computed } from "vue";
 import { useRoute } from "vue-router";
-import { useAuth } from "./stores/userStore";
+import { useUserStore } from "./stores/userStore";
 import TopBar from "./components/TopBar.vue";
 
-const auth = useAuth();
+const auth = useUserStore();
 const route = useRoute();
 
 const topbarPages = [

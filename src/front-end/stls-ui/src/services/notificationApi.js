@@ -36,3 +36,17 @@ export async function unsubscribe(userId, email, intersection, metric) {
     }
   });
 }
+
+// ===============================
+// HEALTH CHECKS
+// ===============================
+
+export async function checkHealth() {
+  const { data } = await userApi.get("/health");
+  return data;
+}
+
+export async function checkReady() {
+  const { data } = await userApi.get("/ready");
+  return data;
+}

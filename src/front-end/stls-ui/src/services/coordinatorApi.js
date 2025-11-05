@@ -27,3 +27,17 @@ export const applyTrafficMode = (data) =>
 
 export const overrideTrafficLight = (data) =>
   coordinatorApi.post("/api/traffic-operator/override-light", data);
+
+// ===============================
+// HEALTH CHECKS
+// ===============================
+
+export async function checkHealth() {
+  const { data } = await userApi.get("/health");
+  return data;
+}
+
+export async function checkReady() {
+  const { data } = await userApi.get("/ready");
+  return data;
+}

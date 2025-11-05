@@ -1,6 +1,6 @@
 // src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuth } from '../stores/userStore'
+import { useUserStore } from '../stores/userStore'
 
 // === Pages ===
 const MapView = () => import('../components/MapView.vue')
@@ -53,7 +53,7 @@ const router = createRouter({
 
 // === Navigation Guard ===
 router.beforeEach(async (to) => {
-  const auth = useAuth()
+  const auth = useUserStore()
 
   // Initialize once
   if (!auth.isInitialized) {

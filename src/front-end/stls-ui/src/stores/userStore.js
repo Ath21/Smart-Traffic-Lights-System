@@ -266,5 +266,6 @@ export const useUserStore = defineStore("userStore", () => {
     subscribe,
     checkHealth,
     checkReady,
+    bootstrap,
   };
 });

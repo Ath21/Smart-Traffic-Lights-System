@@ -16,13 +16,16 @@ export async function exportLogs(filters = {}, format = "csv") {
   return data;
 }
 
-// === Health checks ===
+// ===============================
+// HEALTH CHECKS
+// ===============================
+
 export async function checkHealth() {
-  const { data } = await logApi.get("/log-service/health");
+  const { data } = await userApi.get("/health");
   return data;
 }
 
 export async function checkReady() {
-  const { data } = await logApi.get("/log-service/ready");
+  const { data } = await userApi.get("/ready");
   return data;
 }

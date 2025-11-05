@@ -42,3 +42,17 @@ export async function checkSensorReady(intersectionKey) {
   const { data } = await client.get("/ready");
   return data;
 }
+
+// ===============================
+// HEALTH CHECKS
+// ===============================
+
+export async function checkHealth() {
+  const { data } = await userApi.get("/health");
+  return data;
+}
+
+export async function checkReady() {
+  const { data } = await userApi.get("/ready");
+  return data;
+}
