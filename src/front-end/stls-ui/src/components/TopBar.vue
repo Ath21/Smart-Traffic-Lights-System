@@ -13,71 +13,83 @@
     <div v-if="latestAlert" class="middle-alerts">
       <span class="alert-badge">Alert</span>
       <div class="alert-text">
-        <strong>{{ latestAlert.Type }}</strong> — 
-        {{ latestAlert.Message }} at 
+        <strong>{{ latestAlert.Type }}</strong> —
+        {{ latestAlert.Message }} at
         <strong>{{ latestAlert.Intersection }}</strong>
       </div>
     </div>
 
     <!-- Right side: Role-based Buttons / User Menu -->
     <div class="right-nav">
+      <!-- Not logged in -->
       <template v-if="!auth.isAuthenticated">
         <RouterLink to="/" class="btn">Home</RouterLink>
         <RouterLink to="/login" class="btn-outline">Login</RouterLink>
         <RouterLink to="/register" class="btn-primary">Register</RouterLink>
       </template>
 
-      <template v-else>
-        <template v-if="auth.user.role === 'User'">
-          <RouterLink to="/stls" class="btn">Home</RouterLink>
-          <RouterLink to="/stls/analytics" class="btn-outline">Analytics</RouterLink>
-          <RouterLink to="/stls/subscribe" class="btn-outline">Alert Me</RouterLink>
-          <UserMenu
-            :username="auth.user.username || auth.user.email"
-            :home-path="'/stls'"
-            :notification-count="notificationCount"
-            :isAuthenticated="auth.isAuthenticated"
-            icon="user"
-            @logout="handleLogout"
-          />
-        </template>
+      <!-- Logged in: User -->
+      <template v-else-if="auth.user.role === 'User'">
+        <RouterLink to="/stls" class="btn">Home</RouterLink>
+        <RouterLink to="/stls/analytics" class="btn-outline">Analytics</RouterLink>
+        <RouterLink to="/stls/subscribe" class="btn-outline">Alert Me</RouterLink>
 
-        <template v-else-if="auth.user.role === 'TrafficOperator'">
-          <RouterLink to="/stls" class="btn">Home</RouterLink>
-          <RouterLink to="/stls/analytics" class="btn-outline">Analytics</RouterLink>
-          <UserMenu
-            :username="auth.user.username || auth.user.email"
-            :home-path="'/stls'"
-            :notification-count="notificationCount"
-            :isAuthenticated="auth.isAuthenticated"
-            icon="traffic-light"
-            @logout="handleLogout"
-          />
-        </template>
+        <UserMenu
+          :username="auth.user.username || auth.user.email"
+          :home-path="'/stls'"
+          :notification-count="notificationCount"
+          :isAuthenticated="auth.isAuthenticated"
+          icon="user"
+          @logout="handleLogout"
+        />
+      </template>
 
-        <template v-else-if="auth.user.role === 'Admin'">
-          <RouterLink to="/stls" class="btn">Home</RouterLink>
-          <RouterLink to="/stls/users" class="btn-outline">Users</RouterLink>
-          <RouterLink to="/stls/audits" class="btn-outline">User Audits</RouterLink>
-          <RouterLink to="/stls/analytics" class="btn-outline">Analytics</RouterLink>
-          <RouterLink to="/stls/subscribe" class="btn-outline">Alert Me</RouterLink>
-          <RouterLink
-            to="https://localhost:9443/#!/auth"
-            class="btn-outline"
-            @click.prevent="openPortainer"
-          >
-            Admin
+      <!-- Logged in: Traffic Operator -->
+      <template v-else-if="auth.user.role === 'TrafficOperator'">
+        <RouterLink to="/stls" class="btn">Home</RouterLink>
+        <RouterLink to="/stls/analytics" class="btn-outline">Analytics</RouterLink>
+
+        <!-- Operator Dashboard Section -->
+        <div class="dashboard-section">
+          <RouterLink to="/stls/operator-dashboard" class="btn-dashboard">
+            Operator Dashboard
           </RouterLink>
-          <RouterLink to="/stls/logs" class="btn-outline">Logs</RouterLink>
-          <UserMenu
-            :username="auth.user.username || auth.user.email"
-            :home-path="'/stls'"
-            :notification-count="notificationCount"
-            :isAuthenticated="auth.isAuthenticated"
-            icon="admin"
-            @logout="handleLogout"
-          />
-        </template>
+        </div>
+
+        <UserMenu
+          :username="auth.user.username || auth.user.email"
+          :home-path="'/stls'"
+          :notification-count="notificationCount"
+          :isAuthenticated="auth.isAuthenticated"
+          icon="traffic-light"
+          @logout="handleLogout"
+        />
+      </template>
+
+      <!-- Logged in: Admin -->
+      <template v-else-if="auth.user.role === 'Admin'">
+        <RouterLink to="/stls" class="btn">Home</RouterLink>
+        <RouterLink to="/stls/users" class="btn-outline">Users</RouterLink>
+        <RouterLink to="/stls/audits" class="btn-outline">User Audits</RouterLink>
+        <RouterLink to="/stls/analytics" class="btn-outline">Analytics</RouterLink>
+        <RouterLink to="/stls/subscribe" class="btn-outline">Alert Me</RouterLink>
+        <RouterLink to="/stls/logs" class="btn-outline">Logs</RouterLink>
+
+        <!-- Admin Dashboard Section -->
+        <div class="dashboard-section">
+          <button @click="openPortainer" class="btn-dashboard">
+            Admin Dashboard
+          </button>
+        </div>
+
+        <UserMenu
+          :username="auth.user.username || auth.user.email"
+          :home-path="'/stls'"
+          :notification-count="notificationCount"
+          :isAuthenticated="auth.isAuthenticated"
+          icon="admin"
+          @logout="handleLogout"
+        />
       </template>
     </div>
   </header>
@@ -122,7 +134,7 @@ function handleLogout() {
     })
 }
 
-// Open Portainer in new tab
+// Open Portainer in a new tab
 function openPortainer() {
   window.open('https://localhost:9443/#!/auth', '_blank', 'noopener')
 }
@@ -147,6 +159,7 @@ function openPortainer() {
   overflow: hidden;
   animation: slideIn 0.5s ease, pulse 2s infinite;
 }
+
 .alert-badge {
   background: #fff;
   color: #ff4d4f;
@@ -155,14 +168,17 @@ function openPortainer() {
   font-size: 0.8rem;
   font-weight: bold;
 }
+
 .alert-text strong {
   text-decoration: underline;
 }
+
 @keyframes pulse {
   0% { opacity: 1; }
   50% { opacity: 0.7; }
   100% { opacity: 1; }
 }
+
 @keyframes slideIn {
   from { transform: translate(-50%, -10px); opacity: 0; }
   to { transform: translate(-50%, 0); opacity: 1; }

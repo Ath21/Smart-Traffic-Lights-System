@@ -130,3 +130,39 @@ header.topbar {
   font-weight: bold;
   font-size: 0.9rem;
 }
+
+/* === Dashboard section separation === */
+.dashboard-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 1rem;
+  padding-left: 1rem;
+  border-left: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+/* === Admin Dashboard Button === */
+.btn-dashboard {
+  background: linear-gradient(90deg, #ffb100, #ff7b00);
+  color: #0b1d2a;
+  border: 1px solid #ffb100;
+  font-weight: 700;
+}
+.btn-dashboard:hover {
+  background: linear-gradient(90deg, #ff7b00, #ffaa33);
+  box-shadow: 0 3px 10px rgba(255, 150, 0, 0.45);
+  color: #0b1d2a;
+}
+
+/* === Add Operator Button === */
+.btn-add-operator {
+  background: linear-gradient(90deg, #00c48c, #00e6a8);
+  color: #0b1d2a;
+  border: 1px solid #00e6a8;
+  font-weight: 700;
+}
+.btn-add-operator:hover {
+  background: linear-gradient(90deg, #00e6a8, #2fffbb);
+  box-shadow: 0 3px 10px rgba(0, 200, 150, 0.45);
+  color: #0b1d2a;
+}
