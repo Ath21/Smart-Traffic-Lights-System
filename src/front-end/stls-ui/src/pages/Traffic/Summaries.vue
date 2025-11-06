@@ -58,7 +58,7 @@ import { ref, watchEffect, onMounted } from "vue"
 import { useAnalyticsStore } from "../../stores/analyticsStore"
 import LineChart from "../../components/LineChart.vue"
 
-const analytics = useAnalyticsStore()
+
 
 // Filters
 const intersection = ref("")
@@ -66,7 +66,11 @@ const intersectionId = ref(4) // default to a valid ID
 const from = ref(new Date(Date.now() - 7*24*60*60*1000).toISOString().split("T")[0])
 const to = ref(new Date().toISOString().split("T")[0])
 
-const { summaries, loading, error, fetchSummaries } = analytics
+import { storeToRefs } from "pinia"
+
+const analytics = useAnalyticsStore()
+const { summaries, loading, error } = storeToRefs(analytics)
+const { fetchSummaries } = analytics
 
 // Chart data refs
 const vehiclesChartData = ref({ labels: [], datasets: [] })

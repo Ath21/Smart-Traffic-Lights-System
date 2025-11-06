@@ -1,13 +1,20 @@
 <template>
   <div class="chart-container">
     <h3>{{ title }}</h3>
-    <Line v-if="chartData" :data="chartData" :options="chartOptions" />
+    <!-- add :key to Line so it re-renders when chartData changes -->
+    <Line
+      v-if="chartData && chartData.labels?.length"
+      ref="chartRef"
+      :data="chartData"
+      :options="chartOptions"
+      :key="chartDataKey"
+    />
     <div v-else class="no-data">No data available</div>
   </div>
 </template>
 
 <script setup>
-import { defineProps } from "vue"
+import { defineProps, ref, watch, computed } from "vue"
 import {
   Chart as ChartJS,
   Title,
@@ -20,19 +27,37 @@ import {
 } from "chart.js"
 import { Line } from "vue-chartjs"
 
-// Register chart.js components
 ChartJS.register(Title, Tooltip, Legend, LineElement, CategoryScale, LinearScale, PointElement)
 
-// Props
 const props = defineProps({
   chartData: { type: Object, required: true },
   title: { type: String, default: "" }
 })
 
-// Chart options
+const chartRef = ref(null)
+
+// computed key — changes whenever labels or datasets change
+const chartDataKey = computed(() =>
+  JSON.stringify([
+    props.chartData.labels,
+    props.chartData.datasets?.map(d => d.data)
+  ])
+)
+
+// optional: ensure Chart.js updates if only dataset values change
+watch(
+  () => props.chartData,
+  () => {
+    if (chartRef.value?.chart) {
+      chartRef.value.chart.update()
+    }
+  },
+  { deep: true }
+)
+
 const chartOptions = {
   responsive: true,
-  maintainAspectRatio: false, // fill parent
+  maintainAspectRatio: false,
   plugins: {
     legend: { position: "top" },
     title: { display: false }
@@ -48,7 +73,7 @@ const chartOptions = {
 .chart-container {
   width: 100%;
   height: 100%;
-  min-height: 300px; /* ensure chart shows */
+  min-height: 300px;
   display: flex;
   flex-direction: column;
 }
