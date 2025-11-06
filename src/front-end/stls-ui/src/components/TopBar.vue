@@ -43,7 +43,6 @@
         <template v-else-if="auth.user.role === 'TrafficOperator'">
           <RouterLink to="/stls" class="btn">Home</RouterLink>
           <RouterLink to="/stls/analytics" class="btn-outline">Analytics</RouterLink>
-          <RouterLink to="/stls/operator" class="btn-outline">Operator</RouterLink>
           <UserMenu
             :username="auth.user.username || auth.user.email"
             :home-path="'/stls'"
@@ -60,7 +59,6 @@
           <RouterLink to="/stls/users" class="btn-outline">Users</RouterLink>
           <RouterLink to="/stls/audits" class="btn-outline">User Audits</RouterLink>
           <RouterLink to="/stls/analytics" class="btn-outline">Analytics</RouterLink>
-          <RouterLink to="/stls/operator" class="btn-outline">Operator</RouterLink>
           <RouterLink to="/stls/subscribe" class="btn-outline">Alert Me</RouterLink>
           
           <!-- Admin button opens Portainer -->
