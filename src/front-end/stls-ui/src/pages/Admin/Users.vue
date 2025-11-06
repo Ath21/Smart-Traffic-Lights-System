@@ -16,12 +16,16 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="u in users" :key="u.id">
-          <td>{{ u.id }}</td>
-          <td>{{ u.username }}</td>
-          <td>{{ u.email }}</td>
-          <td>{{ u.role }}</td>
-          <td>{{ u.status }}</td>
+        <tr v-for="u in users" :key="u.UserId">
+          <td>{{ u.UserId }}</td>
+          <td>{{ u.Username }}</td>
+          <td>{{ u.Email }}</td>
+          <td>{{ u.Role }}</td>
+          <td>
+            <span :class="['status-badge', u.status === 'active' ? 'active' : 'inactive']">
+              {{ u.status }}
+            </span>
+          </td>
           <td>
             <button
               class="btn-delete"
@@ -43,56 +47,58 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useUserStore } from "../../stores/userStore";
+import { userApi } from "../../services/httpClients";
 import "../../assets/users.css";
 
 const userStore = useUserStore();
 
-// Reactive state from store
 const users = ref([]);
-const loading = computed(() => userStore.loading);
-const error = computed(() => userStore.error);
+const loading = ref(false);
+const error = ref(null);
 const deletingIds = ref([]);
 
-// ===============================
+// ------------------------------
 // Fetch users
-// ===============================
+// ------------------------------
 async function fetchUsers() {
+  loading.value = true;
+  error.value = null;
   try {
-    const data = await userStore.apiFetch("/api/users/all");
-    if (!data.ok) throw new Error(`Failed to fetch users: ${data.status}`);
-    users.value = await data.json();
+    const res = await userApi.get("/api/users/all", {
+      headers: { Authorization: `Bearer ${userStore.token}` },
+    });
+    users.value = res.data;
   } catch (err) {
-    console.error(err);
-    userStore.error = err.message;
+    console.error("[UsersPage] fetchUsers error:", err);
+    error.value = err.response?.data?.message || err.message || "Failed to load users";
+  } finally {
+    loading.value = false;
   }
 }
 
-// ===============================
+// ------------------------------
 // Delete user
-// ===============================
+// ------------------------------
 async function deleteUser(userId) {
   if (!confirm("Are you sure you want to delete this user?")) return;
 
   deletingIds.value.push(userId);
   try {
-    const res = await userStore.apiFetch(`/api/users/${userId}`, { method: "DELETE" });
-    if (!res.ok) {
-      const body = await res.json().catch(() => ({}));
-      throw new Error(body.error || `Failed to delete user: ${res.status}`);
-    }
-    // Remove locally
+    await userApi.delete(`/api/users/${userId}`, {
+      headers: { Authorization: `Bearer ${userStore.token}` },
+    });
     users.value = users.value.filter(u => u.id !== userId);
   } catch (err) {
-    console.error(err);
-    userStore.error = err.message;
+    console.error("[UsersPage] deleteUser error:", err);
+    error.value = err.response?.data?.message || err.message || "Failed to delete user";
   } finally {
     deletingIds.value = deletingIds.value.filter(id => id !== userId);
   }
 }
 
-// ===============================
+// ------------------------------
 // Lifecycle
-// ===============================
+// ------------------------------
 onMounted(() => {
   fetchUsers();
 });

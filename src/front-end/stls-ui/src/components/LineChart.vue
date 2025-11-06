@@ -1,14 +1,13 @@
 <template>
-  <div class="chart-container" v-if="chartData && chartData.labels?.length">
+  <div class="chart-container">
     <h3>{{ title }}</h3>
-    <!-- Pass as `data` instead of `chart-data` -->
-    <Line :data="chartData" :options="chartOptions" />
+    <Line v-if="chartData" :data="chartData" :options="chartOptions" />
+    <div v-else class="no-data">No data available</div>
   </div>
 </template>
 
-
 <script setup>
-import { defineProps } from 'vue'
+import { defineProps } from "vue"
 import {
   Chart as ChartJS,
   Title,
@@ -18,8 +17,8 @@ import {
   CategoryScale,
   LinearScale,
   PointElement
-} from 'chart.js'
-import { Line } from 'vue-chartjs'
+} from "chart.js"
+import { Line } from "vue-chartjs"
 
 // Register chart.js components
 ChartJS.register(Title, Tooltip, Legend, LineElement, CategoryScale, LinearScale, PointElement)
@@ -27,15 +26,15 @@ ChartJS.register(Title, Tooltip, Legend, LineElement, CategoryScale, LinearScale
 // Props
 const props = defineProps({
   chartData: { type: Object, required: true },
-  title: { type: String, default: '' }
+  title: { type: String, default: "" }
 })
 
-// Options: fill parent and maintain aspect ratio automatically
+// Chart options
 const chartOptions = {
   responsive: true,
-  maintainAspectRatio: false, // allow chart to fill container
+  maintainAspectRatio: false, // fill parent
   plugins: {
-    legend: { position: 'top' },
+    legend: { position: "top" },
     title: { display: false }
   },
   scales: {
@@ -49,9 +48,20 @@ const chartOptions = {
 .chart-container {
   width: 100%;
   height: 100%;
+  min-height: 300px; /* ensure chart shows */
+  display: flex;
+  flex-direction: column;
 }
 .chart-container h3 {
-  margin-bottom: 0.5rem;
   text-align: center;
+  margin-bottom: 0.5rem;
+}
+.no-data {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  font-style: italic;
 }
 </style>

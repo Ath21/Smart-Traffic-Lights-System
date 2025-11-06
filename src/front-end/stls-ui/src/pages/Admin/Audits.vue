@@ -49,6 +49,7 @@
 <script setup>
 import { ref } from "vue";
 import { useUserStore } from "../../stores/userStore";
+import { userApi } from "../../services/httpClients";
 import "../../assets/audits.css";
 
 const userStore = useUserStore();
@@ -58,9 +59,9 @@ const audits = ref([]);
 const loading = ref(false);
 const error = ref(null);
 
-// ===============================
-// Fetch audits via userStore apiFetch
-// ===============================
+// ------------------------------
+// Fetch audits
+// ------------------------------
 async function fetchAudits() {
   if (!userIdInput.value) return;
 
@@ -69,20 +70,19 @@ async function fetchAudits() {
   audits.value = [];
 
   try {
-    // Use store's apiFetch for JWT auth
-    const res = await userStore.apiFetch(
-      `${import.meta.env.VITE_USER_API || "http://localhost:5055"}/api/audit/user/${userIdInput.value}`
+    const res = await userApi.get(
+      `${import.meta.env.VITE_USER_API || "http://localhost:5055"}/api/audit/user/${userIdInput.value}`,
+      {
+        headers: {
+          Authorization: `Bearer ${userStore.token}`,
+        },
+      }
     );
 
-    if (!res.ok) {
-      const body = await res.json().catch(() => ({}));
-      throw new Error(body.error || `Failed to fetch audits: ${res.status}`);
-    }
-
-    audits.value = await res.json();
+    audits.value = res.data || [];
   } catch (err) {
     console.error("[AuditsPage] fetchAudits error:", err);
-    error.value = err.message;
+    error.value = err.response?.data?.message || err.message || "Failed to fetch audits";
   } finally {
     loading.value = false;
   }
