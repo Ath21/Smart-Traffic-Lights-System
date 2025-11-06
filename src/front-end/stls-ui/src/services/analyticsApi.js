@@ -10,6 +10,12 @@ export const fetchSummariesApi = (params = {}) =>
 export const fetchAlertsApi = (params = {}) =>
   analyticsApi.get("/api/analytics/alerts", { params });
 
+export const exportSummariesCsvApi = (params = {}) =>
+  analyticsApi.get("/api/analytics/summaries/export", {
+    params,
+    responseType: "blob" // ensures CSV file download
+  });
+
 // ===============================
 // HEALTH CHECKS
 // ===============================

@@ -8,14 +8,19 @@
       <input type="number" v-model.number="intersectionId" placeholder="Intersection ID" />
       <input type="date" v-model="from" />
       <input type="date" v-model="to" />
+
+      <!-- Export Button -->
+      <button class="export-btn" @click="handleExport" :disabled="loading">
+        {{ loading ? 'Exporting...' : 'Export CSV' }}
+      </button>
     </div>
 
     <!-- Loading & errors -->
-    <div v-if="loading">Loading summaries...</div>
+    <div v-if="loading && !summaries.length">Loading summaries...</div>
     <div v-if="error" class="error">{{ error }}</div>
 
     <!-- Charts container -->
-    <div v-if="!loading" class="charts-container">
+    <div v-if="!loading && summaries.length" class="charts-container">
       <div class="chart-wrapper">
         <LineChart 
           :chart-data="vehiclesChartData" 
@@ -56,21 +61,18 @@
 <script setup>
 import { ref, watchEffect, onMounted } from "vue"
 import { useAnalyticsStore } from "../../stores/analyticsStore"
-import LineChart from "../../components/LineChart.vue"
-
-
-
-// Filters
-const intersection = ref("")
-const intersectionId = ref(4) // default to a valid ID
-const from = ref(new Date(Date.now() - 7*24*60*60*1000).toISOString().split("T")[0])
-const to = ref(new Date().toISOString().split("T")[0])
-
 import { storeToRefs } from "pinia"
+import LineChart from "../../components/LineChart.vue"
 
 const analytics = useAnalyticsStore()
 const { summaries, loading, error } = storeToRefs(analytics)
-const { fetchSummaries } = analytics
+const { fetchSummaries, exportSummariesCsv } = analytics
+
+// Filters
+const intersection = ref("")
+const intersectionId = ref(4)
+const from = ref(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0])
+const to = ref(new Date().toISOString().split("T")[0])
 
 // Chart data refs
 const vehiclesChartData = ref({ labels: [], datasets: [] })
@@ -89,7 +91,17 @@ watchEffect(() => {
   })
 })
 
-// Update charts whenever summaries change
+// Export handler
+function handleExport() {
+  exportSummariesCsv({
+    intersectionId: intersectionId.value,
+    intersection: intersection.value,
+    from: from.value,
+    to: to.value
+  })
+}
+
+// Update charts when summaries change
 watchEffect(() => {
   const data = summaries.value || []
   const labels = data.map(s => new Date(s.Date).toLocaleDateString())
@@ -143,33 +155,48 @@ watchEffect(() => {
   }
 })
 
-// Fetch initial data on mount
+// Initial load
 onMounted(() => {
-  if (intersectionId.value) {
-    fetchSummaries({
-      intersectionId: intersectionId.value,
-      intersection: intersection.value,
-      from: from.value,
-      to: to.value
-    })
-  }
+  fetchSummaries({
+    intersectionId: intersectionId.value,
+    intersection: intersection.value,
+    from: from.value,
+    to: to.value
+  })
 })
 </script>
 
 <style scoped>
+.analytics-page {
+  padding: 3rem;
+}
+.filters {
+  margin-bottom: 1rem;
+}
 .filters input {
   margin-right: 0.5rem;
   width: 150px;
+}
+.export-btn {
+  padding: 0.4rem 1rem;
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.export-btn:hover:not(:disabled) {
+  background-color: #1d4ed8;
+}
+.export-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 .error {
   color: red;
   margin-top: 1rem;
 }
-.analytics-page {
-  padding: 3rem;
-}
-
-/* Charts layout */
 .charts-container {
   display: flex;
   flex-wrap: wrap;
@@ -180,7 +207,7 @@ onMounted(() => {
   flex: 1 1 45%;
   min-width: 300px;
   max-width: 600px;
-  height: 350px; /* required for chart.js */
+  height: 350px;
   display: flex;
   flex-direction: column;
 }

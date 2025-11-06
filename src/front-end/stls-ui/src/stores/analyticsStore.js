@@ -67,6 +67,45 @@ export const useAnalyticsStore = defineStore("analytics", () => {
     }
   }
 
+  async function exportSummariesCsv({ intersectionId, intersection, from, to } = {}) {
+  loading.value = true;
+  error.value = null;
+  try {
+    const params = {};
+    if (intersectionId !== undefined) params.intersectionId = intersectionId;
+    if (intersection) params.intersection = intersection;
+    if (from) params.from = from;
+    if (to) params.to = to;
+
+    const res = await analyticsApi.get("/api/analytics/summaries/export", {
+      params,
+      responseType: "blob"
+    });
+
+    // Trigger browser download
+    const blob = new Blob([res.data], { type: "text/csv;charset=utf-8;" });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `traffic_summaries_${new Date().toISOString().split("T")[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+
+    console.log("[AnalyticsStore] Exported summaries to CSV");
+  } catch (err) {
+    error.value =
+      err.response?.status
+        ? `[HTTP ${err.response.status}]`
+        : err.message || "Network error";
+    console.error("[AnalyticsStore] exportSummariesCsv error:", err);
+  } finally {
+    loading.value = false;
+  }
+}
+
+
   // ===============================
   // Return state & actions
   // ===============================
@@ -77,5 +116,6 @@ export const useAnalyticsStore = defineStore("analytics", () => {
     error,
     fetchAlerts,
     fetchSummaries,
+    exportSummariesCsv
   };
 });
