@@ -5,6 +5,8 @@ using Microsoft.OpenApi.Models;
 using TrafficLightCacheData;
 using TrafficLightCacheData.Repositories;
 using TrafficLightCacheData.Settings;
+using TrafficLightControllerStore.Aggregators.Control;
+using TrafficLightControllerStore.Aggregators.Time;
 using TrafficLightControllerStore.Consumers;
 using TrafficLightControllerStore.Domain;
 using TrafficLightControllerStore.Middleware;
@@ -93,8 +95,9 @@ public class Startup
         services.AddScoped(typeof(ITrafficLightCacheRepository), typeof(TrafficLightCacheRepository));
 
         // ===============================
-        // Business Layer (Services)
+        // Aggregators
         // ===============================
+        services.AddScoped(typeof(ITrafficLightAggregator), typeof(TrafficLightAggregator));
 
         // ===============================
         // Message Layer (MassTransit with RabbitMQ)
@@ -159,14 +162,26 @@ public class Startup
         // ===============================
         var intersectionName = _configuration["Intersection:Name"] ?? "Unknown Intersection";
         var trafficLightName = _configuration["TrafficLight:Name"] ?? "Unknown Traffic Light";
+        var trafficLightId = _configuration["TrafficLight:Id"] ?? "Unknown Traffic Light Id";
 
         services.AddSwaggerGen(c =>
         {
             c.SwaggerDoc("v1", new OpenApiInfo
             {
-                Title = $"Traffic Light Controller – {trafficLightName} ({intersectionName})",
+                Title = $"Traffic Light Controller – {trafficLightName.ToLower().Replace(" ", "-")}{trafficLightId} ({intersectionName})",
                 Version = "v3.0",
-                Description = $"Manages and monitors the state of traffic light '{trafficLightName}' at intersection '{intersectionName}'."
+                Description = $"Manages and monitors the state of traffic light '{trafficLightName}' at intersection '{intersectionName}'.",
+                Contact = new OpenApiContact
+                {
+                    Name = "Vasileios Evangelos Athanasiou",
+                    Email = "ice19390005@uniwa.gr",
+                    Url = new Uri("https://github.com/Ath21")
+                },
+                License = new OpenApiLicense
+                {
+                    Name = "Academic License – University of West Attica",
+                    Url = new Uri("https://www.uniwa.gr")
+                }
             });
 
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -199,6 +214,7 @@ public class Startup
     {
         var intersectionName = _configuration["Intersection:Name"] ?? "Unknown Intersection";
         var trafficLightName = _configuration["TrafficLight:Name"] ?? "Unknown Traffic Light";
+        var trafficLightId = _configuration["TrafficLight:Id"] ?? "Unknown Traffic Light Id";
 
         // ===============================
         // Swagger UI
@@ -208,8 +224,8 @@ public class Startup
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", $"Traffic Light Controller – {trafficLightName} ({intersectionName})");
-                c.DocumentTitle = $"Traffic Light Controller – {trafficLightName} ({intersectionName})";
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", $"Traffic Light Controller – {trafficLightName.ToLower().Replace(" ", "-")}{trafficLightId} ({intersectionName})");
+                c.DocumentTitle = $"Traffic Light Controller – {trafficLightName.ToLower().Replace(" ", "-")}{trafficLightId} ({intersectionName})";
             });
         }
 

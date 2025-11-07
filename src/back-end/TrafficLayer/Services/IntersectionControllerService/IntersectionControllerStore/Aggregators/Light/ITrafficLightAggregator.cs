@@ -7,6 +7,8 @@ namespace IntersectionControllerStore.Aggregators.Light;
 public interface ITrafficLightAggregator
 {
     Task<TrafficLightControlMessage> BuildLightControlAsync(
-        TrafficLightScheduleMessage schedule,
-        TrafficLightContext light);
+            TrafficLightScheduleMessage schedule,
+            TrafficLightContext light,
+            int lightIndex = 0,
+            int totalLights = 1);
 }

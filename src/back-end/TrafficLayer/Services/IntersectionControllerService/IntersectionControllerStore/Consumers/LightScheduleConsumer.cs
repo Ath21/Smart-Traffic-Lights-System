@@ -48,10 +48,17 @@ public class LightScheduleConsumer : IConsumer<TrafficLightScheduleMessage>
         await UpdateIntersectionCacheAsync(schedule);
 
         // For each light in this intersection, build and send control message
-        foreach (var light in _intersection.Lights)
+        for (int i = 0; i < _intersection.Lights.Count; i++)
         {
-            await _aggregator.BuildLightControlAsync(schedule, light);
+            var light = _intersection.Lights[i];
+            await _aggregator.BuildLightControlAsync(
+                schedule,
+                light,
+                lightIndex: i,
+                totalLights: _intersection.Lights.Count
+            );
         }
+
     }
 
     private async Task UpdateIntersectionCacheAsync(TrafficLightScheduleMessage schedule)

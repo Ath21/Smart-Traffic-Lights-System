@@ -209,7 +209,18 @@ public class Startup
             {
                 Title = $"Intersection Controller Service – {intersectionName}",
                 Version = "v3.0",
-                Description = $"Controls and coordinates traffic lights for intersection '{intersectionName}'."
+                Description = $"Controls and coordinates traffic lights for intersection '{intersectionName}'.",
+                Contact = new OpenApiContact
+                {
+                    Name = "Vasileios Evangelos Athanasiou",
+                    Email = "ice19390005@uniwa.gr",
+                    Url = new Uri("https://github.com/Ath21")
+                },
+                License = new OpenApiLicense
+                {
+                    Name = "Academic License – University of West Attica",
+                    Url = new Uri("https://www.uniwa.gr")
+                }
             });
 
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme

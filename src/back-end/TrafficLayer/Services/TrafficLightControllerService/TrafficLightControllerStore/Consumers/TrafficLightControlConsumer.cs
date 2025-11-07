@@ -1,7 +1,7 @@
 using MassTransit;
-using Messages.Traffic;
 using Messages.Traffic.Light;
 using TrafficLightCacheData.Repositories;
+using TrafficLightControllerStore.Aggregators.Control;
 using TrafficLightControllerStore.Publishers.Logs;
 
 namespace TrafficLightControllerStore.Consumers;
@@ -9,15 +9,18 @@ namespace TrafficLightControllerStore.Consumers;
 public class TrafficLightControlConsumer : IConsumer<TrafficLightControlMessage>
 {
     private readonly ITrafficLightCacheRepository _cache;
-    private readonly ILogger<TrafficLightControlConsumer> _logger;
+    private readonly ITrafficLightAggregator _aggregator;
     private readonly ITrafficLightLogPublisher _logPublisher;
+    private readonly ILogger<TrafficLightControlConsumer> _logger;
 
     public TrafficLightControlConsumer(
         ITrafficLightCacheRepository cache,
+        ITrafficLightAggregator aggregator,
         ITrafficLightLogPublisher logPublisher,
         ILogger<TrafficLightControlConsumer> logger)
     {
         _cache = cache;
+        _aggregator = aggregator;
         _logPublisher = logPublisher;
         _logger = logger;
     }
@@ -26,61 +29,39 @@ public class TrafficLightControlConsumer : IConsumer<TrafficLightControlMessage>
     {
         var msg = context.Message;
 
-            // =================================
-            // Update core state
-            // =================================
-            await _cache.SetStateAsync(msg.IntersectionId, msg.LightId, msg.OperationalMode ?? "Unknown");
-            await _cache.SetModeAsync(msg.IntersectionId, msg.LightId, msg.Mode ?? "Unknown");
-            await _cache.SetPriorityAsync(msg.IntersectionId, msg.LightId, msg.PriorityLevel);
-            await _cache.SetLastUpdateAsync(msg.IntersectionId, msg.LightId, msg.LastUpdate);
+        // =================================
+        // Update aggregator (starts light timers)
+        // =================================
+        await _aggregator.ApplyControlMessageAsync(msg);
 
-            // =================================
-            // Update phase & cycle
-            // =================================
-            if (msg.PhaseDurations != null)
-                await _cache.SetCachedPhasesAsync(msg.IntersectionId, msg.LightId, msg.PhaseDurations);
+        // =================================
+        // Optionally update cache for diagnostics / heartbeat
+        // =================================
+        await _cache.SetHeartbeatAsync(msg.IntersectionId, msg.LightId);
+        await _cache.SetCoordinatorSyncAsync(msg.IntersectionId);
 
-            await _cache.SetCurrentPhaseAsync(msg.IntersectionId, msg.LightId, msg.CurrentPhase ?? "Green");
-            await _cache.SetRemainingTimeAsync(msg.IntersectionId, msg.LightId, msg.RemainingTimeSec);
-            await _cache.SetCycleDurationAsync(msg.IntersectionId, msg.LightId, msg.CycleDurationSec);
-            await _cache.SetLocalOffsetAsync(msg.IntersectionId, msg.LightId, msg.LocalOffsetSec);
-            await _cache.SetCycleProgressAsync(msg.IntersectionId, msg.LightId, msg.CycleProgressSec);
+        // =================================
+        // Logging / audit
+        // =================================
+        await _logPublisher.PublishAuditAsync(
+            "TrafficLightControlApplied",
+            $"Traffic light control applied for intersection {msg.IntersectionName}",
+            data: new Dictionary<string, object>
+            {
+                ["LightName"] = msg.LightName,
+                ["Mode"] = msg.Mode,
+                ["OperationalMode"] = msg.OperationalMode,
+                ["PriorityLevel"] = msg.PriorityLevel,
+            },
+            operation: context.CorrelationId?.ToString()
+        );
 
-            // =================================
-            // Update failover
-            // =================================
-            await _cache.SetFailoverAsync(msg.IntersectionId, msg.LightId, msg.IsFailoverActive);
-
-            // =================================
-            // Diagnostics / heartbeat
-            // =================================
-            await _cache.SetHeartbeatAsync(msg.IntersectionId, msg.LightId);
-            await _cache.SetCoordinatorSyncAsync(msg.IntersectionId);
-
-            // =================================
-            // Logging
-            // =================================
-            await _logPublisher.PublishAuditAsync(
-                "TrafficLightControlApplied",
-                $"Traffic light control updated for intersection {msg.IntersectionName}",
-                data: new Dictionary<string, object>
-                {
-                    ["LightName"] = msg.LightName,
-                    ["Mode"] = msg.Mode,
-                    ["OperationalMode"] = msg.OperationalMode,
-                    ["PriorityLevel"] = msg.PriorityLevel,
-                    ["CurrentPhase"] = msg.CurrentPhase,
-                    ["RemainingTimeSec"] = msg.RemainingTimeSec
-                },
-                operation: context.CorrelationId?.ToString()
-            );
-
-            _logger.LogInformation(
-                "Traffic light control applied: {Intersection}-{Light} Mode={Mode}, Phase={Phase}",
-                msg.IntersectionName,
-                msg.LightName,
-                msg.Mode,
-                msg.CurrentPhase
-            );
+        _logger.LogInformation(
+            "Traffic light control applied: {Intersection}-{Light} Mode={Mode} OperationalMode={OpMode}",
+            msg.IntersectionName,
+            msg.LightName,
+            msg.Mode,
+            msg.OperationalMode
+        );
     }
 }
