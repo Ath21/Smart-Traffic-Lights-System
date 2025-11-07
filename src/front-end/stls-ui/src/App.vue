@@ -39,7 +39,7 @@ const topbarPages = [
   "/stls/update",
   "/stls/subscriptions",
   "/stls/subscribe",
-  "/stls/logs",
+  "/stls/admin",
   "/stls/users",
   "/stls/audits",
   "/stls/analytics",

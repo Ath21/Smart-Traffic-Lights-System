@@ -34,10 +34,10 @@ const routes = [
   { path: '/stls/subscriptions', name: 'subscriptions', component: Notifications, meta: { roles: ['user'] } }, // ✅ user only
   { path: '/stls/subscribe', name: 'subscribe', component: Subscribe, meta: { roles: ['user'] } }, // ✅ user only
   { path: '/stls/analytics', name: 'summaries', component: Summaries, meta: { roles: ['user', 'admin', 'trafficoperator'] } },
-  { path: '/stls/intersection/:name', name: 'intersection', component: IntersectionView, meta: { roles: ['user', 'admin', 'trafficoperator'] } },
+  { path: '/stls/intersection/:name', name: 'intersection', component: IntersectionView, meta: { roles: [ 'trafficoperator'] } },
 
   // Admin-only route
-  { path: '/stls/logs', name: 'logs', component: Logs, meta: { roles: ['admin'] } }, // ✅ admin-only route
+  { path: '/stls/admin', name: 'admin', component: Logs, meta: { roles: ['admin'] } }, // ✅ admin-only route
   { path: '/stls/users', name: 'users', component: Users, meta: { roles: ['admin'] } },
   // Admin-only route
   { path: '/stls/audits', name: 'audits', component: UserAudits, meta: { roles: ['admin'] } },

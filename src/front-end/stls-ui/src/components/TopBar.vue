@@ -50,11 +50,25 @@
         <RouterLink to="/stls/analytics" class="btn-outline">Analytics</RouterLink>
 
         <!-- Operator Dashboard Section -->
-        <div class="dashboard-section">
-          <RouterLink to="/stls/operator-dashboard" class="btn-dashboard">
-            Operator Dashboard
-          </RouterLink>
-        </div>
+<!-- Operator Dashboard Section -->
+<div class="dashboard-section">
+  <button class="btn-dashboard" @click="toggleIntersectionMenu">
+    Operator Dashboard
+  </button>
+
+  <div v-if="showMenu" class="intersection-grid">
+    <div
+      v-for="i in intersections"
+      :key="i.path"
+      class="intersection-item"
+      @click="goToIntersection(i.path)"
+    >
+      <img :src="i.icon" alt="Intersection icon" class="intersection-icon" />
+      <span>{{ i.label }}</span>
+    </div>
+  </div>
+</div>
+
 
         <UserMenu
           :username="auth.user.username || auth.user.email"
@@ -76,7 +90,7 @@
 
         <!-- Admin Dashboard Section -->
         <div class="dashboard-section">
-          <RouterLink to="/stls/logs" class="btn-outline">Admin Dashboard</RouterLink>
+          <RouterLink to="/stls/admin" class="btn-outline">Admin Dashboard</RouterLink>
         </div>
 
         <UserMenu
@@ -105,6 +119,24 @@ const auth = useUserStore()
 const router = useRouter()
 const notificationCount = ref(0)
 const analytics = useAnalyticsStore()
+const showMenu = ref(false)
+
+const intersections = [
+  { label: "Agiou Spyridonos", path: "/stls/intersection/agiou-spyridonos", icon: "/1.png" },
+  { label: "Anatoliki Pyli", path: "/stls/intersection/anatoliki-pyli", icon: "/2.png" },
+  { label: "Dytiki Pyli", path: "/stls/intersection/dytiki-pyli", icon: "/3.png" },
+  { label: "Ekklisia", path: "/stls/intersection/ekklisia", icon: "/4.png" },
+  { label: "Kentriki Pyli", path: "/stls/intersection/kentriki-pyli", icon: "/5.png" },
+]
+
+function toggleIntersectionMenu() {
+  showMenu.value = !showMenu.value
+}
+
+function goToIntersection(path) {
+  showMenu.value = false
+  router.push(path)
+}
 
 // Computed alerts from Pinia store
 const alerts = computed(() => analytics.latestAlerts || [])
@@ -131,10 +163,7 @@ function handleLogout() {
     })
 }
 
-// Open Portainer in a new tab
-function openPortainer() {
-  window.open('https://localhost:9443/#!/auth', '_blank', 'noopener')
-}
+
 </script>
 
 <style scoped>
@@ -180,4 +209,61 @@ function openPortainer() {
   from { transform: translate(-50%, -10px); opacity: 0; }
   to { transform: translate(-50%, 0); opacity: 1; }
 }
+
+.intersection-grid {
+  position: absolute;
+  top: 110%; /* slightly lower to avoid overlap */
+  right: 1rem;
+  background: rgba(20, 20, 20, 0.95);
+  border: 1px solid #333;
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+  padding: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.8rem;
+  z-index: 999;
+  backdrop-filter: blur(6px);
+  animation: fadeIn 0.25s ease;
+}
+
+.intersection-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.8rem;
+  background: #000;
+  border: 1px solid #222;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #f9fafb;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.intersection-item:hover {
+  background: linear-gradient(145deg, #1f2937, #111827);
+  border-color: #3b82f6;
+  transform: scale(1.05);
+  color: #3b82f6;
+}
+
+.intersection-icon {
+  width: 112px;
+  height: 72px;
+  margin-bottom: 0.4rem;
+  filter: brightness(0.9) saturate(1.1);
+  transition: transform 0.2s ease;
+}
+
+.intersection-item:hover .intersection-icon {
+  transform: scale(1.1);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 </style>
