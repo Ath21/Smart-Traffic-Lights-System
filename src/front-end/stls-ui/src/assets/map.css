@@ -24,11 +24,21 @@ body {
   filter: saturate(1.1) brightness(0.95);
 }
 
-.leaflet-pane,
+/* Restore proper Leaflet stacking order */
+.leaflet-pane {
+  z-index: auto; /* let Leaflet manage panes */
+}
+
+.leaflet-marker-pane,
+.leaflet-tooltip-pane,
+.leaflet-popup-pane {
+  z-index: 650; /* ensure markers and tooltips stay visible */
+}
+
 .leaflet-top,
 .leaflet-bottom,
 .leaflet-control-container {
-  z-index: 0;
+  z-index: 500;
 }
 
 /* ===============================
