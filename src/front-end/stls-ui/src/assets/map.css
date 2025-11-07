@@ -24,21 +24,11 @@ body {
   filter: saturate(1.1) brightness(0.95);
 }
 
-/* Restore proper Leaflet stacking order */
-.leaflet-pane {
-  z-index: auto; /* let Leaflet manage panes */
-}
-
-.leaflet-marker-pane,
-.leaflet-tooltip-pane,
-.leaflet-popup-pane {
-  z-index: 650; /* ensure markers and tooltips stay visible */
-}
-
+.leaflet-pane,
 .leaflet-top,
 .leaflet-bottom,
 .leaflet-control-container {
-  z-index: 500;
+  z-index: 0;
 }
 
 /* ===============================
@@ -154,4 +144,12 @@ body {
   font-weight: 500;
   letter-spacing: 0.2px;
   font-family: Arial, sans-serif; /* added */
+}
+
+.traffic-icon-wrapper {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
