@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
+import { ref } from "vue"; // ✅ ADD THIS
 import { logApi } from "../services/httpClients";
-import { useAuth } from "./userStore";
+import { useUserStore } from "./userStore";
 
 export const useLogStore = defineStore("logStore", () => {
   // ===============================
@@ -21,8 +22,8 @@ export const useLogStore = defineStore("logStore", () => {
   // Fetch logs with optional filters
   // ===============================
   async function fetchLogs(filtersOverride = null) {
-    const auth = useAuth();
-    if (!auth.user || auth.user.role.toLowerCase() !== "admin") return;
+    const userStore = useUserStore();
+    if (!userStore.user || userStore.user.role.toLowerCase() !== "admin") return;
 
     isLoading.value = true;
     error.value = null;
@@ -66,14 +67,14 @@ export const useLogStore = defineStore("logStore", () => {
         now.getHours()
       )}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
 
-      const url = window.URL.createObjectURL(data);
+      const blobUrl = window.URL.createObjectURL(data);
       const link = document.createElement("a");
-      link.href = url;
+      link.href = blobUrl;
       link.download = `logs_export_${dateStr}.${format}`;
       document.body.appendChild(link);
       link.click();
       link.remove();
-      window.URL.revokeObjectURL(url);
+      window.URL.revokeObjectURL(blobUrl);
     } catch (err) {
       error.value = err.response?.data?.message || err.message || "Failed to export logs";
       console.error("[LogStore] exportLogs error:", err);

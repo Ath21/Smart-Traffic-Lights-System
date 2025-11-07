@@ -72,14 +72,11 @@
         <RouterLink to="/stls/users" class="btn-outline">Users</RouterLink>
         <RouterLink to="/stls/audits" class="btn-outline">User Audits</RouterLink>
         <RouterLink to="/stls/analytics" class="btn-outline">Analytics</RouterLink>
-        <RouterLink to="/stls/subscribe" class="btn-outline">Alert Me</RouterLink>
-        <RouterLink to="/stls/logs" class="btn-outline">Logs</RouterLink>
+
 
         <!-- Admin Dashboard Section -->
         <div class="dashboard-section">
-          <button @click="openPortainer" class="btn-dashboard">
-            Admin Dashboard
-          </button>
+          <RouterLink to="/stls/logs" class="btn-outline">Admin Dashboard</RouterLink>
         </div>
 
         <UserMenu
