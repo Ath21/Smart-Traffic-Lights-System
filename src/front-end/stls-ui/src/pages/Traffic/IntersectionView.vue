@@ -70,19 +70,6 @@
         <p class="info">
           Cycle Duration: {{ lightControllerStore.lightsData[light.LightId]?.cycle?.CycleDuration ?? '-' }}s
         </p>
-
-        <!-- Inline Operator Controls (per light) -->
-        <div v-if="userRole === 'Admin' || userRole === 'TrafficOperator'" class="light-operator-controls">
-          <label>
-            Override Phase:
-            <select v-model="lightOverrides[light.LightId]">
-              <option value="Green">Green</option>
-              <option value="Yellow">Yellow</option>
-              <option value="Red">Red</option>
-            </select>
-          </label>
-          <button @click="overrideLight(light.LightId)">Override</button>
-        </div>
       </div>
     </div>
 
@@ -118,26 +105,25 @@
         </div>
       </div>
 
-<!-- Global Apply Mode (only operator/admin) -->
-<div v-if="userRole === 'Admin' || userRole === 'TrafficOperator'" class="apply-mode">
-  <label>
-    Apply Mode:
-    <select v-model="selectedMode">
-      <option value="Standard">Standard</option>
-      <option value="Peak">Peak</option>
-      <option value="Night">Night</option>
-      <option value="Pedestrian">Pedestrian</option>
-      <option value="Cyclist">Cyclist</option>
-      <option value="Emergency">Emergency</option>
-      <option value="PublicTransport">Public Transport</option>
-      <option value="Incident">Incident</option>
-      <option value="Failover">Failover</option>
-      <option value="Manual">Manual</option>
-    </select>
-  </label>
-  <button @click="applyMode">Apply Mode</button>
-</div>
-
+      <!-- Global Apply Mode -->
+      <div v-if="userRole === 'Admin' || userRole === 'TrafficOperator'" class="apply-mode">
+        <label>
+          Apply Mode:
+          <select v-model="selectedMode">
+            <option value="Standard">Standard</option>
+            <option value="Peak">Peak</option>
+            <option value="Night">Night</option>
+            <option value="Pedestrian">Pedestrian</option>
+            <option value="Cyclist">Cyclist</option>
+            <option value="Emergency">Emergency</option>
+            <option value="PublicTransport">Public Transport</option>
+            <option value="Incident">Incident</option>
+            <option value="Failover">Failover</option>
+            <option value="Manual">Manual</option>
+          </select>
+        </label>
+        <button @click="applyMode">Apply Mode</button>
+      </div>
     </div>
   </div>
 </template>
@@ -153,62 +139,83 @@ const coordinatorStore = useCoordinatorStore();
 const lightControllerStore = useLightControllerStore();
 const route = useRoute();
 const currentMode = ref(null);
-
-// User Role (replace with actual auth store)
 const userRole = ref("TrafficOperator");
 
 // --- Apply Mode ---
 const selectedMode = ref("");
+
 const applyMode = async () => {
   if (!selectedMode.value || !coordinatorStore.selectedIntersection) return;
-  await coordinatorStore.applyMode(coordinatorStore.selectedIntersection.Id, selectedMode.value);
+
+  let intersectionId;
+
+  // Map intersection name to ID
+  switch (coordinatorStore.selectedIntersection.Name) {
+    case "Agiou Spyridonos":
+      intersectionId = 1;
+      break;
+    case "Anatoliki Pyli":
+      intersectionId = 2;
+      break;
+    case "Dytiki Pyli":
+      intersectionId = 3;
+      break;
+    case "Ekklisia":
+      intersectionId = 4;
+      break;
+    case "Kentriki Pyli":
+      intersectionId = 5;
+      break;
+    default:
+      console.warn(
+        "Unknown intersection name:",
+        coordinatorStore.selectedIntersection.Name
+      );
+      return; // stop if unknown
+  }
+
+  // Call backend with proper ID
+  await coordinatorStore.applyMode(intersectionId, selectedMode.value);
   await coordinatorStore.fetchConfigurationByMode(selectedMode.value);
 };
 
-// --- Override Light (per light) ---
-const lightOverrides = ref({});
-const overrideLight = async (lightId) => {
-  const phase = lightOverrides.value[lightId];
-  if (!phase) return;
-  await coordinatorStore.overrideLight({ LightId: lightId, Phase: phase });
 
-  // refresh light states
-  const lights = coordinatorStore.selectedIntersection?.TrafficLights;
-  if (lights?.length) {
-    const data = await lightControllerStore.fetchLightsForIntersection(lights);
-    lightControllerStore.lightsData = { ...data };
-  }
-};
-
-// Return the phase class for colored blinking circle
+// --- Phase class (colored circle) ---
 const phaseClass = (lightId) => {
   const phase = lightControllerStore.lightsData[lightId]?.state?.Phase;
-  if (!phase) return '';
+  if (!phase) return "";
   return {
-    'green-circle blink': phase === 'Green',
-    'yellow-circle blink': phase === 'Yellow',
-    'red-circle blink': phase === 'Red'
+    "green-circle blink": phase === "Green",
+    "yellow-circle blink": phase === "Yellow",
+    "red-circle blink": phase === "Red",
   };
 };
 
-// Phase color for config bars
+// --- Phase color for configuration bars ---
 const phaseColor = (phase) => {
   switch (phase.toLowerCase()) {
-    case 'green': return '#16a34a';
-    case 'yellow': return '#facc15';
-    case 'red': return '#dc2626';
-    default: return '#9ca3af';
+    case "green":
+      return "#16a34a";
+    case "yellow":
+      return "#facc15";
+    case "red":
+      return "#dc2626";
+    default:
+      return "#9ca3af";
   }
 };
 
-// Safe parsed PhaseDurations
+// --- Parse safe PhaseDurations JSON ---
 const safePhaseDurations = computed(() => {
   if (!coordinatorStore.currentConfiguration?.PhaseDurations) return {};
-  try { return JSON.parse(coordinatorStore.currentConfiguration.PhaseDurations); }
-  catch { return {}; }
+  try {
+    return JSON.parse(coordinatorStore.currentConfiguration.PhaseDurations);
+  } catch {
+    return {};
+  }
 });
 
-// Load intersection + lights + configuration
+// --- Load intersection and its data ---
 async function loadIntersection() {
   const intersectionName = route.params.name;
   if (!intersectionName) return;
