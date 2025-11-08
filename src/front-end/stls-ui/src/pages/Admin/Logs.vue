@@ -14,6 +14,7 @@
         <button @click="fetchLogs" class="btn-primary">Search</button>
         <button @click="exportLogs" class="btn-export">Export CSV</button>
         <button @click="openPortainer" class="btn-dashboard">Dashboard</button>
+        <button @click="openRabbitMQ" class="btn-dashboard">RabbitMQ</button>
       </div>
     </div>
 
@@ -82,6 +83,11 @@ function exportLogs() {
 function openPortainer() {
   window.open("https://localhost:9443/#!/auth", "_blank", "noopener");
 }
+
+function openRabbitMQ() {
+  window.open("http://localhost:15672/#/", "_blank", "noopener");
+}
+
 
 // Automatically fetch logs on mount
 onMounted(() => {
