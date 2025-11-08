@@ -142,20 +142,33 @@ export const useUserStore = defineStore("userStore", () => {
   // ===============================
   // Profile
   // ===============================
-  async function fetchProfile() {
-    loading.value = true;
-    error.value = null;
-    try {
-      const { data } = await userApi.get("/api/users/profile");
-      return data;
-    } catch (err) {
-      error.value = err.response?.data?.message || err.message || "Failed to fetch profile";
-      console.error("[UserStore] fetchProfile error:", err);
-      throw err;
-    } finally {
-      loading.value = false;
-    }
+async function fetchProfile() {
+  loading.value = true;
+  error.value = null;
+  try {
+    const { data } = await userApi.get("/api/users/profile");
+    
+    // Map backend -> frontend
+    user.value = {
+      id: data.UserId || data.id,
+      username: data.Username || data.username,
+      email: data.Email || data.email,
+      role: data.Role || data.role,
+      status: data.Status || data.status,
+      createdAt: data.CreatedAt || data.createdAt,
+      updatedAt: data.UpdatedAt || data.updatedAt,
+    };
+
+    return user.value;
+  } catch (err) {
+    error.value = err.response?.data?.message || err.message || "Failed to fetch profile";
+    console.error("[UserStore] fetchProfile error:", err);
+    throw err;
+  } finally {
+    loading.value = false;
   }
+}
+
 
   async function updateProfile(form) {
     loading.value = true;
