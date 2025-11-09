@@ -33,6 +33,7 @@ case "$1" in
     ;;
   reset)
     echo "♻️ Resetting Minikube cluster..."
+    minikube stop
     minikube delete
     minikube start --driver=docker --addons=ingress --cpus=4 --memory=8192
     ;;
@@ -53,19 +54,19 @@ kubectl get namespace $NAMESPACE >/dev/null 2>&1 || kubectl create namespace $NA
 # Deploy Databases
 # -----------------------
 DB_DIRS=(
-  "LogLayer/Databases/LogDB/Mongo/K8s"
-  "SensorLayer/Databases/DetectionDB/Mongo/K8s"
-  "SensorLayer/Databases/DetectionCacheDB/Redis/K8s"
-  "TrafficLayer/Databases/TrafficAnalyticsDB/PostgreSQL/K8s"
-  "TrafficLayer/Databases/TrafficLightDB/MSSQL/K8s"
-  "TrafficLayer/Databases/TrafficLightCacheDB/Redis/K8s"
-  "UserLayer/Databases/UserDB/MSSQL/K8s"
-  "UserLayer/Databases/NotificationDB/Mongo/K8s"
+  "$ROOT_DIR/LogLayer/Databases/LogDB/Mongo/K8s"
+  "$ROOT_DIR/SensorLayer/Databases/DetectionDB/Mongo/K8s"
+  "$ROOT_DIR/SensorLayer/Databases/DetectionCacheDB/Redis/K8s"
+  "$ROOT_DIR/TrafficLayer/Databases/TrafficAnalyticsDB/PostgreSQL/K8s"
+  "$ROOT_DIR/TrafficLayer/Databases/TrafficLightDB/MSSQL/K8s"
+  "$ROOT_DIR/TrafficLayer/Databases/TrafficLightCacheDB/Redis/K8s"
+  "$ROOT_DIR/UserLayer/Databases/UserDB/MSSQL/K8s"
+  "$ROOT_DIR/UserLayer/Databases/NotificationDB/Mongo/K8s"
 )
 
 for db in "${DB_DIRS[@]}"; do
-    echo "Applying database manifests in $db..."
-    kubectl apply -f "$ROOT_DIR/$db" -n $NAMESPACE
+  echo "Applying database manifests in $db..."
+  kubectl apply -f "$db" -n $NAMESPACE
 done
 
 # -----------------------
@@ -75,82 +76,100 @@ echo "Deploying RabbitMQ..."
 kubectl apply -f "$ROOT_DIR/MessageLayer/RabbitMQ/K8s/" -n $NAMESPACE
 
 # -----------------------
-# Wait for DBs and RabbitMQ to be ready
+# Wait for ready pods
 # -----------------------
-echo "⏳ Waiting for database and RabbitMQ pods..."
-for pod in detection-db detection-cache-db traffic-analytics-db traffic-light-db traffic-light-cache-db user-db log-db rabbitmq; do
-    until kubectl get pods -n $NAMESPACE -l app.kubernetes.io/name=$pod -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}' 2>/dev/null | grep -q True; do
-        echo "   → $pod not ready yet..."
-        sleep 5
-    done
-done
+wait_for_ready() {
+  local label="$1"
+  local name="$2"
+  echo "⏳ Waiting for $name pod..."
+  until kubectl get pods -n $NAMESPACE -l "$label" -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}' 2>/dev/null | grep -q True; do
+    echo "   → $name not ready yet..."
+    sleep 5
+  done
+  echo "✅ $name is ready."
+}
 
-echo "✅ Databases and RabbitMQ are ready."
+echo "⏳ Waiting for all databases and RabbitMQ to be ready..."
+wait_for_ready "app=log-db" "LogDB"
+wait_for_ready "app=detection-db" "DetectionDB"
+wait_for_ready "app=detection-cache-db" "DetectionCacheDB"
+wait_for_ready "app=traffic-analytics-db" "TrafficAnalyticsDB"
+wait_for_ready "app=traffic-light-db" "TrafficLightDB"
+wait_for_ready "app=traffic-light-cache-db" "TrafficLightCacheDB"
+wait_for_ready "app=user-db" "UserDB"
+wait_for_ready "app=notification-db" "NotificationDB"
+wait_for_ready "app=rabbitmq" "RabbitMQ"
+echo "✅ All Databases and RabbitMQ are ready."
 
 # -----------------------
-# Deploy Sensor & Detection Services (per intersection)
+# Function to apply YAMLs recursively
+# -----------------------
+apply_yaml_recursively() {
+  local dir="$1"
+  echo "Applying YAMLs under $dir..."
+  find "$dir" -type f -name '*.yaml' | while read -r yaml; do
+    echo "Applying $yaml..."
+    kubectl apply -f "$yaml" -n $NAMESPACE
+  done
+}
+
+# -----------------------
+# Deploy Sensor + Detection Services
 # -----------------------
 SENSOR_DETECTION_DIRS=(
-  "SensorLayer/Services/SensorService/Compose"
-  "SensorLayer/Services/DetectionService/Compose"
+  "$ROOT_DIR/SensorLayer/Services/SensorService/K8s"
+  "$ROOT_DIR/SensorLayer/Services/DetectionService/K8s"
 )
 
 for dir in "${SENSOR_DETECTION_DIRS[@]}"; do
-    for yaml in $ROOT_DIR/$dir/*.yaml; do
-        echo "Applying $yaml..."
-        kubectl apply -f "$yaml" -n $NAMESPACE
-    done
+  apply_yaml_recursively "$dir"
 done
 
 # -----------------------
-# Deploy Intersection Controller Service (per intersection)
+# Deploy Intersection + Traffic Light Controller Services
 # -----------------------
-IC_DIR="$ROOT_DIR/TrafficLayer/Services/IntersectionControllerService/K8s/Deployment"
-for inter_dir in $IC_DIR/*; do
-    for yaml in $inter_dir/*.yaml; do
-        echo "Applying $yaml..."
-        kubectl apply -f "$yaml" -n $NAMESPACE
-    done
-done
-
-# -----------------------
-# Deploy Traffic Light Controller Service (per light)
-# -----------------------
-TLC_DIR="$ROOT_DIR/TrafficLayer/Services/TrafficLightControllerService/K8s/Deployment"
-for intersection in $TLC_DIR/*; do
-    for yaml in $intersection/*.yaml; do
-        echo "Applying $yaml..."
-        kubectl apply -f "$yaml" -n $NAMESPACE
-    done
-done
-
-# -----------------------
-# Deploy other services
-# -----------------------
-OTHER_SERVICES=(
-  "TrafficLayer/Services/TrafficLightCoordinatorService/K8s/"
-  "TrafficLayer/Services/TrafficAnalyticsService/K8s/"
-  "UserLayer/Services/UserService/K8s/"
-  "UserLayer/Services/NotificationService/K8s/"
-  "LogLayer/Services/LogService/K8s/"
+CONTROLLER_DIRS=(
+  "$ROOT_DIR/TrafficLayer/Services/IntersectionControllerService/K8s"
+  "$ROOT_DIR/TrafficLayer/Services/TrafficLightControllerService/K8s"
+  "$ROOT_DIR/TrafficLayer/Services/TrafficLightCoordinatorService/K8s"
 )
 
-for svc in "${OTHER_SERVICES[@]}"; do
-    echo "Applying $svc..."
-    kubectl apply -f "$ROOT_DIR/$svc" -n $NAMESPACE
+for dir in "${CONTROLLER_DIRS[@]}"; do
+  apply_yaml_recursively "$dir"
 done
 
 # -----------------------
-# Wait for ingress-nginx
+# Deploy other services (UserService, NotificationService, TrafficAnalyticsService, LogService)
+# -----------------------
+OTHER_SERVICES=(
+  "$ROOT_DIR/UserLayer/Services/UserService/K8s"
+  "$ROOT_DIR/UserLayer/Services/NotificationService/K8s"
+  "$ROOT_DIR/TrafficLayer/Services/TrafficAnalyticsService/K8s"
+  "$ROOT_DIR/LogLayer/Services/LogService/K8s"
+)
+
+for dir in "${OTHER_SERVICES[@]}"; do
+  apply_yaml_recursively "$dir"
+done
+
+# -----------------------
+# Ensure UserService starts last
+# -----------------------
+echo "⏳ Ensuring UserDB and RabbitMQ ready before UserService..."
+wait_for_ready "app=user-db" "UserDB"
+wait_for_ready "app=rabbitmq" "RabbitMQ"
+echo "✅ UserService dependencies confirmed."
+
+# -----------------------
+# Ingress
 # -----------------------
 echo "⏳ Waiting for ingress-nginx controller to be ready..."
 until [[ $(kubectl get pods -n ingress-nginx -l app.kubernetes.io/component=controller -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') == "True" ]]; do
-    echo "   → ingress-nginx still starting..."
-    sleep 5
+  echo "   → ingress-nginx still starting..."
+  sleep 5
 done
 
-# Apply ingress
-kubectl apply -f $ROOT_DIR/k8s.ingress.yaml -n $NAMESPACE
+kubectl apply -f "$ROOT_DIR/k8s.ingress.yaml" -n $NAMESPACE
 
 echo ""
 echo "✅ STLS deployed successfully on Minikube."

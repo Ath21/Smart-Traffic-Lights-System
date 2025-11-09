@@ -15,6 +15,19 @@ spec:
       labels:
         app: sensor-api-dytiki-pyli
     spec:
+      # === INIT CONTAINERS ===
+      initContainers:
+        - name: wait-for-rabbitmq
+          image: busybox
+          command: ['sh', '-c', 'until nc -z rabbitmq 5672; do echo "Waiting for RabbitMQ..."; sleep 2; done;']
+        - name: wait-for-detectiondb
+          image: busybox
+          command: ['sh', '-c', 'until nc -z detection-db 27017; do echo "Waiting for Detection DB (Mongo)..."; sleep 2; done;']
+        - name: wait-for-detection-cache-db
+          image: busybox
+          command: ['sh', '-c', 'until nc -z detection-cache-db 6379; do echo "Waiting for Detection Cache DB (Redis)..."; sleep 2; done;']
+
+      # === MAIN CONTAINER ===
       containers:
         - name: sensor-api-dytiki-pyli-container
           image: ath21/stls-services:sensor-api
@@ -58,11 +71,12 @@ spec:
           # --- Resource Limits ---
           resources:
             requests:
-              cpu: 100m
-              memory: 128Mi
+              cpu: 50m   # instead of 100-150m
+              memory: 64Mi
             limits:
-              cpu: 300m
-              memory: 256Mi
+              cpu: 200m  # instead of 300-400m
+              memory: 128Mi
+
 
       restartPolicy: Always
 

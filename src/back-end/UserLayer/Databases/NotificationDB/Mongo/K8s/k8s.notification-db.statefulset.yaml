@@ -26,25 +26,29 @@ spec:
           volumeMounts:
             - name: notification-db-data
               mountPath: /data/db
+
           resources:
             requests:
-              cpu: 100m
-              memory: 128Mi
-            limits:
-              cpu: 300m
+              cpu: 200m   # instead of 100-150m
               memory: 256Mi
+            limits:
+              cpu: 500m  # instead of 300-400m
+              memory: 1Gi
+
           livenessProbe:
-            exec:
-              command: ["mongo", "--eval", "db.adminCommand('ping')"]
-            initialDelaySeconds: 15
-            periodSeconds: 20
+            tcpSocket:
+              port: 27017
+            initialDelaySeconds: 20
+            periodSeconds: 15
             timeoutSeconds: 5
             failureThreshold: 5
+
           readinessProbe:
-            exec:
-              command: ["mongo", "--eval", "db.adminCommand('ping')"]
+            tcpSocket:
+              port: 27017
             initialDelaySeconds: 10
             periodSeconds: 10
+
       restartPolicy: Always
       volumes:
         - name: notification-db-data

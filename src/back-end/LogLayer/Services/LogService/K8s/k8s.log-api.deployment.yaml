@@ -15,6 +15,16 @@ spec:
       labels:
         app: log-api
     spec:
+      # === INIT CONTAINERS ===
+      initContainers:
+        - name: wait-for-rabbitmq
+          image: busybox
+          command: ['sh', '-c', 'until nc -z rabbitmq 5672; do echo "Waiting for RabbitMQ..."; sleep 2; done;']
+        - name: wait-for-logdb
+          image: busybox
+          command: ['sh', '-c', 'until nc -z log-db 27017; do echo "Waiting for Log DB (Mongo)..."; sleep 2; done;']
+
+      # === MAIN CONTAINER ===
       containers:
         - name: log-api-container
           image: ath21/stls-services:log-api
@@ -29,11 +39,11 @@ spec:
           
           resources:
             requests:
-              cpu: 100m
-              memory: 128Mi
+              cpu: 50m   # instead of 100-150m
+              memory: 64Mi
             limits:
-              cpu: 300m
-              memory: 256Mi
+              cpu: 200m  # instead of 300-400m
+              memory: 128Mi
           
           livenessProbe:
             httpGet:

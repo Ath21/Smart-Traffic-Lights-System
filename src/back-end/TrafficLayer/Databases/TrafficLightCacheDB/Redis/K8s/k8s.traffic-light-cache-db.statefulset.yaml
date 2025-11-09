@@ -24,25 +24,29 @@ spec:
           volumeMounts:
             - name: traffic-light-cache-db-data
               mountPath: /data
-          livenessProbe:
-            exec:
-              command: ["redis-cli", "-a", "$(REDIS_PASSWORD)", "ping"]
-            initialDelaySeconds: 15
-            periodSeconds: 10
-            timeoutSeconds: 5
-            failureThreshold: 5
-          readinessProbe:
-            exec:
-              command: ["redis-cli", "-a", "$(REDIS_PASSWORD)", "ping"]
-            initialDelaySeconds: 10
-            periodSeconds: 10
+
           resources:
             requests:
-              cpu: 50m
+              cpu: 100m   # instead of 100-150m
               memory: 128Mi
             limits:
-              cpu: 200m
-              memory: 256Mi
+              cpu: 200m  # instead of 300-400m
+              memory: 512Mi
+
+          livenessProbe:
+            tcpSocket:
+              port: 6379
+            initialDelaySeconds: 20
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 5
+
+          readinessProbe:
+            tcpSocket:
+              port: 6379
+            initialDelaySeconds: 10
+            periodSeconds: 10
+
       restartPolicy: Always
       volumes:
         - name: traffic-light-cache-db-data

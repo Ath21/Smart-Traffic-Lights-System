@@ -15,6 +15,31 @@ spec:
       labels:
         app: intersection-controller-dytiki-pyli
     spec:
+      initContainers:
+        - name: wait-for-rabbitmq
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - >
+              echo "Waiting for RabbitMQ..." &&
+              until nc -z rabbitmq-svc 5672; do
+                echo "RabbitMQ not ready, sleeping...";
+                sleep 3;
+              done;
+              echo "RabbitMQ is up!"
+        - name: wait-for-traffic-cache
+          image: redis:7
+          command:
+            - sh
+            - -c
+            - >
+              echo "Waiting for Traffic Light Cache (Redis)..." &&
+              until redis-cli -h traffic-light-cache-db -a "$REDIS_PASSWORD" ping | grep -q PONG; do
+                echo "Redis not ready, sleeping...";
+                sleep 3;
+              done;
+              echo "Redis is up!"
       containers:
         - name: intersection-controller-dytiki-pyli-container
           image: ath21/stls-services:intersection-controller
@@ -72,11 +97,12 @@ spec:
           # --- Resource Limits ---
           resources:
             requests:
-              cpu: 150m
-              memory: 256Mi
+              cpu: 50m   # instead of 100-150m
+              memory: 64Mi
             limits:
-              cpu: 400m
-              memory: 512Mi
+              cpu: 200m  # instead of 300-400m
+              memory: 128Mi
+
 
       restartPolicy: Always
 
