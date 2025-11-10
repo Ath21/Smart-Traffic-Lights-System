@@ -27,12 +27,12 @@ spec:
 
           resources:
             requests:
-              cpu: 100m   # instead of 100-150m
+              cpu: 50m   # instead of 100-150m
               memory: 128Mi
             limits:
               cpu: 200m  # instead of 300-400m
-              memory: 512Mi
-
+              memory: 256Mi
+              
           livenessProbe:
             tcpSocket:
               port: 6379

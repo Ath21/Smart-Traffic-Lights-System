@@ -30,11 +30,11 @@ spec:
               mountPath: /var/lib/rabbitmq
           resources:
             requests:
-              cpu: 256m
-              memory: 512Mi
+              cpu: 100m
+              memory: 256Mi
             limits:
-              cpu: 512m
-              memory: 1Gi
+              cpu: 400m
+              memory: 512Mi
 
           livenessProbe:
             tcpSocket:

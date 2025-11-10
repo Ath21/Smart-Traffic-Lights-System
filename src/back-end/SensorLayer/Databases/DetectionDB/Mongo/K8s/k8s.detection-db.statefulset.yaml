@@ -29,10 +29,10 @@ spec:
           
           resources:
             requests:
-              cpu: 200m   # instead of 100-150m
-              memory: 256Mi
+              cpu: 100m   # instead of 100-150m
+              memory: 512Mi
             limits:
-              cpu: 500m  # instead of 300-400m
+              cpu: 400m  # instead of 300-400m
               memory: 1Gi
 
           livenessProbe:

@@ -29,7 +29,7 @@ data:
 
   # Message Broker
   ## Configuration
-  RabbitMQ__Host: rabbitmq
+  RabbitMQ__Host: rabbitmq-svc
   RabbitMQ__VirtualHost: /
   RabbitMQ__Port: "5672"
 
