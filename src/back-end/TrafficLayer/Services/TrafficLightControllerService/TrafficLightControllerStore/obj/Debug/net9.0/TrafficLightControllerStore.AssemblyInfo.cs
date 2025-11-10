@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TrafficLightControllerStore")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c88b84196997af538d601a2bd741574ddc84e290")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+69f10ff32f05ee2eb03f8fb18152bd53a38d37ee")]
 [assembly: System.Reflection.AssemblyProductAttribute("TrafficLightControllerStore")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TrafficLightControllerStore")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
