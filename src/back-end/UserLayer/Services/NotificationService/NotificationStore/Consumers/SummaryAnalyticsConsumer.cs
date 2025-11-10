@@ -42,7 +42,7 @@ public class SummaryAnalyticsConsumer : IConsumer<SummaryAnalyticsMessage>
                 ["Intersection"] = msg.Intersection
             });
 
-        var subs = await _repo.GetSubscribersAsync(msg.Intersection, "summary");
+        var subs = await _repo.GetSubscribersAsync(msg.Intersection, "Summary");
 
         foreach (var sub in subs)
         {

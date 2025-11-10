@@ -44,7 +44,7 @@ public class CongestionAnalyticsConsumer : IConsumer<CongestionAnalyticsMessage>
                 ["Level"] = msg.CongestionLevel
             });
 
-        var subs = await _repo.GetSubscribersAsync(msg.Intersection, "congestion");
+        var subs = await _repo.GetSubscribersAsync(msg.Intersection, "Congestion");
 
         foreach (var sub in subs)
         {

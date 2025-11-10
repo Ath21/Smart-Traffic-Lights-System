@@ -19,7 +19,7 @@ data:
   TrafficLight__Name: "Agiou Spyridonos"
 
   # TrafficLightCacheDB (Redis)
-  Redis__TrafficLight__Host: "traffic-light-cache-db"
+  Redis__TrafficLight__Host: "traffic-light-cache-db-svc"
   Redis__TrafficLight__Port: "6379"
   Redis__TrafficLight__Password: ""
   Redis__TrafficLight__Database: "0"
@@ -50,7 +50,7 @@ data:
 
   # RabbitMQ
   ## Configuration
-  RabbitMQ__Host: "rabbitmq"
+  RabbitMQ__Host: "rabbitmq-svc"
   RabbitMQ__VirtualHost: "/"
   RabbitMQ__Port: "5672"
 

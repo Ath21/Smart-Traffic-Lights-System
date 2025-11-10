@@ -31,7 +31,7 @@ data:
   Mongo__Collections__IncidentDetections: incident_detections
 
   ## DetectionCacheDB
-  Redis__Host: detection-cache-db
+  Redis__Host: detection-cache-db-svc
   Redis__Port: "6379"
   Redis__Password: ""
   Redis__Database: "0"
@@ -44,7 +44,7 @@ data:
 
   # Message Broker
   ## Configuration
-  RabbitMQ__Host: rabbitmq
+  RabbitMQ__Host: rabbitmq-svc
   RabbitMQ__VirtualHost: "/"
   RabbitMQ__Port: "5672"
 

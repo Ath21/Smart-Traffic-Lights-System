@@ -12,7 +12,7 @@ data:
   SERVICE_NAME: "Intersection Controller"
 
   # --- Redis (Traffic Light Cache) ---
-  Redis__TrafficLight__Host: "traffic-light-cache-db"
+  Redis__TrafficLight__Host: "traffic-light-cache-db-svc"
   Redis__TrafficLight__Port: "6379"
   Redis__TrafficLight__Password: ""
   Redis__TrafficLight__Database: "0"
@@ -33,7 +33,7 @@ data:
   Redis__TrafficLight__KeyPrefix__Heartbeat: "traffic_light:{intersection}:{light}:heartbeat"
 
   # --- Redis (Detection Cache) ---
-  Redis__Host: "detection-cache-db"
+  Redis__Host: "detection-cache-db-svc"
   Redis__Port: "6379"
   Redis__Password: ""
   Redis__Database: "0"
@@ -54,7 +54,7 @@ data:
   Jwt__Audience: "http://uniwa-stls-backend:8080"
 
   # --- RabbitMQ ---
-  RabbitMQ__Host: "rabbitmq"
+  RabbitMQ__Host: "rabbitmq-svc"
   RabbitMQ__VirtualHost: "/"
   RabbitMQ__Port: "5672"
 
