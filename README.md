@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  <strong>Vasileios Evangelos Athanasiou</strong><br>
+  <strong>Vasileios Evangelos Athanasiou</strong><br>
   Student ID: 19390005
 </p>
 
@@ -43,7 +43,7 @@
 ## AUTHOR & SUPERVISORS – BIOS
 
 ### **Vasileios Evangelos Athanasiou**  
-GitHub: [@Ath21](https://github.com/Ath21) — Undergraduate student, Department of Computer Engineering and Informatics, University of West Attica (UNIWA).
+GitHub: [@Ath21](https://github.com/Ath21) - Undergraduate student, Department of Computer Engineering and Informatics, University of West Attica (UNIWA).
 
 ### **Vasileios Mamalis**  
 Professor, Department of Computer Engineering and Informatics, University of West Attica ([Profile](https://users.uniwa.gr/vmamalis/))  
