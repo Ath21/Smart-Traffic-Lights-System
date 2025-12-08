@@ -38,24 +38,6 @@
   <img src="schematics/Schematic%201.1%20UNIWA%20STLS%20Logo.png" alt="STLS" width="150"/>
 </p>
 
----
-
-## AUTHOR & SUPERVISORS – BIOS
-
-### **Vasileios Evangelos Athanasiou**  
-GitHub: [@Ath21](https://github.com/Ath21) - Undergraduate student, Department of Computer Engineering and Informatics, University of West Attica (UNIWA).
-
-### **Vasileios Mamalis**  
-Professor, Department of Computer Engineering and Informatics, University of West Attica ([Profile](https://users.uniwa.gr/vmamalis/))  
-- Diploma & Ph.D. in Computer Engineering and Informatics from the Polytechnic School of University of Patras (1993, 1998)  
-- Research expertise: **information retrieval**, **distributed systems & databases**, **cloud computing**, **IoT**, **parallel algorithms & architectures**, **wireless sensor networks**  
-- Teaching: Operating Systems, Parallel/Distributed Systems, Wireless Sensor Networks, Cloud Computing  
-
-### **Apostolos Anagnostopoulos**  
-Laboratory Teaching & Technical Staff (ETEP), Department of Computer Engineering and Informatics, University of West Attica ([Profile](https://ice.uniwa.gr/emd_person/17574/))
-
----
-
 ## ABSTRACT
 
 Urban mobility is undergoing a significant transformation, driven by the integration of advanced technologies. This thesis, entitled **"Design and Implementation of a Smart Traffic Lights System using Microservices and Container-based Virtualization"**, investigates how modern technologies can enhance the efficiency, adaptability, and sustainability of traffic management systems in smart cities.
