@@ -67,3 +67,15 @@ The thesis examines the fundamental principles of microservices and containeriza
 Case studies demonstrate practical applications of the system, including dynamic traffic light cycle adjustments based on real-time traffic, congestion management on critical roads, and route optimization through data analysis. These examples highlight how the combination of microservices and container-based deployment can support the development of intelligent, resilient, and scalable solutions for future smart cities.
 
 Through systematic analysis and implementation, this work provides practical insights and a roadmap for leveraging modern technologies in the design and deployment of smart traffic management systems, contributing to the transformation of urban environments into more efficient and sustainable living spaces.
+
+---
+
+## SCIENTIFIC AREA
+
+Operating Systems, Distributed Systems, Web Applications, Cloud Computing and Services, Internet of Things, Smart City Technologies, Container-Based Virtualization, Microservices, Programming in C# and JavaScript
+
+---
+
+## KEYWORDS
+
+Smart Traffic Light System, Microservices Architecture, Layered Edge-Fog-Cloud Architecture, Virtual Sensors, Internet of Things, Full-Stack Web Application, Traffic Management, Smart Cities, Distributed Environment, Data Collection and Processing, Docker Containers, Container Orchestration, Docker Compose, Kubernetes, CI/CD, Auto-Scaling, Service Management, V2X Communication
