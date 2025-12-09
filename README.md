@@ -25,7 +25,6 @@
 
 <p align="center">
   Supervisor: Vasileios Mamalis, Professor<br>
-  Co-Supervisor: Apostolos Anagnostopoulos, Laboratory Teaching & Technical Staff (ETEP)
 </p>
 
 <p align="center">
